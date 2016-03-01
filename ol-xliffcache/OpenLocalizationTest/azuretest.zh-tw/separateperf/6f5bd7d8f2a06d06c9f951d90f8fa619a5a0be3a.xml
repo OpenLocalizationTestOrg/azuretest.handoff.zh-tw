@@ -1,0 +1,425 @@
+{
+  "nodes": [
+    {
+      "content": "Service Fabric Testability Scenarios: Service Communication",
+      "pos": [
+        27,
+        86
+      ]
+    },
+    {
+      "content": "Service-to-service communication is a critical integration point of a Service Fabric application.",
+      "pos": [
+        105,
+        202
+      ]
+    },
+    {
+      "content": "This article discusses design consideration and testing techniques.",
+      "pos": [
+        203,
+        270
+      ]
+    },
+    {
+      "content": "Service Fabric Testability Scenarios: Service Communication",
+      "pos": [
+        571,
+        630
+      ]
+    },
+    {
+      "content": "Microservices and service-oriented architectural styles surface naturally in Service Fabric.",
+      "pos": [
+        632,
+        724
+      ]
+    },
+    {
+      "content": "In these types of distributed architectures, componentized microservice applications are typically composed of multiple services that need to talk to each other.",
+      "pos": [
+        725,
+        886
+      ]
+    },
+    {
+      "content": "Even in the simplest case, you generally have at least a stateless web service and a stateful data storage service that need to communicate.",
+      "pos": [
+        887,
+        1027
+      ]
+    },
+    {
+      "content": "Service-to-service communication is a critical integration point of an application as each service exposes a remote API to other services.",
+      "pos": [
+        1029,
+        1167
+      ]
+    },
+    {
+      "content": "Working with a set of API boundaries involving I/O generally requires some care with a good amount of testing and validation.",
+      "pos": [
+        1168,
+        1293
+      ]
+    },
+    {
+      "content": "There are numerous considerations to make when these service boundaries are wired together in a distributed system:",
+      "pos": [
+        1296,
+        1411
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Transport protocol<ept id=\"p1\">**</ept>.",
+      "pos": [
+        1416,
+        1439
+      ]
+    },
+    {
+      "content": "Will it be HTTP for increased interoperability, or a custom binary protocol for maximum throughput?",
+      "pos": [
+        1440,
+        1539
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Error handling<ept id=\"p1\">**</ept>.",
+      "pos": [
+        1543,
+        1562
+      ]
+    },
+    {
+      "content": "How are permanent and transient errors handled and what happens when a service moves to a different node?",
+      "pos": [
+        1563,
+        1668
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Timeouts and latency<ept id=\"p1\">**</ept>.",
+      "pos": [
+        1672,
+        1697
+      ]
+    },
+    {
+      "content": "In multi-tiered applications, how does each service layer handle latency through the stack and up to the user?",
+      "pos": [
+        1698,
+        1808
+      ]
+    },
+    {
+      "content": "Whether you're using one of the built-in service communication components provided by Service Fabric or building your own, testing the interaction between your services is a critical part of ensuring resiliency in your application.",
+      "pos": [
+        1810,
+        2041
+      ]
+    },
+    {
+      "content": "Where's my service?",
+      "pos": [
+        2046,
+        2065
+      ]
+    },
+    {
+      "content": "Service instances may move around over time, especially when configured with load metrics for custom-tailored optimal resource balancing.",
+      "pos": [
+        2067,
+        2204
+      ]
+    },
+    {
+      "content": "Upgrades, failovers, scale-out, and other various situations that occur over the lifetime of a distributed system are where Service Fabric moves your service instances to maximize availability.",
+      "pos": [
+        2205,
+        2398
+      ]
+    },
+    {
+      "content": "As services move around in the cluster, there are two scenarios your clients and other services should be prepared to handle when talking to a service:",
+      "pos": [
+        2400,
+        2551
+      ]
+    },
+    {
+      "content": "The service instance or partition replica has moved since the last time you talked to it.",
+      "pos": [
+        2556,
+        2645
+      ]
+    },
+    {
+      "content": "This is a normal part of a service lifecycle and should be expected to happen during the lifetime of your application.",
+      "pos": [
+        2646,
+        2764
+      ]
+    },
+    {
+      "content": "The service instance or partition replica is in the process of moving.",
+      "pos": [
+        2768,
+        2838
+      ]
+    },
+    {
+      "content": "Although failover of a service from one node to another occurs very quickly in Service Fabric, there may be a delay in availability if the communication component of your service is slow to start.",
+      "pos": [
+        2839,
+        3035
+      ]
+    },
+    {
+      "content": "Handling these scenarios gracefully is important for a smooth-running system.",
+      "pos": [
+        3037,
+        3114
+      ]
+    },
+    {
+      "content": "To do so, we need to make a few considerations:",
+      "pos": [
+        3115,
+        3162
+      ]
+    },
+    {
+      "content": "Every service that can be connected to has an <bpt id=\"p1\">*</bpt>address<ept id=\"p1\">*</ept> that it listens on (HTTP, WebSockets, etc.).",
+      "pos": [
+        3166,
+        3266
+      ]
+    },
+    {
+      "content": "When a service instance or partition has moved, its address endpoint will change (it's been moved to a different node with a different IP address).",
+      "pos": [
+        3267,
+        3414
+      ]
+    },
+    {
+      "content": "If you're using the built-in communication components, they will handle re-resolving service addresses for you.",
+      "pos": [
+        3415,
+        3526
+      ]
+    },
+    {
+      "content": "There may be a temporary increase in service latency as the service instance starts up its listener again, depending on how quickly the service opens it after being moved.",
+      "pos": [
+        3530,
+        3701
+      ]
+    },
+    {
+      "content": "Any existing connections will need to be closed and re-opened again when the service opens on a new node.",
+      "pos": [
+        3704,
+        3809
+      ]
+    },
+    {
+      "content": "A graceful node shut down or restart allows time for existing connections to be gracefully shut down.",
+      "pos": [
+        3810,
+        3911
+      ]
+    },
+    {
+      "content": "Test it: move service instances",
+      "pos": [
+        3917,
+        3948
+      ]
+    },
+    {
+      "content": "Using Service Fabric's Testability tools, we can author a test scenario to test these situations in different ways.",
+      "pos": [
+        3950,
+        4065
+      ]
+    },
+    {
+      "content": "Move a stateful service's primary replica.",
+      "pos": [
+        4070,
+        4112
+      ]
+    },
+    {
+      "content": "The primary replica of a stateful service partition can be moved for any number of reasons.",
+      "pos": [
+        4119,
+        4210
+      ]
+    },
+    {
+      "content": "Use this to target the primary replica of a specific partition to see how your services react to the move in a very controlled manner.",
+      "pos": [
+        4211,
+        4345
+      ]
+    },
+    {
+      "content": "Stop a node.",
+      "pos": [
+        4516,
+        4528
+      ]
+    },
+    {
+      "content": "When a node is stopped, Service Fabric will move all the services instances or partitions that were on that node to one of the other available nodes in the cluster.",
+      "pos": [
+        4534,
+        4698
+      ]
+    },
+    {
+      "content": "Use this to test a stituation where a node is lost from your cluster and all of the service instances and replicas on that node have to move.",
+      "pos": [
+        4699,
+        4840
+      ]
+    },
+    {
+      "content": "A node can be stopped using the Stop-ServiceFabricNode PowerShell cmdlet:",
+      "pos": [
+        4846,
+        4919
+      ]
+    },
+    {
+      "content": "Service Availability",
+      "pos": [
+        5018,
+        5038
+      ]
+    },
+    {
+      "content": "Service Fabric is a platform that is designed to provide high-availability of your services.",
+      "pos": [
+        5040,
+        5132
+      ]
+    },
+    {
+      "content": "However, underlying infrastructure problems can still cause unavailability in extreme cases.",
+      "pos": [
+        5133,
+        5225
+      ]
+    },
+    {
+      "content": "Thus it is important to also test for such a scenario.",
+      "pos": [
+        5226,
+        5280
+      ]
+    },
+    {
+      "content": "Stateful services use a quorum-based system for replicating state for high-availability.",
+      "pos": [
+        5282,
+        5370
+      ]
+    },
+    {
+      "content": "This means a quorum of replicas need to be available in order to perform write operations.",
+      "pos": [
+        5371,
+        5461
+      ]
+    },
+    {
+      "content": "In rare cases, such as widespread hardware failure, a quorum of replicas may not be available.",
+      "pos": [
+        5462,
+        5556
+      ]
+    },
+    {
+      "content": "In this case, you will not be able to perform write operations, but you will still be able to perfom read operations.",
+      "pos": [
+        5557,
+        5674
+      ]
+    },
+    {
+      "content": "Test it: write operation unavailability",
+      "pos": [
+        5680,
+        5719
+      ]
+    },
+    {
+      "content": "Service Fabric's Testability tools allow you to inject a fault that induces quorum loss to test this type of scenario.",
+      "pos": [
+        5721,
+        5839
+      ]
+    },
+    {
+      "content": "Although rare, it is important that clients and services that depend on stateful service are prepared to handle situations where they cannot make write requests to the stateful service.",
+      "pos": [
+        5840,
+        6025
+      ]
+    },
+    {
+      "content": "At the same time it is also important that the stateful service itself is aware of this possibiliy and can gracefully communicate it to callers.",
+      "pos": [
+        6026,
+        6170
+      ]
+    },
+    {
+      "content": "Quorum loss can be induced using the Invoke-ServiceFabricPartitionQuorumLoss PowerShell cmdlet:",
+      "pos": [
+        6173,
+        6268
+      ]
+    },
+    {
+      "content": "In this example, we set <ph id=\"ph1\">`QuorumLossMode`</ph> to <ph id=\"ph2\">`PartialQuorumLoss`</ph> to indicate we want to induce quorum loss without taking down all replicas, so that read operations are still possible.",
+      "pos": [
+        6447,
+        6630
+      ]
+    },
+    {
+      "content": "To test a scenario where an entire partition is unavailable, you can set this switch to <ph id=\"ph1\">`FullQuorumLoss`</ph>.",
+      "pos": [
+        6631,
+        6736
+      ]
+    },
+    {
+      "content": "Next steps",
+      "pos": [
+        6741,
+        6751
+      ]
+    },
+    {
+      "content": "Learn more about Testability Actions",
+      "pos": [
+        6754,
+        6790
+      ]
+    },
+    {
+      "content": "Learn more about Testability Scenarios",
+      "pos": [
+        6833,
+        6871
+      ]
+    }
+  ],
+  "content": "<properties \n   pageTitle=\"Service Fabric Testability Scenarios: Service Communication\" \n   description=\"Service-to-service communication is a critical integration point of a Service Fabric application. This article discusses design consideration and testing techniques.\" \n   services=\"service-fabric\" \n   documentationCenter=\".net\" \n   authors=\"vturecek\" \n   manager=\"timlt\" \n   editor=\"\"/>\n\n<tags\n   ms.service=\"service-fabric\"\n   ms.devlang=\"dotnet\"\n   ms.topic=\"article\"\n   ms.tgt_pltfrm=\"NA\"\n   ms.workload=\"NA\" \n   ms.date=\"08/25/2015\"\n   ms.author=\"vturecek\"/>\n\n# Service Fabric Testability Scenarios: Service Communication\n\nMicroservices and service-oriented architectural styles surface naturally in Service Fabric. In these types of distributed architectures, componentized microservice applications are typically composed of multiple services that need to talk to each other. Even in the simplest case, you generally have at least a stateless web service and a stateful data storage service that need to communicate.\n\nService-to-service communication is a critical integration point of an application as each service exposes a remote API to other services. Working with a set of API boundaries involving I/O generally requires some care with a good amount of testing and validation. \n\nThere are numerous considerations to make when these service boundaries are wired together in a distributed system:\n\n - **Transport protocol**. Will it be HTTP for increased interoperability, or a custom binary protocol for maximum throughput?\n - **Error handling**. How are permanent and transient errors handled and what happens when a service moves to a different node?\n - **Timeouts and latency**. In multi-tiered applications, how does each service layer handle latency through the stack and up to the user?\n\nWhether you're using one of the built-in service communication components provided by Service Fabric or building your own, testing the interaction between your services is a critical part of ensuring resiliency in your application.\n\n## Where's my service?\n\nService instances may move around over time, especially when configured with load metrics for custom-tailored optimal resource balancing. Upgrades, failovers, scale-out, and other various situations that occur over the lifetime of a distributed system are where Service Fabric moves your service instances to maximize availability.\n\nAs services move around in the cluster, there are two scenarios your clients and other services should be prepared to handle when talking to a service:\n\n + The service instance or partition replica has moved since the last time you talked to it. This is a normal part of a service lifecycle and should be expected to happen during the lifetime of your application.\n + The service instance or partition replica is in the process of moving. Although failover of a service from one node to another occurs very quickly in Service Fabric, there may be a delay in availability if the communication component of your service is slow to start.\n\nHandling these scenarios gracefully is important for a smooth-running system. To do so, we need to make a few considerations:\n\n+ Every service that can be connected to has an *address* that it listens on (HTTP, WebSockets, etc.). When a service instance or partition has moved, its address endpoint will change (it's been moved to a different node with a different IP address). If you're using the built-in communication components, they will handle re-resolving service addresses for you. \n+ There may be a temporary increase in service latency as the service instance starts up its listener again, depending on how quickly the service opens it after being moved.\n+ Any existing connections will need to be closed and re-opened again when the service opens on a new node. A graceful node shut down or restart allows time for existing connections to be gracefully shut down.\n\n### Test it: move service instances\n\nUsing Service Fabric's Testability tools, we can author a test scenario to test these situations in different ways.\n\n1. Move a stateful service's primary replica.\n \n    The primary replica of a stateful service partition can be moved for any number of reasons. Use this to target the primary replica of a specific partition to see how your services react to the move in a very controlled manner.\n\n    ```powershell\n\n    PS > Move-ServiceFabricPrimaryReplica -PartitionId 6faa4ffa-521a-44e9-8351-dfca0f7e0466 -ServiceName fabric:/MyApplication/MyService\n\n    ```\n\n2. Stop a node.\n\n    When a node is stopped, Service Fabric will move all the services instances or partitions that were on that node to one of the other available nodes in the cluster. Use this to test a stituation where a node is lost from your cluster and all of the service instances and replicas on that node have to move.\n\n    A node can be stopped using the Stop-ServiceFabricNode PowerShell cmdlet:\n\n    ```powershell\n\n    PS > Restart-ServiceFabricNode -NodeName Node.1\n\n    ```\n\n    \n    \n\n\n### Service Availability\n\nService Fabric is a platform that is designed to provide high-availability of your services. However, underlying infrastructure problems can still cause unavailability in extreme cases. Thus it is important to also test for such a scenario.\n\nStateful services use a quorum-based system for replicating state for high-availability. This means a quorum of replicas need to be available in order to perform write operations. In rare cases, such as widespread hardware failure, a quorum of replicas may not be available. In this case, you will not be able to perform write operations, but you will still be able to perfom read operations.\n\n### Test it: write operation unavailability\n\nService Fabric's Testability tools allow you to inject a fault that induces quorum loss to test this type of scenario. Although rare, it is important that clients and services that depend on stateful service are prepared to handle situations where they cannot make write requests to the stateful service. At the same time it is also important that the stateful service itself is aware of this possibiliy and can gracefully communicate it to callers. \n\nQuorum loss can be induced using the Invoke-ServiceFabricPartitionQuorumLoss PowerShell cmdlet:\n\n```powershell\n\nPS > Invoke-ServiceFabricPartitionQuorumLoss -ServiceName fabric:/Myapplication/MyService -QuorumLossMode PartialQuorumLoss -QuorumLossDurationInSeconds 20\n\n```\n\nIn this example, we set `QuorumLossMode` to `PartialQuorumLoss` to indicate we want to induce quorum loss without taking down all replicas, so that read operations are still possible. To test a scenario where an entire partition is unavailable, you can set this switch to `FullQuorumLoss`.\n\n## Next steps\n\n[Learn more about Testability Actions](service-fabric-testability-actions.md)\n\n[Learn more about Testability Scenarios](service-fabric-testability-scenarios.md) \n"
+}

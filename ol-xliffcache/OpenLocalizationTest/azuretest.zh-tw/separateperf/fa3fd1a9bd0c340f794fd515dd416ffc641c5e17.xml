@@ -1,0 +1,1923 @@
+{
+  "nodes": [
+    {
+      "content": "Introduction to Service Fabric Health Monitoring",
+      "pos": [
+        26,
+        74
+      ]
+    },
+    {
+      "content": "This article describes the Azure Service Fabric Health Monitoring model, including health entities, reporting and evaluation.",
+      "pos": [
+        92,
+        217
+      ]
+    },
+    {
+      "content": "Introduction to Service Fabric Health Monitoring",
+      "pos": [
+        508,
+        556
+      ]
+    },
+    {
+      "content": "Service Fabric introduces a health model that provides rich, flexible and extensible health evaluation and reporting.",
+      "pos": [
+        557,
+        674
+      ]
+    },
+    {
+      "content": "This includes near real-time monitoring of the state of the cluster and of the services running in it.",
+      "pos": [
+        675,
+        777
+      ]
+    },
+    {
+      "content": "You  can easily obtain the health information and take actions to correct potential issues before they cascade and cause massive outages.",
+      "pos": [
+        778,
+        915
+      ]
+    },
+    {
+      "content": "The typical model is that services send reports based on their local view and the information is aggregated to provide an overall cluster level view.",
+      "pos": [
+        916,
+        1065
+      ]
+    },
+    {
+      "content": "Service Fabric components use this health model to report their current state.",
+      "pos": [
+        1067,
+        1145
+      ]
+    },
+    {
+      "content": "And you can use the same mechanism to report health from your applications.",
+      "pos": [
+        1146,
+        1221
+      ]
+    },
+    {
+      "content": "The quality and richness of health reporting specific to your custom conditions will determine how easily you will be able to detect and fix issues for your running application.",
+      "pos": [
+        1222,
+        1399
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> We started the Health subsystem as a need for monitored upgrades.",
+      "pos": [
+        1403,
+        1481
+      ]
+    },
+    {
+      "content": "Service Fabric provides monitored upgrades that know how to upgrade a cluster or an application with no down time, minimum to no user intervention and with full cluster and application availability.",
+      "pos": [
+        1482,
+        1680
+      ]
+    },
+    {
+      "content": "To do this, the upgrade checks health based on configured upgrade policies and allows upgrade to proceed only when health respects desired thresholds.",
+      "pos": [
+        1681,
+        1831
+      ]
+    },
+    {
+      "content": "Otherwise, the upgrade is either automatically rolled back or paused to give administrators a chance to fix the issues.",
+      "pos": [
+        1832,
+        1951
+      ]
+    },
+    {
+      "content": "To learn more about application upgrades see <bpt id=\"p1\">[</bpt>this article<ept id=\"p1\">](service-fabric-application-upgrade.md)</ept>.",
+      "pos": [
+        1952,
+        2051
+      ]
+    },
+    {
+      "content": "Health Store",
+      "pos": [
+        2056,
+        2068
+      ]
+    },
+    {
+      "content": "The Health Store keeps health related information about entities in the cluster for easy retrieval and evaluation.",
+      "pos": [
+        2069,
+        2183
+      ]
+    },
+    {
+      "content": "It is implemented as a Service Fabric persisted stateful service to ensure high availability and scalability.",
+      "pos": [
+        2184,
+        2293
+      ]
+    },
+    {
+      "content": "It is part of the fabric:/System application and is available as soon as the cluster is up and running.",
+      "pos": [
+        2294,
+        2397
+      ]
+    },
+    {
+      "content": "Health entities and hierarchy",
+      "pos": [
+        2402,
+        2431
+      ]
+    },
+    {
+      "content": "The health entities are organized in a logical hierarchy that captures interactions and dependencies between different entities.",
+      "pos": [
+        2432,
+        2560
+      ]
+    },
+    {
+      "content": "The entities and the hierarchy are automatically built by the Health Store based on reports received from the Service Fabric components.",
+      "pos": [
+        2561,
+        2697
+      ]
+    },
+    {
+      "content": "The health entities mirror the Service Fabric entities (eg.",
+      "pos": [
+        2699,
+        2758
+      ]
+    },
+    {
+      "content": "health application entity matches an application instance deployed in the cluster, health node entity matches a Service Fabric cluster node).",
+      "pos": [
+        2759,
+        2900
+      ]
+    },
+    {
+      "content": "The health hierarchy captures the interactions of the system entities and is the basis for advanced health evaluation.",
+      "pos": [
+        2901,
+        3019
+      ]
+    },
+    {
+      "content": "You can learn about the key Service Fabric concepts at <bpt id=\"p1\">[</bpt>Service Fabric technical overview<ept id=\"p1\">](service-fabric-technical-overview.md)</ept>.",
+      "pos": [
+        3020,
+        3149
+      ]
+    },
+    {
+      "content": "For more on application, go to <bpt id=\"p1\">[</bpt>Service Fabric application model<ept id=\"p1\">](service-fabric-application-model.md)</ept>.",
+      "pos": [
+        3150,
+        3253
+      ]
+    },
+    {
+      "content": "The health entities and hierarchy allow for effective reporting, debugging and monitoring of the cluster and applications.",
+      "pos": [
+        3255,
+        3377
+      ]
+    },
+    {
+      "content": "The health model allows an accurate, <bpt id=\"p1\">**</bpt>granular<ept id=\"p1\">**</ept> representation of the health of the many moving pieces in the cluster.",
+      "pos": [
+        3378,
+        3498
+      ]
+    },
+    {
+      "content": "Health Entities.",
+      "pos": [
+        3502,
+        3518
+      ]
+    },
+    {
+      "content": "The health entities, organized in an hierarchy based on parent-children relationships.",
+      "pos": [
+        3523,
+        3609
+      ]
+    },
+    {
+      "content": "The health entities are:",
+      "pos": [
+        3695,
+        3719
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Cluster<ept id=\"p1\">**</ept>.",
+      "pos": [
+        3723,
+        3735
+      ]
+    },
+    {
+      "content": "Represents the health of a Service Fabric cluster.",
+      "pos": [
+        3736,
+        3786
+      ]
+    },
+    {
+      "content": "Cluster health reports describe conditions that affect the entire cluster and can't be narrowed down to one or more unhealthy children.",
+      "pos": [
+        3787,
+        3922
+      ]
+    },
+    {
+      "content": "Example: split-brain of the cluster due to network partitioning or communication issues.",
+      "pos": [
+        3923,
+        4011
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Node<ept id=\"p1\">**</ept>.",
+      "pos": [
+        4015,
+        4024
+      ]
+    },
+    {
+      "content": "Represents the health of a Service Fabric node.",
+      "pos": [
+        4025,
+        4072
+      ]
+    },
+    {
+      "content": "Node health reports describe conditions that affect the node functionality and typically affect all the deployed entities running on it.",
+      "pos": [
+        4073,
+        4209
+      ]
+    },
+    {
+      "content": "Example: node is out of disk space (or other machine wide property such as memory, connections, etc.) or node is down.",
+      "pos": [
+        4210,
+        4328
+      ]
+    },
+    {
+      "content": "The node entity is identified by the node name (string).",
+      "pos": [
+        4329,
+        4385
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Application<ept id=\"p1\">**</ept>.",
+      "pos": [
+        4389,
+        4405
+      ]
+    },
+    {
+      "content": "Represents the health of an application instance running in the cluster.",
+      "pos": [
+        4406,
+        4478
+      ]
+    },
+    {
+      "content": "Application health reports describe conditions that affect the overall health of the application and can't be narrowed down to individual children (services or deployed applications).",
+      "pos": [
+        4479,
+        4662
+      ]
+    },
+    {
+      "content": "Example: the end to end interaction between different services in the application.",
+      "pos": [
+        4663,
+        4745
+      ]
+    },
+    {
+      "content": "The application entity is identified by the application name (Uri).",
+      "pos": [
+        4746,
+        4813
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Service<ept id=\"p1\">**</ept>.",
+      "pos": [
+        4817,
+        4829
+      ]
+    },
+    {
+      "content": "Represents the health of a service running in the cluster.",
+      "pos": [
+        4830,
+        4888
+      ]
+    },
+    {
+      "content": "Service health reports describe conditions that affect the overall health of the service, and can't be narrowed down to a partition or a replica.",
+      "pos": [
+        4889,
+        5034
+      ]
+    },
+    {
+      "content": "Example: a service configuration (such as port or external file share) that is causing issues for all partitions.",
+      "pos": [
+        5035,
+        5148
+      ]
+    },
+    {
+      "content": "The service entity is identified by the service name (Uri).",
+      "pos": [
+        5149,
+        5208
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Partition<ept id=\"p1\">**</ept>.",
+      "pos": [
+        5212,
+        5226
+      ]
+    },
+    {
+      "content": "Represents the health of a service partition.",
+      "pos": [
+        5227,
+        5272
+      ]
+    },
+    {
+      "content": "Partition health reports describe conditions that affect the entire replica set.",
+      "pos": [
+        5273,
+        5353
+      ]
+    },
+    {
+      "content": "Example: the number of replicas is below target count or partition is in quorum loss.",
+      "pos": [
+        5354,
+        5439
+      ]
+    },
+    {
+      "content": "The partition entity is identified by the partition id (Guid).",
+      "pos": [
+        5440,
+        5502
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Replica<ept id=\"p1\">**</ept>.",
+      "pos": [
+        5506,
+        5518
+      ]
+    },
+    {
+      "content": "Represents the health of a stateful service replica or a stateless service instance.",
+      "pos": [
+        5519,
+        5603
+      ]
+    },
+    {
+      "content": "This is the smallest unit watchdogs and system components can report on for an application.",
+      "pos": [
+        5604,
+        5695
+      ]
+    },
+    {
+      "content": "Example: For stateful services, primary replica can report if it can't replicate operations to secondaries or replication is not proceeding at the expected pace.",
+      "pos": [
+        5696,
+        5857
+      ]
+    },
+    {
+      "content": "A stateless instance can report if it is running out of resources or has connectivity issues.",
+      "pos": [
+        5858,
+        5951
+      ]
+    },
+    {
+      "content": "The replica entity is identified by the partition id (Guid) and the replica or instance id (long).",
+      "pos": [
+        5952,
+        6050
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>DeployedApplication<ept id=\"p1\">**</ept>.",
+      "pos": [
+        6054,
+        6078
+      ]
+    },
+    {
+      "content": "Represents the health of an <bpt id=\"p1\">*</bpt>application running on a node<ept id=\"p1\">*</ept>.",
+      "pos": [
+        6079,
+        6139
+      ]
+    },
+    {
+      "content": "Deployed application health reports describe conditions specific to the application on the node that can't be narrowed down to service packages deployed on the same node.",
+      "pos": [
+        6140,
+        6310
+      ]
+    },
+    {
+      "content": "Example: the application package can't be downloaded on that node or there is an issue setting up application security principals on the node.",
+      "pos": [
+        6311,
+        6453
+      ]
+    },
+    {
+      "content": "The deployed application is identified by application name (Uri) and node name (string).",
+      "pos": [
+        6454,
+        6542
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>DeployedServicePackage<ept id=\"p1\">**</ept>.",
+      "pos": [
+        6546,
+        6573
+      ]
+    },
+    {
+      "content": "Represents the health of a service package of an application running in a node in the cluster.",
+      "pos": [
+        6574,
+        6668
+      ]
+    },
+    {
+      "content": "It describes conditions specific to a service package that do not affect the other service packages on the same node for the same application.",
+      "pos": [
+        6669,
+        6811
+      ]
+    },
+    {
+      "content": "Example: a code package in the service package cannot be started or configuration package cannot be read.",
+      "pos": [
+        6812,
+        6917
+      ]
+    },
+    {
+      "content": "The deployed service package is identified by application name (Uri), node name (string) and service manifest name (string).",
+      "pos": [
+        6918,
+        7042
+      ]
+    },
+    {
+      "content": "The granularity of the health model makes it easy to detect and correct issues.",
+      "pos": [
+        7044,
+        7123
+      ]
+    },
+    {
+      "content": "For example, if a service is not responding, it is feasible to report that the application instance is unhealthy; however, it is not ideal because the issue might not be affecting all services within that application.",
+      "pos": [
+        7124,
+        7341
+      ]
+    },
+    {
+      "content": "The report should be applied on the unhealthy service, or, if more information points to a specific child partition, on that partition.",
+      "pos": [
+        7342,
+        7477
+      ]
+    },
+    {
+      "content": "The data will automatically surface through the hierarchy: an unhealthy partition will be made visible at service and application levels.",
+      "pos": [
+        7478,
+        7615
+      ]
+    },
+    {
+      "content": "This will help pinpoint and resolve the root cause of the issues faster.",
+      "pos": [
+        7616,
+        7688
+      ]
+    },
+    {
+      "content": "The health hierarchy is composed of parent-children relationships.",
+      "pos": [
+        7690,
+        7756
+      ]
+    },
+    {
+      "content": "Cluster is composed of nodes and applications; applications have services and deployed applications; deployed applications have deployed service packages.",
+      "pos": [
+        7757,
+        7911
+      ]
+    },
+    {
+      "content": "Services have partitions, and each partition has one or more replicas.",
+      "pos": [
+        7912,
+        7982
+      ]
+    },
+    {
+      "content": "There is a special relationship between nodes and deployed entities.",
+      "pos": [
+        7983,
+        8051
+      ]
+    },
+    {
+      "content": "If a node is unhealthy as reported by its authority System component (Failover Manager Service), it will affect the deployed applications, service packages and replicas deployed on it.",
+      "pos": [
+        8052,
+        8236
+      ]
+    },
+    {
+      "content": "The health hierarchy represents the latest state of the system based on the latest health reports, which is almost real-time information.",
+      "pos": [
+        8238,
+        8375
+      ]
+    },
+    {
+      "content": "Internal and external watchdogs can report on the same entities based on application specific logic or custom monitored conditions.",
+      "pos": [
+        8376,
+        8507
+      ]
+    },
+    {
+      "content": "The user reports co-exist with the system reports.",
+      "pos": [
+        8508,
+        8558
+      ]
+    },
+    {
+      "content": "Investing time on planning how to report and respond to health while designing the service makes large cloud services easier to debug, monitor, and subsequently operate.",
+      "pos": [
+        8560,
+        8729
+      ]
+    },
+    {
+      "content": "Health states",
+      "pos": [
+        8734,
+        8747
+      ]
+    },
+    {
+      "content": "Service Fabric uses three health states to describe whether an entity is healthy or not: Ok, Warning and Error.",
+      "pos": [
+        8748,
+        8859
+      ]
+    },
+    {
+      "content": "Any report sent to the Health Store must specify one of these states.",
+      "pos": [
+        8860,
+        8929
+      ]
+    },
+    {
+      "content": "The health evaluation result is one of these states.",
+      "pos": [
+        8930,
+        8982
+      ]
+    },
+    {
+      "content": "The possible health states are:",
+      "pos": [
+        8984,
+        9015
+      ]
+    },
+    {
+      "content": "Ok: The entity is healthy.",
+      "pos": [
+        9019,
+        9045
+      ]
+    },
+    {
+      "content": "There are no known issues reported on it or its children (when applicable).",
+      "pos": [
+        9046,
+        9121
+      ]
+    },
+    {
+      "content": "Warning: The entity experiences some issues but it is not yet unhealthy (i.e., unexpected delay that it is not causing any functional issue).",
+      "pos": [
+        9125,
+        9266
+      ]
+    },
+    {
+      "content": "In some cases, the warning condition may fix itself without any special intervention, and it is useful to provide visibility into what is going on.",
+      "pos": [
+        9267,
+        9414
+      ]
+    },
+    {
+      "content": "In other cases, the Warning condition may degrade into a severe problem without user intervention.",
+      "pos": [
+        9415,
+        9513
+      ]
+    },
+    {
+      "content": "Error: The entity is unhealthy.",
+      "pos": [
+        9517,
+        9548
+      ]
+    },
+    {
+      "content": "Action should be taken to fix the state of the entity, as it can't function properly.",
+      "pos": [
+        9549,
+        9634
+      ]
+    },
+    {
+      "content": "Unknown: The entity doesn't exist in the health store.",
+      "pos": [
+        9638,
+        9692
+      ]
+    },
+    {
+      "content": "This result can be obtained from distributed queries like get the Service Fabric nodes or applications.",
+      "pos": [
+        9693,
+        9796
+      ]
+    },
+    {
+      "content": "These queries merge results from multiple system components.",
+      "pos": [
+        9797,
+        9857
+      ]
+    },
+    {
+      "content": "If another system component has an entity that has not reached the health store yet or that has been cleaned up from health store, the merged query will populate health result with 'Unknown' health state.",
+      "pos": [
+        9858,
+        10062
+      ]
+    },
+    {
+      "content": "Health policies",
+      "pos": [
+        10067,
+        10082
+      ]
+    },
+    {
+      "content": "The Health Store applies health policies to determine whether an entity is healthy based on its reports and its children.",
+      "pos": [
+        10083,
+        10204
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> The health policies can be specified in the cluster manifest (for cluster and node health evaluation) or the application manifest (for application evaluation and any of its children).",
+      "pos": [
+        10208,
+        10404
+      ]
+    },
+    {
+      "content": "The health evaluation requests can also pass in custom health evaluation policies, which will only be used for that evaluation.",
+      "pos": [
+        10405,
+        10532
+      ]
+    },
+    {
+      "content": "By default, Service Fabric applies strict rules (everything must be healthy) for the parent-children hierarchical relationship; as long as one of the children has one unhealthy event, the parent is considered unhealthy.",
+      "pos": [
+        10534,
+        10753
+      ]
+    },
+    {
+      "content": "Cluster Health Policy",
+      "pos": [
+        10759,
+        10780
+      ]
+    },
+    {
+      "content": "The cluster health policy is used to evaluate cluster health state and node health states.",
+      "pos": [
+        10781,
+        10871
+      ]
+    },
+    {
+      "content": "It can be defined in the cluster manifest.",
+      "pos": [
+        10872,
+        10914
+      ]
+    },
+    {
+      "content": "If not present, it defaults to the default policy (0 tolerated failures).",
+      "pos": [
+        10915,
+        10988
+      ]
+    },
+    {
+      "content": "Contains:",
+      "pos": [
+        10989,
+        10998
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>ConsiderWarningAsError<ept id=\"p1\">**</ept>.",
+      "pos": [
+        11002,
+        11029
+      ]
+    },
+    {
+      "content": "Specifies whether to treat Warning health reports as errors during health evaluation.",
+      "pos": [
+        11030,
+        11115
+      ]
+    },
+    {
+      "content": "Default: False.",
+      "pos": [
+        11116,
+        11131
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>MaxPercentUnhealthyApplications<ept id=\"p1\">**</ept>.",
+      "pos": [
+        11135,
+        11171
+      ]
+    },
+    {
+      "content": "Maximum tolerated percentage of applications that can be unhealthy before the cluster is considered in Error.",
+      "pos": [
+        11172,
+        11281
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>MaxPercentUnhealthyNodes<ept id=\"p1\">**</ept>.",
+      "pos": [
+        11285,
+        11314
+      ]
+    },
+    {
+      "content": "Maximum tolerated percentage of nodes that can be unhealthy before the cluster is considered in Error.",
+      "pos": [
+        11315,
+        11417
+      ]
+    },
+    {
+      "content": "In large clusters, there will always be nodes down or out for repairs, so this percentage should be configured to tolerate that.",
+      "pos": [
+        11418,
+        11546
+      ]
+    },
+    {
+      "content": "The following is an excerpt from a cluster manifest:",
+      "pos": [
+        11548,
+        11600
+      ]
+    },
+    {
+      "content": "Application Health Policy",
+      "pos": [
+        11909,
+        11934
+      ]
+    },
+    {
+      "content": "The application health policy describes how evaluation of events and children states aggregation is done for application and its children.",
+      "pos": [
+        11935,
+        12073
+      ]
+    },
+    {
+      "content": "It can be defined in the application manifest, ApplicationManifest.xml in the application package.",
+      "pos": [
+        12074,
+        12172
+      ]
+    },
+    {
+      "content": "If not specified, Service Fabric assumes the entity to be unhealthy if is has a health report or a child at Warning or Error health state.",
+      "pos": [
+        12173,
+        12311
+      ]
+    },
+    {
+      "content": "The configurable policies are:",
+      "pos": [
+        12312,
+        12342
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>ConsiderWarningAsError<ept id=\"p1\">**</ept>.",
+      "pos": [
+        12346,
+        12373
+      ]
+    },
+    {
+      "content": "Specifies whether to treat Warning health reports as errors during health evaluation.",
+      "pos": [
+        12374,
+        12459
+      ]
+    },
+    {
+      "content": "Default: False.",
+      "pos": [
+        12460,
+        12475
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>MaxPercentUnhealthyDeployedApplications<ept id=\"p1\">**</ept>.",
+      "pos": [
+        12479,
+        12523
+      ]
+    },
+    {
+      "content": "Maximum tolerated percentage of deployed applications that can be unhealthy before the application is considered in Error.",
+      "pos": [
+        12524,
+        12646
+      ]
+    },
+    {
+      "content": "This is calculated by dividing the number of unhealthy deployed applications over the number of nodes that the applications is currently deployed on in the cluster.",
+      "pos": [
+        12647,
+        12811
+      ]
+    },
+    {
+      "content": "The computation rounds up to tolerate one failure on small number of nodes.",
+      "pos": [
+        12812,
+        12887
+      ]
+    },
+    {
+      "content": "Default: 0%.",
+      "pos": [
+        12888,
+        12900
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>DefaultServiceTypeHealthPolicy<ept id=\"p1\">**</ept>.",
+      "pos": [
+        12904,
+        12939
+      ]
+    },
+    {
+      "content": "Specifies the default service type health policy, which will replace the default health policy for all service types in the application.",
+      "pos": [
+        12940,
+        13076
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>ServiceTypeHealthPolicyMap<ept id=\"p1\">**</ept>.",
+      "pos": [
+        13080,
+        13111
+      ]
+    },
+    {
+      "content": "Map with service health policies per service type, which replace the default service type health policy for the specified service types.",
+      "pos": [
+        13112,
+        13248
+      ]
+    },
+    {
+      "content": "For example, in an application that contains a stateless Gateway service type and a stateful Engine service type, the health policy for the stateless and stateful service can be configured differently.",
+      "pos": [
+        13249,
+        13450
+      ]
+    },
+    {
+      "content": "Specifying policy per service types allows a more granular control of the health of the service.",
+      "pos": [
+        13451,
+        13547
+      ]
+    },
+    {
+      "content": "Service Type Health Policy",
+      "pos": [
+        13553,
+        13579
+      ]
+    },
+    {
+      "content": "The service type health policy specifies how to evaluate and aggregate children of service.",
+      "pos": [
+        13580,
+        13671
+      ]
+    },
+    {
+      "content": "Contains:",
+      "pos": [
+        13672,
+        13681
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>MaxPercentUnhealthyPartitionsPerService<ept id=\"p1\">**</ept>.",
+      "pos": [
+        13685,
+        13729
+      ]
+    },
+    {
+      "content": "Maximum tolerated percentage of unhealthy partitions before a service is considered unhealthy.",
+      "pos": [
+        13730,
+        13824
+      ]
+    },
+    {
+      "content": "Default: 0%.",
+      "pos": [
+        13825,
+        13837
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>MaxPercentUnhealthyReplicasPerPartition<ept id=\"p1\">**</ept>.",
+      "pos": [
+        13841,
+        13885
+      ]
+    },
+    {
+      "content": "Maximum tolerated percentage of unhealthy replicas before a partition is considered unhealthy.",
+      "pos": [
+        13886,
+        13980
+      ]
+    },
+    {
+      "content": "Default: 0%.",
+      "pos": [
+        13981,
+        13993
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>MaxPercentUnhealthyServices<ept id=\"p1\">**</ept>.",
+      "pos": [
+        13997,
+        14029
+      ]
+    },
+    {
+      "content": "Maximum tolerated percentage of unhealthy services before the application is considered unhealthy.",
+      "pos": [
+        14030,
+        14128
+      ]
+    },
+    {
+      "content": "Default: 0%",
+      "pos": [
+        14129,
+        14140
+      ]
+    },
+    {
+      "content": "The following is an excerpt from an application manifest:",
+      "pos": [
+        14142,
+        14199
+      ]
+    },
+    {
+      "content": "Health evaluation",
+      "pos": [
+        15140,
+        15157
+      ]
+    },
+    {
+      "content": "Users or automated services can evaluate health for any entity at any point in time.",
+      "pos": [
+        15158,
+        15242
+      ]
+    },
+    {
+      "content": "To evaluate an entity health, the Health Store aggregates all health reports on the entity and evaluates all its children (when applicable).",
+      "pos": [
+        15243,
+        15383
+      ]
+    },
+    {
+      "content": "The health aggregation algorithm uses health policies that specify how to evaluate health reports as well as how to aggregate children health states (when applicable).",
+      "pos": [
+        15384,
+        15551
+      ]
+    },
+    {
+      "content": "Health reports aggregation",
+      "pos": [
+        15557,
+        15583
+      ]
+    },
+    {
+      "content": "One entity can have multiple health reports sent by different reporters (system components or watchdogs) on different properties.",
+      "pos": [
+        15584,
+        15713
+      ]
+    },
+    {
+      "content": "The aggregation uses the associated health policies, in particular the ConsiderWarningAsError member of application or cluster health policy, which specifies how to evaluate warnings.",
+      "pos": [
+        15714,
+        15897
+      ]
+    },
+    {
+      "content": "The aggregated health state is triggered by the <bpt id=\"p1\">**</bpt>worst<ept id=\"p1\">**</ept> health reports on the entity.",
+      "pos": [
+        15899,
+        15986
+      ]
+    },
+    {
+      "content": "If there is at least one Error health report, the aggregated health state is Error.",
+      "pos": [
+        15987,
+        16070
+      ]
+    },
+    {
+      "content": "Health Report Aggregation with Error Report.",
+      "pos": [
+        16074,
+        16118
+      ]
+    },
+    {
+      "content": "Error health report triggers the health entity to be in Error state.",
+      "pos": [
+        16124,
+        16192
+      ]
+    },
+    {
+      "content": "If there are no Error reports, and one or more Warning, the aggregated health state is either Warning or Error, depending on the ConsiderWarningAsError policy flag.",
+      "pos": [
+        16286,
+        16450
+      ]
+    },
+    {
+      "content": "Health Report Aggregation with Warning Report and ConsiderWarningAsError false.",
+      "pos": [
+        16454,
+        16533
+      ]
+    },
+    {
+      "content": "Health Report Aggregation with Warning Report and ConsiderWarningAsError false (default).",
+      "pos": [
+        16539,
+        16628
+      ]
+    },
+    {
+      "content": "Children health aggregation",
+      "pos": [
+        16728,
+        16755
+      ]
+    },
+    {
+      "content": "The aggregated health state of an entity reflects the children health states (when applicable).",
+      "pos": [
+        16756,
+        16851
+      ]
+    },
+    {
+      "content": "The algorithm for aggregating children health states uses the health policies applicable based on the entity type.",
+      "pos": [
+        16852,
+        16966
+      ]
+    },
+    {
+      "content": "Children entities health aggregation.",
+      "pos": [
+        16970,
+        17007
+      ]
+    },
+    {
+      "content": "Children aggregation based on health policies.",
+      "pos": [
+        17013,
+        17059
+      ]
+    },
+    {
+      "content": "After evaluating all children, the Health Store aggregates the health states based on the configured max percent unhealthy taken from the policy based on the entity and child type.",
+      "pos": [
+        17150,
+        17330
+      ]
+    },
+    {
+      "content": "If all children have Ok states, the children aggregated health state is Ok.",
+      "pos": [
+        17334,
+        17409
+      ]
+    },
+    {
+      "content": "If children have Ok and Warning states, the children aggregated health state is Warning.",
+      "pos": [
+        17413,
+        17501
+      ]
+    },
+    {
+      "content": "If there are children with Error states that do not respect max allowed percentage of unhealthy children, the aggregated health state is error.",
+      "pos": [
+        17505,
+        17648
+      ]
+    },
+    {
+      "content": "If the children with Error states respect the max allowed percentage of unhealthy children, the aggregated health state is Warning.",
+      "pos": [
+        17652,
+        17783
+      ]
+    },
+    {
+      "content": "Health reporting",
+      "pos": [
+        17788,
+        17804
+      ]
+    },
+    {
+      "content": "System components and internal/external watchdogs can report against the Service Fabric entities.",
+      "pos": [
+        17805,
+        17902
+      ]
+    },
+    {
+      "content": "The <bpt id=\"p1\">*</bpt>reporters<ept id=\"p1\">*</ept> make a <bpt id=\"p2\">**</bpt>local<ept id=\"p2\">**</ept> determination of the health of the monitored entity based on some conditions they are monitoring.",
+      "pos": [
+        17903,
+        18033
+      ]
+    },
+    {
+      "content": "They don't need to look at any global state and aggregate data.",
+      "pos": [
+        18034,
+        18097
+      ]
+    },
+    {
+      "content": "This is not desired, as it would make the reporters complex organisms that need to look at many things in order to infer what information to send.",
+      "pos": [
+        18098,
+        18244
+      ]
+    },
+    {
+      "content": "To send health data to the health store, the reporters need to identify the affected entity and create a health report.",
+      "pos": [
+        18246,
+        18365
+      ]
+    },
+    {
+      "content": "The report can then be sent through API with FabricClient.HealthManager.ReportHealth, through Powershell or through REST.",
+      "pos": [
+        18366,
+        18487
+      ]
+    },
+    {
+      "content": "Health reports",
+      "pos": [
+        18493,
+        18507
+      ]
+    },
+    {
+      "content": "The health reports for each of the entities in the cluster contain the following information:",
+      "pos": [
+        18508,
+        18601
+      ]
+    },
+    {
+      "content": "SourceId.",
+      "pos": [
+        18605,
+        18614
+      ]
+    },
+    {
+      "content": "A string that uniquely identifies the reporter of the health event.",
+      "pos": [
+        18615,
+        18682
+      ]
+    },
+    {
+      "content": "Entity identifier.",
+      "pos": [
+        18686,
+        18704
+      ]
+    },
+    {
+      "content": "Identifies the entity on which the report is applied on.",
+      "pos": [
+        18705,
+        18761
+      ]
+    },
+    {
+      "content": "It differs based on the <bpt id=\"p1\">[</bpt>entity type<ept id=\"p1\">](service-fabric-health-introduction.md#health-entities-and-hierarchy)</ept>:",
+      "pos": [
+        18762,
+        18869
+      ]
+    },
+    {
+      "content": "Cluster: none",
+      "pos": [
+        18875,
+        18888
+      ]
+    },
+    {
+      "content": "Node: node name  (string).",
+      "pos": [
+        18894,
+        18920
+      ]
+    },
+    {
+      "content": "Application:  application name (URI).",
+      "pos": [
+        18926,
+        18963
+      ]
+    },
+    {
+      "content": "Represents the name of the application instance deployed in the cluster.",
+      "pos": [
+        18964,
+        19036
+      ]
+    },
+    {
+      "content": "Service: service name (URI).",
+      "pos": [
+        19042,
+        19070
+      ]
+    },
+    {
+      "content": "Represents the name of the service instance deployed in the cluster.",
+      "pos": [
+        19071,
+        19139
+      ]
+    },
+    {
+      "content": "Partition: partition id (GUID).",
+      "pos": [
+        19145,
+        19176
+      ]
+    },
+    {
+      "content": "Represents the partition unique identifier.",
+      "pos": [
+        19177,
+        19220
+      ]
+    },
+    {
+      "content": "Replica: the sateful service replica id or the stateless service instance id (Int64).",
+      "pos": [
+        19226,
+        19311
+      ]
+    },
+    {
+      "content": "DeployedApplication: application name (URI) and node name (string).",
+      "pos": [
+        19317,
+        19384
+      ]
+    },
+    {
+      "content": "DeployedServicePackage: application name (URI), node name (string) and service manifest name (string).",
+      "pos": [
+        19390,
+        19492
+      ]
+    },
+    {
+      "content": "Property.",
+      "pos": [
+        19496,
+        19505
+      ]
+    },
+    {
+      "content": "A <bpt id=\"p1\">*</bpt>string<ept id=\"p1\">*</ept> (not a fixed enumeration) that allows the reporter to categorize the health event for a specific property of the entity.",
+      "pos": [
+        19506,
+        19637
+      ]
+    },
+    {
+      "content": "For example, reporter A can report health on Node01 \"storage\" property and reporter B can report health on Node01 \"connectivity\" property.",
+      "pos": [
+        19638,
+        19776
+      ]
+    },
+    {
+      "content": "Both these reports are treated as separate health events in the health store for the Node01 entity.",
+      "pos": [
+        19777,
+        19876
+      ]
+    },
+    {
+      "content": "Description.",
+      "pos": [
+        19880,
+        19892
+      ]
+    },
+    {
+      "content": "A string that allows the reporter to provide detail information about the health event.",
+      "pos": [
+        19893,
+        19980
+      ]
+    },
+    {
+      "content": "SourceId, Property and HealthState should fully describe the report.",
+      "pos": [
+        19981,
+        20049
+      ]
+    },
+    {
+      "content": "The description adds human readable information about the report to make it easier for administrators and users to understand.",
+      "pos": [
+        20050,
+        20176
+      ]
+    },
+    {
+      "content": "HealthState.",
+      "pos": [
+        20180,
+        20192
+      ]
+    },
+    {
+      "content": "An <bpt id=\"p1\">[</bpt>enumeration<ept id=\"p1\">](service-fabric-health-introduction.md#health-states)</ept> that describes the health state of the report.",
+      "pos": [
+        20193,
+        20309
+      ]
+    },
+    {
+      "content": "The accepted values are OK, Warning, and Error.",
+      "pos": [
+        20310,
+        20357
+      ]
+    },
+    {
+      "content": "TimeToLive.",
+      "pos": [
+        20361,
+        20372
+      ]
+    },
+    {
+      "content": "A timespan that indicates how long the health report is valid.",
+      "pos": [
+        20373,
+        20435
+      ]
+    },
+    {
+      "content": "Coupled with RemoveWhenExpired, it lets the HealthStore know how to evaluate expired events.",
+      "pos": [
+        20436,
+        20528
+      ]
+    },
+    {
+      "content": "By default, the value is infinite and the report is valid forever.",
+      "pos": [
+        20529,
+        20595
+      ]
+    },
+    {
+      "content": "RemoveWhenExpired.",
+      "pos": [
+        20599,
+        20617
+      ]
+    },
+    {
+      "content": "A boolean.",
+      "pos": [
+        20618,
+        20628
+      ]
+    },
+    {
+      "content": "If set to true, the expired health report is automatically removed from health store and it doesn't impact entity health evaluation.",
+      "pos": [
+        20629,
+        20761
+      ]
+    },
+    {
+      "content": "This is used when the report is valid for a period of time only and the reporter doesn't need to explicitly clear it out.",
+      "pos": [
+        20762,
+        20883
+      ]
+    },
+    {
+      "content": "It's also used to delete reports from health store.",
+      "pos": [
+        20884,
+        20935
+      ]
+    },
+    {
+      "content": "Eg.",
+      "pos": [
+        20936,
+        20939
+      ]
+    },
+    {
+      "content": "a watchdog is changed and stops sending reports with previous source and property.",
+      "pos": [
+        20940,
+        21022
+      ]
+    },
+    {
+      "content": "So it can send a report with small TTL and RemoveWhenExpired to clear up any previous state from Health Store.",
+      "pos": [
+        21023,
+        21133
+      ]
+    },
+    {
+      "content": "If set to false, the expired report is treated as an error on health evaluation.",
+      "pos": [
+        21134,
+        21214
+      ]
+    },
+    {
+      "content": "It signals to the health store that the source should report periodically on this property; if it doesn't, then there must be something wrong with the watchdog.",
+      "pos": [
+        21215,
+        21375
+      ]
+    },
+    {
+      "content": "The watchdog health is captured by considering the event as error.",
+      "pos": [
+        21376,
+        21442
+      ]
+    },
+    {
+      "content": "SequenceNumber.",
+      "pos": [
+        21446,
+        21461
+      ]
+    },
+    {
+      "content": "A positive integer that needs to be ever increasing, as it represents the order of the reports.",
+      "pos": [
+        21462,
+        21557
+      ]
+    },
+    {
+      "content": "It is used by Health Store to detect stale reports, received late because of network delays or other issues.",
+      "pos": [
+        21558,
+        21666
+      ]
+    },
+    {
+      "content": "Reports are rejected if the sequence number is less or equal the latest applied one for the same entity, source and property.",
+      "pos": [
+        21667,
+        21792
+      ]
+    },
+    {
+      "content": "The sequence number is auto-generated if not specified.",
+      "pos": [
+        21793,
+        21848
+      ]
+    },
+    {
+      "content": "It is only necessary to put in the sequence number when reporting on state transitions: the source needs to remember what reports it sent and persist the information for recovery on failover.",
+      "pos": [
+        21849,
+        22040
+      ]
+    },
+    {
+      "content": "The SourceId, entity identifier, Property and HealthState are required for every health report.",
+      "pos": [
+        22042,
+        22137
+      ]
+    },
+    {
+      "content": "The SourceId string is not allowed to start with prefix \"System.\", which is reserved for System reports.",
+      "pos": [
+        22138,
+        22242
+      ]
+    },
+    {
+      "content": "For the same entity, there is only one report for the same source and property; if multiple reports are generated for the same source and property, they override each other, either on health client side (if they are batched) or on the health store side.",
+      "pos": [
+        22243,
+        22496
+      ]
+    },
+    {
+      "content": "The replacement is done based on sequence number: newer reports (with higher sequence number) replace older reports.",
+      "pos": [
+        22497,
+        22613
+      ]
+    },
+    {
+      "content": "Health events",
+      "pos": [
+        22619,
+        22632
+      ]
+    },
+    {
+      "content": "Internally, the Health Store keeps health events, which contain all the information from the reports plus additional metadata, such as time the report was given to the health client and time it was modified on the server side.",
+      "pos": [
+        22633,
+        22859
+      ]
+    },
+    {
+      "content": "The health events are returned by the <bpt id=\"p1\">[</bpt>health queries<ept id=\"p1\">](service-fabric-view-entities-aggregated-health.md#health-queries)</ept>.",
+      "pos": [
+        22860,
+        22981
+      ]
+    },
+    {
+      "content": "The added metadata contains:",
+      "pos": [
+        22983,
+        23011
+      ]
+    },
+    {
+      "content": "SourceUtcTimestamp: the time the report was given to the health client (Utc)",
+      "pos": [
+        23015,
+        23091
+      ]
+    },
+    {
+      "content": "LastModifiedUtcTimestamp: the time the report was last modified on the server side (Utc)",
+      "pos": [
+        23095,
+        23183
+      ]
+    },
+    {
+      "content": "IsExpired: flag to indicate whether the report was expired at the time the query was executed by the Health Store.",
+      "pos": [
+        23187,
+        23301
+      ]
+    },
+    {
+      "content": "An event can be expired only if RemoveWhenExpired is false; otherwise, the event is not returned by query, it is removed from store.",
+      "pos": [
+        23302,
+        23434
+      ]
+    },
+    {
+      "content": "LastOkTransitionAt, LastWarningTransitionAt, LastErrorTransitionAt: last time for Ok/Warning/Error transitions.",
+      "pos": [
+        23438,
+        23549
+      ]
+    },
+    {
+      "content": "These fields give the history of the transition of the health states for the event.",
+      "pos": [
+        23550,
+        23633
+      ]
+    },
+    {
+      "content": "The state transition fields can be used for smarter alerting or \"historical\" health event information.",
+      "pos": [
+        23635,
+        23737
+      ]
+    },
+    {
+      "content": "They enable scenarios like:",
+      "pos": [
+        23738,
+        23765
+      ]
+    },
+    {
+      "content": "Alert when a property has been at Warning/Error for more than X minutes.",
+      "pos": [
+        23769,
+        23841
+      ]
+    },
+    {
+      "content": "This avoids alerting on temporary conditions.",
+      "pos": [
+        23842,
+        23887
+      ]
+    },
+    {
+      "content": "Eg: alert if the health state has been Warning for more than 5 minutes can be translated into (HealthState == Warning and Now - LastWarningTransitionTime",
+      "pos": [
+        23888,
+        24041
+      ]
+    },
+    {
+      "content": "5 minutes).",
+      "pos": [
+        24044,
+        24055
+      ]
+    },
+    {
+      "content": "Alert only on conditions that changed in the last X minutes.",
+      "pos": [
+        24059,
+        24119
+      ]
+    },
+    {
+      "content": "If a report is at Error since before that, it can be ignored (because it was already signaled previously).",
+      "pos": [
+        24120,
+        24226
+      ]
+    },
+    {
+      "content": "If a property is toggling between Warning and Error, determine how long it has been unhealthy (i.e. not Ok).",
+      "pos": [
+        24230,
+        24338
+      ]
+    },
+    {
+      "content": "Eg: alert if the property wasn't healthy for more than 5 minutes can be translated into: (HealthState != Ok and Now - LastOkTransitionTime &gt; 5 minutes).",
+      "pos": [
+        24339,
+        24491
+      ]
+    },
+    {
+      "content": "Example: report and evaluate application health",
+      "pos": [
+        24496,
+        24543
+      ]
+    },
+    {
+      "content": "The following example sends a health report through Powershell on the application named fabric:/WordCount from the source MyWatchdog.",
+      "pos": [
+        24544,
+        24677
+      ]
+    },
+    {
+      "content": "The health report contains information about the health property Availability in an Error health state, with infinite TTL.",
+      "pos": [
+        24678,
+        24800
+      ]
+    },
+    {
+      "content": "Then it queries the application health, which will return aggregated health state error and the reported health event as part of the list of health events.",
+      "pos": [
+        24801,
+        24956
+      ]
+    },
+    {
+      "content": "Health model usage",
+      "pos": [
+        28426,
+        28444
+      ]
+    },
+    {
+      "content": "The health model allows the cloud services and the underlying Service Fabric platform to scale, because the monitoring and health determination is distributed among the different monitors within the cluster.",
+      "pos": [
+        28445,
+        28652
+      ]
+    },
+    {
+      "content": "Other systems have a single centralized service at the cluster level parsing all the <bpt id=\"p1\">*</bpt>potentially<ept id=\"p1\">*</ept> useful information emitted by services.",
+      "pos": [
+        28653,
+        28791
+      ]
+    },
+    {
+      "content": "This hinders their scalability and it doesn't allow them to collect very specific information to help identify issues and potential issues as close to the root cause as possible.",
+      "pos": [
+        28792,
+        28970
+      ]
+    },
+    {
+      "content": "The health model is heavily used for monitoring and diagnosis, for evaluating the cluster and application health, and for monitored upgrades.",
+      "pos": [
+        28972,
+        29113
+      ]
+    },
+    {
+      "content": "Other services use the health data to perform automatic repairs, to build cluster health history and to issue alerts on certain conditions.",
+      "pos": [
+        29114,
+        29253
+      ]
+    },
+    {
+      "content": "Next steps",
+      "pos": [
+        29258,
+        29268
+      ]
+    },
+    {
+      "content": "How to view Service Fabric health reports",
+      "pos": [
+        29270,
+        29311
+      ]
+    },
+    {
+      "content": "Using System health reports for troubleshooting",
+      "pos": [
+        29366,
+        29413
+      ]
+    },
+    {
+      "content": "Adding custom Service Fabric health reports",
+      "pos": [
+        29491,
+        29534
+      ]
+    },
+    {
+      "content": "How to Monitor and Diagnose Services locally",
+      "pos": [
+        29571,
+        29615
+      ]
+    },
+    {
+      "content": "Service Fabric Application Upgrade",
+      "pos": [
+        29695,
+        29729
+      ]
+    }
+  ],
+  "content": "<properties\n   pageTitle=\"Introduction to Service Fabric Health Monitoring\"\n   description=\"This article describes the Azure Service Fabric Health Monitoring model, including health entities, reporting and evaluation.\"\n   services=\"service-fabric\"\n   documentationCenter=\".net\"\n   authors=\"oanapl\"\n   manager=\"timlt\"\n   editor=\"\"/>\n\n<tags\n   ms.service=\"service-fabric\"\n   ms.devlang=\"dotnet\"\n   ms.topic=\"article\"\n   ms.tgt_pltfrm=\"na\"\n   ms.workload=\"na\"\n   ms.date=\"06/16/2015\"\n   ms.author=\"oanapl\"/>\n\n# Introduction to Service Fabric Health Monitoring\nService Fabric introduces a health model that provides rich, flexible and extensible health evaluation and reporting. This includes near real-time monitoring of the state of the cluster and of the services running in it. You  can easily obtain the health information and take actions to correct potential issues before they cascade and cause massive outages. The typical model is that services send reports based on their local view and the information is aggregated to provide an overall cluster level view.\n\nService Fabric components use this health model to report their current state. And you can use the same mechanism to report health from your applications. The quality and richness of health reporting specific to your custom conditions will determine how easily you will be able to detect and fix issues for your running application.\n\n> [AZURE.NOTE] We started the Health subsystem as a need for monitored upgrades. Service Fabric provides monitored upgrades that know how to upgrade a cluster or an application with no down time, minimum to no user intervention and with full cluster and application availability. To do this, the upgrade checks health based on configured upgrade policies and allows upgrade to proceed only when health respects desired thresholds. Otherwise, the upgrade is either automatically rolled back or paused to give administrators a chance to fix the issues. To learn more about application upgrades see [this article](service-fabric-application-upgrade.md).\n\n## Health Store\nThe Health Store keeps health related information about entities in the cluster for easy retrieval and evaluation. It is implemented as a Service Fabric persisted stateful service to ensure high availability and scalability. It is part of the fabric:/System application and is available as soon as the cluster is up and running.\n\n## Health entities and hierarchy\nThe health entities are organized in a logical hierarchy that captures interactions and dependencies between different entities. The entities and the hierarchy are automatically built by the Health Store based on reports received from the Service Fabric components.\n\nThe health entities mirror the Service Fabric entities (eg. health application entity matches an application instance deployed in the cluster, health node entity matches a Service Fabric cluster node). The health hierarchy captures the interactions of the system entities and is the basis for advanced health evaluation. You can learn about the key Service Fabric concepts at [Service Fabric technical overview](service-fabric-technical-overview.md). For more on application, go to [Service Fabric application model](service-fabric-application-model.md).\n\nThe health entities and hierarchy allow for effective reporting, debugging and monitoring of the cluster and applications. The health model allows an accurate, **granular** representation of the health of the many moving pieces in the cluster.\n\n![Health Entities.][1]\nThe health entities, organized in an hierarchy based on parent-children relationships.\n\n[1]: ./media/service-fabric-health-introduction/servicefabric-health-hierarchy.png\n\nThe health entities are:\n\n- **Cluster**. Represents the health of a Service Fabric cluster. Cluster health reports describe conditions that affect the entire cluster and can't be narrowed down to one or more unhealthy children. Example: split-brain of the cluster due to network partitioning or communication issues.\n\n- **Node**. Represents the health of a Service Fabric node. Node health reports describe conditions that affect the node functionality and typically affect all the deployed entities running on it. Example: node is out of disk space (or other machine wide property such as memory, connections, etc.) or node is down. The node entity is identified by the node name (string).\n\n- **Application**. Represents the health of an application instance running in the cluster. Application health reports describe conditions that affect the overall health of the application and can't be narrowed down to individual children (services or deployed applications). Example: the end to end interaction between different services in the application. The application entity is identified by the application name (Uri).\n\n- **Service**. Represents the health of a service running in the cluster. Service health reports describe conditions that affect the overall health of the service, and can't be narrowed down to a partition or a replica. Example: a service configuration (such as port or external file share) that is causing issues for all partitions. The service entity is identified by the service name (Uri).\n\n- **Partition**. Represents the health of a service partition. Partition health reports describe conditions that affect the entire replica set. Example: the number of replicas is below target count or partition is in quorum loss. The partition entity is identified by the partition id (Guid).\n\n- **Replica**. Represents the health of a stateful service replica or a stateless service instance. This is the smallest unit watchdogs and system components can report on for an application. Example: For stateful services, primary replica can report if it can't replicate operations to secondaries or replication is not proceeding at the expected pace. A stateless instance can report if it is running out of resources or has connectivity issues. The replica entity is identified by the partition id (Guid) and the replica or instance id (long).\n\n- **DeployedApplication**. Represents the health of an *application running on a node*. Deployed application health reports describe conditions specific to the application on the node that can't be narrowed down to service packages deployed on the same node. Example: the application package can't be downloaded on that node or there is an issue setting up application security principals on the node. The deployed application is identified by application name (Uri) and node name (string).\n\n- **DeployedServicePackage**. Represents the health of a service package of an application running in a node in the cluster. It describes conditions specific to a service package that do not affect the other service packages on the same node for the same application. Example: a code package in the service package cannot be started or configuration package cannot be read. The deployed service package is identified by application name (Uri), node name (string) and service manifest name (string).\n\nThe granularity of the health model makes it easy to detect and correct issues. For example, if a service is not responding, it is feasible to report that the application instance is unhealthy; however, it is not ideal because the issue might not be affecting all services within that application. The report should be applied on the unhealthy service, or, if more information points to a specific child partition, on that partition. The data will automatically surface through the hierarchy: an unhealthy partition will be made visible at service and application levels. This will help pinpoint and resolve the root cause of the issues faster.\n\nThe health hierarchy is composed of parent-children relationships. Cluster is composed of nodes and applications; applications have services and deployed applications; deployed applications have deployed service packages. Services have partitions, and each partition has one or more replicas. There is a special relationship between nodes and deployed entities. If a node is unhealthy as reported by its authority System component (Failover Manager Service), it will affect the deployed applications, service packages and replicas deployed on it.\n\nThe health hierarchy represents the latest state of the system based on the latest health reports, which is almost real-time information.\nInternal and external watchdogs can report on the same entities based on application specific logic or custom monitored conditions. The user reports co-exist with the system reports.\n\nInvesting time on planning how to report and respond to health while designing the service makes large cloud services easier to debug, monitor, and subsequently operate.\n\n## Health states\nService Fabric uses three health states to describe whether an entity is healthy or not: Ok, Warning and Error. Any report sent to the Health Store must specify one of these states. The health evaluation result is one of these states.\n\nThe possible health states are:\n\n- Ok: The entity is healthy. There are no known issues reported on it or its children (when applicable).\n\n- Warning: The entity experiences some issues but it is not yet unhealthy (i.e., unexpected delay that it is not causing any functional issue). In some cases, the warning condition may fix itself without any special intervention, and it is useful to provide visibility into what is going on. In other cases, the Warning condition may degrade into a severe problem without user intervention.\n\n- Error: The entity is unhealthy. Action should be taken to fix the state of the entity, as it can't function properly.\n\n- Unknown: The entity doesn't exist in the health store. This result can be obtained from distributed queries like get the Service Fabric nodes or applications. These queries merge results from multiple system components. If another system component has an entity that has not reached the health store yet or that has been cleaned up from health store, the merged query will populate health result with 'Unknown' health state.\n\n## Health policies\nThe Health Store applies health policies to determine whether an entity is healthy based on its reports and its children.\n\n> [AZURE.NOTE] The health policies can be specified in the cluster manifest (for cluster and node health evaluation) or the application manifest (for application evaluation and any of its children). The health evaluation requests can also pass in custom health evaluation policies, which will only be used for that evaluation.\n\nBy default, Service Fabric applies strict rules (everything must be healthy) for the parent-children hierarchical relationship; as long as one of the children has one unhealthy event, the parent is considered unhealthy.\n\n### Cluster Health Policy\nThe cluster health policy is used to evaluate cluster health state and node health states. It can be defined in the cluster manifest. If not present, it defaults to the default policy (0 tolerated failures).\nContains:\n\n- **ConsiderWarningAsError**. Specifies whether to treat Warning health reports as errors during health evaluation. Default: False.\n\n- **MaxPercentUnhealthyApplications**. Maximum tolerated percentage of applications that can be unhealthy before the cluster is considered in Error.\n\n- **MaxPercentUnhealthyNodes**. Maximum tolerated percentage of nodes that can be unhealthy before the cluster is considered in Error. In large clusters, there will always be nodes down or out for repairs, so this percentage should be configured to tolerate that.\n\nThe following is an excerpt from a cluster manifest:\n\n```xml\n<FabricSettings>\n  <Section Name=\"HealthManager/ClusterHealthPolicy\">\n    <Parameter Name=\"ConsiderWarningAsError\" Value=\"False\" />\n    <Parameter Name=\"MaxPercentUnhealthyApplications\" Value=\"0\" />\n    <Parameter Name=\"MaxPercentUnhealthyNodes\" Value=\"20\" />\n  </Section>\n</FabricSettings>\n```\n\n### Application Health Policy\nThe application health policy describes how evaluation of events and children states aggregation is done for application and its children. It can be defined in the application manifest, ApplicationManifest.xml in the application package. If not specified, Service Fabric assumes the entity to be unhealthy if is has a health report or a child at Warning or Error health state.\nThe configurable policies are:\n\n- **ConsiderWarningAsError**. Specifies whether to treat Warning health reports as errors during health evaluation. Default: False.\n\n- **MaxPercentUnhealthyDeployedApplications**. Maximum tolerated percentage of deployed applications that can be unhealthy before the application is considered in Error. This is calculated by dividing the number of unhealthy deployed applications over the number of nodes that the applications is currently deployed on in the cluster. The computation rounds up to tolerate one failure on small number of nodes. Default: 0%.\n\n- **DefaultServiceTypeHealthPolicy**. Specifies the default service type health policy, which will replace the default health policy for all service types in the application.\n\n- **ServiceTypeHealthPolicyMap**. Map with service health policies per service type, which replace the default service type health policy for the specified service types. For example, in an application that contains a stateless Gateway service type and a stateful Engine service type, the health policy for the stateless and stateful service can be configured differently. Specifying policy per service types allows a more granular control of the health of the service.\n\n### Service Type Health Policy\nThe service type health policy specifies how to evaluate and aggregate children of service. Contains:\n\n- **MaxPercentUnhealthyPartitionsPerService**. Maximum tolerated percentage of unhealthy partitions before a service is considered unhealthy. Default: 0%.\n\n- **MaxPercentUnhealthyReplicasPerPartition**. Maximum tolerated percentage of unhealthy replicas before a partition is considered unhealthy. Default: 0%.\n\n- **MaxPercentUnhealthyServices**. Maximum tolerated percentage of unhealthy services before the application is considered unhealthy. Default: 0%\n\nThe following is an excerpt from an application manifest:\n\n```xml\n    <Policies>\n        <HealthPolicy ConsiderWarningAsError=\"true\" MaxPercentUnhealthyDeployedApplications=\"20\">\n            <DefaultServiceTypeHealthPolicy\n                   MaxPercentUnhealthyServices=\"0\"\n                   MaxPercentUnhealthyPartitionsPerService=\"10\"\n                   MaxPercentUnhealthyReplicasPerPartition=\"0\"/>\n            <ServiceTypeHealthPolicy ServiceTypeName=\"FrontEndServiceType\"\n                   MaxPercentUnhealthyServices=\"0\"\n                   MaxPercentUnhealthyPartitionsPerService=\"20\"\n                   MaxPercentUnhealthyReplicasPerPartition=\"0\"/>\n            <ServiceTypeHealthPolicy ServiceTypeName=\"BackEndServiceType\"\n                   MaxPercentUnhealthyServices=\"20\"\n                   MaxPercentUnhealthyPartitionsPerService=\"0\"\n                   MaxPercentUnhealthyReplicasPerPartition=\"0\">\n            </ServiceTypeHealthPolicy>\n        </HealthPolicy>\n    </Policies>\n```\n\n## Health evaluation\nUsers or automated services can evaluate health for any entity at any point in time. To evaluate an entity health, the Health Store aggregates all health reports on the entity and evaluates all its children (when applicable). The health aggregation algorithm uses health policies that specify how to evaluate health reports as well as how to aggregate children health states (when applicable).\n\n### Health reports aggregation\nOne entity can have multiple health reports sent by different reporters (system components or watchdogs) on different properties. The aggregation uses the associated health policies, in particular the ConsiderWarningAsError member of application or cluster health policy, which specifies how to evaluate warnings.\n\nThe aggregated health state is triggered by the **worst** health reports on the entity. If there is at least one Error health report, the aggregated health state is Error.\n\n![Health Report Aggregation with Error Report.][2]\n\nError health report triggers the health entity to be in Error state.\n\n[2]: ./media/service-fabric-health-introduction/servicefabric-health-report-eval-error.png\n\nIf there are no Error reports, and one or more Warning, the aggregated health state is either Warning or Error, depending on the ConsiderWarningAsError policy flag.\n\n![Health Report Aggregation with Warning Report and ConsiderWarningAsError false.][3]\n\nHealth Report Aggregation with Warning Report and ConsiderWarningAsError false (default).\n\n[3]: ./media/service-fabric-health-introduction/servicefabric-health-report-eval-warning.png\n\n### Children health aggregation\nThe aggregated health state of an entity reflects the children health states (when applicable). The algorithm for aggregating children health states uses the health policies applicable based on the entity type.\n\n![Children entities health aggregation.][4]\n\nChildren aggregation based on health policies.\n\n[4]: ./media/service-fabric-health-introduction/servicefabric-health-hierarchy-eval.png\n\nAfter evaluating all children, the Health Store aggregates the health states based on the configured max percent unhealthy taken from the policy based on the entity and child type.\n\n- If all children have Ok states, the children aggregated health state is Ok.\n\n- If children have Ok and Warning states, the children aggregated health state is Warning.\n\n- If there are children with Error states that do not respect max allowed percentage of unhealthy children, the aggregated health state is error.\n\n- If the children with Error states respect the max allowed percentage of unhealthy children, the aggregated health state is Warning.\n\n## Health reporting\nSystem components and internal/external watchdogs can report against the Service Fabric entities. The *reporters* make a **local** determination of the health of the monitored entity based on some conditions they are monitoring. They don't need to look at any global state and aggregate data. This is not desired, as it would make the reporters complex organisms that need to look at many things in order to infer what information to send.\n\nTo send health data to the health store, the reporters need to identify the affected entity and create a health report. The report can then be sent through API with FabricClient.HealthManager.ReportHealth, through Powershell or through REST.\n\n### Health reports\nThe health reports for each of the entities in the cluster contain the following information:\n\n- SourceId. A string that uniquely identifies the reporter of the health event.\n\n- Entity identifier. Identifies the entity on which the report is applied on. It differs based on the [entity type](service-fabric-health-introduction.md#health-entities-and-hierarchy):\n\n  - Cluster: none\n\n  - Node: node name  (string).\n\n  - Application:  application name (URI). Represents the name of the application instance deployed in the cluster.\n\n  - Service: service name (URI). Represents the name of the service instance deployed in the cluster.\n\n  - Partition: partition id (GUID). Represents the partition unique identifier.\n\n  - Replica: the sateful service replica id or the stateless service instance id (Int64).\n\n  - DeployedApplication: application name (URI) and node name (string).\n\n  - DeployedServicePackage: application name (URI), node name (string) and service manifest name (string).\n\n- Property. A *string* (not a fixed enumeration) that allows the reporter to categorize the health event for a specific property of the entity. For example, reporter A can report health on Node01 \"storage\" property and reporter B can report health on Node01 \"connectivity\" property. Both these reports are treated as separate health events in the health store for the Node01 entity.\n\n- Description. A string that allows the reporter to provide detail information about the health event. SourceId, Property and HealthState should fully describe the report. The description adds human readable information about the report to make it easier for administrators and users to understand.\n\n- HealthState. An [enumeration](service-fabric-health-introduction.md#health-states) that describes the health state of the report. The accepted values are OK, Warning, and Error.\n\n- TimeToLive. A timespan that indicates how long the health report is valid. Coupled with RemoveWhenExpired, it lets the HealthStore know how to evaluate expired events. By default, the value is infinite and the report is valid forever.\n\n- RemoveWhenExpired. A boolean. If set to true, the expired health report is automatically removed from health store and it doesn't impact entity health evaluation. This is used when the report is valid for a period of time only and the reporter doesn't need to explicitly clear it out. It's also used to delete reports from health store. Eg. a watchdog is changed and stops sending reports with previous source and property. So it can send a report with small TTL and RemoveWhenExpired to clear up any previous state from Health Store. If set to false, the expired report is treated as an error on health evaluation. It signals to the health store that the source should report periodically on this property; if it doesn't, then there must be something wrong with the watchdog. The watchdog health is captured by considering the event as error.\n\n- SequenceNumber. A positive integer that needs to be ever increasing, as it represents the order of the reports. It is used by Health Store to detect stale reports, received late because of network delays or other issues. Reports are rejected if the sequence number is less or equal the latest applied one for the same entity, source and property. The sequence number is auto-generated if not specified. It is only necessary to put in the sequence number when reporting on state transitions: the source needs to remember what reports it sent and persist the information for recovery on failover.\n\nThe SourceId, entity identifier, Property and HealthState are required for every health report. The SourceId string is not allowed to start with prefix \"System.\", which is reserved for System reports. For the same entity, there is only one report for the same source and property; if multiple reports are generated for the same source and property, they override each other, either on health client side (if they are batched) or on the health store side. The replacement is done based on sequence number: newer reports (with higher sequence number) replace older reports.\n\n### Health events\nInternally, the Health Store keeps health events, which contain all the information from the reports plus additional metadata, such as time the report was given to the health client and time it was modified on the server side. The health events are returned by the [health queries](service-fabric-view-entities-aggregated-health.md#health-queries).\n\nThe added metadata contains:\n\n- SourceUtcTimestamp: the time the report was given to the health client (Utc)\n\n- LastModifiedUtcTimestamp: the time the report was last modified on the server side (Utc)\n\n- IsExpired: flag to indicate whether the report was expired at the time the query was executed by the Health Store. An event can be expired only if RemoveWhenExpired is false; otherwise, the event is not returned by query, it is removed from store.\n\n- LastOkTransitionAt, LastWarningTransitionAt, LastErrorTransitionAt: last time for Ok/Warning/Error transitions. These fields give the history of the transition of the health states for the event.\n\nThe state transition fields can be used for smarter alerting or \"historical\" health event information. They enable scenarios like:\n\n- Alert when a property has been at Warning/Error for more than X minutes. This avoids alerting on temporary conditions. Eg: alert if the health state has been Warning for more than 5 minutes can be translated into (HealthState == Warning and Now - LastWarningTransitionTime\n> 5 minutes).\n\n- Alert only on conditions that changed in the last X minutes. If a report is at Error since before that, it can be ignored (because it was already signaled previously).\n\n- If a property is toggling between Warning and Error, determine how long it has been unhealthy (i.e. not Ok). Eg: alert if the property wasn't healthy for more than 5 minutes can be translated into: (HealthState != Ok and Now - LastOkTransitionTime > 5 minutes).\n\n## Example: report and evaluate application health\nThe following example sends a health report through Powershell on the application named fabric:/WordCount from the source MyWatchdog. The health report contains information about the health property Availability in an Error health state, with infinite TTL. Then it queries the application health, which will return aggregated health state error and the reported health event as part of the list of health events.\n\n```powershell\nPS C:\\> Send-ServiceFabricApplicationHealthReport –ApplicationName fabric:/WordCount –SourceId \"MyWatchdog\" –HealthProperty \"Availability\" –HealthState Error\n\nPS C:\\> Get-ServiceFabricApplicationHealth fabric:/WordCount\n\nApplicationName                 : fabric:/WordCount\nAggregatedHealthState           : Error\nUnhealthyEvaluations            :\n                                  Error event: SourceId='MyWatchdog', Property='Availability'.\n\nServiceHealthStates             :\n                                  ServiceName           : fabric:/WordCount/WordCount.Service\n                                  AggregatedHealthState : Warning\n\n                                  ServiceName           : fabric:/WordCount/WordCount.WebService\n                                  AggregatedHealthState : Ok\n\nDeployedApplicationHealthStates :\n                                  ApplicationName       : fabric:/WordCount\n                                  NodeName              : Node.4\n                                  AggregatedHealthState : Ok\n\n                                  ApplicationName       : fabric:/WordCount\n                                  NodeName              : Node.1\n                                  AggregatedHealthState : Ok\n\n                                  ApplicationName       : fabric:/WordCount\n                                  NodeName              : Node.5\n                                  AggregatedHealthState : Ok\n\n                                  ApplicationName       : fabric:/WordCount\n                                  NodeName              : Node.2\n                                  AggregatedHealthState : Ok\n\n                                  ApplicationName       : fabric:/WordCount\n                                  NodeName              : Node.3\n                                  AggregatedHealthState : Ok\n\nHealthEvents                    :\n                                  SourceId              : System.CM\n                                  Property              : State\n                                  HealthState           : Ok\n                                  SequenceNumber        : 5102\n                                  SentAt                : 4/15/2015 5:29:15 PM\n                                  ReceivedAt            : 4/15/2015 5:29:15 PM\n                                  TTL                   : Infinite\n                                  Description           : Application has been created.\n                                  RemoveWhenExpired     : False\n                                  IsExpired             : False\n                                  Transitions           : ->Ok = 4/15/2015 5:29:15 PM\n\n                                  SourceId              : MyWatchdog\n                                  Property              : Availability\n                                  HealthState           : Error\n                                  SequenceNumber        : 130736794527105907\n                                  SentAt                : 4/16/2015 5:37:32 PM\n                                  ReceivedAt            : 4/16/2015 5:37:32 PM\n                                  TTL                   : Infinite\n                                  Description           :\n                                  RemoveWhenExpired     : False\n                                  IsExpired             : False\n                                  Transitions           : ->Error = 4/16/2015 5:37:32 PM\n\n```\n\n## Health model usage\nThe health model allows the cloud services and the underlying Service Fabric platform to scale, because the monitoring and health determination is distributed among the different monitors within the cluster.\nOther systems have a single centralized service at the cluster level parsing all the *potentially* useful information emitted by services. This hinders their scalability and it doesn't allow them to collect very specific information to help identify issues and potential issues as close to the root cause as possible.\n\nThe health model is heavily used for monitoring and diagnosis, for evaluating the cluster and application health, and for monitored upgrades. Other services use the health data to perform automatic repairs, to build cluster health history and to issue alerts on certain conditions.\n\n## Next steps\n[How to view Service Fabric health reports](service-fabric-view-entities-aggregated-health.md)\n\n[Using System health reports for troubleshooting](service-fabric-understand-and-troubleshoot-with-system-health-reports.md)\n\n[Adding custom Service Fabric health reports](service-fabric-report-health.md)\n\n[How to Monitor and Diagnose Services locally](service-fabric-diagnostics-how-to-monitor-and-diagnose-services-locally.md)\n\n[Service Fabric Application Upgrade](service-fabric-application-upgrade.md)\n "
+}

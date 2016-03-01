@@ -1,0 +1,824 @@
+{
+  "nodes": [
+    {
+      "content": "Walkthrough: export telemetry to SQL Database from Application Insights",
+      "pos": [
+        28,
+        99
+      ]
+    },
+    {
+      "content": "Code your own analysis of telemetry in Application Insights by using the continuous export feature.",
+      "pos": [
+        119,
+        218
+      ]
+    },
+    {
+      "content": "Walkthrough: Export to SQL from Application Insights using Stream Analytics",
+      "pos": [
+        527,
+        602
+      ]
+    },
+    {
+      "pos": [
+        604,
+        852
+      ],
+      "content": "This article shows how to move your telemetry data from [Visual Studio Application Insights][start] into an Azure SQL database by using [Continuous Export][export] and <bpt id=\"p1\">[</bpt>Azure Stream Analytics<ept id=\"p1\">](http://azure.microsoft.com/services/stream-analytics/)</ept>."
+    },
+    {
+      "content": "Continuous export moves your telemetry data into Azure Storage in JSON format.",
+      "pos": [
+        855,
+        933
+      ]
+    },
+    {
+      "content": "We'll parse the JSON objects using Azure Stream Analytics and create rows in a database table.",
+      "pos": [
+        934,
+        1028
+      ]
+    },
+    {
+      "content": "(More generally, Continuous Export is the way to do your own analysis of the telemetry your apps send to Application Insights.",
+      "pos": [
+        1030,
+        1156
+      ]
+    },
+    {
+      "content": "You could adapt this code sample to do other things with the exported telemetry, such as aggregation of data and publishing the data to the PowerBI visualization suite.)",
+      "pos": [
+        1157,
+        1326
+      ]
+    },
+    {
+      "content": "We'll start with the assumption that you already have the app you want to monitor.",
+      "pos": [
+        1328,
+        1410
+      ]
+    },
+    {
+      "content": "In this example, we will be using the page view data, but the same pattern can easily be extended to other data types such as custom events and exceptions.",
+      "pos": [
+        1413,
+        1568
+      ]
+    },
+    {
+      "content": "Add Application Insights SDK",
+      "pos": [
+        1575,
+        1603
+      ]
+    },
+    {
+      "content": "To monitor your application, you [add an Application Insights SDK][start] to your application.",
+      "pos": [
+        1605,
+        1699
+      ]
+    },
+    {
+      "content": "There are different SDKs and helper tools for different platforms, IDEs and languages.",
+      "pos": [
+        1700,
+        1786
+      ]
+    },
+    {
+      "content": "You can monitor web pages, Java or ASP.NET web servers, and mobile devices of several kinds.",
+      "pos": [
+        1787,
+        1879
+      ]
+    },
+    {
+      "content": "All the SDKs send telemetry to the [Application Insights portal][portal], where you can use our powerful analysis and diagnostic tools, and export the data to storage.",
+      "pos": [
+        1880,
+        2047
+      ]
+    },
+    {
+      "content": "To get started:",
+      "pos": [
+        2049,
+        2064
+      ]
+    },
+    {
+      "pos": [
+        2069,
+        2142
+      ],
+      "content": "Get an <bpt id=\"p1\">[</bpt>account in Microsoft Azure<ept id=\"p1\">](http://azure.microsoft.com/pricing/)</ept>."
+    },
+    {
+      "content": "In the [Azure portal][portal], add a new Application Insights resource for your app:",
+      "pos": [
+        2146,
+        2230
+      ]
+    },
+    {
+      "content": "Choose New, Developer Services, Application Insights, and choose the type of application",
+      "pos": [
+        2238,
+        2326
+      ]
+    },
+    {
+      "content": "Open Quick Start to find how to set up the SDK for your app type.",
+      "pos": [
+        2468,
+        2533
+      ]
+    },
+    {
+      "content": "Choose Quick Start and follow instructions",
+      "pos": [
+        2541,
+        2583
+      ]
+    },
+    {
+      "content": "If your app type isn't listed, take a look at the [Getting Started][start] page.",
+      "pos": [
+        2666,
+        2746
+      ]
+    },
+    {
+      "content": "In this example, we're monitoring a web app, so we can use the Azure tools in Visual Studio to install the SDK.",
+      "pos": [
+        2751,
+        2862
+      ]
+    },
+    {
+      "content": "Tell it the name of your Application Insights resource:",
+      "pos": [
+        2863,
+        2918
+      ]
+    },
+    {
+      "content": "In Visual Studio Solution Explorer, right-click your project and choose Add Application Insights.",
+      "pos": [
+        2926,
+        3023
+      ]
+    },
+    {
+      "content": "At Send telemetry to, choose to create a new resource, or use an existing one.",
+      "pos": [
+        3024,
+        3102
+      ]
+    },
+    {
+      "content": "Publish your app, and watch telemetry data appearing in your Application Insights resource.",
+      "pos": [
+        3200,
+        3291
+      ]
+    },
+    {
+      "content": "Create storage in Azure",
+      "pos": [
+        3297,
+        3320
+      ]
+    },
+    {
+      "content": "Continuous export always outputs data to an Azure Storage account, so you need to create the storage first.",
+      "pos": [
+        3322,
+        3429
+      ]
+    },
+    {
+      "content": "Create a storage account in your subscription in the [Azure portal][portal].",
+      "pos": [
+        3434,
+        3510
+      ]
+    },
+    {
+      "content": "In Azure portal, choose New, Data, Storage",
+      "pos": [
+        3518,
+        3560
+      ]
+    },
+    {
+      "content": "Create a container",
+      "pos": [
+        3642,
+        3660
+      ]
+    },
+    {
+      "content": "In the new storage, select Containers and then Add",
+      "pos": [
+        3668,
+        3718
+      ]
+    },
+    {
+      "content": "Copy the storage access key",
+      "pos": [
+        3804,
+        3831
+      ]
+    },
+    {
+      "content": "You'll need it soon to set up the input to the stream analytics service.",
+      "pos": [
+        3837,
+        3909
+      ]
+    },
+    {
+      "content": "In the storage, open Settings, Keys, and take a copy of the Primary Access Key",
+      "pos": [
+        3917,
+        3995
+      ]
+    },
+    {
+      "content": "Start continuous export to Azure storage",
+      "pos": [
+        4082,
+        4122
+      ]
+    },
+    {
+      "content": "In the Azure portal, browse to the Application Insights resource you created for your application.",
+      "pos": [
+        4127,
+        4225
+      ]
+    },
+    {
+      "content": "Choose Browse, Application Insights, your application",
+      "pos": [
+        4233,
+        4286
+      ]
+    },
+    {
+      "content": "Create a continuous export.",
+      "pos": [
+        4369,
+        4396
+      ]
+    },
+    {
+      "content": "Choose Settings, Continuous Export, Add",
+      "pos": [
+        4404,
+        4443
+      ]
+    },
+    {
+      "content": "Let some data accumulate.",
+      "pos": [
+        4839,
+        4864
+      ]
+    },
+    {
+      "content": "Sit back and let people use your application for a while.",
+      "pos": [
+        4865,
+        4922
+      ]
+    },
+    {
+      "content": "Telemetry will come in and you'll see statistical charts in <bpt id=\"p1\">[</bpt>metric explorer<ept id=\"p1\">](app-insights-metrics-explorer.md)</ept> and individual events in <bpt id=\"p2\">[</bpt>diagnostic search<ept id=\"p2\">](app-insights-diagnostic-search.md)</ept>.",
+      "pos": [
+        4923,
+        5115
+      ]
+    },
+    {
+      "content": "And also, the data will export to your storage.",
+      "pos": [
+        5122,
+        5169
+      ]
+    },
+    {
+      "content": "Inspect the exported data.",
+      "pos": [
+        5175,
+        5201
+      ]
+    },
+    {
+      "content": "In Visual Studio, choose <bpt id=\"p1\">**</bpt>View / Cloud Explorer<ept id=\"p1\">**</ept>, and open Azure / Storage.",
+      "pos": [
+        5202,
+        5279
+      ]
+    },
+    {
+      "content": "(If you don't have this menu option, you need to install the Azure SDK: Open the New Project dialog and open Visual C# / Cloud / Get Microsoft Azure SDK for .NET.)",
+      "pos": [
+        5280,
+        5443
+      ]
+    },
+    {
+      "content": "In Visual Studio, open Server Browser, Azure, Storage",
+      "pos": [
+        5451,
+        5504
+      ]
+    },
+    {
+      "content": "Make a note of the common part of the path name, which is derived from the application name and instrumentation key.",
+      "pos": [
+        5590,
+        5706
+      ]
+    },
+    {
+      "content": "The events are written to blob files in JSON format.",
+      "pos": [
+        5709,
+        5761
+      ]
+    },
+    {
+      "content": "Each file may contain one or more events.",
+      "pos": [
+        5762,
+        5803
+      ]
+    },
+    {
+      "content": "So we'd like to read the event data and filter out the fields we want.",
+      "pos": [
+        5804,
+        5874
+      ]
+    },
+    {
+      "content": "There are all kinds of things we could do with the data, but our plan today is to use Stream Analytics to move the data to a SQL database.",
+      "pos": [
+        5875,
+        6013
+      ]
+    },
+    {
+      "content": "That will make it easy to run lots of interesting queries.",
+      "pos": [
+        6014,
+        6072
+      ]
+    },
+    {
+      "content": "Create an Azure SQL Database",
+      "pos": [
+        6077,
+        6105
+      ]
+    },
+    {
+      "content": "Once again starting from your subscription in [Azure portal][portal], create the database (and a new server, unless you've already got one) to which you'll write the data.",
+      "pos": [
+        6107,
+        6278
+      ]
+    },
+    {
+      "content": "New, Data, SQL",
+      "pos": [
+        6282,
+        6296
+      ]
+    },
+    {
+      "content": "Make sure that the database server allows access to Azure services:",
+      "pos": [
+        6374,
+        6441
+      ]
+    },
+    {
+      "content": "Browse, Servers, your server, Settings, Firewall, Allow Access to Azure",
+      "pos": [
+        6446,
+        6517
+      ]
+    },
+    {
+      "content": "Create a table in Azure SQL DB",
+      "pos": [
+        6603,
+        6633
+      ]
+    },
+    {
+      "content": "Connect to the database created in the previous section with your preferred management tool.",
+      "pos": [
+        6635,
+        6727
+      ]
+    },
+    {
+      "content": "In this walkthrough, we will be using <bpt id=\"p1\">[</bpt>SQL Server Management Tools<ept id=\"p1\">](https://msdn.microsoft.com/ms174173.aspx)</ept> (SSMS).",
+      "pos": [
+        6728,
+        6845
+      ]
+    },
+    {
+      "content": "Create a new query, and execute the following T-SQL:",
+      "pos": [
+        6931,
+        6983
+      ]
+    },
+    {
+      "content": "In this sample, we are using data from page views.",
+      "pos": [
+        8328,
+        8378
+      ]
+    },
+    {
+      "content": "To see the other data available, inspect your JSON output, and see the <bpt id=\"p1\">[</bpt>export data model<ept id=\"p1\">](app-insights-export-data-model.md)</ept>.",
+      "pos": [
+        8379,
+        8505
+      ]
+    },
+    {
+      "content": "Create an Azure Stream Analytics instance",
+      "pos": [
+        8510,
+        8551
+      ]
+    },
+    {
+      "pos": [
+        8553,
+        8701
+      ],
+      "content": "From the <bpt id=\"p1\">[</bpt>Classic Azure Portal<ept id=\"p1\">](https://manage.windowsazure.com/)</ept>, select the Azure Stream Analytics service, and create a new Stream Analytics job:"
+    },
+    {
+      "content": "When the new job is created, expand its details:",
+      "pos": [
+        8907,
+        8955
+      ]
+    },
+    {
+      "content": "Set blob location",
+      "pos": [
+        9043,
+        9060
+      ]
+    },
+    {
+      "content": "Set it to take input from your Continuous Export blob:",
+      "pos": [
+        9062,
+        9116
+      ]
+    },
+    {
+      "content": "Now you'll need the Primary Access Key from your Storage Account, which you noted earlier.",
+      "pos": [
+        9203,
+        9293
+      ]
+    },
+    {
+      "content": "Set this as the Storage Account Key.",
+      "pos": [
+        9294,
+        9330
+      ]
+    },
+    {
+      "content": "Set path prefix pattern",
+      "pos": [
+        9422,
+        9445
+      ]
+    },
+    {
+      "content": "Be sure to set the Date Format to YYYY-MM-DD (with dashes).",
+      "pos": [
+        9533,
+        9592
+      ]
+    },
+    {
+      "content": "The Path Prefix Pattern specifies how Stream Analytics finds the input files in the storage.",
+      "pos": [
+        9594,
+        9686
+      ]
+    },
+    {
+      "content": "You need to set it to correspond to how Continuous Export stores the data.",
+      "pos": [
+        9687,
+        9761
+      ]
+    },
+    {
+      "content": "Set it like this:",
+      "pos": [
+        9762,
+        9779
+      ]
+    },
+    {
+      "content": "In this example:",
+      "pos": [
+        9864,
+        9880
+      ]
+    },
+    {
+      "pos": [
+        9884,
+        9975
+      ],
+      "content": "<ph id=\"ph1\">`webapplication27`</ph> is the name of the Application Insights resource, <bpt id=\"p1\">**</bpt>all in lower case<ept id=\"p1\">**</ept>."
+    },
+    {
+      "pos": [
+        9979,
+        10077
+      ],
+      "content": "<ph id=\"ph1\">`1234...`</ph> is the instrumentation key of the Application Insights resource <bpt id=\"p1\">**</bpt>with dashes removed<ept id=\"p1\">**</ept>."
+    },
+    {
+      "content": "<ph id=\"ph1\">`PageViews`</ph> is the type of data we want to analyze.",
+      "pos": [
+        10081,
+        10132
+      ]
+    },
+    {
+      "content": "The available types depend on the filter you set in Continuous Export.",
+      "pos": [
+        10133,
+        10203
+      ]
+    },
+    {
+      "content": "Examine the exported data to see the other available types, and see the <bpt id=\"p1\">[</bpt>export data model<ept id=\"p1\">](app-insights-export-data-model.md)</ept>.",
+      "pos": [
+        10204,
+        10331
+      ]
+    },
+    {
+      "pos": [
+        10334,
+        10382
+      ],
+      "content": "<ph id=\"ph1\">`/{date}/{time}`</ph> is a pattern written literally."
+    },
+    {
+      "content": "To get the name and iKey of your Application Insights resource, open Essentials on its overview page, or open Settings.",
+      "pos": [
+        10384,
+        10503
+      ]
+    },
+    {
+      "content": "Finish initial setup",
+      "pos": [
+        10510,
+        10530
+      ]
+    },
+    {
+      "content": "Confirm the serialization format:",
+      "pos": [
+        10532,
+        10565
+      ]
+    },
+    {
+      "content": "Confirm and close wizard",
+      "pos": [
+        10569,
+        10593
+      ]
+    },
+    {
+      "content": "Close the wizard and wait for the setup to complete.",
+      "pos": [
+        10676,
+        10728
+      ]
+    },
+    {
+      "content": "Set query",
+      "pos": [
+        10733,
+        10742
+      ]
+    },
+    {
+      "content": "Open the query section:",
+      "pos": [
+        10744,
+        10767
+      ]
+    },
+    {
+      "content": "In stream analytics, select Query",
+      "pos": [
+        10771,
+        10804
+      ]
+    },
+    {
+      "content": "Replace the default query with:",
+      "pos": [
+        10882,
+        10913
+      ]
+    },
+    {
+      "content": "Notice that the first few properties are specific to page view data.",
+      "pos": [
+        12230,
+        12298
+      ]
+    },
+    {
+      "content": "Exports of other telemetry types will have different properties.",
+      "pos": [
+        12299,
+        12363
+      ]
+    },
+    {
+      "content": "See the <bpt id=\"p1\">[</bpt>detailed data model reference for the property types and values.<ept id=\"p1\">](app-insights-export-data-model.md)</ept>",
+      "pos": [
+        12364,
+        12473
+      ]
+    },
+    {
+      "content": "Set up output to database",
+      "pos": [
+        12478,
+        12503
+      ]
+    },
+    {
+      "content": "Select SQL as the output.",
+      "pos": [
+        12505,
+        12530
+      ]
+    },
+    {
+      "content": "In stream analytics, select Outputs",
+      "pos": [
+        12534,
+        12569
+      ]
+    },
+    {
+      "content": "Specify the SQL database.",
+      "pos": [
+        12647,
+        12672
+      ]
+    },
+    {
+      "content": "Fill in the details of your database",
+      "pos": [
+        12677,
+        12713
+      ]
+    },
+    {
+      "content": "Close the wizard and wait for a notification that the output has been set up.",
+      "pos": [
+        12792,
+        12869
+      ]
+    },
+    {
+      "content": "Start processing",
+      "pos": [
+        12874,
+        12890
+      ]
+    },
+    {
+      "content": "Start the job from the action bar:",
+      "pos": [
+        12892,
+        12926
+      ]
+    },
+    {
+      "content": "In stream analytics, click  Start",
+      "pos": [
+        12930,
+        12963
+      ]
+    },
+    {
+      "content": "You can choose whether to start processing the data starting from now, or to start with earlier data.",
+      "pos": [
+        13041,
+        13142
+      ]
+    },
+    {
+      "content": "The latter is useful if you have had Continuous Export already running for a while.",
+      "pos": [
+        13143,
+        13226
+      ]
+    },
+    {
+      "content": "In stream analytics, click  Start",
+      "pos": [
+        13231,
+        13264
+      ]
+    },
+    {
+      "content": "After a few minutes, go back to SQL Server Management Tools and watch the data flowing in.",
+      "pos": [
+        13342,
+        13432
+      ]
+    },
+    {
+      "content": "For example, use a query like this:",
+      "pos": [
+        13433,
+        13468
+      ]
+    },
+    {
+      "content": "Related articles",
+      "pos": [
+        13528,
+        13544
+      ]
+    },
+    {
+      "content": "Export to SQL using a worker role",
+      "pos": [
+        13549,
+        13582
+      ]
+    },
+    {
+      "content": "Detailed data model reference for the property types and values.",
+      "pos": [
+        13646,
+        13710
+      ]
+    },
+    {
+      "content": "Continuous Export in Application Insights",
+      "pos": [
+        13750,
+        13791
+      ]
+    },
+    {
+      "content": "Application Insights",
+      "pos": [
+        13830,
+        13850
+      ]
+    },
+    {
+      "content": "test",
+      "pos": [
+        14147,
+        14151
+      ]
+    }
+  ],
+  "content": "<properties \n    pageTitle=\"Walkthrough: export telemetry to SQL Database from Application Insights\" \n    description=\"Code your own analysis of telemetry in Application Insights by using the continuous export feature.\" \n    services=\"application-insights\" \n    documentationCenter=\"\"\n    authors=\"noamben\" \n    manager=\"douge\"/>\n\n<tags \n    ms.service=\"application-insights\" \n    ms.workload=\"tbd\" \n    ms.tgt_pltfrm=\"ibiza\" \n    ms.devlang=\"na\" \n    ms.topic=\"article\" \n    ms.date=\"08/31/2015\" \n    ms.author=\"awills\"/>\n \n# Walkthrough: Export to SQL from Application Insights using Stream Analytics\n\nThis article shows how to move your telemetry data from [Visual Studio Application Insights][start] into an Azure SQL database by using [Continuous Export][export] and [Azure Stream Analytics](http://azure.microsoft.com/services/stream-analytics/). \n\nContinuous export moves your telemetry data into Azure Storage in JSON format. We'll parse the JSON objects using Azure Stream Analytics and create rows in a database table.\n\n(More generally, Continuous Export is the way to do your own analysis of the telemetry your apps send to Application Insights. You could adapt this code sample to do other things with the exported telemetry, such as aggregation of data and publishing the data to the PowerBI visualization suite.)\n\nWe'll start with the assumption that you already have the app you want to monitor.\n\n\nIn this example, we will be using the page view data, but the same pattern can easily be extended to other data types such as custom events and exceptions. \n\n\n## Add Application Insights SDK\n\nTo monitor your application, you [add an Application Insights SDK][start] to your application. There are different SDKs and helper tools for different platforms, IDEs and languages. You can monitor web pages, Java or ASP.NET web servers, and mobile devices of several kinds. All the SDKs send telemetry to the [Application Insights portal][portal], where you can use our powerful analysis and diagnostic tools, and export the data to storage.\n\nTo get started:\n\n1. Get an [account in Microsoft Azure](http://azure.microsoft.com/pricing/).\n2. In the [Azure portal][portal], add a new Application Insights resource for your app:\n\n    ![Choose New, Developer Services, Application Insights, and choose the type of application](./media/app-insights-code-sample-export-sql-stream-analytics/010-new-asp.png)\n\n\n    (Your app type and subscription might be different.)\n3. Open Quick Start to find how to set up the SDK for your app type.\n\n    ![Choose Quick Start and follow instructions](./media/app-insights-code-sample-export-sql-stream-analytics/020-quick.png)\n\n    If your app type isn't listed, take a look at the [Getting Started][start] page.\n\n4. In this example, we're monitoring a web app, so we can use the Azure tools in Visual Studio to install the SDK. Tell it the name of your Application Insights resource:\n\n    ![In Visual Studio Solution Explorer, right-click your project and choose Add Application Insights. At Send telemetry to, choose to create a new resource, or use an existing one.](./media/app-insights-code-sample-export-sql-stream-analytics/appinsights-d012-addbrown.png)\n\n5. Publish your app, and watch telemetry data appearing in your Application Insights resource.\n\n\n## Create storage in Azure\n\nContinuous export always outputs data to an Azure Storage account, so you need to create the storage first.\n\n1. Create a storage account in your subscription in the [Azure portal][portal].\n\n    ![In Azure portal, choose New, Data, Storage](./media/app-insights-code-sample-export-sql-stream-analytics/040-store.png)\n\n2. Create a container\n\n    ![In the new storage, select Containers and then Add](./media/app-insights-code-sample-export-sql-stream-analytics/050-container.png)\n\n3. Copy the storage access key\n\n    You'll need it soon to set up the input to the stream analytics service.\n\n    ![In the storage, open Settings, Keys, and take a copy of the Primary Access Key](./media/app-insights-code-sample-export-sql-stream-analytics/21-storage-key.png)\n\n## Start continuous export to Azure storage\n\n1. In the Azure portal, browse to the Application Insights resource you created for your application.\n\n    ![Choose Browse, Application Insights, your application](./media/app-insights-code-sample-export-sql-stream-analytics/060-browse.png)\n\n2. Create a continuous export.\n\n    ![Choose Settings, Continuous Export, Add](./media/app-insights-code-sample-export-sql-stream-analytics/070-export.png)\n\n\n    Select the storage account you created earlier:\n\n    ![Set the export destination](./media/app-insights-code-sample-export-sql-stream-analytics/080-add.png)\n    \n    Set the event types you want to see:\n\n    ![Choose event types](./media/app-insights-code-sample-export-sql-stream-analytics/085-types.png)\n\n\n3. Let some data accumulate. Sit back and let people use your application for a while. Telemetry will come in and you'll see statistical charts in [metric explorer](app-insights-metrics-explorer.md) and individual events in [diagnostic search](app-insights-diagnostic-search.md). \n\n    And also, the data will export to your storage. \n\n4. Inspect the exported data. In Visual Studio, choose **View / Cloud Explorer**, and open Azure / Storage. (If you don't have this menu option, you need to install the Azure SDK: Open the New Project dialog and open Visual C# / Cloud / Get Microsoft Azure SDK for .NET.)\n\n    ![In Visual Studio, open Server Browser, Azure, Storage](./media/app-insights-code-sample-export-sql-stream-analytics/087-explorer.png)\n\n    Make a note of the common part of the path name, which is derived from the application name and instrumentation key. \n\nThe events are written to blob files in JSON format. Each file may contain one or more events. So we'd like to read the event data and filter out the fields we want. There are all kinds of things we could do with the data, but our plan today is to use Stream Analytics to move the data to a SQL database. That will make it easy to run lots of interesting queries.\n\n## Create an Azure SQL Database\n\nOnce again starting from your subscription in [Azure portal][portal], create the database (and a new server, unless you've already got one) to which you'll write the data.\n\n![New, Data, SQL](./media/app-insights-code-sample-export-sql-stream-analytics/090-sql.png)\n\n\nMake sure that the database server allows access to Azure services:\n\n\n![Browse, Servers, your server, Settings, Firewall, Allow Access to Azure](./media/app-insights-code-sample-export-sql-stream-analytics/100-sqlaccess.png)\n\n## Create a table in Azure SQL DB\n\nConnect to the database created in the previous section with your preferred management tool. In this walkthrough, we will be using [SQL Server Management Tools](https://msdn.microsoft.com/ms174173.aspx) (SSMS).\n\n![](./media/app-insights-code-sample-export-sql-stream-analytics/31-sql-table.png)\n\nCreate a new query, and execute the following T-SQL:\n\n```SQL\n\nCREATE TABLE [dbo].[PageViewsTable](\n    [pageName] [nvarchar](max) NOT NULL,\n    [viewCount] [int] NOT NULL,\n    [url] [nvarchar](max) NULL,\n    [urlDataPort] [int] NULL,\n    [urlDataprotocol] [nvarchar](50) NULL,\n    [urlDataHost] [nvarchar](50) NULL,\n    [urlDataBase] [nvarchar](50) NULL,\n    [urlDataHashTag] [nvarchar](max) NULL,\n    [eventTime] [datetime] NOT NULL,\n    [isSynthetic] [nvarchar](50) NULL,\n    [deviceId] [nvarchar](50) NULL,\n    [deviceType] [nvarchar](50) NULL,\n    [os] [nvarchar](50) NULL,\n    [osVersion] [nvarchar](50) NULL,\n    [locale] [nvarchar](50) NULL,\n    [userAgent] [nvarchar](max) NULL,\n    [browser] [nvarchar](50) NULL,\n    [browserVersion] [nvarchar](50) NULL,\n    [screenResolution] [nvarchar](50) NULL,\n    [sessionId] [nvarchar](max) NULL,\n    [sessionIsFirst] [nvarchar](50) NULL,\n    [clientIp] [nvarchar](50) NULL,\n    [continent] [nvarchar](50) NULL,\n    [country] [nvarchar](50) NULL,\n    [province] [nvarchar](50) NULL,\n    [city] [nvarchar](50) NULL\n)\n\nCREATE CLUSTERED INDEX [pvTblIdx] ON [dbo].[PageViewsTable]\n(\n    [eventTime] ASC\n)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)\n\n```\n\n![](./media/app-insights-code-sample-export-sql-stream-analytics/34-create-table.png)\n\nIn this sample, we are using data from page views. To see the other data available, inspect your JSON output, and see the [export data model](app-insights-export-data-model.md).\n\n## Create an Azure Stream Analytics instance\n\nFrom the [Classic Azure Portal](https://manage.windowsazure.com/), select the Azure Stream Analytics service, and create a new Stream Analytics job:\n\n\n![](./media/app-insights-code-sample-export-sql-stream-analytics/37-create-stream-analytics.png)\n\n\n\n![](./media/app-insights-code-sample-export-sql-stream-analytics/38-create-stream-analytics-form.png)\n\nWhen the new job is created, expand its details:\n\n![](./media/app-insights-code-sample-export-sql-stream-analytics/41-sa-job.png)\n\n#### Set blob location\n\nSet it to take input from your Continuous Export blob:\n\n![](./media/app-insights-code-sample-export-sql-stream-analytics/42-sa-wizard1.png)\n\nNow you'll need the Primary Access Key from your Storage Account, which you noted earlier. Set this as the Storage Account Key.\n\n![](./media/app-insights-code-sample-export-sql-stream-analytics/46-sa-wizard2.png)\n\n#### Set path prefix pattern \n\n![](./media/app-insights-code-sample-export-sql-stream-analytics/47-sa-wizard3.png)\n\nBe sure to set the Date Format to YYYY-MM-DD (with dashes).\n\nThe Path Prefix Pattern specifies how Stream Analytics finds the input files in the storage. You need to set it to correspond to how Continuous Export stores the data. Set it like this:\n\n    webapplication27_12345678123412341234123456789abcdef0/PageViews/{date}/{time}\n\nIn this example:\n\n* `webapplication27` is the name of the Application Insights resource, **all in lower case**. \n* `1234...` is the instrumentation key of the Application Insights resource **with dashes removed**. \n* `PageViews` is the type of data we want to analyze. The available types depend on the filter you set in Continuous Export. Examine the exported data to see the other available types, and see the [export data model](app-insights-export-data-model.md).\n* `/{date}/{time}` is a pattern written literally.\n\nTo get the name and iKey of your Application Insights resource, open Essentials on its overview page, or open Settings.\n\n#### Finish initial setup\n\nConfirm the serialization format:\n\n![Confirm and close wizard](./media/app-insights-code-sample-export-sql-stream-analytics/48-sa-wizard4.png)\n\nClose the wizard and wait for the setup to complete.\n\n## Set query\n\nOpen the query section:\n\n![In stream analytics, select Query](./media/app-insights-code-sample-export-sql-stream-analytics/51-query.png)\n\nReplace the default query with:\n\n```SQL\n\n    SELECT flat.ArrayValue.name as pageName\n    , flat.ArrayValue.count as viewCount\n    , flat.ArrayValue.url as url\n    , flat.ArrayValue.urlData.port as urlDataPort\n    , flat.ArrayValue.urlData.protocol as urlDataprotocol\n    , flat.ArrayValue.urlData.host as urlDataHost\n    , flat.ArrayValue.urlData.base as urlDataBase\n    , flat.ArrayValue.urlData.hashTag as urlDataHashTag\n      ,A.context.data.eventTime as eventTime\n      ,A.context.data.isSynthetic as isSynthetic\n      ,A.context.device.id as deviceId\n      ,A.context.device.type as deviceType\n      ,A.context.device.os as os\n      ,A.context.device.osVersion as osVersion\n      ,A.context.device.locale as locale\n      ,A.context.device.userAgent as userAgent\n      ,A.context.device.browser as browser\n      ,A.context.device.browserVersion as browserVersion\n      ,A.context.device.screenResolution.value as screenResolution\n      ,A.context.session.id as sessionId\n      ,A.context.session.isFirst as sessionIsFirst\n      ,A.context.location.clientip as clientIp\n      ,A.context.location.continent as continent\n      ,A.context.location.country as country\n      ,A.context.location.province as province\n      ,A.context.location.city as city\n    INTO\n      AIOuput\n    FROM AIinput A\n    CROSS APPLY GetElements(A.[view]) as flat\n\n\n```\n\nNotice that the first few properties are specific to page view data. Exports of other telemetry types will have different properties. See the [detailed data model reference for the property types and values.](app-insights-export-data-model.md)\n\n## Set up output to database\n\nSelect SQL as the output.\n\n![In stream analytics, select Outputs](./media/app-insights-code-sample-export-sql-stream-analytics/53-store.png)\n\nSpecify the SQL database.\n\n\n![Fill in the details of your database](./media/app-insights-code-sample-export-sql-stream-analytics/55-output.png)\n\nClose the wizard and wait for a notification that the output has been set up.\n\n## Start processing\n\nStart the job from the action bar:\n\n![In stream analytics, click  Start](./media/app-insights-code-sample-export-sql-stream-analytics/61-start.png)\n\nYou can choose whether to start processing the data starting from now, or to start with earlier data. The latter is useful if you have had Continuous Export already running for a while.\n\n\n![In stream analytics, click  Start](./media/app-insights-code-sample-export-sql-stream-analytics/63-start.png)\n\nAfter a few minutes, go back to SQL Server Management Tools and watch the data flowing in. For example, use a query like this:\n\n    SELECT TOP 100 *\n    FROM [dbo].[PageViewsTable]\n\n\n## Related articles\n\n* [Export to SQL using a worker role](app-insights-code-sample-export-telemetry-sql-database.md)\n* [Detailed data model reference for the property types and values.](app-insights-export-data-model.md)\n* [Continuous Export in Application Insights](app-insights-export-telemetry.md)\n* [Application Insights](https://azure.microsoft.com/services/application-insights/)\n\n<!--Link references-->\n\n[diagnostic]: app-insights-diagnostic-search.md\n[export]: app-insights-export-telemetry.md\n[metrics]: app-insights-metrics-explorer.md\n[portal]: http://portal.azure.com/\n[start]: app-insights-get-started.md\n\n \ntest\n"
+}

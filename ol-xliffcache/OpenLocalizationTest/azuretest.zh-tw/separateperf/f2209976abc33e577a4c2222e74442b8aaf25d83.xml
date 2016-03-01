@@ -1,0 +1,1146 @@
+{
+  "nodes": [
+    {
+      "content": "Using load-balanced sets to clusterize MySQL on Linux",
+      "pos": [
+        27,
+        80
+      ]
+    },
+    {
+      "content": "An article that illustrates patterns to setup a load-balanced, high availability Linux cluster on Azure using MySQL as an example",
+      "pos": [
+        99,
+        228
+      ]
+    },
+    {
+      "content": "Using load-balanced sets to clusterize MySQL on Linux",
+      "pos": [
+        556,
+        609
+      ]
+    },
+    {
+      "content": "Getting ready",
+      "pos": [
+        614,
+        627
+      ]
+    },
+    {
+      "content": "Setting up the cluster",
+      "pos": [
+        648,
+        670
+      ]
+    },
+    {
+      "content": "Setting up MySQL",
+      "pos": [
+        700,
+        716
+      ]
+    },
+    {
+      "content": "Setting up Corosync",
+      "pos": [
+        740,
+        759
+      ]
+    },
+    {
+      "content": "Setting up Pacemaker",
+      "pos": [
+        786,
+        806
+      ]
+    },
+    {
+      "content": "Testing",
+      "pos": [
+        834,
+        841
+      ]
+    },
+    {
+      "content": "STONITH",
+      "pos": [
+        856,
+        863
+      ]
+    },
+    {
+      "content": "Limitations",
+      "pos": [
+        878,
+        889
+      ]
+    },
+    {
+      "content": "Introduction",
+      "pos": [
+        909,
+        921
+      ]
+    },
+    {
+      "content": "The purpose of this article is to explore and illustrate the different approaches available to deploy highly available Linux-based services on Microsoft Azure, exploring MySQL Server high availability as a primer.",
+      "pos": [
+        923,
+        1136
+      ]
+    },
+    {
+      "content": "A video illustrating this approach is available on <bpt id=\"p1\">[</bpt>Channel 9<ept id=\"p1\">](http://channel9.msdn.com/Blogs/Open/Load-balancing-highly-available-Linux-services-on-Windows-Azure-OpenLDAP-and-MySQL)</ept>.",
+      "pos": [
+        1137,
+        1320
+      ]
+    },
+    {
+      "content": "We outline a shared-nothing two-node single-master MySQL high availability solution based on DRBD, Corosync and Pacemaker.",
+      "pos": [
+        1322,
+        1444
+      ]
+    },
+    {
+      "content": "Only one node is running MySQL at a time.",
+      "pos": [
+        1445,
+        1486
+      ]
+    },
+    {
+      "content": "Reading and writing from the DRBD resource is also limited to only one node at a time.",
+      "pos": [
+        1487,
+        1573
+      ]
+    },
+    {
+      "content": "There is no need for a VIP solution like LVS since we use Microsoft Azure's Load Balanced Sets to provide both the round-robin functionality and the endpoint detection, removal and graceful recovery of the VIP.",
+      "pos": [
+        1575,
+        1785
+      ]
+    },
+    {
+      "content": "The VIP is a globally routable IPv4 address assigned by Microsoft Azure when we first create the cloud service.",
+      "pos": [
+        1786,
+        1897
+      ]
+    },
+    {
+      "content": "There are other possible architectures for MySQL including NBD Cluster, Percona and Galera as well as several middleware solutions, including at least one available as a VM on <bpt id=\"p1\">[</bpt>VM Depot<ept id=\"p1\">](http://vmdepot.msopentech.com)</ept>.",
+      "pos": [
+        1899,
+        2117
+      ]
+    },
+    {
+      "content": "As long as these solutions can replicate on unicast vs. multicast or broadcast and don't rely on shared storage or multiple network interfaces, the scenarios should be easy to deploy on Microsoft Azure.",
+      "pos": [
+        2118,
+        2320
+      ]
+    },
+    {
+      "content": "Of course these clustering architectures can be extended to other products like PostgreSQL and OpenLDAP on a similar fashion.",
+      "pos": [
+        2322,
+        2447
+      ]
+    },
+    {
+      "content": "For example, this load balancing procedure with shared nothing was successfully tested with multi-master OpenLDAP, and you can watch it on our Channel 9 blog.",
+      "pos": [
+        2448,
+        2606
+      ]
+    },
+    {
+      "content": "Getting ready",
+      "pos": [
+        2611,
+        2624
+      ]
+    },
+    {
+      "content": "You will need a Microsoft Azure account with a valid subscription able to create at least two (2) VMs (XS was used in this example), a network and a subnet, an affinity group and an availability set, as well as the ability to create new VHDs in the same region as the cloud service, and to attach them to the Linux VMs.",
+      "pos": [
+        2626,
+        2945
+      ]
+    },
+    {
+      "content": "Tested environment",
+      "pos": [
+        2951,
+        2969
+      ]
+    },
+    {
+      "content": "Ubuntu 13.10",
+      "pos": [
+        2973,
+        2985
+      ]
+    },
+    {
+      "content": "DRBD",
+      "pos": [
+        2990,
+        2994
+      ]
+    },
+    {
+      "content": "MySQL Server",
+      "pos": [
+        2999,
+        3011
+      ]
+    },
+    {
+      "content": "Corosync and Pacemaker",
+      "pos": [
+        3016,
+        3038
+      ]
+    },
+    {
+      "content": "Affinity group",
+      "pos": [
+        3044,
+        3058
+      ]
+    },
+    {
+      "content": "An affinity group for the solution is created by logging into the Azure Portal scrolling down to Settings and creating a new affinity group.",
+      "pos": [
+        3060,
+        3200
+      ]
+    },
+    {
+      "content": "Allocated resources created later will be assigned to this affinity group.",
+      "pos": [
+        3201,
+        3275
+      ]
+    },
+    {
+      "content": "Networks",
+      "pos": [
+        3281,
+        3289
+      ]
+    },
+    {
+      "content": "A new network is created, and a subnet is created inside the network.",
+      "pos": [
+        3291,
+        3360
+      ]
+    },
+    {
+      "content": "We chose a 10.10.10.0/24 network with only one /24 subnet inside.",
+      "pos": [
+        3361,
+        3426
+      ]
+    },
+    {
+      "content": "Virtual machines",
+      "pos": [
+        3432,
+        3448
+      ]
+    },
+    {
+      "content": "The first Ubuntu 13.10 VM is created using an Endorsed Ubuntu Gallery image, and called <ph id=\"ph1\">`hadb01`</ph>.",
+      "pos": [
+        3450,
+        3547
+      ]
+    },
+    {
+      "content": "A new cloud service is created in the process, called hadb.",
+      "pos": [
+        3548,
+        3607
+      ]
+    },
+    {
+      "content": "We call it this way to illustrate the shared, load-balanced nature that the service will have when we add more resources.",
+      "pos": [
+        3608,
+        3729
+      ]
+    },
+    {
+      "content": "The creation of <ph id=\"ph1\">`hadb01`</ph> is uneventful and completed using the portal.",
+      "pos": [
+        3730,
+        3800
+      ]
+    },
+    {
+      "content": "An endpoint for SSH is automatically created, and our created network is selected.",
+      "pos": [
+        3801,
+        3883
+      ]
+    },
+    {
+      "content": "We also choose to create a new availability set for the VMs.",
+      "pos": [
+        3884,
+        3944
+      ]
+    },
+    {
+      "content": "Once the first VM is created (technically, when the cloud service is created) we proceed to create the second VM, <ph id=\"ph1\">`hadb02`</ph>.",
+      "pos": [
+        3946,
+        4069
+      ]
+    },
+    {
+      "content": "For the second VM we will also use Ubuntu 13.10 VM from the Gallery using the Portal but we will choose to use an existing cloud service, <ph id=\"ph1\">`hadb.cloudapp.net`</ph>, instead of creating a new one.",
+      "pos": [
+        4070,
+        4259
+      ]
+    },
+    {
+      "content": "The network and availability set should be automatically selected for us.",
+      "pos": [
+        4260,
+        4333
+      ]
+    },
+    {
+      "content": "An SSH endpoint will be created, too.",
+      "pos": [
+        4334,
+        4371
+      ]
+    },
+    {
+      "pos": [
+        4373,
+        4509
+      ],
+      "content": "After both VMs have been created, we will take note of the SSH port for <ph id=\"ph1\">`hadb01`</ph> (TCP 22) and <ph id=\"ph2\">`hadb02`</ph> (automatically assigned by Azure)"
+    },
+    {
+      "content": "Attached storage",
+      "pos": [
+        4515,
+        4531
+      ]
+    },
+    {
+      "content": "We attach a new disk to both VMs, and create new 5 GB disks in the process.",
+      "pos": [
+        4533,
+        4608
+      ]
+    },
+    {
+      "content": "The disks will be hosted in the VHD container in use for our main operating system disks.",
+      "pos": [
+        4609,
+        4698
+      ]
+    },
+    {
+      "content": "Once disks are created and attached there is no need for us to restart Linux as the kernel will see the new device (usually <ph id=\"ph1\">`/dev/sdc`</ph>, you can check <ph id=\"ph2\">`dmesg`</ph> for the output)",
+      "pos": [
+        4699,
+        4872
+      ]
+    },
+    {
+      "content": "On each VM we proceed to create a new partition using <ph id=\"ph1\">`cfdisk`</ph> (primary, Linux partition) and write the new partition table.",
+      "pos": [
+        4874,
+        4998
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Do not create a filesystem on this partition<ept id=\"p1\">**</ept> .",
+      "pos": [
+        4999,
+        5049
+      ]
+    },
+    {
+      "content": "Setting up the cluster",
+      "pos": [
+        5054,
+        5076
+      ]
+    },
+    {
+      "content": "In both Ubuntu VMs, we need to use APT to install Corosync, Pacemaker and DRBD.",
+      "pos": [
+        5078,
+        5157
+      ]
+    },
+    {
+      "content": "Using <ph id=\"ph1\">`apt-get`</ph>:",
+      "pos": [
+        5158,
+        5174
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Do not install MySQL at this time<ept id=\"p1\">**</ept> .",
+      "pos": [
+        5234,
+        5273
+      ]
+    },
+    {
+      "content": "Debian and Ubuntu installation scripts will initialize a MySQL data directory on <ph id=\"ph1\">`/var/lib/mysql`</ph>, but since the directory will be superseded by a DRBD filesystem, we need to do this later.",
+      "pos": [
+        5274,
+        5463
+      ]
+    },
+    {
+      "content": "At this point we should also verify (using <ph id=\"ph1\">`/sbin/ifconfig`</ph>) that both VMs are using addresses in the 10.10.10.0/24 subnet and that they can ping each other by name.",
+      "pos": [
+        5465,
+        5630
+      ]
+    },
+    {
+      "content": "If desired you can also use <ph id=\"ph1\">`ssh-keygen`</ph> and <ph id=\"ph2\">`ssh-copy-id`</ph> to make sure both VMs can communicate via SSH without requiring a password.",
+      "pos": [
+        5631,
+        5765
+      ]
+    },
+    {
+      "content": "Setting up DRBD",
+      "pos": [
+        5771,
+        5786
+      ]
+    },
+    {
+      "content": "We will create a DRBD resource that uses the underlying <ph id=\"ph1\">`/dev/sdc1`</ph> partition to produce a <ph id=\"ph2\">`/dev/drbd1`</ph> resource able to be formatted using ext3 and used in both primary and secondary nodes.",
+      "pos": [
+        5788,
+        5978
+      ]
+    },
+    {
+      "content": "To do this, open <ph id=\"ph1\">`/etc/drbd.d/r0.res`</ph> and copy the following resource definition.",
+      "pos": [
+        5979,
+        6060
+      ]
+    },
+    {
+      "content": "Do this in both VMs:",
+      "pos": [
+        6061,
+        6081
+      ]
+    },
+    {
+      "pos": [
+        6396,
+        6466
+      ],
+      "content": "After doing this, initialize the resource using <ph id=\"ph1\">`drbdadm`</ph> in both VMs:"
+    },
+    {
+      "pos": [
+        6535,
+        6621
+      ],
+      "content": "And finally, on the primary (<ph id=\"ph1\">`hadb01`</ph>) force ownership (primary) of the DRBD resource:"
+    },
+    {
+      "content": "If you examine the contents of /proc/drbd (<ph id=\"ph1\">`sudo cat /proc/drbd`</ph>) on both VMs, you should see <ph id=\"ph2\">`Primary/Secondary`</ph> on <ph id=\"ph3\">`hadb01`</ph> and <ph id=\"ph4\">`Secondary/Primary`</ph> on <ph id=\"ph5\">`hadb02`</ph>, consistent with the solution at this point.",
+      "pos": [
+        6660,
+        6866
+      ]
+    },
+    {
+      "content": "The 5 GB disk will be synchronized over the 10.10.10.0/24 network at no charge to customers.",
+      "pos": [
+        6867,
+        6959
+      ]
+    },
+    {
+      "content": "Once the disk is synchronized you can create the filesystem on <ph id=\"ph1\">`hadb01`</ph>.",
+      "pos": [
+        6961,
+        7033
+      ]
+    },
+    {
+      "content": "For testing purposes we used ext2 but the following instruction will create an ext3 filesystem:",
+      "pos": [
+        7034,
+        7129
+      ]
+    },
+    {
+      "content": "Mounting the DRBD resource",
+      "pos": [
+        7161,
+        7187
+      ]
+    },
+    {
+      "content": "On <ph id=\"ph1\">`hadb01`</ph> we're now ready to mount the DRBD resources.",
+      "pos": [
+        7189,
+        7245
+      ]
+    },
+    {
+      "content": "Debian and derivatives use <ph id=\"ph1\">`/var/lib/mysql`</ph> as MySQL's data directory.",
+      "pos": [
+        7246,
+        7316
+      ]
+    },
+    {
+      "content": "Since we haven't installed MySQL, we'll create the directory and mount the DRBD resource.",
+      "pos": [
+        7317,
+        7406
+      ]
+    },
+    {
+      "content": "On <ph id=\"ph1\">`hadb01`</ph>:",
+      "pos": [
+        7407,
+        7419
+      ]
+    },
+    {
+      "content": "Setting up MySQL",
+      "pos": [
+        7496,
+        7512
+      ]
+    },
+    {
+      "pos": [
+        7514,
+        7560
+      ],
+      "content": "Now you're ready to install MySQL on <ph id=\"ph1\">`hadb01`</ph>:"
+    },
+    {
+      "content": "For <ph id=\"ph1\">`hadb02`</ph>, you have two options.",
+      "pos": [
+        7601,
+        7636
+      ]
+    },
+    {
+      "content": "You can install mysql-server now, which will create /var/lib/mysql and fill it with a new data directory, and then proceed to remove the contents.",
+      "pos": [
+        7637,
+        7783
+      ]
+    },
+    {
+      "content": "On <ph id=\"ph1\">`hadb02`</ph>:",
+      "pos": [
+        7784,
+        7796
+      ]
+    },
+    {
+      "pos": [
+        7898,
+        8058
+      ],
+      "content": "The second option is to failover to <ph id=\"ph1\">`hadb02`</ph> and then install mysql-server there (installation scripts will notice the existing installation and won't touch it)"
+    },
+    {
+      "pos": [
+        8060,
+        8072
+      ],
+      "content": "On <ph id=\"ph1\">`hadb01`</ph>:"
+    },
+    {
+      "pos": [
+        8112,
+        8124
+      ],
+      "content": "On <ph id=\"ph1\">`hadb02`</ph>:"
+    },
+    {
+      "content": "If you don't plan to failover DRBD now, the first option is easier although arguably less elegant.",
+      "pos": [
+        8200,
+        8298
+      ]
+    },
+    {
+      "content": "After you set this up, you can start working on your MySQL database.",
+      "pos": [
+        8299,
+        8367
+      ]
+    },
+    {
+      "content": "On <ph id=\"ph1\">`hadb02`</ph> (or whichever one of the servers is active, according to DRBD):",
+      "pos": [
+        8368,
+        8443
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Warning<ept id=\"p1\">**</ept>: this last statement effectively disables authentication for the root user in this table.",
+      "pos": [
+        8647,
+        8748
+      ]
+    },
+    {
+      "content": "This should be replaced by your production-grade GRANT statements and is included only for illustrative purposes.",
+      "pos": [
+        8749,
+        8862
+      ]
+    },
+    {
+      "content": "You also need to enable networking for MySQL if you want to make queries from outside the VMs, which is the purpose of this guide.",
+      "pos": [
+        8864,
+        8994
+      ]
+    },
+    {
+      "content": "On both VMs, open <ph id=\"ph1\">`/etc/mysql/my.cnf`</ph> and browse to <ph id=\"ph2\">`bind-address`</ph>, changing it from 127.0.0.1 to 0.0.0.0.",
+      "pos": [
+        8995,
+        9101
+      ]
+    },
+    {
+      "content": "After saving the file, issue a <ph id=\"ph1\">`sudo service mysql restart`</ph> on your current primary.",
+      "pos": [
+        9102,
+        9186
+      ]
+    },
+    {
+      "content": "Creating the MySQL Load Balanced Set",
+      "pos": [
+        9192,
+        9228
+      ]
+    },
+    {
+      "content": "We will go back to the Azure Portal and browse to the <ph id=\"ph1\">`hadb01`</ph> VM, then Endpoints.",
+      "pos": [
+        9230,
+        9312
+      ]
+    },
+    {
+      "content": "We will create a new Endpoint, choose MySQL (TCP 3306) from the dropdown and tick on the <bpt id=\"p1\">*</bpt>Create new load balanced set<ept id=\"p1\">*</ept> box.",
+      "pos": [
+        9313,
+        9437
+      ]
+    },
+    {
+      "content": "We will call our load balanced endpoint <ph id=\"ph1\">`lb-mysql`</ph>.",
+      "pos": [
+        9438,
+        9489
+      ]
+    },
+    {
+      "content": "We will leave most of the options alone except for time which we'll reduce to 5 (seconds, minimum)",
+      "pos": [
+        9490,
+        9588
+      ]
+    },
+    {
+      "content": "After the endpoint is created we go to <ph id=\"ph1\">`hadb02`</ph>, Endpoints, and create a new endpoint but we will choose <ph id=\"ph2\">`lb-mysql`</ph>, then select MySQL from the dropdown menu.",
+      "pos": [
+        9590,
+        9748
+      ]
+    },
+    {
+      "content": "You can also use the Azure CLI for this step.",
+      "pos": [
+        9749,
+        9794
+      ]
+    },
+    {
+      "content": "At this moment we have everything we need for a manual operation of the cluster.",
+      "pos": [
+        9796,
+        9876
+      ]
+    },
+    {
+      "content": "Testing the load balanced set",
+      "pos": [
+        9882,
+        9911
+      ]
+    },
+    {
+      "content": "Tests can be performed from an outside machine, by using any MySQL client, as well as applications (for example, phpMyAdmin running as an Azure Website) In this case we used MySQL's command line tool on another Linux box:",
+      "pos": [
+        9913,
+        10134
+      ]
+    },
+    {
+      "content": "Manually failing over",
+      "pos": [
+        10215,
+        10236
+      ]
+    },
+    {
+      "content": "You can simulate failovers now by shutting MySQL down, switching DRBD's primary, and starting MySQL again.",
+      "pos": [
+        10238,
+        10344
+      ]
+    },
+    {
+      "content": "On hadb01:",
+      "pos": [
+        10346,
+        10356
+      ]
+    },
+    {
+      "content": "Then, on hadb02:",
+      "pos": [
+        10430,
+        10446
+      ]
+    },
+    {
+      "content": "Once you failover manually you can repeat your remote query and it should be working perfectly.",
+      "pos": [
+        10529,
+        10624
+      ]
+    },
+    {
+      "content": "Setting up Corosync",
+      "pos": [
+        10629,
+        10648
+      ]
+    },
+    {
+      "content": "Corosync is the underlying cluster infrastructure required for Pacemaker to work.",
+      "pos": [
+        10650,
+        10731
+      ]
+    },
+    {
+      "content": "For Heartbeat v1 and v2 users (and other methodologies like Ultramonkey) Corosync is a split of the CRM functionalities, while Pacemaker remains more similar to Hearbeat in functionality.",
+      "pos": [
+        10732,
+        10919
+      ]
+    },
+    {
+      "content": "The main constraint for Corosync on Azure is that Corosync prefers multicast over broadcast over unicast communications, but Microsoft Azure networking only supports unicast.",
+      "pos": [
+        10921,
+        11095
+      ]
+    },
+    {
+      "content": "Fortunately, Corosync has a working unicast mode and the only real constraint is that, since all nodes are not communicating among themselves <bpt id=\"p1\">*</bpt>automagically<ept id=\"p1\">*</ept>, you need to define the nodes in your configuration files, including their IP addresses.",
+      "pos": [
+        11097,
+        11343
+      ]
+    },
+    {
+      "content": "We can use the Corosync example files for Unicast and just change bind address, node lists and logging directory (Ubuntu uses <ph id=\"ph1\">`/var/log/corosync`</ph> while the example files use <ph id=\"ph2\">`/var/log/cluster`</ph>) and enabling quorum tools.",
+      "pos": [
+        11344,
+        11564
+      ]
+    },
+    {
+      "pos": [
+        11566,
+        11665
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Note the <ph id=\"ph1\">`transport: udpu`</ph> directive below and the manually defined IP addresses for the nodes<ept id=\"p1\">**</ept>."
+    },
+    {
+      "pos": [
+        11667,
+        11715
+      ],
+      "content": "On <ph id=\"ph1\">`/etc/corosync/corosync.conf`</ph> for both nodes:"
+    },
+    {
+      "content": "We copy this configuration file in both VMs and start Corosync in both nodes:",
+      "pos": [
+        12406,
+        12483
+      ]
+    },
+    {
+      "content": "Shortly after starting the service the cluster should be established in the current ring and quorum should be constituted.",
+      "pos": [
+        12518,
+        12640
+      ]
+    },
+    {
+      "content": "We can check this functionality by reviewing logs or:",
+      "pos": [
+        12641,
+        12694
+      ]
+    },
+    {
+      "content": "An output similar to the image below should follow:",
+      "pos": [
+        12729,
+        12780
+      ]
+    },
+    {
+      "content": "corosync-quorumtool -l sample output",
+      "pos": [
+        12784,
+        12820
+      ]
+    },
+    {
+      "content": "Setting up Pacemaker",
+      "pos": [
+        12883,
+        12903
+      ]
+    },
+    {
+      "content": "Pacemaker uses the cluster to monitor for resources, define when primaries go down and switch those resources to secondaries.",
+      "pos": [
+        12905,
+        13030
+      ]
+    },
+    {
+      "content": "Resources can be defined from a set of available scripts or from LSB (init-like) scripts, among other choices.",
+      "pos": [
+        13031,
+        13141
+      ]
+    },
+    {
+      "content": "We want Pacemaker to \"own\" the DRBD resource, the mountpoint and the MySQL service.",
+      "pos": [
+        13143,
+        13226
+      ]
+    },
+    {
+      "content": "If Pacemaker can turn on and off DRBD, mount it/umount it and start/stop MySQL in the right order when something bad happens with the primary, our setup is complete.",
+      "pos": [
+        13227,
+        13392
+      ]
+    },
+    {
+      "content": "When you first install Pacemaker, your configuration should be simple enough, something like:",
+      "pos": [
+        13394,
+        13487
+      ]
+    },
+    {
+      "content": "Check it by running <ph id=\"ph1\">`sudo crm configure show`</ph>.",
+      "pos": [
+        13600,
+        13646
+      ]
+    },
+    {
+      "content": "Now, create a file (say, <ph id=\"ph1\">`/tmp/cluster.conf`</ph>) with the following resources:",
+      "pos": [
+        13647,
+        13722
+      ]
+    },
+    {
+      "content": "And now load it into the configuration (you only need to do this in one node):",
+      "pos": [
+        14511,
+        14589
+      ]
+    },
+    {
+      "content": "Also, make sure that Pacemaker starts at boot in both nodes:",
+      "pos": [
+        14675,
+        14735
+      ]
+    },
+    {
+      "content": "After a few seconds, and using <ph id=\"ph1\">`sudo crm_mon –L`</ph>, verify that one of your nodes has become the master for the cluster, and is running all the resources.",
+      "pos": [
+        14778,
+        14930
+      ]
+    },
+    {
+      "content": "You can use mount and ps to check that the resources are running.",
+      "pos": [
+        14931,
+        14996
+      ]
+    },
+    {
+      "pos": [
+        14998,
+        15083
+      ],
+      "content": "The following screenshot shows <ph id=\"ph1\">`crm_mon`</ph> with one node stopped (exit using Control-C)"
+    },
+    {
+      "content": "crm_mon node stopped",
+      "pos": [
+        15087,
+        15107
+      ]
+    },
+    {
+      "content": "And this screenshot shows both nodes, with one master and one slave:",
+      "pos": [
+        15167,
+        15235
+      ]
+    },
+    {
+      "content": "crm_mon operational master/slave",
+      "pos": [
+        15239,
+        15271
+      ]
+    },
+    {
+      "content": "Testing",
+      "pos": [
+        15334,
+        15341
+      ]
+    },
+    {
+      "content": "We're ready for an automatic failover simulation.",
+      "pos": [
+        15343,
+        15392
+      ]
+    },
+    {
+      "content": "There are two ways to doing this: soft and hard.",
+      "pos": [
+        15393,
+        15441
+      ]
+    },
+    {
+      "content": "The soft way is using the cluster's shutdown function: <ph id=\"ph1\">``crm_standby -U `uname -n` -v on``</ph>.",
+      "pos": [
+        15442,
+        15533
+      ]
+    },
+    {
+      "content": "Using this on the master, the slave will take over.",
+      "pos": [
+        15534,
+        15585
+      ]
+    },
+    {
+      "content": "Remember to set this back to off (crm_mon will tell you one node is on standby otherwise)",
+      "pos": [
+        15586,
+        15675
+      ]
+    },
+    {
+      "content": "The hard way is shutting down the primary VM (hadb01) via the Portal or changing the runlevel on the VM (i.e., halt, shutdown) then we're helping Corosync and Pacemaker by signaling master's going down.",
+      "pos": [
+        15677,
+        15879
+      ]
+    },
+    {
+      "content": "We can test this (useful for maintenance windows) but we can also force the scenario by just freezing the VM.",
+      "pos": [
+        15880,
+        15989
+      ]
+    },
+    {
+      "content": "STONITH",
+      "pos": [
+        15994,
+        16001
+      ]
+    },
+    {
+      "content": "It should be possible to issue a VM shutdown via the Azure CLI in lieu of a STONITH script that controls a physical device.",
+      "pos": [
+        16003,
+        16126
+      ]
+    },
+    {
+      "content": "You can use <ph id=\"ph1\">`/usr/lib/stonith/plugins/external/ssh`</ph> as a base and enable STONITH in the cluster's configuration.",
+      "pos": [
+        16127,
+        16239
+      ]
+    },
+    {
+      "content": "Azure CLI should be globally installed and the publish settings/profile should be loaded for the cluster's user.",
+      "pos": [
+        16240,
+        16352
+      ]
+    },
+    {
+      "content": "Sample code for the resource available on <bpt id=\"p1\">[</bpt>GitHub<ept id=\"p1\">](https://github.com/bureado/aztonith)</ept>.",
+      "pos": [
+        16354,
+        16442
+      ]
+    },
+    {
+      "content": "You need to change the cluster's configuration by adding the following to <ph id=\"ph1\">`sudo crm configure`</ph>:",
+      "pos": [
+        16443,
+        16538
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Note:<ept id=\"p1\">**</ept> the script doesn't perform up/down checks.",
+      "pos": [
+        16711,
+        16763
+      ]
+    },
+    {
+      "content": "The original SSH resource had 15 ping checks but recovery time for an Azure VM might be more variable.",
+      "pos": [
+        16764,
+        16866
+      ]
+    },
+    {
+      "content": "Limitations",
+      "pos": [
+        16871,
+        16882
+      ]
+    },
+    {
+      "content": "The following limitations apply:",
+      "pos": [
+        16884,
+        16916
+      ]
+    },
+    {
+      "content": "The linbit DRBD resource script that manages DRBD as a resource in Pacemaker uses <ph id=\"ph1\">`drbdadm down`</ph> when shutting down a node, even if the node is just going standby.",
+      "pos": [
+        16920,
+        17083
+      ]
+    },
+    {
+      "content": "This is not ideal since the slave will not be synchronizing the DRBD resource while the master gets writes.",
+      "pos": [
+        17084,
+        17191
+      ]
+    },
+    {
+      "content": "If the master does not fail graciously, the slave can take over an older filesystem state.",
+      "pos": [
+        17192,
+        17282
+      ]
+    },
+    {
+      "content": "There are two potential ways of solving this:",
+      "pos": [
+        17283,
+        17328
+      ]
+    },
+    {
+      "pos": [
+        17333,
+        17425
+      ],
+      "content": "Enforcing a <ph id=\"ph1\">`drbdadm up r0`</ph> in all cluster nodes via a local (not clusterized) watchdog, or,"
+    },
+    {
+      "pos": [
+        17430,
+        17541
+      ],
+      "content": "Editing the linbit DRBD script making sure that <ph id=\"ph1\">`down`</ph> is not called, in <ph id=\"ph2\">`/usr/lib/ocf/resource.d/linbit/drbd`</ph>."
+    },
+    {
+      "content": "Load balancer needs at least 5 seconds to respond, so applications should be cluster aware and be more tolerant of timeout; other architectures can also help, for example in-app queues, query middlewares, etc.",
+      "pos": [
+        17544,
+        17753
+      ]
+    },
+    {
+      "content": "MySQL tuning is necessary to ensure writing is done at a sane pace and caches are flushed to disk as frequently as possible to minimize memory loss",
+      "pos": [
+        17756,
+        17903
+      ]
+    },
+    {
+      "content": "Write performance will be dependent in VM interconnect in the virtual switch as this is the mechanism used by DRBD to replicate the device",
+      "pos": [
+        17906,
+        18044
+      ]
+    }
+  ],
+  "content": "<properties\n    pageTitle=\"Using load-balanced sets to clusterize MySQL on Linux\"\n    description=\"An article that illustrates patterns to setup a load-balanced, high availability Linux cluster on Azure using MySQL as an example\"\n    services=\"virtual-machines\"\n    documentationCenter=\"\"\n    authors=\"bureado\"\n    manager=\"timlt\"\n    editor=\"\"/>\n\n<tags\n    ms.service=\"virtual-machines\"\n    ms.workload=\"infrastructure-services\"\n    ms.tgt_pltfrm=\"vm-linux\"\n    ms.devlang=\"na\"\n    ms.topic=\"article\"\n    ms.date=\"04/14/2015\"\n    ms.author=\"jparrel\"/>\n\n# Using load-balanced sets to clusterize MySQL on Linux\n\n* [Getting ready](#getting-ready)\n* [Setting up the cluster](#setting-up-the-cluster)\n* [Setting up MySQL](#setting-up-mysql)\n* [Setting up Corosync](#setting-up-corosync)\n* [Setting up Pacemaker](#setting-up-pacemaker)\n* [Testing](#testing)\n* [STONITH](#stonith)\n* [Limitations](#limitations)\n\n## Introduction\n\nThe purpose of this article is to explore and illustrate the different approaches available to deploy highly available Linux-based services on Microsoft Azure, exploring MySQL Server high availability as a primer. A video illustrating this approach is available on [Channel 9](http://channel9.msdn.com/Blogs/Open/Load-balancing-highly-available-Linux-services-on-Windows-Azure-OpenLDAP-and-MySQL).\n\nWe outline a shared-nothing two-node single-master MySQL high availability solution based on DRBD, Corosync and Pacemaker. Only one node is running MySQL at a time. Reading and writing from the DRBD resource is also limited to only one node at a time.\n\nThere is no need for a VIP solution like LVS since we use Microsoft Azure's Load Balanced Sets to provide both the round-robin functionality and the endpoint detection, removal and graceful recovery of the VIP. The VIP is a globally routable IPv4 address assigned by Microsoft Azure when we first create the cloud service.\n\nThere are other possible architectures for MySQL including NBD Cluster, Percona and Galera as well as several middleware solutions, including at least one available as a VM on [VM Depot](http://vmdepot.msopentech.com). As long as these solutions can replicate on unicast vs. multicast or broadcast and don't rely on shared storage or multiple network interfaces, the scenarios should be easy to deploy on Microsoft Azure.\n\nOf course these clustering architectures can be extended to other products like PostgreSQL and OpenLDAP on a similar fashion. For example, this load balancing procedure with shared nothing was successfully tested with multi-master OpenLDAP, and you can watch it on our Channel 9 blog.\n\n## Getting ready\n\nYou will need a Microsoft Azure account with a valid subscription able to create at least two (2) VMs (XS was used in this example), a network and a subnet, an affinity group and an availability set, as well as the ability to create new VHDs in the same region as the cloud service, and to attach them to the Linux VMs.\n\n### Tested environment\n\n- Ubuntu 13.10\n  - DRBD\n  - MySQL Server\n  - Corosync and Pacemaker\n\n### Affinity group\n\nAn affinity group for the solution is created by logging into the Azure Portal scrolling down to Settings and creating a new affinity group. Allocated resources created later will be assigned to this affinity group.\n\n### Networks\n\nA new network is created, and a subnet is created inside the network. We chose a 10.10.10.0/24 network with only one /24 subnet inside.\n\n### Virtual machines\n\nThe first Ubuntu 13.10 VM is created using an Endorsed Ubuntu Gallery image, and called `hadb01`. A new cloud service is created in the process, called hadb. We call it this way to illustrate the shared, load-balanced nature that the service will have when we add more resources. The creation of `hadb01` is uneventful and completed using the portal. An endpoint for SSH is automatically created, and our created network is selected. We also choose to create a new availability set for the VMs.\n\nOnce the first VM is created (technically, when the cloud service is created) we proceed to create the second VM, `hadb02`. For the second VM we will also use Ubuntu 13.10 VM from the Gallery using the Portal but we will choose to use an existing cloud service, `hadb.cloudapp.net`, instead of creating a new one. The network and availability set should be automatically selected for us. An SSH endpoint will be created, too.\n\nAfter both VMs have been created, we will take note of the SSH port for `hadb01` (TCP 22) and `hadb02` (automatically assigned by Azure)\n\n### Attached storage\n\nWe attach a new disk to both VMs, and create new 5 GB disks in the process. The disks will be hosted in the VHD container in use for our main operating system disks. Once disks are created and attached there is no need for us to restart Linux as the kernel will see the new device (usually `/dev/sdc`, you can check `dmesg` for the output)\n\nOn each VM we proceed to create a new partition using `cfdisk` (primary, Linux partition) and write the new partition table. **Do not create a filesystem on this partition** .\n\n## Setting up the cluster\n\nIn both Ubuntu VMs, we need to use APT to install Corosync, Pacemaker and DRBD. Using `apt-get`:\n\n    sudo apt-get install corosync pacemaker drbd8-utils.\n\n**Do not install MySQL at this time** . Debian and Ubuntu installation scripts will initialize a MySQL data directory on `/var/lib/mysql`, but since the directory will be superseded by a DRBD filesystem, we need to do this later.\n\nAt this point we should also verify (using `/sbin/ifconfig`) that both VMs are using addresses in the 10.10.10.0/24 subnet and that they can ping each other by name. If desired you can also use `ssh-keygen` and `ssh-copy-id` to make sure both VMs can communicate via SSH without requiring a password.\n\n### Setting up DRBD\n\nWe will create a DRBD resource that uses the underlying `/dev/sdc1` partition to produce a `/dev/drbd1` resource able to be formatted using ext3 and used in both primary and secondary nodes. To do this, open `/etc/drbd.d/r0.res` and copy the following resource definition. Do this in both VMs:\n\n    resource r0 {\n      on `hadb01` {\n        device  /dev/drbd1;\n        disk   /dev/sdc1;\n        address  10.10.10.4:7789;\n        meta-disk internal;\n      }\n      on `hadb02` {\n        device  /dev/drbd1;\n        disk   /dev/sdc1;\n        address  10.10.10.5:7789;\n        meta-disk internal;\n      }\n    }\n\nAfter doing this, initialize the resource using `drbdadm` in both VMs:\n\n    sudo drbdadm -c /etc/drbd.conf role r0\n    sudo drbdadm up r0\n\nAnd finally, on the primary (`hadb01`) force ownership (primary) of the DRBD resource:\n\n    sudo drbdadm primary --force r0\n\nIf you examine the contents of /proc/drbd (`sudo cat /proc/drbd`) on both VMs, you should see `Primary/Secondary` on `hadb01` and `Secondary/Primary` on `hadb02`, consistent with the solution at this point. The 5 GB disk will be synchronized over the 10.10.10.0/24 network at no charge to customers.\n\nOnce the disk is synchronized you can create the filesystem on `hadb01`. For testing purposes we used ext2 but the following instruction will create an ext3 filesystem:\n\n    mkfs.ext3 /dev/drbd1\n\n### Mounting the DRBD resource\n\nOn `hadb01` we're now ready to mount the DRBD resources. Debian and derivatives use `/var/lib/mysql` as MySQL's data directory. Since we haven't installed MySQL, we'll create the directory and mount the DRBD resource. On `hadb01`:\n\n    sudo mkdir /var/lib/mysql\n    sudo mount /dev/drbd1 /var/lib/mysql\n\n## Setting up MySQL\n\nNow you're ready to install MySQL on `hadb01`:\n\n    sudo apt-get install mysql-server\n\nFor `hadb02`, you have two options. You can install mysql-server now, which will create /var/lib/mysql and fill it with a new data directory, and then proceed to remove the contents. On `hadb02`:\n\n    sudo apt-get install mysql-server\n    sudo service mysql stop\n    sudo rm –rf /var/lib/mysql/*\n\nThe second option is to failover to `hadb02` and then install mysql-server there (installation scripts will notice the existing installation and won't touch it)\n\nOn `hadb01`:\n\n    sudo drbdadm secondary –force r0\n\nOn `hadb02`:\n\n    sudo drbdadm primary –force r0\n    sudo apt-get install mysql-server\n\nIf you don't plan to failover DRBD now, the first option is easier although arguably less elegant. After you set this up, you can start working on your MySQL database. On `hadb02` (or whichever one of the servers is active, according to DRBD):\n\n    mysql –u root –p\n    CREATE DATABASE azureha;\n    CREATE TABLE things ( id SERIAL, name VARCHAR(255) );\n    INSERT INTO things VALUES (1, \"Yet another entity\");\n    GRANT ALL ON things.\\* TO root;\n\n**Warning**: this last statement effectively disables authentication for the root user in this table. This should be replaced by your production-grade GRANT statements and is included only for illustrative purposes.\n\nYou also need to enable networking for MySQL if you want to make queries from outside the VMs, which is the purpose of this guide. On both VMs, open `/etc/mysql/my.cnf` and browse to `bind-address`, changing it from 127.0.0.1 to 0.0.0.0. After saving the file, issue a `sudo service mysql restart` on your current primary.\n\n### Creating the MySQL Load Balanced Set\n\nWe will go back to the Azure Portal and browse to the `hadb01` VM, then Endpoints. We will create a new Endpoint, choose MySQL (TCP 3306) from the dropdown and tick on the *Create new load balanced set* box. We will call our load balanced endpoint `lb-mysql`. We will leave most of the options alone except for time which we'll reduce to 5 (seconds, minimum)\n\nAfter the endpoint is created we go to `hadb02`, Endpoints, and create a new endpoint but we will choose `lb-mysql`, then select MySQL from the dropdown menu. You can also use the Azure CLI for this step.\n\nAt this moment we have everything we need for a manual operation of the cluster.\n\n### Testing the load balanced set\n\nTests can be performed from an outside machine, by using any MySQL client, as well as applications (for example, phpMyAdmin running as an Azure Website) In this case we used MySQL's command line tool on another Linux box:\n\n    mysql azureha –u root –h hadb.cloudapp.net –e \"select * from things;\"\n\n### Manually failing over\n\nYou can simulate failovers now by shutting MySQL down, switching DRBD's primary, and starting MySQL again.\n\nOn hadb01:\n\n    service mysql stop && umount /var/lib/mysql ; drbdadm secondary r0\n\nThen, on hadb02:\n\n    drbdadm primary r0 ; mount /dev/drbd1 /var/lib/mysql && service mysql start\n\nOnce you failover manually you can repeat your remote query and it should be working perfectly.\n\n## Setting up Corosync\n\nCorosync is the underlying cluster infrastructure required for Pacemaker to work. For Heartbeat v1 and v2 users (and other methodologies like Ultramonkey) Corosync is a split of the CRM functionalities, while Pacemaker remains more similar to Hearbeat in functionality.\n\nThe main constraint for Corosync on Azure is that Corosync prefers multicast over broadcast over unicast communications, but Microsoft Azure networking only supports unicast.\n\nFortunately, Corosync has a working unicast mode and the only real constraint is that, since all nodes are not communicating among themselves *automagically*, you need to define the nodes in your configuration files, including their IP addresses. We can use the Corosync example files for Unicast and just change bind address, node lists and logging directory (Ubuntu uses `/var/log/corosync` while the example files use `/var/log/cluster`) and enabling quorum tools.\n\n**Note the `transport: udpu` directive below and the manually defined IP addresses for the nodes**.\n\nOn `/etc/corosync/corosync.conf` for both nodes:\n\n    totem {\n      version: 2\n      crypto_cipher: none\n      crypto_hash: none\n      interface {\n        ringnumber: 0\n        bindnetaddr: 10.10.10.0\n        mcastport: 5405\n        ttl: 1\n      }\n      transport: udpu\n    }\n\n    logging {\n      fileline: off\n      to_logfile: yes\n      to_syslog: yes\n      logfile: /var/log/corosync/corosync.log\n      debug: off\n      timestamp: on\n      logger_subsys {\n        subsys: QUORUM\n        debug: off\n        }\n      }\n\n    nodelist {\n      node {\n        ring0_addr: 10.10.10.4\n        nodeid: 1\n      }\n\n      node {\n        ring0_addr: 10.10.10.5\n        nodeid: 2\n      }\n    }\n\n    quorum {\n      provider: corosync_votequorum\n    }\n\nWe copy this configuration file in both VMs and start Corosync in both nodes:\n\n    sudo service start corosync\n\nShortly after starting the service the cluster should be established in the current ring and quorum should be constituted. We can check this functionality by reviewing logs or:\n\n    sudo corosync-quorumtool –l\n\nAn output similar to the image below should follow:\n\n![corosync-quorumtool -l sample output](media/virtual-machines-linux-mysql-cluster/image001.png)\n\n## Setting up Pacemaker\n\nPacemaker uses the cluster to monitor for resources, define when primaries go down and switch those resources to secondaries. Resources can be defined from a set of available scripts or from LSB (init-like) scripts, among other choices.\n\nWe want Pacemaker to \"own\" the DRBD resource, the mountpoint and the MySQL service. If Pacemaker can turn on and off DRBD, mount it/umount it and start/stop MySQL in the right order when something bad happens with the primary, our setup is complete.\n\nWhen you first install Pacemaker, your configuration should be simple enough, something like:\n\n    node $id=\"1\" hadb01\n      attributes standby=\"off\"\n    node $id=\"2\" hadb02\n      attributes standby=\"off\"\n\nCheck it by running `sudo crm configure show`. Now, create a file (say, `/tmp/cluster.conf`) with the following resources:\n\n    primitive drbd_mysql ocf:linbit:drbd \\\n          params drbd_resource=\"r0\" \\\n          op monitor interval=\"29s\" role=\"Master\" \\\n          op monitor interval=\"31s\" role=\"Slave\"\n\n    ms ms_drbd_mysql drbd_mysql \\\n          meta master-max=\"1\" master-node-max=\"1\" \\\n            clone-max=\"2\" clone-node-max=\"1\" \\\n            notify=\"true\"\n\n    primitive fs_mysql ocf:heartbeat:Filesystem \\\n          params device=\"/dev/drbd/by-res/r0\" \\\n          directory=\"/var/lib/mysql\" fstype=\"ext3\"\n\n    primitive mysqld lsb:mysql\n\n    group mysql fs_mysql mysqld\n\n    colocation mysql_on_drbd \\\n           inf: mysql ms_drbd_mysql:Master\n\n    order mysql_after_drbd \\\n           inf: ms_drbd_mysql:promote mysql:start\n\n    property stonith-enabled=false\n\n    property no-quorum-policy=ignore\n\nAnd now load it into the configuration (you only need to do this in one node):\n\n    sudo crm configure\n      load update /tmp/cluster.conf\n      commit\n      exit\n\nAlso, make sure that Pacemaker starts at boot in both nodes:\n\n    sudo update-rc.d pacemaker defaults\n\nAfter a few seconds, and using `sudo crm_mon –L`, verify that one of your nodes has become the master for the cluster, and is running all the resources. You can use mount and ps to check that the resources are running.\n\nThe following screenshot shows `crm_mon` with one node stopped (exit using Control-C)\n\n![crm_mon node stopped](media/virtual-machines-linux-mysql-cluster/image002.png)\n\nAnd this screenshot shows both nodes, with one master and one slave:\n\n![crm_mon operational master/slave](media/virtual-machines-linux-mysql-cluster/image003.png)\n\n## Testing\n\nWe're ready for an automatic failover simulation. There are two ways to doing this: soft and hard. The soft way is using the cluster's shutdown function: ``crm_standby -U `uname -n` -v on``. Using this on the master, the slave will take over. Remember to set this back to off (crm_mon will tell you one node is on standby otherwise)\n\nThe hard way is shutting down the primary VM (hadb01) via the Portal or changing the runlevel on the VM (i.e., halt, shutdown) then we're helping Corosync and Pacemaker by signaling master's going down. We can test this (useful for maintenance windows) but we can also force the scenario by just freezing the VM.\n\n## STONITH\n\nIt should be possible to issue a VM shutdown via the Azure CLI in lieu of a STONITH script that controls a physical device. You can use `/usr/lib/stonith/plugins/external/ssh` as a base and enable STONITH in the cluster's configuration. Azure CLI should be globally installed and the publish settings/profile should be loaded for the cluster's user.\n\nSample code for the resource available on [GitHub](https://github.com/bureado/aztonith). You need to change the cluster's configuration by adding the following to `sudo crm configure`:\n\n    primitive st-azure stonith:external/azure \\\n      params hostlist=\"hadb01 hadb02\" \\\n      clone fencing st-azure \\\n      property stonith-enabled=true \\\n      commit\n\n**Note:** the script doesn't perform up/down checks. The original SSH resource had 15 ping checks but recovery time for an Azure VM might be more variable.\n\n## Limitations\n\nThe following limitations apply:\n\n- The linbit DRBD resource script that manages DRBD as a resource in Pacemaker uses `drbdadm down` when shutting down a node, even if the node is just going standby. This is not ideal since the slave will not be synchronizing the DRBD resource while the master gets writes. If the master does not fail graciously, the slave can take over an older filesystem state. There are two potential ways of solving this:\n  - Enforcing a `drbdadm up r0` in all cluster nodes via a local (not clusterized) watchdog, or,\n  - Editing the linbit DRBD script making sure that `down` is not called, in `/usr/lib/ocf/resource.d/linbit/drbd`.\n- Load balancer needs at least 5 seconds to respond, so applications should be cluster aware and be more tolerant of timeout; other architectures can also help, for example in-app queues, query middlewares, etc.\n- MySQL tuning is necessary to ensure writing is done at a sane pace and caches are flushed to disk as frequently as possible to minimize memory loss\n- Write performance will be dependent in VM interconnect in the virtual switch as this is the mechanism used by DRBD to replicate the device\n "
+}

@@ -1,0 +1,89 @@
+{
+  "nodes": [
+    {
+      "content": "WCF based Communication stack provided by Reliable Services API",
+      "pos": [
+        26,
+        89
+      ]
+    },
+    {
+      "content": "This article describes the WCF based communication stack provided by the Reliable Service's api.",
+      "pos": [
+        107,
+        203
+      ]
+    },
+    {
+      "content": "WCF based communication stack for Reliable Services",
+      "pos": [
+        526,
+        577
+      ]
+    },
+    {
+      "content": "Reliable services framework allows Service authors to decide the communication stack they want to use for their service.",
+      "pos": [
+        578,
+        698
+      ]
+    },
+    {
+      "content": "They can plugin the communication stack of their choice via the <ph id=\"ph1\">`ICommunicationListener`</ph> returned from the <bpt id=\"p1\">[</bpt><ph id=\"ph2\">`CreateCommunicationListener`</ph><ept id=\"p1\">](../service-fabric-reliable-service-communication.md)</ept> method.",
+      "pos": [
+        699,
+        898
+      ]
+    },
+    {
+      "content": "The framework provides a WCF based implementation of the communication stack, for service authors who want to use WCF based communication.",
+      "pos": [
+        899,
+        1037
+      ]
+    },
+    {
+      "content": "WCF Communication Listener",
+      "pos": [
+        1042,
+        1068
+      ]
+    },
+    {
+      "pos": [
+        1069,
+        1181
+      ],
+      "content": "The WCF specific implementation of <ph id=\"ph1\">`ICommunicationListener`</ph> is provided by the <ph id=\"ph2\">`WcfCommunicationListener`</ph> class."
+    },
+    {
+      "content": "Writing clients for WCF communication stack",
+      "pos": [
+        2010,
+        2053
+      ]
+    },
+    {
+      "pos": [
+        2054,
+        2302
+      ],
+      "content": "For writing clients to communicate with services using WCF, the framework provides <ph id=\"ph1\">`WcfClientCommunicationFactory`</ph>, which is the WCF specific implementation of <bpt id=\"p1\">[</bpt><ph id=\"ph2\">`ClientCommunicationFactoryBase`</ph><ept id=\"p1\">](../service-fabric-reliable-service-communication.md)</ept>."
+    },
+    {
+      "pos": [
+        2587,
+        2713
+      ],
+      "content": "The WCF communication channel can be accessed from the <ph id=\"ph1\">`WcfCommunicationClient`</ph> created by the <ph id=\"ph2\">`WcfCommunicationClientFactory`</ph>"
+    },
+    {
+      "pos": [
+        2940,
+        3108
+      ],
+      "content": "Client code can use the <ph id=\"ph1\">`WcfCommunicationClientFactory`</ph> along with the <ph id=\"ph2\">`ServicePartitionClient`</ph> to determine the service endpoint and make communicate with the service."
+    }
+  ],
+  "content": "<properties\n   pageTitle=\"WCF based Communication stack provided by Reliable Services API\"\n   description=\"This article describes the WCF based communication stack provided by the Reliable Service's api.\"\n   services=\"service-fabric\"\n   documentationCenter=\".net\"\n   authors=\"BharatNarasimman\"\n   manager=\"vipulm\"\n   editor=\"\"/>\n\n<tags\n   ms.service=\"service-fabric\"\n   ms.devlang=\"dotnet\"\n   ms.topic=\"article\"\n   ms.tgt_pltfrm=\"na\"\n   ms.workload=\"required\"\n   ms.date=\"08/27/2015\"\n   ms.author=\"bharatn@microsoft.com\"/>\n\n# WCF based communication stack for Reliable Services\nReliable services framework allows Service authors to decide the communication stack they want to use for their service. They can plugin the communication stack of their choice via the `ICommunicationListener` returned from the [`CreateCommunicationListener`](../service-fabric-reliable-service-communication.md) method. The framework provides a WCF based implementation of the communication stack, for service authors who want to use WCF based communication.\n\n## WCF Communication Listener\nThe WCF specific implementation of `ICommunicationListener` is provided by the `WcfCommunicationListener` class.\n\n```csharp\n\npublic WcfCommunicationListener(\n    Type communicationInterfaceType,\n    Type communicationImplementationType);\n\nprotected override ICommunicationListener CreateCommunicationListener()\n    {\n        WcfCommunicationListener communicationListener = new WcfCommunicationListener(typeof(ICalculator), this)\n        {\n            //\n            // The name of the endpoint configured in the ServiceManifest under the Endpoints section\n            // which identifies the endpoint that the wcf servicehost should listen on.\n            //\n            EndpointResourceName = \"ServiceEndpoint\",\n\n            //\n            // Populate the binding information that you want the service to use.\n            //\n            Binding = this.CreateListenBinding()\n        };\n\n        return communicationListener;\n    }\n\n```\n\n## Writing clients for WCF communication stack\nFor writing clients to communicate with services using WCF, the framework provides `WcfClientCommunicationFactory`, which is the WCF specific implementation of [`ClientCommunicationFactoryBase`](../service-fabric-reliable-service-communication.md).\n\n```csharp\n\npublic WcfCommunicationClientFactory(\n    ServicePartitionResolver servicePartitionResolver = null,\n    Binding binding = null,\n    object callback = null,\n    IList<IExceptionHandler> exceptionHandlers = null,\n    IEnumerable<Type> doNotRetryExceptionTypes = null)\n\n```\n\nThe WCF communication channel can be accessed from the `WcfCommunicationClient` created by the `WcfCommunicationClientFactory`\n\n```csharp\n\npublic class WcfCommunicationClient<TChannel> : ICommunicationClient where TChannel : class\n{\n    public TChannel Channel { get; }\n    public ResolvedServicePartition ResolvedServicePartition { get; set; }\n}\n\n```\n\nClient code can use the `WcfCommunicationClientFactory` along with the `ServicePartitionClient` to determine the service endpoint and make communicate with the service.\n\n```csharp\n\n//\n// Create a service resolver for resolving the endpoints of the calculator service.\n//\nServicePartitionResolver serviceResolver = new ServicePartitionResolver(() => new FabricClient());\n\n//\n// Create the binding.\n//\nNetTcpBinding binding = CreateClientConnectionBinding();\n\nvar clientFactory = new WcfCommunicationClientFactory<ICalculator>(\n    serviceResolver,// ServicePartitionResolver\n    binding,        // Client binding\n    null,           // Callback object\n    null);          // donot retry Exception types\n\n\n//\n// Create a client for communicating with the calc service which has been created with\n// Singleton partition scheme.\n//\nvar calculatorServicePartitionClient = new ServicePartitionClient<WcfCommunicationClient<ICalculator>>(\n    clientFactory,\n    ServiceName);\n\n//\n// Call the service to perform the operation.\n//\nvar result = calculatorServicePartitionClient.InvokeWithRetryAsync(\n    client => client.Channel.AddAsync(2, 3)).Result;\n\n\n```\n \n"
+}

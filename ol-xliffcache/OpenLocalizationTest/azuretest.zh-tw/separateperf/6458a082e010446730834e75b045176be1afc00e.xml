@@ -1,0 +1,1412 @@
+{
+  "nodes": [
+    {
+      "content": "Analyze Twitter data with Hadoop in HDInsight | Microsoft Azure",
+      "pos": [
+        27,
+        90
+      ]
+    },
+    {
+      "content": "Learn how to use Hive to analyze Twitter data on Hadoop in HDInsight to find the usage frequency of a particular word.",
+      "pos": [
+        109,
+        227
+      ]
+    },
+    {
+      "content": "Analyze Twitter data using Hive in HDInsight",
+      "pos": [
+        527,
+        571
+      ]
+    },
+    {
+      "content": "Social websites are one of the major driving forces for big-data adoption.",
+      "pos": [
+        573,
+        647
+      ]
+    },
+    {
+      "content": "Public APIs provided by sites like Twitter are a useful source of data for analyzing and understanding popular trends.",
+      "pos": [
+        648,
+        766
+      ]
+    },
+    {
+      "content": "In this tutorial, you will get tweets by using a Twitter streaming API, and then use Apache Hive on Azure HDInsight to get a list of Twitter users who sent the most tweets that contained a certain word.",
+      "pos": [
+        767,
+        969
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> The steps in this document require a Windows-based HDInsight cluster.",
+      "pos": [
+        973,
+        1055
+      ]
+    },
+    {
+      "content": "For steps specific to a Linux-based cluster, see <bpt id=\"p1\">[</bpt>Analyze Twitter data using Hive in HDInsight (Linux)<ept id=\"p1\">](hdinsight-analyze-twitter-data-linux.md)</ept>.",
+      "pos": [
+        1056,
+        1201
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.TIP]</ph> A similar sample is in the HDInsight Sample Gallery.",
+      "pos": [
+        1207,
+        1271
+      ]
+    },
+    {
+      "content": "Watch the Channel 9 video: <ph id=\"ph1\">&lt;a href=\"http://channel9.msdn.com/Series/Getting-started-with-Windows-Azure-HDInsight-Service/Analyze-Twitter-trend-using-Apache-Hive-in-HDInsight\" target=\"_blank\"&gt;</ph>Analyze Twitter trends using Apache Hive in HDInsight<ph id=\"ph2\">&lt;/a&gt;</ph>.",
+      "pos": [
+        1272,
+        1521
+      ]
+    },
+    {
+      "content": "Prerequisites",
+      "pos": [
+        1526,
+        1539
+      ]
+    },
+    {
+      "content": "Before you begin this tutorial, you must have the following:",
+      "pos": [
+        1541,
+        1601
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>A workstation<ept id=\"p1\">**</ept> with Azure PowerShell installed and configured.",
+      "pos": [
+        1605,
+        1670
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt>Install and use Azure PowerShell<ept id=\"p1\">](http://azure.microsoft.com/documentation/videos/install-and-use-azure-powershell/)</ept>.",
+      "pos": [
+        1671,
+        1793
+      ]
+    },
+    {
+      "content": "To execute Windows PowerShell scripts, you must run Azure PowerShell as administrator and set the execution policy to <bpt id=\"p1\">*</bpt>RemoteSigned<ept id=\"p1\">*</ept>.",
+      "pos": [
+        1794,
+        1927
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt>Run Windows PowerShell scripts<ept id=\"p1\">][powershell-script]</ept>.",
+      "pos": [
+        1928,
+        1984
+      ]
+    },
+    {
+      "content": "Before running Windows PowerShell scripts, make sure you are connected to your Azure subscription by using the following cmdlet:",
+      "pos": [
+        1990,
+        2118
+      ]
+    },
+    {
+      "content": "If you have multiple Azure subscriptions, use the following cmdlet to set the current subscription:",
+      "pos": [
+        2150,
+        2249
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>An Azure HDInsight cluster<ept id=\"p1\">**</ept>.",
+      "pos": [
+        2313,
+        2344
+      ]
+    },
+    {
+      "content": "For instructions on cluster provisioning, see <bpt id=\"p1\">[</bpt>Get started using HDInsight<ept id=\"p1\">][hdinsight-get-started]</ept> or <bpt id=\"p2\">[</bpt>Provision HDInsight clusters<ept id=\"p2\">] [hdinsight-provision]</ept>.",
+      "pos": [
+        2345,
+        2500
+      ]
+    },
+    {
+      "content": "You will need the cluster name later in the tutorial.",
+      "pos": [
+        2501,
+        2554
+      ]
+    },
+    {
+      "content": "Understand HDInsight storage",
+      "pos": [
+        2558,
+        2586
+      ]
+    },
+    {
+      "content": "HDInsight uses Azure Blob storage for data storage.",
+      "pos": [
+        2590,
+        2641
+      ]
+    },
+    {
+      "content": "Azure Blob storage is Microsoft's implementation of Hadoop Distributed File System (HDFS).",
+      "pos": [
+        2642,
+        2732
+      ]
+    },
+    {
+      "content": "For more information see <bpt id=\"p1\">[</bpt>Use Azure Blob storage with HDInsight<ept id=\"p1\">][hdinsight-storage]</ept>.",
+      "pos": [
+        2733,
+        2817
+      ]
+    },
+    {
+      "content": "When you provision an HDInsight cluster, a Blob storage container is designated as the default file system, just like in HDFS.",
+      "pos": [
+        2819,
+        2945
+      ]
+    },
+    {
+      "content": "In addition to this container, you can add containers from either the same Azure storage account or different Azure storage accounts during the provisioning process.",
+      "pos": [
+        2946,
+        3111
+      ]
+    },
+    {
+      "content": "For instructions on adding storage accounts, see <bpt id=\"p1\">[</bpt>Provision HDInsight clusters<ept id=\"p1\">] [hdinsight-provision]</ept>.",
+      "pos": [
+        3112,
+        3214
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> To simplify the Windows PowerShell script used in this tutorial, all of the files are stored in the default file system container, located at <bpt id=\"p1\">*</bpt>/tutorials/twitter<ept id=\"p1\">*</ept>.",
+      "pos": [
+        3218,
+        3394
+      ]
+    },
+    {
+      "content": "By default this container has the same name as the HDInsight cluster name.",
+      "pos": [
+        3395,
+        3469
+      ]
+    },
+    {
+      "content": "If you choose to use a different container to store these files, please update the script accordingly.",
+      "pos": [
+        3470,
+        3572
+      ]
+    },
+    {
+      "content": "The Azure Blob storage syntax is:",
+      "pos": [
+        3574,
+        3607
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> Only the <bpt id=\"p1\">*</bpt>wasb://<ept id=\"p1\">*</ept> syntax is supported in HDInsight cluster version 3.0.",
+      "pos": [
+        3703,
+        3788
+      ]
+    },
+    {
+      "content": "The older <bpt id=\"p1\">*</bpt>asv://<ept id=\"p1\">*</ept> syntax is supported in HDInsight 2.1 and 1.6 clusters, but it is not supported in HDInsight 3.0 clusters and it will not be supported in later versions.",
+      "pos": [
+        3789,
+        3960
+      ]
+    },
+    {
+      "content": "The Azure Blob storage path is a virtual path.",
+      "pos": [
+        3964,
+        4010
+      ]
+    },
+    {
+      "content": "For more information see <bpt id=\"p1\">[</bpt>Use Azure Blob storage with HDInsight<ept id=\"p1\">][hdinsight-storage]</ept>.",
+      "pos": [
+        4011,
+        4095
+      ]
+    },
+    {
+      "content": "A file stored in the default file system container can be accessed from HDInsight by using any of the following Uniform Resource Identifiers (URIs).",
+      "pos": [
+        4097,
+        4245
+      ]
+    },
+    {
+      "content": "These URIs use tweets.txt as an example.",
+      "pos": [
+        4246,
+        4286
+      ]
+    },
+    {
+      "content": "If you want to access the file directly from the storage account, the blob name for the file is:",
+      "pos": [
+        4455,
+        4551
+      ]
+    },
+    {
+      "content": "The following table lists the files used in this tutorial:",
+      "pos": [
+        4587,
+        4645
+      ]
+    },
+    {
+      "content": "Files",
+      "pos": [
+        4647,
+        4652
+      ]
+    },
+    {
+      "content": "Description",
+      "pos": [
+        4653,
+        4664
+      ]
+    },
+    {
+      "content": "/tutorials/twitter/data/tweets.txt",
+      "pos": [
+        4673,
+        4707
+      ]
+    },
+    {
+      "content": "The source data for the Hive job.",
+      "pos": [
+        4708,
+        4741
+      ]
+    },
+    {
+      "content": "/tutorials/twitter/output",
+      "pos": [
+        4742,
+        4767
+      ]
+    },
+    {
+      "content": "The output folder for the Hive job.",
+      "pos": [
+        4768,
+        4803
+      ]
+    },
+    {
+      "content": "The default Hive job output file name is <bpt id=\"p1\">**</bpt>000000_0<ept id=\"p1\">**</ept>.",
+      "pos": [
+        4804,
+        4858
+      ]
+    },
+    {
+      "content": "tutorials/twitter/twitter.hql",
+      "pos": [
+        4859,
+        4888
+      ]
+    },
+    {
+      "content": "The HiveQL script file.",
+      "pos": [
+        4889,
+        4912
+      ]
+    },
+    {
+      "content": "/tutorials/twitter/jobstatus",
+      "pos": [
+        4913,
+        4941
+      ]
+    },
+    {
+      "content": "The Hadoop job status.",
+      "pos": [
+        4942,
+        4964
+      ]
+    },
+    {
+      "content": "Get a Twitter feed",
+      "pos": [
+        4969,
+        4987
+      ]
+    },
+    {
+      "content": "In this tutorial, you will use the <bpt id=\"p1\">[</bpt>Twitter streaming APIs<ept id=\"p1\">][twitter-streaming-api]</ept>.",
+      "pos": [
+        4989,
+        5072
+      ]
+    },
+    {
+      "content": "The specific Twitter streaming API you will use is <bpt id=\"p1\">[</bpt>statuses/filter<ept id=\"p1\">][twitter-statuses-filter]</ept>.",
+      "pos": [
+        5073,
+        5167
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> A file containing 10,000 tweets and the Hive script file (covered in the next section) have been uploaded in a public Blob container.",
+      "pos": [
+        5170,
+        5316
+      ]
+    },
+    {
+      "content": "You can skip this section if you want to use the uploaded files.",
+      "pos": [
+        5317,
+        5381
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt>Tweets data<ept id=\"p1\">](https://dev.twitter.com/docs/platform-objects/tweets)</ept> is stored in the JavaScript Object Notation (JSON) format that contains a complex nested structure.",
+      "pos": [
+        5383,
+        5550
+      ]
+    },
+    {
+      "content": "Instead of writing many lines of code by using a conventional programming language, you can transform this nested structure into a Hive table, so that it can be queried by a Structured Query Language (SQL)-like language called HiveQL.",
+      "pos": [
+        5551,
+        5785
+      ]
+    },
+    {
+      "content": "Twitter uses OAuth to provide authorized access to its API.",
+      "pos": [
+        5787,
+        5846
+      ]
+    },
+    {
+      "content": "OAuth is an authentication protocol that allows users to approve applications to act on their behalf without sharing their password.",
+      "pos": [
+        5847,
+        5979
+      ]
+    },
+    {
+      "content": "More information can be found at <bpt id=\"p1\">[</bpt>oauth.net<ept id=\"p1\">](http://oauth.net/)</ept> or in the excellent <bpt id=\"p2\">[</bpt>Beginner's Guide to OAuth<ept id=\"p2\">](http://hueniverse.com/oauth/)</ept> from Hueniverse.",
+      "pos": [
+        5980,
+        6138
+      ]
+    },
+    {
+      "content": "The first step to use OAuth is to create a new application on the Twitter Developer site.",
+      "pos": [
+        6140,
+        6229
+      ]
+    },
+    {
+      "content": "To create a Twitter application",
+      "pos": [
+        6233,
+        6264
+      ]
+    },
+    {
+      "content": "Sign in to <bpt id=\"p1\">[</bpt>https://apps.twitter.com/<ept id=\"p1\">](https://apps.twitter.com/)</ept>.",
+      "pos": [
+        6271,
+        6337
+      ]
+    },
+    {
+      "content": "Click the <bpt id=\"p1\">**</bpt>Sign up now<ept id=\"p1\">**</ept> link if you don't have a Twitter account.",
+      "pos": [
+        6338,
+        6405
+      ]
+    },
+    {
+      "pos": [
+        6409,
+        6434
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>Create New App<ept id=\"p1\">**</ept>."
+    },
+    {
+      "content": "Enter <bpt id=\"p1\">**</bpt>Name<ept id=\"p1\">**</ept>, <bpt id=\"p2\">**</bpt>Description<ept id=\"p2\">**</ept>, <bpt id=\"p3\">**</bpt>Website<ept id=\"p3\">**</ept>.",
+      "pos": [
+        6438,
+        6483
+      ]
+    },
+    {
+      "content": "You can make up a URL for the <bpt id=\"p1\">**</bpt>Website<ept id=\"p1\">**</ept> field.",
+      "pos": [
+        6484,
+        6532
+      ]
+    },
+    {
+      "content": "The following table shows some sample values to use:",
+      "pos": [
+        6533,
+        6585
+      ]
+    },
+    {
+      "content": "Field",
+      "pos": [
+        6587,
+        6592
+      ]
+    },
+    {
+      "content": "Value",
+      "pos": [
+        6593,
+        6598
+      ]
+    },
+    {
+      "content": "Name",
+      "pos": [
+        6607,
+        6611
+      ]
+    },
+    {
+      "content": "MyHDInsightApp",
+      "pos": [
+        6612,
+        6626
+      ]
+    },
+    {
+      "content": "Description",
+      "pos": [
+        6627,
+        6638
+      ]
+    },
+    {
+      "content": "MyHDInsightApp",
+      "pos": [
+        6639,
+        6653
+      ]
+    },
+    {
+      "content": "Website",
+      "pos": [
+        6654,
+        6661
+      ]
+    },
+    {
+      "content": "http://www.myhdinsightapp.com",
+      "pos": [
+        6662,
+        6691
+      ]
+    },
+    {
+      "pos": [
+        6696,
+        6771
+      ],
+      "content": "Check <bpt id=\"p1\">**</bpt>Yes, I agree<ept id=\"p1\">**</ept>, and then click <bpt id=\"p2\">**</bpt>Create your Twitter application<ept id=\"p2\">**</ept>."
+    },
+    {
+      "content": "Click the <bpt id=\"p1\">**</bpt>Permissions<ept id=\"p1\">**</ept> tab.",
+      "pos": [
+        6775,
+        6805
+      ]
+    },
+    {
+      "content": "The default permission is <bpt id=\"p1\">**</bpt>Read only<ept id=\"p1\">**</ept>.",
+      "pos": [
+        6806,
+        6846
+      ]
+    },
+    {
+      "content": "This is sufficient for this tutorial.",
+      "pos": [
+        6847,
+        6884
+      ]
+    },
+    {
+      "pos": [
+        6888,
+        6929
+      ],
+      "content": "Click the <bpt id=\"p1\">**</bpt>Keys and Access Tokens<ept id=\"p1\">**</ept> tab."
+    },
+    {
+      "pos": [
+        6933,
+        6966
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>Create my access token<ept id=\"p1\">**</ept>."
+    },
+    {
+      "pos": [
+        6970,
+        7029
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>Test OAuth<ept id=\"p1\">**</ept> in the upper-right corner of the page."
+    },
+    {
+      "content": "Write down <bpt id=\"p1\">**</bpt>consumer key<ept id=\"p1\">**</ept>, <bpt id=\"p2\">**</bpt>Consumer secret<ept id=\"p2\">**</ept>, <bpt id=\"p3\">**</bpt>Access token<ept id=\"p3\">**</ept>, and <bpt id=\"p4\">**</bpt>Access token secret<ept id=\"p4\">**</ept>.",
+      "pos": [
+        7033,
+        7129
+      ]
+    },
+    {
+      "content": "You will need the values later in the tutorial.",
+      "pos": [
+        7130,
+        7177
+      ]
+    },
+    {
+      "content": "In this tutorial, you will use Windows PowerShell to make the web service call.",
+      "pos": [
+        7179,
+        7258
+      ]
+    },
+    {
+      "content": "For a .NET C# sample, see <bpt id=\"p1\">[</bpt>Analyze real-time Twitter sentiment with HBase in HDInsight<ept id=\"p1\">][hdinsight-hbase-twitter-sentiment]</ept>.",
+      "pos": [
+        7259,
+        7382
+      ]
+    },
+    {
+      "content": "The other popular tool to make web service calls is <bpt id=\"p1\">[</bpt><bpt id=\"p2\">*</bpt>Curl<ept id=\"p2\">*</ept><ept id=\"p1\">][curl]</ept>.",
+      "pos": [
+        7383,
+        7450
+      ]
+    },
+    {
+      "content": "Curl can be downloaded from <bpt id=\"p1\">[</bpt>here<ept id=\"p1\">][curl-download]</ept>.",
+      "pos": [
+        7451,
+        7501
+      ]
+    },
+    {
+      "pos": [
+        7504,
+        7624
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> When you use the curl command in Windows, use double quotes instead of single quotes for the option values."
+    },
+    {
+      "content": "To get tweets",
+      "pos": [
+        7628,
+        7641
+      ]
+    },
+    {
+      "content": "Open the Windows PowerShell Integrated Scripting Environment (ISE).",
+      "pos": [
+        7648,
+        7715
+      ]
+    },
+    {
+      "content": "(On the Windows 8 Start screen, type <bpt id=\"p1\">**</bpt>PowerShell_ISE<ept id=\"p1\">**</ept> and then click <bpt id=\"p2\">**</bpt>Windows PowerShell ISE<ept id=\"p2\">**</ept>.",
+      "pos": [
+        7716,
+        7814
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt>Start Windows PowerShell on Windows 8 and Windows<ept id=\"p1\">][powershell-start]</ept>.)",
+      "pos": [
+        7815,
+        7890
+      ]
+    },
+    {
+      "content": "Copy the following script into the script pane:",
+      "pos": [
+        7895,
+        7942
+      ]
+    },
+    {
+      "content": "Set the first five to eight variables in the script:",
+      "pos": [
+        14644,
+        14696
+      ]
+    },
+    {
+      "content": "Variable",
+      "pos": [
+        14699,
+        14707
+      ]
+    },
+    {
+      "content": "Description",
+      "pos": [
+        14708,
+        14719
+      ]
+    },
+    {
+      "content": "$clusterName",
+      "pos": [
+        14728,
+        14740
+      ]
+    },
+    {
+      "content": "This is the name of the HDInsight cluster where you want to run the application.",
+      "pos": [
+        14741,
+        14821
+      ]
+    },
+    {
+      "content": "$oauth_consumer_key",
+      "pos": [
+        14822,
+        14841
+      ]
+    },
+    {
+      "pos": [
+        14842,
+        14955
+      ],
+      "content": "This is the Twitter application <bpt id=\"p1\">**</bpt>consumer key<ept id=\"p1\">**</ept> you wrote down earlier when you created the Twitter application."
+    },
+    {
+      "content": "$oauth_consumer_secret",
+      "pos": [
+        14956,
+        14978
+      ]
+    },
+    {
+      "pos": [
+        14979,
+        15054
+      ],
+      "content": "This is the Twitter application <bpt id=\"p1\">**</bpt>consumer secret<ept id=\"p1\">**</ept> you wrote down earlier."
+    },
+    {
+      "content": "$oauth_token",
+      "pos": [
+        15055,
+        15067
+      ]
+    },
+    {
+      "pos": [
+        15068,
+        15140
+      ],
+      "content": "This is the Twitter application <bpt id=\"p1\">**</bpt>access token<ept id=\"p1\">**</ept> you wrote down earlier."
+    },
+    {
+      "content": "$oauth_token_secret",
+      "pos": [
+        15141,
+        15160
+      ]
+    },
+    {
+      "pos": [
+        15161,
+        15240
+      ],
+      "content": "This is the Twitter application <bpt id=\"p1\">**</bpt>access token secret<ept id=\"p1\">**</ept> you wrote down earlier."
+    },
+    {
+      "content": "$destBlobName",
+      "pos": [
+        15241,
+        15254
+      ]
+    },
+    {
+      "content": "This is the output blob name.",
+      "pos": [
+        15255,
+        15284
+      ]
+    },
+    {
+      "content": "The default value is <bpt id=\"p1\">**</bpt>tutorials/twitter/data/tweets.txt<ept id=\"p1\">**</ept>.",
+      "pos": [
+        15285,
+        15344
+      ]
+    },
+    {
+      "content": "If you change the default value, you will need to update the Windows PowerShell scripts accordingly.",
+      "pos": [
+        15345,
+        15445
+      ]
+    },
+    {
+      "content": "$trackString",
+      "pos": [
+        15446,
+        15458
+      ]
+    },
+    {
+      "content": "The web service will return tweets related to these keywords.",
+      "pos": [
+        15459,
+        15520
+      ]
+    },
+    {
+      "content": "The default value is <bpt id=\"p1\">**</bpt>Azure, Cloud, HDInsight<ept id=\"p1\">**</ept>.",
+      "pos": [
+        15521,
+        15570
+      ]
+    },
+    {
+      "content": "If you change the default value, you will update the Windows PowerShell scripts accordingly.",
+      "pos": [
+        15571,
+        15663
+      ]
+    },
+    {
+      "content": "$lineMax",
+      "pos": [
+        15664,
+        15672
+      ]
+    },
+    {
+      "content": "The value determines how many tweets the script will read.",
+      "pos": [
+        15673,
+        15731
+      ]
+    },
+    {
+      "content": "It takes about three minutes to read 100 tweets.",
+      "pos": [
+        15732,
+        15780
+      ]
+    },
+    {
+      "content": "You can set a larger number, but it will take more time to download.",
+      "pos": [
+        15781,
+        15849
+      ]
+    },
+    {
+      "content": "Press <bpt id=\"p1\">**</bpt>F5<ept id=\"p1\">**</ept> to run the script.",
+      "pos": [
+        15854,
+        15885
+      ]
+    },
+    {
+      "content": "If you run into problems, as a workaround, select all the lines, and then press <bpt id=\"p1\">**</bpt>F8<ept id=\"p1\">**</ept>.",
+      "pos": [
+        15886,
+        15973
+      ]
+    },
+    {
+      "content": "You shall see \"Complete!\"",
+      "pos": [
+        15977,
+        16002
+      ]
+    },
+    {
+      "content": "at the end of the output.",
+      "pos": [
+        16003,
+        16028
+      ]
+    },
+    {
+      "content": "Any error messages will be displayed in red.",
+      "pos": [
+        16029,
+        16073
+      ]
+    },
+    {
+      "content": "As a validation procedure, you can check the output file, <bpt id=\"p1\">**</bpt>/tutorials/twitter/data/tweets.txt<ept id=\"p1\">**</ept>, on your Azure Blob storage by using an Azure storage explorer or Azure PowerShell.",
+      "pos": [
+        16075,
+        16255
+      ]
+    },
+    {
+      "content": "For a sample Windows PowerShell script for listing files, see <bpt id=\"p1\">[</bpt>Use Blob storage with HDInsight<ept id=\"p1\">][hdinsight-storage-powershell]</ept>.",
+      "pos": [
+        16256,
+        16382
+      ]
+    },
+    {
+      "content": "Create a HiveQL script",
+      "pos": [
+        16388,
+        16410
+      ]
+    },
+    {
+      "content": "Using Azure PowerShell, you can run multiple HiveQL statements one at a time, or package the HiveQL statement into a script file.",
+      "pos": [
+        16412,
+        16541
+      ]
+    },
+    {
+      "content": "In this tutorial, you will create a HiveQL script.",
+      "pos": [
+        16542,
+        16592
+      ]
+    },
+    {
+      "content": "The script file must be uploaded to Azure Blob storage.",
+      "pos": [
+        16593,
+        16648
+      ]
+    },
+    {
+      "content": "In the next section, you will run the script file by using Azure PowerShell.",
+      "pos": [
+        16649,
+        16725
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> The Hive script file and a file containing 10,000 tweets have been uploaded in a public Blob container.",
+      "pos": [
+        16728,
+        16844
+      ]
+    },
+    {
+      "content": "You can skip this section if you want to use the uploaded files.",
+      "pos": [
+        16845,
+        16909
+      ]
+    },
+    {
+      "content": "The HiveQL script will perform the following:",
+      "pos": [
+        16911,
+        16956
+      ]
+    },
+    {
+      "pos": [
+        16961,
+        17024
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Drop the tweets_raw table<ept id=\"p1\">**</ept> in case the table already exists."
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Create the tweets_raw Hive table<ept id=\"p1\">**</ept>.",
+      "pos": [
+        17028,
+        17065
+      ]
+    },
+    {
+      "content": "This temporary Hive structured table holds the data for further extract, transform, and load (ETL) processing.",
+      "pos": [
+        17066,
+        17176
+      ]
+    },
+    {
+      "content": "For information on partitions, see <bpt id=\"p1\">[</bpt>Hive tutorial<ept id=\"p1\">][apache-hive-tutorial]</ept>.",
+      "pos": [
+        17177,
+        17250
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Load data<ept id=\"p1\">**</ept> from the source folder, /tutorials/twitter/data.",
+      "pos": [
+        17256,
+        17318
+      ]
+    },
+    {
+      "content": "The large tweets dataset in nested JSON format has now been transformed into a temporary Hive table structure.",
+      "pos": [
+        17319,
+        17429
+      ]
+    },
+    {
+      "pos": [
+        17433,
+        17492
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Drop the tweets table<ept id=\"p1\">**</ept> in case the table already exists."
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Create the tweets table<ept id=\"p1\">**</ept>.",
+      "pos": [
+        17496,
+        17524
+      ]
+    },
+    {
+      "content": "Before you can query against the tweets dataset by using Hive, you need to run another ETL process.",
+      "pos": [
+        17525,
+        17624
+      ]
+    },
+    {
+      "content": "This ETL process defines a more detailed table schema for the data that you have stored in the \"twitter_raw\" table.",
+      "pos": [
+        17625,
+        17740
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Insert overwrite table<ept id=\"p1\">**</ept>.",
+      "pos": [
+        17746,
+        17773
+      ]
+    },
+    {
+      "content": "This complex Hive script will kick off a set of long MapReduce jobs by the Hadoop cluster.",
+      "pos": [
+        17774,
+        17864
+      ]
+    },
+    {
+      "content": "Depending on your dataset and the size of your cluster, this could take about 10 minutes.",
+      "pos": [
+        17865,
+        17954
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Insert overwrite directory<ept id=\"p1\">**</ept>.",
+      "pos": [
+        17958,
+        17989
+      ]
+    },
+    {
+      "content": "Run a query and output the dataset to a file.",
+      "pos": [
+        17990,
+        18035
+      ]
+    },
+    {
+      "content": "This query will return a list of Twitter users who sent most tweets that contained the word \"Azure\".",
+      "pos": [
+        18036,
+        18136
+      ]
+    },
+    {
+      "content": "To create a Hive script and upload it to Azure",
+      "pos": [
+        18140,
+        18186
+      ]
+    },
+    {
+      "content": "Open Windows PowerShell ISE.",
+      "pos": [
+        18193,
+        18221
+      ]
+    },
+    {
+      "content": "Copy the following script into the script pane:",
+      "pos": [
+        18225,
+        18272
+      ]
+    },
+    {
+      "content": "Set the first two variables in the script:",
+      "pos": [
+        25988,
+        26030
+      ]
+    },
+    {
+      "content": "Variable",
+      "pos": [
+        26032,
+        26040
+      ]
+    },
+    {
+      "content": "Description",
+      "pos": [
+        26041,
+        26052
+      ]
+    },
+    {
+      "content": "$clusterName",
+      "pos": [
+        26061,
+        26073
+      ]
+    },
+    {
+      "content": "Enter the HDInsight cluster name where you want to run the application.",
+      "pos": [
+        26074,
+        26145
+      ]
+    },
+    {
+      "content": "$sourceDataPath",
+      "pos": [
+        26146,
+        26161
+      ]
+    },
+    {
+      "content": "The Azure Blob storage location where the Hive queries will read the data from.",
+      "pos": [
+        26162,
+        26241
+      ]
+    },
+    {
+      "content": "You don't need to change this variable.",
+      "pos": [
+        26242,
+        26281
+      ]
+    },
+    {
+      "content": "$outputPath",
+      "pos": [
+        26282,
+        26293
+      ]
+    },
+    {
+      "content": "The Azure Blob storage location where the Hive queries will output the results.",
+      "pos": [
+        26294,
+        26373
+      ]
+    },
+    {
+      "content": "You don't need to change this variable.",
+      "pos": [
+        26374,
+        26413
+      ]
+    },
+    {
+      "content": "$hqlScriptFile",
+      "pos": [
+        26414,
+        26428
+      ]
+    },
+    {
+      "content": "The location and the file name of the HiveQL script file.",
+      "pos": [
+        26429,
+        26486
+      ]
+    },
+    {
+      "content": "You don't need to change this variable.",
+      "pos": [
+        26487,
+        26526
+      ]
+    },
+    {
+      "content": "Press <bpt id=\"p1\">**</bpt>F5<ept id=\"p1\">**</ept> to run the script.",
+      "pos": [
+        26531,
+        26562
+      ]
+    },
+    {
+      "content": "If you run into problems, as a workaround, select all the lines, and then press <bpt id=\"p1\">**</bpt>F8<ept id=\"p1\">**</ept>.",
+      "pos": [
+        26563,
+        26650
+      ]
+    },
+    {
+      "content": "You shall see \"Complete!\"",
+      "pos": [
+        26654,
+        26679
+      ]
+    },
+    {
+      "content": "at the end of the output.",
+      "pos": [
+        26680,
+        26705
+      ]
+    },
+    {
+      "content": "Any error messages will be displayed in red.",
+      "pos": [
+        26706,
+        26750
+      ]
+    },
+    {
+      "content": "As a validation procedure, you can check the output file, <bpt id=\"p1\">**</bpt>/tutorials/twitter/twitter.hql<ept id=\"p1\">**</ept>, on your Azure Blob storage by using an Azure storage explorer or Azure PowerShell.",
+      "pos": [
+        26752,
+        26928
+      ]
+    },
+    {
+      "content": "For a sample Windows PowerShell script for listing files, see <bpt id=\"p1\">[</bpt>Use Blob storage with HDInsight<ept id=\"p1\">][hdinsight-storage-powershell]</ept>.",
+      "pos": [
+        26929,
+        27055
+      ]
+    },
+    {
+      "content": "Process Twitter data by using Hive",
+      "pos": [
+        27062,
+        27096
+      ]
+    },
+    {
+      "content": "You have finished all the preparation work.",
+      "pos": [
+        27098,
+        27141
+      ]
+    },
+    {
+      "content": "Now, you can invoke the Hive script and check the results.",
+      "pos": [
+        27142,
+        27200
+      ]
+    },
+    {
+      "content": "Submit a Hive job",
+      "pos": [
+        27206,
+        27223
+      ]
+    },
+    {
+      "content": "Use the following Windows PowerShell script to run the Hive script.",
+      "pos": [
+        27225,
+        27292
+      ]
+    },
+    {
+      "content": "You will need to set the first variable.",
+      "pos": [
+        27293,
+        27333
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> To use the tweets and the HiveQL script you uploaded in the last two sections, set $hqlScriptFile to \"/tutorials/twitter/twitter.hql\".",
+      "pos": [
+        27336,
+        27483
+      ]
+    },
+    {
+      "content": "To use the ones that have been uploaded to a public blob for you, set $hqlScriptFile to \"wasb://twittertrend@hditutorialdata.blob.core.windows.net/twitter.hql\".",
+      "pos": [
+        27484,
+        27644
+      ]
+    },
+    {
+      "content": "Check the results",
+      "pos": [
+        28485,
+        28502
+      ]
+    },
+    {
+      "content": "Use the following Windows PowerShell script to check the Hive job output.",
+      "pos": [
+        28504,
+        28577
+      ]
+    },
+    {
+      "content": "You will need to set the first two variables.",
+      "pos": [
+        28578,
+        28623
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> The Hive table uses \\001 as the field delimiter.",
+      "pos": [
+        30189,
+        30250
+      ]
+    },
+    {
+      "content": "The delimiter is not visible in the output.",
+      "pos": [
+        30251,
+        30294
+      ]
+    },
+    {
+      "content": "After the analysis results have been placed in Azure Blob storage, you can export the data to an Azure SQL database/SQL server, export the data to Excel by using Power Query, or connect your application to the data by using the Hive ODBC Driver.",
+      "pos": [
+        30296,
+        30541
+      ]
+    },
+    {
+      "content": "For more information, see <bpt id=\"p1\">[</bpt>Use Sqoop with HDInsight<ept id=\"p1\">][hdinsight-use-sqoop]</ept>, <bpt id=\"p2\">[</bpt>Analyze flight delay data using HDInsight<ept id=\"p2\">][hdinsight-analyze-flight-delay-data]</ept>, <bpt id=\"p3\">[</bpt>Connect Excel to HDInsight with Power Query<ept id=\"p3\">][hdinsight-power-query]</ept>, and <bpt id=\"p4\">[</bpt>Connect Excel to HDInsight with the Microsoft Hive ODBC Driver<ept id=\"p4\">][hdinsight-hive-odbc]</ept>.",
+      "pos": [
+        30542,
+        30859
+      ]
+    },
+    {
+      "content": "Next steps",
+      "pos": [
+        30863,
+        30873
+      ]
+    },
+    {
+      "content": "In this tutorial we have seen how to transform an unstructured JSON dataset into a structured Hive table to query, explore, and analyze data from Twitter by using HDInsight on Azure.",
+      "pos": [
+        30875,
+        31057
+      ]
+    },
+    {
+      "content": "To learn more, see:",
+      "pos": [
+        31058,
+        31077
+      ]
+    },
+    {
+      "content": "Get started with HDInsight",
+      "pos": [
+        31082,
+        31108
+      ]
+    },
+    {
+      "content": "Analyze real-time Twitter sentiment with HBase in HDInsight",
+      "pos": [
+        31136,
+        31195
+      ]
+    },
+    {
+      "content": "Analyze flight delay data using HDInsight",
+      "pos": [
+        31235,
+        31276
+      ]
+    },
+    {
+      "content": "Connect Excel to HDInsight with Power Query",
+      "pos": [
+        31318,
+        31361
+      ]
+    },
+    {
+      "content": "Connect Excel to HDInsight with the Microsoft Hive ODBC Driver",
+      "pos": [
+        31389,
+        31451
+      ]
+    },
+    {
+      "content": "Use Sqoop with HDInsight",
+      "pos": [
+        31477,
+        31501
+      ]
+    },
+    {
+      "content": "test",
+      "pos": [
+        32621,
+        32625
+      ]
+    }
+  ],
+  "content": "<properties\n    pageTitle=\"Analyze Twitter data with Hadoop in HDInsight | Microsoft Azure\"\n    description=\"Learn how to use Hive to analyze Twitter data on Hadoop in HDInsight to find the usage frequency of a particular word.\"\n    services=\"hdinsight\"\n    documentationCenter=\"\"\n    authors=\"mumian\"\n    manager=\"paulettm\"\n    editor=\"cgronlun\"/>\n\n<tags\n    ms.service=\"hdinsight\"\n    ms.workload=\"big-data\"\n    ms.tgt_pltfrm=\"na\"\n    ms.devlang=\"na\"\n    ms.topic=\"article\"\n    ms.date=\"08/04/2015\"\n    ms.author=\"jgao\"/>\n\n# Analyze Twitter data using Hive in HDInsight\n\nSocial websites are one of the major driving forces for big-data adoption. Public APIs provided by sites like Twitter are a useful source of data for analyzing and understanding popular trends. In this tutorial, you will get tweets by using a Twitter streaming API, and then use Apache Hive on Azure HDInsight to get a list of Twitter users who sent the most tweets that contained a certain word.\n\n> [AZURE.NOTE] The steps in this document require a Windows-based HDInsight cluster. For steps specific to a Linux-based cluster, see [Analyze Twitter data using Hive in HDInsight (Linux)](hdinsight-analyze-twitter-data-linux.md).\n\n\n\n> [AZURE.TIP] A similar sample is in the HDInsight Sample Gallery. Watch the Channel 9 video: <a href=\"http://channel9.msdn.com/Series/Getting-started-with-Windows-Azure-HDInsight-Service/Analyze-Twitter-trend-using-Apache-Hive-in-HDInsight\" target=\"_blank\">Analyze Twitter trends using Apache Hive in HDInsight</a>.\n\n###Prerequisites\n\nBefore you begin this tutorial, you must have the following:\n\n- **A workstation** with Azure PowerShell installed and configured. See [Install and use Azure PowerShell](http://azure.microsoft.com/documentation/videos/install-and-use-azure-powershell/). To execute Windows PowerShell scripts, you must run Azure PowerShell as administrator and set the execution policy to *RemoteSigned*. See [Run Windows PowerShell scripts][powershell-script].\n\n    Before running Windows PowerShell scripts, make sure you are connected to your Azure subscription by using the following cmdlet:\n\n        Add-AzureAccount\n\n    If you have multiple Azure subscriptions, use the following cmdlet to set the current subscription:\n\n        Select-AzureSubscription <AzureSubscriptionName>\n\n\n\n- **An Azure HDInsight cluster**. For instructions on cluster provisioning, see [Get started using HDInsight][hdinsight-get-started] or [Provision HDInsight clusters] [hdinsight-provision]. You will need the cluster name later in the tutorial.\n\n**Understand HDInsight storage**\n\nHDInsight uses Azure Blob storage for data storage. Azure Blob storage is Microsoft's implementation of Hadoop Distributed File System (HDFS). For more information see [Use Azure Blob storage with HDInsight][hdinsight-storage].\n\nWhen you provision an HDInsight cluster, a Blob storage container is designated as the default file system, just like in HDFS. In addition to this container, you can add containers from either the same Azure storage account or different Azure storage accounts during the provisioning process. For instructions on adding storage accounts, see [Provision HDInsight clusters] [hdinsight-provision].\n\n> [AZURE.NOTE] To simplify the Windows PowerShell script used in this tutorial, all of the files are stored in the default file system container, located at */tutorials/twitter*. By default this container has the same name as the HDInsight cluster name. If you choose to use a different container to store these files, please update the script accordingly.\n\nThe Azure Blob storage syntax is:\n\n    wasb[s]://<ContainerName>@<StorageAccountName>.blob.core.windows.net/<path>/<filename>\n\n> [AZURE.NOTE] Only the *wasb://* syntax is supported in HDInsight cluster version 3.0. The older *asv://* syntax is supported in HDInsight 2.1 and 1.6 clusters, but it is not supported in HDInsight 3.0 clusters and it will not be supported in later versions.\n\n> The Azure Blob storage path is a virtual path. For more information see [Use Azure Blob storage with HDInsight][hdinsight-storage].\n\nA file stored in the default file system container can be accessed from HDInsight by using any of the following Uniform Resource Identifiers (URIs). These URIs use tweets.txt as an example.\n\n    wasb://mycontainer@mystorageaccount.blob.core.windows.net/tutorials/twitter/tweets.txt\n    wasb:///tutorials/twitter/tweets.txt\n    /tutorials/twitter/tweets.txt\n\nIf you want to access the file directly from the storage account, the blob name for the file is:\n\n    tutorials/twitter/tweets.txt\n\nThe following table lists the files used in this tutorial:\n\nFiles|Description\n---|---\n/tutorials/twitter/data/tweets.txt|The source data for the Hive job.\n/tutorials/twitter/output|The output folder for the Hive job. The default Hive job output file name is **000000_0**.\ntutorials/twitter/twitter.hql|The HiveQL script file.\n/tutorials/twitter/jobstatus|The Hadoop job status.\n\n\n##Get a Twitter feed\n\nIn this tutorial, you will use the [Twitter streaming APIs][twitter-streaming-api]. The specific Twitter streaming API you will use is [statuses/filter][twitter-statuses-filter].\n\n>[AZURE.NOTE] A file containing 10,000 tweets and the Hive script file (covered in the next section) have been uploaded in a public Blob container. You can skip this section if you want to use the uploaded files.\n\n[Tweets data](https://dev.twitter.com/docs/platform-objects/tweets) is stored in the JavaScript Object Notation (JSON) format that contains a complex nested structure. Instead of writing many lines of code by using a conventional programming language, you can transform this nested structure into a Hive table, so that it can be queried by a Structured Query Language (SQL)-like language called HiveQL.\n\nTwitter uses OAuth to provide authorized access to its API. OAuth is an authentication protocol that allows users to approve applications to act on their behalf without sharing their password. More information can be found at [oauth.net](http://oauth.net/) or in the excellent [Beginner's Guide to OAuth](http://hueniverse.com/oauth/) from Hueniverse.\n\nThe first step to use OAuth is to create a new application on the Twitter Developer site.\n\n**To create a Twitter application**\n\n1. Sign in to [https://apps.twitter.com/](https://apps.twitter.com/). Click the **Sign up now** link if you don't have a Twitter account.\n2. Click **Create New App**.\n3. Enter **Name**, **Description**, **Website**. You can make up a URL for the **Website** field. The following table shows some sample values to use:\n\nField|Value\n---|---\nName|MyHDInsightApp\nDescription|MyHDInsightApp\nWebsite|http://www.myhdinsightapp.com\n\n4. Check **Yes, I agree**, and then click **Create your Twitter application**.\n5. Click the **Permissions** tab. The default permission is **Read only**. This is sufficient for this tutorial.\n6. Click the **Keys and Access Tokens** tab.\n7. Click **Create my access token**.\n8. Click **Test OAuth** in the upper-right corner of the page.\n9. Write down **consumer key**, **Consumer secret**, **Access token**, and **Access token secret**. You will need the values later in the tutorial.\n\nIn this tutorial, you will use Windows PowerShell to make the web service call. For a .NET C# sample, see [Analyze real-time Twitter sentiment with HBase in HDInsight][hdinsight-hbase-twitter-sentiment]. The other popular tool to make web service calls is [*Curl*][curl]. Curl can be downloaded from [here][curl-download].\n\n>[AZURE.NOTE] When you use the curl command in Windows, use double quotes instead of single quotes for the option values.\n\n**To get tweets**\n\n1. Open the Windows PowerShell Integrated Scripting Environment (ISE). (On the Windows 8 Start screen, type **PowerShell_ISE** and then click **Windows PowerShell ISE**. See [Start Windows PowerShell on Windows 8 and Windows][powershell-start].)\n\n2. Copy the following script into the script pane:\n\n        #region - variables and constants\n        $clusterName = \"<HDInsightClusterName>\" # Enter the HDInsight cluster name\n\n        # Enter the OAuth information for your Twitter application\n        $oauth_consumer_key = \"<TwitterAppConsumerKey>\";\n        $oauth_consumer_secret = \"<TwitterAppConsumerSecret>\";\n        $oauth_token = \"<TwitterAppAccessToken>\";\n        $oauth_token_secret = \"<TwitterAppAccessTokenSecret>\";\n\n        $destBlobName = \"tutorials/twitter/data/tweets.txt\" # This script saves the tweets into this blob.\n\n        $trackString = \"Azure, Cloud, HDInsight\" # This script gets the tweets containing these keywords.\n        $track = [System.Uri]::EscapeDataString($trackString);\n        $lineMax = 10000  # The script will get this number of tweets. It is about 3 minutes every 100 lines.\n        #endregion\n\n        #region - Connect to Azure subscription\n        Write-Host \"`nConnecting to your Azure subscription ...\" -ForegroundColor Green\n        Add-AzureAccount\n        #endregion\n\n        #region - Create a block blob object for writing tweets into Blob storage\n        Write-Host \"Get the default storage account name and Blob container name using the cluster name ...\" -ForegroundColor Green\n        $myCluster = Get-AzureHDInsightCluster -Name $clusterName\n        $storageAccountName = $myCluster.DefaultStorageAccount.StorageAccountName.Replace(\".blob.core.windows.net\", \"\")\n        $containerName = $myCluster.DefaultStorageAccount.StorageContainerName\n        Write-Host \"`tThe storage account name is $storageAccountName.\" -ForegroundColor Yellow\n        Write-Host \"`tThe blob container name is $containerName.\" -ForegroundColor Yellow\n\n        Write-Host \"Define the Azure storage connection string ...\" -ForegroundColor Green\n        $storageAccountKey = get-azurestoragekey $storageAccountName | %{$_.Primary}\n        $storageConnectionString = \"DefaultEndpointsProtocol=https;AccountName=$storageAccountName;AccountKey=$storageAccountKey\"\n        Write-Host \"`tThe connection string is $storageConnectionString.\" -ForegroundColor Yellow\n\n        Write-Host \"Create block blob object ...\" -ForegroundColor Green\n        $storageAccount = [Microsoft.WindowsAzure.Storage.CloudStorageAccount]::Parse($storageConnectionString)\n        $storageClient = $storageAccount.CreateCloudBlobClient();\n        $storageContainer = $storageClient.GetContainerReference($containerName)\n        $destBlob = $storageContainer.GetBlockBlobReference($destBlobName)\n        #end region\n\n        # region - Format OAuth strings\n        Write-Host \"Format oauth strings ...\" -ForegroundColor Green\n        $oauth_nonce = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes([System.DateTime]::Now.Ticks.ToString()));\n        $ts = [System.DateTime]::UtcNow - [System.DateTime]::ParseExact(\"01/01/1970\", \"dd/MM/yyyy\", $null)\n        $oauth_timestamp = [System.Convert]::ToInt64($ts.TotalSeconds).ToString();\n\n        $signature = \"POST&\";\n        $signature += [System.Uri]::EscapeDataString(\"https://stream.twitter.com/1.1/statuses/filter.json\") + \"&\";\n        $signature += [System.Uri]::EscapeDataString(\"oauth_consumer_key=\" + $oauth_consumer_key + \"&\");\n        $signature += [System.Uri]::EscapeDataString(\"oauth_nonce=\" + $oauth_nonce + \"&\");\n        $signature += [System.Uri]::EscapeDataString(\"oauth_signature_method=HMAC-SHA1&\");\n        $signature += [System.Uri]::EscapeDataString(\"oauth_timestamp=\" + $oauth_timestamp + \"&\");\n        $signature += [System.Uri]::EscapeDataString(\"oauth_token=\" + $oauth_token + \"&\");\n        $signature += [System.Uri]::EscapeDataString(\"oauth_version=1.0&\");\n        $signature += [System.Uri]::EscapeDataString(\"track=\" + $track);\n\n        $signature_key = [System.Uri]::EscapeDataString($oauth_consumer_secret) + \"&\" + [System.Uri]::EscapeDataString($oauth_token_secret);\n\n        $hmacsha1 = new-object System.Security.Cryptography.HMACSHA1;\n        $hmacsha1.Key = [System.Text.Encoding]::ASCII.GetBytes($signature_key);\n        $oauth_signature = [System.Convert]::ToBase64String($hmacsha1.ComputeHash([System.Text.Encoding]::ASCII.GetBytes($signature)));\n\n        $oauth_authorization = 'OAuth ';\n        $oauth_authorization += 'oauth_consumer_key=\"' + [System.Uri]::EscapeDataString($oauth_consumer_key) + '\",';\n        $oauth_authorization += 'oauth_nonce=\"' + [System.Uri]::EscapeDataString($oauth_nonce) + '\",';\n        $oauth_authorization += 'oauth_signature=\"' + [System.Uri]::EscapeDataString($oauth_signature) + '\",';\n        $oauth_authorization += 'oauth_signature_method=\"HMAC-SHA1\",'\n        $oauth_authorization += 'oauth_timestamp=\"' + [System.Uri]::EscapeDataString($oauth_timestamp) + '\",'\n        $oauth_authorization += 'oauth_token=\"' + [System.Uri]::EscapeDataString($oauth_token) + '\",';\n        $oauth_authorization += 'oauth_version=\"1.0\"';\n\n        $post_body = [System.Text.Encoding]::ASCII.GetBytes(\"track=\" + $track);\n        #endregion\n\n        #region - Read tweets\n        Write-Host \"Create HTTP web request ...\" -ForegroundColor Green\n        [System.Net.HttpWebRequest] $request = [System.Net.WebRequest]::Create(\"https://stream.twitter.com/1.1/statuses/filter.json\");\n        $request.Method = \"POST\";\n        $request.Headers.Add(\"Authorization\", $oauth_authorization);\n        $request.ContentType = \"application/x-www-form-urlencoded\";\n        $body = $request.GetRequestStream();\n\n        $body.write($post_body, 0, $post_body.length);\n        $body.flush();\n        $body.close();\n        $response = $request.GetResponse() ;\n\n        Write-Host \"Start stream reading ...\" -ForegroundColor Green\n\n        Write-Host \"Define a MemoryStream and a StreamWriter for writing ...\" -ForegroundColor Green\n        $memStream = New-Object System.IO.MemoryStream\n        $writeStream = New-Object System.IO.StreamWriter $memStream\n\n        $sReader = New-Object System.IO.StreamReader($response.GetResponseStream())\n\n        $inrec = $sReader.ReadLine()\n        $count = 0\n        while (($inrec -ne $null) -and ($count -le $lineMax))\n        {\n            if ($inrec -ne \"\")\n            {\n                Write-Host \"`n`t $count tweets received.\" -ForegroundColor Yellow\n\n                $writeStream.WriteLine($inrec)\n                $count ++\n            }\n\n            $inrec=$sReader.ReadLine()\n        }\n        #endregion\n\n        #region - Write tweets to Blob storage\n        Write-Host \"Write to the destination blob ...\" -ForegroundColor Green\n        $writeStream.Flush()\n        $memStream.Seek(0, \"Begin\")\n        $destBlob.UploadFromStream($memStream)\n\n        $sReader.close()\n        #endregion\n\n        Write-Host \"Completed!\" -ForegroundColor Green\n\n3. Set the first five to eight variables in the script:\n\n\nVariable|Description\n---|---\n$clusterName|This is the name of the HDInsight cluster where you want to run the application.\n$oauth_consumer_key|This is the Twitter application **consumer key** you wrote down earlier when you created the Twitter application.\n$oauth_consumer_secret|This is the Twitter application **consumer secret** you wrote down earlier.\n$oauth_token|This is the Twitter application **access token** you wrote down earlier.\n$oauth_token_secret|This is the Twitter application **access token secret** you wrote down earlier.\n$destBlobName|This is the output blob name. The default value is **tutorials/twitter/data/tweets.txt**. If you change the default value, you will need to update the Windows PowerShell scripts accordingly.\n$trackString|The web service will return tweets related to these keywords. The default value is **Azure, Cloud, HDInsight**. If you change the default value, you will update the Windows PowerShell scripts accordingly.\n$lineMax|The value determines how many tweets the script will read. It takes about three minutes to read 100 tweets. You can set a larger number, but it will take more time to download.\n\n5. Press **F5** to run the script. If you run into problems, as a workaround, select all the lines, and then press **F8**.\n6. You shall see \"Complete!\" at the end of the output. Any error messages will be displayed in red.\n\nAs a validation procedure, you can check the output file, **/tutorials/twitter/data/tweets.txt**, on your Azure Blob storage by using an Azure storage explorer or Azure PowerShell. For a sample Windows PowerShell script for listing files, see [Use Blob storage with HDInsight][hdinsight-storage-powershell].\n\n\n\n##Create a HiveQL script\n\nUsing Azure PowerShell, you can run multiple HiveQL statements one at a time, or package the HiveQL statement into a script file. In this tutorial, you will create a HiveQL script. The script file must be uploaded to Azure Blob storage. In the next section, you will run the script file by using Azure PowerShell.\n\n>[AZURE.NOTE] The Hive script file and a file containing 10,000 tweets have been uploaded in a public Blob container. You can skip this section if you want to use the uploaded files.\n\nThe HiveQL script will perform the following:\n\n1. **Drop the tweets_raw table** in case the table already exists.\n2. **Create the tweets_raw Hive table**. This temporary Hive structured table holds the data for further extract, transform, and load (ETL) processing. For information on partitions, see [Hive tutorial][apache-hive-tutorial].  \n3. **Load data** from the source folder, /tutorials/twitter/data. The large tweets dataset in nested JSON format has now been transformed into a temporary Hive table structure.\n3. **Drop the tweets table** in case the table already exists.\n4. **Create the tweets table**. Before you can query against the tweets dataset by using Hive, you need to run another ETL process. This ETL process defines a more detailed table schema for the data that you have stored in the \"twitter_raw\" table.  \n5. **Insert overwrite table**. This complex Hive script will kick off a set of long MapReduce jobs by the Hadoop cluster. Depending on your dataset and the size of your cluster, this could take about 10 minutes.\n6. **Insert overwrite directory**. Run a query and output the dataset to a file. This query will return a list of Twitter users who sent most tweets that contained the word \"Azure\".\n\n**To create a Hive script and upload it to Azure**\n\n1. Open Windows PowerShell ISE.\n2. Copy the following script into the script pane:\n\n        #region - variables and constants\n        $clusterName = \"<HDInsightClusterName>\" # Enter your HDInsight cluster name\n\n        $sourceDataPath = \"/tutorials/twitter/data\"\n        $outputPath = \"/tutorials/twitter/output\"\n        $hqlScriptFile = \"tutorials/twitter/twitter.hql\"\n\n        $hqlStatements = @\"\n        set hive.exec.dynamic.partition = true;\n        set hive.exec.dynamic.partition.mode = nonstrict;\n\n        DROP TABLE tweets_raw;\n        CREATE EXTERNAL TABLE tweets_raw (\n            json_response STRING\n        )\n        STORED AS TEXTFILE LOCATION '$sourceDataPath';\n\n        DROP TABLE tweets;\n        CREATE TABLE tweets\n        (\n            id BIGINT,\n            created_at STRING,\n            created_at_date STRING,\n            created_at_year STRING,\n            created_at_month STRING,\n            created_at_day STRING,\n            created_at_time STRING,\n            in_reply_to_user_id_str STRING,\n            text STRING,\n            contributors STRING,\n            retweeted STRING,\n            truncated STRING,\n            coordinates STRING,\n            source STRING,\n            retweet_count INT,\n            url STRING,\n            hashtags array<STRING>,\n            user_mentions array<STRING>,\n            first_hashtag STRING,\n            first_user_mention STRING,\n            screen_name STRING,\n            name STRING,\n            followers_count INT,\n            listed_count INT,\n            friends_count INT,\n            lang STRING,\n            user_location STRING,\n            time_zone STRING,\n            profile_image_url STRING,\n            json_response STRING\n        );\n\n        FROM tweets_raw\n        INSERT OVERWRITE TABLE tweets\n        SELECT\n            cast(get_json_object(json_response, '$.id_str') as BIGINT),\n            get_json_object(json_response, '$.created_at'),\n            concat(substr (get_json_object(json_response, '$.created_at'),1,10),' ',\n            substr (get_json_object(json_response, '$.created_at'),27,4)),\n            substr (get_json_object(json_response, '$.created_at'),27,4),\n            case substr (get_json_object(json_response, '$.created_at'),5,3)\n                when \"Jan\" then \"01\"\n                when \"Feb\" then \"02\"\n                when \"Mar\" then \"03\"\n                when \"Apr\" then \"04\"\n                when \"May\" then \"05\"\n                when \"Jun\" then \"06\"\n                when \"Jul\" then \"07\"\n                when \"Aug\" then \"08\"\n                when \"Sep\" then \"09\"\n                when \"Oct\" then \"10\"\n                when \"Nov\" then \"11\"\n                when \"Dec\" then \"12\" end,\n            substr (get_json_object(json_response, '$.created_at'),9,2),\n            substr (get_json_object(json_response, '$.created_at'),12,8),\n            get_json_object(json_response, '$.in_reply_to_user_id_str'),\n            get_json_object(json_response, '$.text'),\n            get_json_object(json_response, '$.contributors'),\n            get_json_object(json_response, '$.retweeted'),\n            get_json_object(json_response, '$.truncated'),\n            get_json_object(json_response, '$.coordinates'),\n            get_json_object(json_response, '$.source'),\n            cast (get_json_object(json_response, '$.retweet_count') as INT),\n            get_json_object(json_response, '$.entities.display_url'),\n            array(\n                trim(lower(get_json_object(json_response, '$.entities.hashtags[0].text'))),\n                trim(lower(get_json_object(json_response, '$.entities.hashtags[1].text'))),\n                trim(lower(get_json_object(json_response, '$.entities.hashtags[2].text'))),\n                trim(lower(get_json_object(json_response, '$.entities.hashtags[3].text'))),\n                trim(lower(get_json_object(json_response, '$.entities.hashtags[4].text')))),\n            array(\n                trim(lower(get_json_object(json_response, '$.entities.user_mentions[0].screen_name'))),\n                trim(lower(get_json_object(json_response, '$.entities.user_mentions[1].screen_name'))),\n                trim(lower(get_json_object(json_response, '$.entities.user_mentions[2].screen_name'))),\n                trim(lower(get_json_object(json_response, '$.entities.user_mentions[3].screen_name'))),\n                trim(lower(get_json_object(json_response, '$.entities.user_mentions[4].screen_name')))),\n            trim(lower(get_json_object(json_response, '$.entities.hashtags[0].text'))),\n            trim(lower(get_json_object(json_response, '$.entities.user_mentions[0].screen_name'))),\n            get_json_object(json_response, '$.user.screen_name'),\n            get_json_object(json_response, '$.user.name'),\n            cast (get_json_object(json_response, '$.user.followers_count') as INT),\n            cast (get_json_object(json_response, '$.user.listed_count') as INT),\n            cast (get_json_object(json_response, '$.user.friends_count') as INT),\n            get_json_object(json_response, '$.user.lang'),\n            get_json_object(json_response, '$.user.location'),\n            get_json_object(json_response, '$.user.time_zone'),\n            get_json_object(json_response, '$.user.profile_image_url'),\n            json_response\n        WHERE (length(json_response) > 500);\n\n        INSERT OVERWRITE DIRECTORY '$outputPath'\n        SELECT name, screen_name, count(1) as cc\n            FROM tweets\n            WHERE text like \"%Azure%\"\n            GROUP BY name,screen_name\n            ORDER BY cc DESC LIMIT 10;\n        \"@\n        #endregion\n\n        #region - Connect to Azure subscription\n        Write-Host \"`nConnecting to your Azure subscription ...\" -ForegroundColor Green\n        Add-AzureAccount\n        #endregion\n\n        #region - Create a block blob object for writing the Hive script file\n        Write-Host \"Get the default storage account name and container name based on the cluster name ...\" -ForegroundColor Green\n        $myCluster = Get-AzureHDInsightCluster -Name $clusterName\n        $storageAccountName = $myCluster.DefaultStorageAccount.StorageAccountName.Replace(\".blob.core.windows.net\", \"\")\n        $containerName = $myCluster.DefaultStorageAccount.StorageContainerName\n        Write-Host \"`tThe storage account name is $storageAccountName.\" -ForegroundColor Yellow\n        Write-Host \"`tThe blob container name is $containerName.\" -ForegroundColor Yellow\n\n        Write-Host \"Define the connection string ...\" -ForegroundColor Green\n        $storageAccountKey = get-azurestoragekey $storageAccountName | %{$_.Primary}\n        $storageConnectionString = \"DefaultEndpointsProtocol=https;AccountName=$storageAccountName;AccountKey=$storageAccountKey\"\n\n        Write-Host \"Create block blob objects referencing the hql script file\" -ForegroundColor Green\n        $storageAccount = [Microsoft.WindowsAzure.Storage.CloudStorageAccount]::Parse($storageConnectionString)\n        $storageClient = $storageAccount.CreateCloudBlobClient();\n        $storageContainer = $storageClient.GetContainerReference($containerName)\n        $hqlScriptBlob = $storageContainer.GetBlockBlobReference($hqlScriptFile)\n\n        Write-Host \"Define a MemoryStream and a StreamWriter for writing ... \" -ForegroundColor Green\n        $memStream = New-Object System.IO.MemoryStream\n        $writeStream = New-Object System.IO.StreamWriter $memStream\n        $writeStream.Writeline($hqlStatements)\n        #endregion\n\n        #region - Write the Hive script file to Blob storage\n        Write-Host \"Write to the destination blob ... \" -ForegroundColor Green\n        $writeStream.Flush()\n        $memStream.Seek(0, \"Begin\")\n        $hqlScriptBlob.UploadFromStream($memStream)\n        #endregion\n\n        Write-Host \"Completed!\" -ForegroundColor Green\n\n\n4. Set the first two variables in the script:\n\nVariable|Description\n---|---\n$clusterName|Enter the HDInsight cluster name where you want to run the application.\n$sourceDataPath|The Azure Blob storage location where the Hive queries will read the data from. You don't need to change this variable.\n$outputPath|The Azure Blob storage location where the Hive queries will output the results. You don't need to change this variable.\n$hqlScriptFile|The location and the file name of the HiveQL script file. You don't need to change this variable.\n\n5. Press **F5** to run the script. If you run into problems, as a workaround, select all the lines, and then press **F8**.\n6. You shall see \"Complete!\" at the end of the output. Any error messages will be displayed in red.\n\nAs a validation procedure, you can check the output file, **/tutorials/twitter/twitter.hql**, on your Azure Blob storage by using an Azure storage explorer or Azure PowerShell. For a sample Windows PowerShell script for listing files, see [Use Blob storage with HDInsight][hdinsight-storage-powershell].  \n\n\n##Process Twitter data by using Hive\n\nYou have finished all the preparation work. Now, you can invoke the Hive script and check the results.\n\n### Submit a Hive job\n\nUse the following Windows PowerShell script to run the Hive script. You will need to set the first variable.\n\n>[AZURE.NOTE] To use the tweets and the HiveQL script you uploaded in the last two sections, set $hqlScriptFile to \"/tutorials/twitter/twitter.hql\". To use the ones that have been uploaded to a public blob for you, set $hqlScriptFile to \"wasb://twittertrend@hditutorialdata.blob.core.windows.net/twitter.hql\".\n\n    #region variables and constants\n    $clusterName = \"<HDInsightClusterName>\"\n\n    #use one of the following\n    $hqlScriptFile = \"wasbs://twittertrend@hditutorialdata.blob.core.windows.net/twitter.hql\"\n    $hqlScriptFile = \"/tutorials/twitter/twitter.hql\"\n\n    $statusFolder = \"/tutorials/twitter/jobstatus\"\n    #endregion\n\n    #region - Invoke Hive\n    Write-Host \"Invoke Hive ... \" -ForegroundColor Green\n    Use-AzureHDInsightCluster $clusterName\n    $response = Invoke-Hive -file $hqlScriptFile -StatusFolder $statusFolder -OutVariable $outVariable\n\n    Write-Host \"Display the standard error log ... \" -ForegroundColor Green\n    $jobID = ($response | Select-String job_ | Select-Object -First 1) -replace ‘\\s*$’ -replace ‘.*\\s’\n    Get-AzureHDInsightJobOutput -cluster $clusterName -JobId $jobID -StandardError\n    #endregion\n\n### Check the results\n\nUse the following Windows PowerShell script to check the Hive job output. You will need to set the first two variables.\n\n    #region variables and constants\n    $clusterName = \"<HDInsightClusterName>\"\n\n    $blob = \"tutorials/twitter/output/000000_0\" # The name of the blob to be downloaded.\n    #engregion\n\n    #region - Create an Azure storage context object\n    Write-Host \"Get the default storage account name and container name based on the cluster name ...\" -ForegroundColor Green\n    $myCluster = Get-AzureHDInsightCluster -Name $clusterName\n    $storageAccountName = $myCluster.DefaultStorageAccount.StorageAccountName.Replace(\".blob.core.windows.net\", \"\")\n    $containerName = $myCluster.DefaultStorageAccount.StorageContainerName\n    Write-Host \"`tThe storage account name is $storageAccountName.\" -ForegroundColor Yellow\n    Write-Host \"`tThe blob container name is $containerName.\" -ForegroundColor Yellow\n\n    Write-Host \"Create a context object ... \" -ForegroundColor Green\n    $storageAccountKey = Get-AzureStorageKey $storageAccountName | %{ $_.Primary }\n    $storageContext = New-AzureStorageContext -StorageAccountName $storageAccountName -StorageAccountKey $storageAccountKey  \n    #endregion\n\n    #region - Download blob and display blob\n    Write-Host \"Download the blob ...\" -ForegroundColor Green\n    cd $HOME\n    Get-AzureStorageBlobContent -Container $ContainerName -Blob $blob -Context $storageContext -Force\n\n    Write-Host \"Display the output ...\" -ForegroundColor Green\n    Write-Host \"==================================\" -ForegroundColor Green\n    cat \"./$blob\"\n    Write-Host \"==================================\" -ForegroundColor Green\n    #end region\n\n> [AZURE.NOTE] The Hive table uses \\001 as the field delimiter. The delimiter is not visible in the output.\n\nAfter the analysis results have been placed in Azure Blob storage, you can export the data to an Azure SQL database/SQL server, export the data to Excel by using Power Query, or connect your application to the data by using the Hive ODBC Driver. For more information, see [Use Sqoop with HDInsight][hdinsight-use-sqoop], [Analyze flight delay data using HDInsight][hdinsight-analyze-flight-delay-data], [Connect Excel to HDInsight with Power Query][hdinsight-power-query], and [Connect Excel to HDInsight with the Microsoft Hive ODBC Driver][hdinsight-hive-odbc].\n\n##Next steps\n\nIn this tutorial we have seen how to transform an unstructured JSON dataset into a structured Hive table to query, explore, and analyze data from Twitter by using HDInsight on Azure. To learn more, see:\n\n- [Get started with HDInsight][hdinsight-get-started]\n- [Analyze real-time Twitter sentiment with HBase in HDInsight][hdinsight-hbase-twitter-sentiment]\n- [Analyze flight delay data using HDInsight][hdinsight-analyze-flight-delay-data]\n- [Connect Excel to HDInsight with Power Query][hdinsight-power-query]\n- [Connect Excel to HDInsight with the Microsoft Hive ODBC Driver][hdinsight-hive-odbc]\n- [Use Sqoop with HDInsight][hdinsight-use-sqoop]\n\n[curl]: http://curl.haxx.se\n[curl-download]: http://curl.haxx.se/download.html\n\n[apache-hive-tutorial]: https://cwiki.apache.org/confluence/display/Hive/Tutorial\n\n[twitter-streaming-api]: https://dev.twitter.com/docs/streaming-apis\n[twitter-statuses-filter]: https://dev.twitter.com/docs/api/1.1/post/statuses/filter\n\n[powershell-start]: http://technet.microsoft.com/library/hh847889.aspx\n[powershell-install]: ../install-configure-powershell.md\n[powershell-script]: http://technet.microsoft.com/library/ee176961.aspx\n\n\n[hdinsight-provision]: hdinsight-provision-clusters.md\n[hdinsight-get-started]: ../hdinsight-get-started.md\n[hdinsight-storage-powershell]: ../hdinsight-use-blob-storage.md#powershell\n[hdinsight-analyze-flight-delay-data]: hdinsight-analyze-flight-delay-data.md\n[hdinsight-storage]: ../hdinsight-use-blob-storage.md\n[hdinsight-use-sqoop]: hdinsight-use-sqoop.md\n[hdinsight-power-query]: hdinsight-connect-excel-power-query.md\n[hdinsight-hive-odbc]: hdinsight-connect-excel-hive-ODBC-driver.md\n[hdinsight-hbase-twitter-sentiment]: hdinsight-hbase-analyze-twitter-sentiment.md\n\ntest\n"
+}

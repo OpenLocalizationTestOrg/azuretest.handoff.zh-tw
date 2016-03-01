@@ -1,0 +1,131 @@
+{
+  "nodes": [
+    {
+      "content": "Custom Test Scenarios",
+      "pos": [
+        26,
+        47
+      ]
+    },
+    {
+      "content": "How to harden your services against Graceful/Ungraceful failures",
+      "pos": [
+        65,
+        129
+      ]
+    },
+    {
+      "content": "Simulate failures during service workloads",
+      "pos": [
+        421,
+        463
+      ]
+    },
+    {
+      "content": "The scenarios shipping with Testability enable developers to not worry about dealing with individual faults.",
+      "pos": [
+        465,
+        573
+      ]
+    },
+    {
+      "content": "There are scenarios however, where an explicit interleaving of client workload and failures might be needed.",
+      "pos": [
+        574,
+        682
+      ]
+    },
+    {
+      "content": "The interleaving of client workload and faults, ensures that the service is actually performing some action when failure happens.",
+      "pos": [
+        683,
+        812
+      ]
+    },
+    {
+      "content": "Given the level of control testability provides these could be at precise points of the workload execution.",
+      "pos": [
+        813,
+        920
+      ]
+    },
+    {
+      "content": "This induction of faults at different states in the application can find bugs and improve quality.",
+      "pos": [
+        921,
+        1019
+      ]
+    },
+    {
+      "content": "Sample custom scenario",
+      "pos": [
+        1024,
+        1046
+      ]
+    },
+    {
+      "content": "This test shows a scenario where the interleaving of business workload with <bpt id=\"p1\">[</bpt>graceful and ungraceful failures<ept id=\"p1\">](service-fabric-testability-actions.md#graceful-vs-ungraceful-fault-actions)</ept>.",
+      "pos": [
+        1047,
+        1234
+      ]
+    },
+    {
+      "content": "The faults should be induced while in the middle of service operations or compute for best results.",
+      "pos": [
+        1235,
+        1334
+      ]
+    },
+    {
+      "content": "Lets walk through an example of a serice that exposes four workloads A, B, C and D. Each corresponds to a set of workflows and could be compute, storage or a mix.",
+      "pos": [
+        1336,
+        1498
+      ]
+    },
+    {
+      "content": "For the sake of simplicity we will abstract out the workloads in our example.",
+      "pos": [
+        1499,
+        1576
+      ]
+    },
+    {
+      "content": "The different faults executed in this example are.",
+      "pos": [
+        1577,
+        1627
+      ]
+    },
+    {
+      "content": "RestartNode: Ungraceful fault to simulate a machine restart",
+      "pos": [
+        1632,
+        1691
+      ]
+    },
+    {
+      "content": "RestartDeployedCodePackage: Ungraceful fault to simulate service host process crashes",
+      "pos": [
+        1696,
+        1781
+      ]
+    },
+    {
+      "content": "RemoveReplica: Graceful fault to simulate replica removal",
+      "pos": [
+        1786,
+        1843
+      ]
+    },
+    {
+      "content": "MovePrimary: Graceful fault to simulate replica moves triggered by Service Fabric Load Balancer",
+      "pos": [
+        1848,
+        1943
+      ]
+    }
+  ],
+  "content": "<properties\n   pageTitle=\"Custom Test Scenarios\"\n   description=\"How to harden your services against Graceful/Ungraceful failures\"\n   services=\"service-fabric\"\n   documentationCenter=\".net\"\n   authors=\"anmolah\"\n   manager=\"timlt\"\n   editor=\"\"/>\n\n<tags\n   ms.service=\"service-fabric\"\n   ms.devlang=\"dotnet\"\n   ms.topic=\"article\"\n   ms.tgt_pltfrm=\"NA\"\n   ms.workload=\"NA\"\n   ms.date=\"08/05/2015\"\n   ms.author=\"anmola\"/>\n\n# Simulate failures during service workloads\n\nThe scenarios shipping with Testability enable developers to not worry about dealing with individual faults. There are scenarios however, where an explicit interleaving of client workload and failures might be needed. The interleaving of client workload and faults, ensures that the service is actually performing some action when failure happens. Given the level of control testability provides these could be at precise points of the workload execution. This induction of faults at different states in the application can find bugs and improve quality.\n\n## Sample custom scenario\nThis test shows a scenario where the interleaving of business workload with [graceful and ungraceful failures](service-fabric-testability-actions.md#graceful-vs-ungraceful-fault-actions). The faults should be induced while in the middle of service operations or compute for best results.\n\nLets walk through an example of a serice that exposes four workloads A, B, C and D. Each corresponds to a set of workflows and could be compute, storage or a mix. For the sake of simplicity we will abstract out the workloads in our example. The different faults executed in this example are.\n  + RestartNode: Ungraceful fault to simulate a machine restart\n  + RestartDeployedCodePackage: Ungraceful fault to simulate service host process crashes\n  + RemoveReplica: Graceful fault to simulate replica removal\n  + MovePrimary: Graceful fault to simulate replica moves triggered by Service Fabric Load Balancer\n\n```csharp\n// Add a reference to System.Fabric.Testability.dll and System.Fabric.dll.\n\nusing System;\nusing System.Fabric;\nusing System.Fabric.Testability;\nusing System.Fabric.Testability.Scenario;\nusing System.Threading;\nusing System.Threading.Tasks;\n\nclass Test\n{\n    public static int Main(string[] args)\n    {\n        // Replace these strings with the actual version for your cluster and appliction.\n        string clusterConnection = \"localhost:19000\";\n        Uri applicationName = new Uri(\"fabric:/samples/PersistentToDoListApp\");\n        Uri serviceName = new Uri(\"fabric:/samples/PersistentToDoListApp/PersistentToDoListService\");\n\n        Console.WriteLine(\"Starting Workload Test...\");\n        try\n        {\n            RunTestAsync(clusterConnection, applicationName, serviceName).Wait();\n        }\n        catch (AggregateException ae)\n        {\n            Console.WriteLine(\"Workload Test failed: \");\n            foreach (Exception ex in ae.InnerExceptions)\n            {\n                if (ex is FabricException)\n                {\n                    Console.WriteLine(\"HResult: {0} Message: {1}\", ex.HResult, ex.Message);\n                }\n            }\n            return -1;\n        }\n\n        Console.WriteLine(\"Workload Test completed successfully.\");\n        return 0;\n    }\n\n    public enum ServiceWorkloads\n    {\n        A,\n        B,\n        C,\n        D\n    }\n\n    public enum ServiceFabricFaults\n    {\n        RestartNode,\n        RestartCodePackage,\n        RemoveReplica,\n        MovePrimary,\n    }\n\n    public static async Task RunTestAsync(string clusterConnection, Uri applicationName, Uri serviceName)\n    {\n        // Create FabricClient with connection & security information here.\n        FabricClient fabricClient = new FabricClient(clusterConnection);\n        // Maximum time to wait for a service to stabilize\n        TimeSpan maxServiceStabilizationTime = TimeSpan.FromSeconds(120);\n\n        // How many loops of faults you want to execute\n        uint testLoopCount = 20;\n        Random random = new Random();\n\n        for (var i = 0; i < testLoopCount; ++i)\n        {\n            var workload = SelectRandomValue<ServiceWorkloads>(random);\n            // Start workload and while it is running go and induce some fault\n            var workloadTask = RunWorkloadAsync(workload);\n\n            // While task is executing induce faults into the service. It can be ungraceful faults like\n            // RestartNode and RestartDeployedCodePackage or graceful faults like RemoveReplica or MovePrimary\n            var fault = SelectRandomValue<ServiceFabricFaults>(random);\n\n            // Create a replica selector which will select a Primary replica from the given service to test\n            var replicaSelector = ReplicaSelector.PrimaryOf(PartitionSelector.RandomOf(serviceName));\n            // Run the selected random fault\n            await RunFaultAsync(applicationName, fault, replicaSelector, fabricClient);\n            // Validate the health and stability of the service.\n            await fabricClient.ServiceManager.ValidateServiceAsync(serviceName, maxServiceStabilizationTime);\n\n            // Wait for the workload to complete successfully\n            await workloadTask;\n        }\n    }\n\n    private static async Task RunFaultAsync(Uri applicationName, ServiceFabricFaults fault, ReplicaSelector selector, FabricClient client)\n    {\n        switch (fault)\n        {\n            case ServiceFabricFaults.RestartNode:\n                await client.ClusterManager.RestartNodeAsync(selector, CompletionMode.Verify);\n                break;\n            case ServiceFabricFaults.RestartCodePackage:\n                await client.ApplicationManager.RestartDeployedCodePackageAsync(applicationName, selector, CompletionMode.Verify);\n                break;\n            case ServiceFabricFaults.RemoveReplica:\n                await client.ServiceManager.RemoveReplicaAsync(selector, CompletionMode.Verify, false);\n                break;\n            case ServiceFabricFaults.MovePrimary:\n                await client.ServiceManager.MovePrimaryAsync(selector.PartitionSelector);\n                break;\n        }\n    }\n\n    private static Task RunWorkloadAsync(ServiceWorkloads workload)\n    {\n        throw new NotImplementedException();\n        // This is where you trigger and complete your service workload\n        // Please note the faults induced while your service workload is running will\n        // fault the Primary service hence you will need to reconnect to complete or check\n        // the status of the workload\n    }\n\n    private static T SelectRandomValue<T>(Random random)\n    {\n        Array values = Enum.GetValues(typeof(T));\n        T workload = (T)values.GetValue(random.Next(values.Length));\n        return T;\n    }\n}\n```\n \n"
+}

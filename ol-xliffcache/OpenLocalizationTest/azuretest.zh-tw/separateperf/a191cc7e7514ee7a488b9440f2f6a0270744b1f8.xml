@@ -1,0 +1,2518 @@
+{
+  "nodes": [
+    {
+      "content": "Concurrency and workload management in SQL Data Warehouse | Microsoft Azure",
+      "pos": [
+        26,
+        101
+      ]
+    },
+    {
+      "content": "Understand concurrency and workload management in Azure SQL Data Warehouse for developing solutions.",
+      "pos": [
+        119,
+        219
+      ]
+    },
+    {
+      "content": "Concurrency and workload management in SQL Data Warehouse",
+      "pos": [
+        570,
+        627
+      ]
+    },
+    {
+      "content": "To deliver predictable performance at scale SQL Data Warehouse implements mechanisms for managing both workload concurrency and computational resource assignment.",
+      "pos": [
+        628,
+        790
+      ]
+    },
+    {
+      "content": "This article introduces you to the concepts of concurrency and workload management; explaining how both features have been implemented and how you can control them in your data warehouse.",
+      "pos": [
+        792,
+        979
+      ]
+    },
+    {
+      "content": "Concurrency",
+      "pos": [
+        984,
+        995
+      ]
+    },
+    {
+      "pos": [
+        996,
+        1143
+      ],
+      "content": "It is important to understand that concurrency in SQL Data Warehouse is governed by two concepts; <bpt id=\"p1\">**</bpt>concurrent queries<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>concurrency slots<ept id=\"p2\">**</ept>."
+    },
+    {
+      "content": "Concurrent queries equates to the number of queries executing at the same time.",
+      "pos": [
+        1146,
+        1225
+      ]
+    },
+    {
+      "content": "SQL Data Warehouse supports up to 32 <bpt id=\"p1\">**</bpt>concurrent queries<ept id=\"p1\">**</ept>.",
+      "pos": [
+        1226,
+        1286
+      ]
+    },
+    {
+      "content": "Each query execution counts as a single query regardless of whether it is a serial query (single threaded) or parallel query (multi-threaded).",
+      "pos": [
+        1287,
+        1429
+      ]
+    },
+    {
+      "content": "This is a fixed cap and applies to all service levels and all queries.",
+      "pos": [
+        1430,
+        1500
+      ]
+    },
+    {
+      "content": "Concurrency slots is a more dynamic concept and is relative to the Data Warehouse Unit (DWU) service level objective for your data warehouse.",
+      "pos": [
+        1503,
+        1644
+      ]
+    },
+    {
+      "content": "As you increase the number of DWU allocated to SQL Data Warehouse more compute resources are assigned.",
+      "pos": [
+        1645,
+        1747
+      ]
+    },
+    {
+      "content": "However, increasing DWU also increases the number of <bpt id=\"p1\">**</bpt>concurrency slots<ept id=\"p1\">**</ept> available.",
+      "pos": [
+        1748,
+        1833
+      ]
+    },
+    {
+      "content": "As a general rule, each concurrently executing query consumes one or more concurrency slots.",
+      "pos": [
+        1835,
+        1927
+      ]
+    },
+    {
+      "content": "The exact number of slots depends on three factors:",
+      "pos": [
+        1928,
+        1979
+      ]
+    },
+    {
+      "content": "The DWU setting for the SQL Data Warehouse",
+      "pos": [
+        1984,
+        2026
+      ]
+    },
+    {
+      "pos": [
+        2030,
+        2077
+      ],
+      "content": "The <bpt id=\"p1\">**</bpt>resource class<ept id=\"p1\">**</ept> that the user belongs to"
+    },
+    {
+      "content": "Whether the query or operation is governed by the concurrency slot model",
+      "pos": [
+        2081,
+        2153
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> It is worth noting that not every query is governed by the concurrency slot query rule.",
+      "pos": [
+        2158,
+        2258
+      ]
+    },
+    {
+      "content": "However, most user queries are.",
+      "pos": [
+        2259,
+        2290
+      ]
+    },
+    {
+      "content": "Some queries and operations do not consume concurrency slots at all.",
+      "pos": [
+        2291,
+        2359
+      ]
+    },
+    {
+      "content": "These queries and operations are still limited by the concurrent query limit which is why both rules are described.",
+      "pos": [
+        2360,
+        2475
+      ]
+    },
+    {
+      "content": "Please refer to the <bpt id=\"p1\">[</bpt>resource class exceptions<ept id=\"p1\">](#exceptions)</ept> section below for more details.",
+      "pos": [
+        2476,
+        2568
+      ]
+    },
+    {
+      "content": "The table below describes the limits for both concurrent queries and concurrency slots; assuming your query is resource governed.",
+      "pos": [
+        2571,
+        2700
+      ]
+    },
+    {
+      "content": "Concurrency Slot Consumption",
+      "pos": [
+        3254,
+        3282
+      ]
+    },
+    {
+      "content": "DW100",
+      "pos": [
+        3285,
+        3290
+      ]
+    },
+    {
+      "content": "DW200",
+      "pos": [
+        3293,
+        3298
+      ]
+    },
+    {
+      "content": "DW300",
+      "pos": [
+        3301,
+        3306
+      ]
+    },
+    {
+      "content": "DW400",
+      "pos": [
+        3309,
+        3314
+      ]
+    },
+    {
+      "content": "DW500",
+      "pos": [
+        3317,
+        3322
+      ]
+    },
+    {
+      "content": "DW600",
+      "pos": [
+        3325,
+        3330
+      ]
+    },
+    {
+      "content": "DW1000",
+      "pos": [
+        3333,
+        3339
+      ]
+    },
+    {
+      "content": "DW1200",
+      "pos": [
+        3342,
+        3348
+      ]
+    },
+    {
+      "content": "DW1500",
+      "pos": [
+        3351,
+        3357
+      ]
+    },
+    {
+      "content": "DW2000",
+      "pos": [
+        3360,
+        3366
+      ]
+    },
+    {
+      "content": "Max Concurrent Queries",
+      "pos": [
+        3489,
+        3511
+      ]
+    },
+    {
+      "content": "32",
+      "pos": [
+        3520,
+        3522
+      ]
+    },
+    {
+      "content": "32",
+      "pos": [
+        3528,
+        3530
+      ]
+    },
+    {
+      "content": "32",
+      "pos": [
+        3536,
+        3538
+      ]
+    },
+    {
+      "content": "32",
+      "pos": [
+        3544,
+        3546
+      ]
+    },
+    {
+      "content": "32",
+      "pos": [
+        3552,
+        3554
+      ]
+    },
+    {
+      "content": "32",
+      "pos": [
+        3560,
+        3562
+      ]
+    },
+    {
+      "content": "32",
+      "pos": [
+        3568,
+        3570
+      ]
+    },
+    {
+      "content": "32",
+      "pos": [
+        3577,
+        3579
+      ]
+    },
+    {
+      "content": "32",
+      "pos": [
+        3586,
+        3588
+      ]
+    },
+    {
+      "content": "32",
+      "pos": [
+        3595,
+        3597
+      ]
+    },
+    {
+      "content": "Max Concurrency Slots",
+      "pos": [
+        3607,
+        3628
+      ]
+    },
+    {
+      "content": "4",
+      "pos": [
+        3638,
+        3639
+      ]
+    },
+    {
+      "content": "8",
+      "pos": [
+        3646,
+        3647
+      ]
+    },
+    {
+      "content": "12",
+      "pos": [
+        3654,
+        3656
+      ]
+    },
+    {
+      "content": "16",
+      "pos": [
+        3662,
+        3664
+      ]
+    },
+    {
+      "content": "20",
+      "pos": [
+        3670,
+        3672
+      ]
+    },
+    {
+      "content": "24",
+      "pos": [
+        3678,
+        3680
+      ]
+    },
+    {
+      "content": "40",
+      "pos": [
+        3686,
+        3688
+      ]
+    },
+    {
+      "content": "48",
+      "pos": [
+        3695,
+        3697
+      ]
+    },
+    {
+      "content": "60",
+      "pos": [
+        3704,
+        3706
+      ]
+    },
+    {
+      "content": "80",
+      "pos": [
+        3713,
+        3715
+      ]
+    },
+    {
+      "content": "SQL Data Warehouse query workloads have to live within these thresholds.",
+      "pos": [
+        3723,
+        3795
+      ]
+    },
+    {
+      "content": "If there are more than 32 concurrent queries or you exceed the number of concurrency slots then the query will be queued until both thresholds can be satisfied.",
+      "pos": [
+        3796,
+        3956
+      ]
+    },
+    {
+      "content": "Workload management",
+      "pos": [
+        3961,
+        3980
+      ]
+    },
+    {
+      "pos": [
+        3982,
+        4125
+      ],
+      "content": "SQL Data Warehouse exposes four different resource classes in the form of <bpt id=\"p1\">**</bpt>database roles<ept id=\"p1\">**</ept> as part of its workload management implementation."
+    },
+    {
+      "content": "The roles are:",
+      "pos": [
+        4129,
+        4143
+      ]
+    },
+    {
+      "content": "smallrc",
+      "pos": [
+        4147,
+        4154
+      ]
+    },
+    {
+      "content": "mediumrc",
+      "pos": [
+        4157,
+        4165
+      ]
+    },
+    {
+      "content": "largerc",
+      "pos": [
+        4168,
+        4175
+      ]
+    },
+    {
+      "content": "xlargerc",
+      "pos": [
+        4178,
+        4186
+      ]
+    },
+    {
+      "content": "Resource classes are an essential part of SQL Data Warehouse workload management.",
+      "pos": [
+        4188,
+        4269
+      ]
+    },
+    {
+      "content": "They govern the computational resources allocated to the query.",
+      "pos": [
+        4270,
+        4333
+      ]
+    },
+    {
+      "content": "By default each user is a member of the small resource class - smallrc.",
+      "pos": [
+        4335,
+        4406
+      ]
+    },
+    {
+      "content": "However, any user can be added to one or more of the higher resource classes.",
+      "pos": [
+        4407,
+        4484
+      ]
+    },
+    {
+      "content": "As a general rule, SQL Data Warehouse will take the highest role membership for query execution.",
+      "pos": [
+        4485,
+        4581
+      ]
+    },
+    {
+      "content": "Adding a user to a higher resource class will increase the resources for that user but it will also consume greater concurrency slots; potentially limiting your concurrency.",
+      "pos": [
+        4582,
+        4755
+      ]
+    },
+    {
+      "content": "This is due to the fact that as more resources are allocated to one query the system needs to limit resources consumed by others.",
+      "pos": [
+        4756,
+        4885
+      ]
+    },
+    {
+      "content": "There is no free lunch.",
+      "pos": [
+        4886,
+        4909
+      ]
+    },
+    {
+      "content": "The most important resource governed by the higher resource class is memory.",
+      "pos": [
+        4911,
+        4987
+      ]
+    },
+    {
+      "content": "Most data warehouse tables of any meaningful size will be using clustered columnstore indexes.",
+      "pos": [
+        4988,
+        5082
+      ]
+    },
+    {
+      "content": "Whilst this typically provides the best performance for data warehouse workloads maintaining them is a memory intensive operation.",
+      "pos": [
+        5083,
+        5213
+      ]
+    },
+    {
+      "content": "It is often highly beneficial to use the higher resource classes for data management operations such as index rebuilds.",
+      "pos": [
+        5214,
+        5333
+      ]
+    },
+    {
+      "content": "SQL Data Warehouse has implemented resource classes through the use of database roles.",
+      "pos": [
+        5335,
+        5421
+      ]
+    },
+    {
+      "content": "To become a member of a higher resource class and increase your memory simply and priority you simply add your database user to one of the roles / resource classes mentioned above.",
+      "pos": [
+        5422,
+        5602
+      ]
+    },
+    {
+      "content": "Resource class membership",
+      "pos": [
+        5608,
+        5633
+      ]
+    },
+    {
+      "content": "You can add and remove yourself to the workload management database role using the <ph id=\"ph1\">`sp_addrolemember`</ph> and <ph id=\"ph2\">`sp_droprolemember`</ph> procedures.",
+      "pos": [
+        5635,
+        5772
+      ]
+    },
+    {
+      "content": "Note you will require <ph id=\"ph1\">`ALTER ROLE`</ph> permission to do this.",
+      "pos": [
+        5773,
+        5830
+      ]
+    },
+    {
+      "content": "You are not able to use the ALTER ROLE DDL syntax.",
+      "pos": [
+        5831,
+        5881
+      ]
+    },
+    {
+      "content": "You must use the aforementioned stored procedures.",
+      "pos": [
+        5882,
+        5932
+      ]
+    },
+    {
+      "content": "A full example of how to create logins and users is provided in the [managing users)[#managing-users] section at the end of this article.",
+      "pos": [
+        5933,
+        6070
+      ]
+    },
+    {
+      "pos": [
+        6075,
+        6310
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> Rather than adding a user into and out of a workload management group it is often simpler to initiate those more intensive operations through a separate login/user that is permanently assigned to the higher resource class."
+    },
+    {
+      "content": "Memory allocation",
+      "pos": [
+        6316,
+        6333
+      ]
+    },
+    {
+      "content": "The following table details the increase in memory available to each query; subject to the resource class applied to the user executing it:",
+      "pos": [
+        6335,
+        6474
+      ]
+    },
+    {
+      "content": "Memory Available (per dist)",
+      "pos": [
+        8304,
+        8331
+      ]
+    },
+    {
+      "content": "DW100",
+      "pos": [
+        8334,
+        8339
+      ]
+    },
+    {
+      "content": "DW200",
+      "pos": [
+        8343,
+        8348
+      ]
+    },
+    {
+      "content": "DW300",
+      "pos": [
+        8352,
+        8357
+      ]
+    },
+    {
+      "content": "DW400",
+      "pos": [
+        8361,
+        8366
+      ]
+    },
+    {
+      "content": "DW500",
+      "pos": [
+        8371,
+        8376
+      ]
+    },
+    {
+      "content": "DW600",
+      "pos": [
+        8381,
+        8386
+      ]
+    },
+    {
+      "content": "DW1000",
+      "pos": [
+        8391,
+        8397
+      ]
+    },
+    {
+      "content": "DW1200",
+      "pos": [
+        8401,
+        8407
+      ]
+    },
+    {
+      "content": "DW1500",
+      "pos": [
+        8411,
+        8417
+      ]
+    },
+    {
+      "content": "DW2000",
+      "pos": [
+        8421,
+        8427
+      ]
+    },
+    {
+      "content": "smallrc(default) (s)",
+      "pos": [
+        8562,
+        8582
+      ]
+    },
+    {
+      "content": "100 MB",
+      "pos": [
+        8592,
+        8598
+      ]
+    },
+    {
+      "content": "100 MB",
+      "pos": [
+        8601,
+        8607
+      ]
+    },
+    {
+      "content": "100 MB",
+      "pos": [
+        8610,
+        8616
+      ]
+    },
+    {
+      "content": "100  MB",
+      "pos": [
+        8619,
+        8626
+      ]
+    },
+    {
+      "content": "100 MB",
+      "pos": [
+        8629,
+        8635
+      ]
+    },
+    {
+      "content": "100 MB",
+      "pos": [
+        8639,
+        8645
+      ]
+    },
+    {
+      "content": "100 MB",
+      "pos": [
+        8649,
+        8655
+      ]
+    },
+    {
+      "content": "100 MB",
+      "pos": [
+        8659,
+        8665
+      ]
+    },
+    {
+      "content": "100 MB",
+      "pos": [
+        8669,
+        8675
+      ]
+    },
+    {
+      "content": "100 MB",
+      "pos": [
+        8679,
+        8685
+      ]
+    },
+    {
+      "content": "mediumrc (m)",
+      "pos": [
+        8691,
+        8703
+      ]
+    },
+    {
+      "content": "100 MB",
+      "pos": [
+        8721,
+        8727
+      ]
+    },
+    {
+      "content": "200 MB",
+      "pos": [
+        8730,
+        8736
+      ]
+    },
+    {
+      "content": "200 MB",
+      "pos": [
+        8739,
+        8745
+      ]
+    },
+    {
+      "content": "400  MB",
+      "pos": [
+        8748,
+        8755
+      ]
+    },
+    {
+      "content": "400 MB",
+      "pos": [
+        8758,
+        8764
+      ]
+    },
+    {
+      "content": "400 MB",
+      "pos": [
+        8768,
+        8774
+      ]
+    },
+    {
+      "content": "800 MB",
+      "pos": [
+        8778,
+        8784
+      ]
+    },
+    {
+      "content": "800 MB",
+      "pos": [
+        8788,
+        8794
+      ]
+    },
+    {
+      "content": "800 MB",
+      "pos": [
+        8798,
+        8804
+      ]
+    },
+    {
+      "content": "1600 MB",
+      "pos": [
+        8808,
+        8815
+      ]
+    },
+    {
+      "content": "largerc (l)",
+      "pos": [
+        8820,
+        8831
+      ]
+    },
+    {
+      "content": "200 MB",
+      "pos": [
+        8850,
+        8856
+      ]
+    },
+    {
+      "content": "400 MB",
+      "pos": [
+        8859,
+        8865
+      ]
+    },
+    {
+      "content": "400 MB",
+      "pos": [
+        8868,
+        8874
+      ]
+    },
+    {
+      "content": "800  MB",
+      "pos": [
+        8877,
+        8884
+      ]
+    },
+    {
+      "content": "800 MB",
+      "pos": [
+        8887,
+        8893
+      ]
+    },
+    {
+      "content": "800 MB",
+      "pos": [
+        8897,
+        8903
+      ]
+    },
+    {
+      "content": "1600 MB",
+      "pos": [
+        8907,
+        8914
+      ]
+    },
+    {
+      "content": "1600 MB",
+      "pos": [
+        8917,
+        8924
+      ]
+    },
+    {
+      "content": "1600 MB",
+      "pos": [
+        8927,
+        8934
+      ]
+    },
+    {
+      "content": "3200 MB",
+      "pos": [
+        8937,
+        8944
+      ]
+    },
+    {
+      "content": "xlargerc (xl)",
+      "pos": [
+        8949,
+        8962
+      ]
+    },
+    {
+      "content": "400 MB",
+      "pos": [
+        8979,
+        8985
+      ]
+    },
+    {
+      "content": "800 MB",
+      "pos": [
+        8988,
+        8994
+      ]
+    },
+    {
+      "content": "800 MB",
+      "pos": [
+        8997,
+        9003
+      ]
+    },
+    {
+      "content": "1600 MB",
+      "pos": [
+        9006,
+        9013
+      ]
+    },
+    {
+      "content": "1600 MB",
+      "pos": [
+        9016,
+        9023
+      ]
+    },
+    {
+      "content": "1600 MB",
+      "pos": [
+        9026,
+        9033
+      ]
+    },
+    {
+      "content": "3200 MB",
+      "pos": [
+        9036,
+        9043
+      ]
+    },
+    {
+      "content": "3200 MB",
+      "pos": [
+        9046,
+        9053
+      ]
+    },
+    {
+      "content": "3200 MB",
+      "pos": [
+        9056,
+        9063
+      ]
+    },
+    {
+      "content": "6400 MB",
+      "pos": [
+        9066,
+        9073
+      ]
+    },
+    {
+      "content": "Concurrency slot consumption",
+      "pos": [
+        9081,
+        9109
+      ]
+    },
+    {
+      "content": "Furthermore, as mentioned above, the higher the resource class assigned to the user the greater the concurrency slot consumption.",
+      "pos": [
+        9111,
+        9240
+      ]
+    },
+    {
+      "content": "The following table documents the consumption of concurrency slots by queries in a given resource class.",
+      "pos": [
+        9241,
+        9345
+      ]
+    },
+    {
+      "content": "Consumption",
+      "pos": [
+        10422,
+        10433
+      ]
+    },
+    {
+      "content": "DW100",
+      "pos": [
+        10436,
+        10441
+      ]
+    },
+    {
+      "content": "DW200",
+      "pos": [
+        10444,
+        10449
+      ]
+    },
+    {
+      "content": "DW300",
+      "pos": [
+        10452,
+        10457
+      ]
+    },
+    {
+      "content": "DW400",
+      "pos": [
+        10460,
+        10465
+      ]
+    },
+    {
+      "content": "DW500",
+      "pos": [
+        10468,
+        10473
+      ]
+    },
+    {
+      "content": "DW600",
+      "pos": [
+        10476,
+        10481
+      ]
+    },
+    {
+      "content": "DW1000",
+      "pos": [
+        10484,
+        10490
+      ]
+    },
+    {
+      "content": "DW1200",
+      "pos": [
+        10493,
+        10499
+      ]
+    },
+    {
+      "content": "DW1500",
+      "pos": [
+        10502,
+        10508
+      ]
+    },
+    {
+      "content": "DW2000",
+      "pos": [
+        10511,
+        10517
+      ]
+    },
+    {
+      "content": "Max Concurrent Queries",
+      "pos": [
+        10639,
+        10661
+      ]
+    },
+    {
+      "content": "32",
+      "pos": [
+        10670,
+        10672
+      ]
+    },
+    {
+      "content": "32",
+      "pos": [
+        10678,
+        10680
+      ]
+    },
+    {
+      "content": "32",
+      "pos": [
+        10686,
+        10688
+      ]
+    },
+    {
+      "content": "32",
+      "pos": [
+        10694,
+        10696
+      ]
+    },
+    {
+      "content": "32",
+      "pos": [
+        10702,
+        10704
+      ]
+    },
+    {
+      "content": "32",
+      "pos": [
+        10710,
+        10712
+      ]
+    },
+    {
+      "content": "32",
+      "pos": [
+        10718,
+        10720
+      ]
+    },
+    {
+      "content": "32",
+      "pos": [
+        10727,
+        10729
+      ]
+    },
+    {
+      "content": "32",
+      "pos": [
+        10736,
+        10738
+      ]
+    },
+    {
+      "content": "32",
+      "pos": [
+        10745,
+        10747
+      ]
+    },
+    {
+      "content": "Max Concurrency Slots",
+      "pos": [
+        10756,
+        10777
+      ]
+    },
+    {
+      "content": "4",
+      "pos": [
+        10787,
+        10788
+      ]
+    },
+    {
+      "content": "8",
+      "pos": [
+        10795,
+        10796
+      ]
+    },
+    {
+      "content": "12",
+      "pos": [
+        10803,
+        10805
+      ]
+    },
+    {
+      "content": "16",
+      "pos": [
+        10811,
+        10813
+      ]
+    },
+    {
+      "content": "20",
+      "pos": [
+        10819,
+        10821
+      ]
+    },
+    {
+      "content": "24",
+      "pos": [
+        10827,
+        10829
+      ]
+    },
+    {
+      "content": "40",
+      "pos": [
+        10835,
+        10837
+      ]
+    },
+    {
+      "content": "48",
+      "pos": [
+        10844,
+        10846
+      ]
+    },
+    {
+      "content": "60",
+      "pos": [
+        10853,
+        10855
+      ]
+    },
+    {
+      "content": "80",
+      "pos": [
+        10862,
+        10864
+      ]
+    },
+    {
+      "content": "smallrc(default) (s)",
+      "pos": [
+        10873,
+        10893
+      ]
+    },
+    {
+      "content": "1",
+      "pos": [
+        10904,
+        10905
+      ]
+    },
+    {
+      "content": "1",
+      "pos": [
+        10912,
+        10913
+      ]
+    },
+    {
+      "content": "1",
+      "pos": [
+        10920,
+        10921
+      ]
+    },
+    {
+      "content": "1",
+      "pos": [
+        10928,
+        10929
+      ]
+    },
+    {
+      "content": "1",
+      "pos": [
+        10936,
+        10937
+      ]
+    },
+    {
+      "content": "1",
+      "pos": [
+        10944,
+        10945
+      ]
+    },
+    {
+      "content": "1",
+      "pos": [
+        10952,
+        10953
+      ]
+    },
+    {
+      "content": "1",
+      "pos": [
+        10961,
+        10962
+      ]
+    },
+    {
+      "content": "1",
+      "pos": [
+        10970,
+        10971
+      ]
+    },
+    {
+      "content": "1",
+      "pos": [
+        10979,
+        10980
+      ]
+    },
+    {
+      "content": "mediumrc (m)",
+      "pos": [
+        10990,
+        11002
+      ]
+    },
+    {
+      "content": "1",
+      "pos": [
+        11021,
+        11022
+      ]
+    },
+    {
+      "content": "2",
+      "pos": [
+        11029,
+        11030
+      ]
+    },
+    {
+      "content": "2",
+      "pos": [
+        11037,
+        11038
+      ]
+    },
+    {
+      "content": "4",
+      "pos": [
+        11045,
+        11046
+      ]
+    },
+    {
+      "content": "4",
+      "pos": [
+        11053,
+        11054
+      ]
+    },
+    {
+      "content": "4",
+      "pos": [
+        11061,
+        11062
+      ]
+    },
+    {
+      "content": "8",
+      "pos": [
+        11069,
+        11070
+      ]
+    },
+    {
+      "content": "8",
+      "pos": [
+        11078,
+        11079
+      ]
+    },
+    {
+      "content": "8",
+      "pos": [
+        11087,
+        11088
+      ]
+    },
+    {
+      "content": "16",
+      "pos": [
+        11096,
+        11098
+      ]
+    },
+    {
+      "content": "largerc (l)",
+      "pos": [
+        11107,
+        11118
+      ]
+    },
+    {
+      "content": "2",
+      "pos": [
+        11138,
+        11139
+      ]
+    },
+    {
+      "content": "4",
+      "pos": [
+        11146,
+        11147
+      ]
+    },
+    {
+      "content": "4",
+      "pos": [
+        11154,
+        11155
+      ]
+    },
+    {
+      "content": "8",
+      "pos": [
+        11162,
+        11163
+      ]
+    },
+    {
+      "content": "8",
+      "pos": [
+        11170,
+        11171
+      ]
+    },
+    {
+      "content": "8",
+      "pos": [
+        11178,
+        11179
+      ]
+    },
+    {
+      "content": "16",
+      "pos": [
+        11186,
+        11188
+      ]
+    },
+    {
+      "content": "16",
+      "pos": [
+        11195,
+        11197
+      ]
+    },
+    {
+      "content": "16",
+      "pos": [
+        11204,
+        11206
+      ]
+    },
+    {
+      "content": "32",
+      "pos": [
+        11213,
+        11215
+      ]
+    },
+    {
+      "content": "xlargerc (xl)",
+      "pos": [
+        11224,
+        11237
+      ]
+    },
+    {
+      "content": "4",
+      "pos": [
+        11255,
+        11256
+      ]
+    },
+    {
+      "content": "8",
+      "pos": [
+        11263,
+        11264
+      ]
+    },
+    {
+      "content": "8",
+      "pos": [
+        11271,
+        11272
+      ]
+    },
+    {
+      "content": "16",
+      "pos": [
+        11279,
+        11281
+      ]
+    },
+    {
+      "content": "16",
+      "pos": [
+        11287,
+        11289
+      ]
+    },
+    {
+      "content": "16",
+      "pos": [
+        11295,
+        11297
+      ]
+    },
+    {
+      "content": "32",
+      "pos": [
+        11303,
+        11305
+      ]
+    },
+    {
+      "content": "32",
+      "pos": [
+        11312,
+        11314
+      ]
+    },
+    {
+      "content": "32",
+      "pos": [
+        11321,
+        11323
+      ]
+    },
+    {
+      "content": "64",
+      "pos": [
+        11330,
+        11332
+      ]
+    },
+    {
+      "content": "Exceptions",
+      "pos": [
+        11344,
+        11354
+      ]
+    },
+    {
+      "content": "There are occasions where membership of a higher resource class does not alter the resources assigned to the query or operation.",
+      "pos": [
+        11356,
+        11484
+      ]
+    },
+    {
+      "content": "Typically this occurs when the resources required to fulfil the action are low.",
+      "pos": [
+        11485,
+        11564
+      ]
+    },
+    {
+      "content": "In these cases the default or small resource class (smallrc) is always used irrespective of the resource class assigned to the user.",
+      "pos": [
+        11565,
+        11697
+      ]
+    },
+    {
+      "content": "As an example, <ph id=\"ph1\">`CREATE LOGIN`</ph> will always run in the smallrc.",
+      "pos": [
+        11698,
+        11759
+      ]
+    },
+    {
+      "content": "The resources required to fulfil this operation are very low and so it would not make sense to include the query in the concurrency slot model.",
+      "pos": [
+        11760,
+        11903
+      ]
+    },
+    {
+      "content": "It would be wasteful to pre-allocate large amounts of memory for this action.",
+      "pos": [
+        11904,
+        11981
+      ]
+    },
+    {
+      "content": "By excluding <ph id=\"ph1\">`CREATE LOGIN`</ph> from the concurrency slot model SQL Data Warehouse can be much more efficient.",
+      "pos": [
+        11982,
+        12088
+      ]
+    },
+    {
+      "pos": [
+        12092,
+        12179
+      ],
+      "content": "Below is a list of statements and operations that <bpt id=\"p1\">**</bpt>are<ept id=\"p1\">**</ept> governed by resource classes:"
+    },
+    {
+      "content": "INSERT-SELECT",
+      "pos": [
+        12183,
+        12196
+      ]
+    },
+    {
+      "content": "UPDATE",
+      "pos": [
+        12199,
+        12205
+      ]
+    },
+    {
+      "content": "DELETE",
+      "pos": [
+        12208,
+        12214
+      ]
+    },
+    {
+      "content": "SELECT (when not exclusively querying DMVs)",
+      "pos": [
+        12217,
+        12260
+      ]
+    },
+    {
+      "content": "ALTER INDEX REBUILD",
+      "pos": [
+        12263,
+        12282
+      ]
+    },
+    {
+      "content": "ALTER INDEX REORGANIZE",
+      "pos": [
+        12285,
+        12307
+      ]
+    },
+    {
+      "content": "ALTER TABLE REBUILD",
+      "pos": [
+        12310,
+        12329
+      ]
+    },
+    {
+      "content": "CREATE CLUSTERED INDEX",
+      "pos": [
+        12332,
+        12354
+      ]
+    },
+    {
+      "content": "CREATE CLUSTERED COLUMNSTORE INDEX",
+      "pos": [
+        12357,
+        12391
+      ]
+    },
+    {
+      "content": "CREATE TABLE AS SELECT",
+      "pos": [
+        12394,
+        12416
+      ]
+    },
+    {
+      "content": "Data loading",
+      "pos": [
+        12420,
+        12432
+      ]
+    },
+    {
+      "pos": [
+        12580,
+        12754
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> It is worth highlighting that <ph id=\"ph2\">`SELECT`</ph> queries executing exclusively against dynamic management views and catalog views are <bpt id=\"p1\">**</bpt>not<ept id=\"p1\">**</ept> governed by resource classes."
+    },
+    {
+      "content": "It is important to remember that the majority of end user queries are likely to be governed by resource classes.",
+      "pos": [
+        12756,
+        12868
+      ]
+    },
+    {
+      "content": "The general rule is that the active query workload must fit inside both the concurrent query and concurrency slot thresholds unless it has been specifically excluded by the platform.",
+      "pos": [
+        12869,
+        13051
+      ]
+    },
+    {
+      "content": "As an end user you cannot choose to exclude a query from the concurrency slot model.",
+      "pos": [
+        13052,
+        13136
+      ]
+    },
+    {
+      "content": "Once either threshold has been exceeded queries will begin to queue.",
+      "pos": [
+        13137,
+        13205
+      ]
+    },
+    {
+      "content": "Queued queries will be addressed in priority order followed by submission time.",
+      "pos": [
+        13206,
+        13285
+      ]
+    },
+    {
+      "content": "Internals",
+      "pos": [
+        13291,
+        13300
+      ]
+    },
+    {
+      "content": "Under the covers of SQL Data Warehouse's workload management things are a little bit more complicated.",
+      "pos": [
+        13303,
+        13405
+      ]
+    },
+    {
+      "content": "The resource classes are dynamically mapped to a generic set of workload management groups within resource governor.",
+      "pos": [
+        13406,
+        13522
+      ]
+    },
+    {
+      "content": "The groups used will depend on the DWU value for the warehouse.",
+      "pos": [
+        13523,
+        13586
+      ]
+    },
+    {
+      "content": "However, there are total of eight workload groups used by SQL Data Warehouse.",
+      "pos": [
+        13587,
+        13664
+      ]
+    },
+    {
+      "content": "They are:",
+      "pos": [
+        13665,
+        13674
+      ]
+    },
+    {
+      "content": "SloDWGroupC00",
+      "pos": [
+        13678,
+        13691
+      ]
+    },
+    {
+      "content": "SloDWGroupC01",
+      "pos": [
+        13694,
+        13707
+      ]
+    },
+    {
+      "content": "SloDWGroupC02",
+      "pos": [
+        13710,
+        13723
+      ]
+    },
+    {
+      "content": "SloDWGroupC03",
+      "pos": [
+        13726,
+        13739
+      ]
+    },
+    {
+      "content": "SloDWGroupC04",
+      "pos": [
+        13742,
+        13755
+      ]
+    },
+    {
+      "content": "SloDWGroupC05",
+      "pos": [
+        13758,
+        13771
+      ]
+    },
+    {
+      "content": "SloDWGroupC06",
+      "pos": [
+        13774,
+        13787
+      ]
+    },
+    {
+      "content": "SloDWGroupC07",
+      "pos": [
+        13790,
+        13803
+      ]
+    },
+    {
+      "content": "These 8 groups map across to the concurrency slot consumption",
+      "pos": [
+        13805,
+        13866
+      ]
+    },
+    {
+      "content": "Workload Group",
+      "pos": [
+        13870,
+        13884
+      ]
+    },
+    {
+      "content": "Concurrency Slot Mapping",
+      "pos": [
+        13887,
+        13911
+      ]
+    },
+    {
+      "content": "Priority Mapping",
+      "pos": [
+        13914,
+        13930
+      ]
+    },
+    {
+      "content": "SloDWGroupC00",
+      "pos": [
+        14000,
+        14013
+      ]
+    },
+    {
+      "content": "1",
+      "pos": [
+        14017,
+        14018
+      ]
+    },
+    {
+      "content": "Medium",
+      "pos": [
+        14044,
+        14050
+      ]
+    },
+    {
+      "content": "SloDWGroupC01",
+      "pos": [
+        14065,
+        14078
+      ]
+    },
+    {
+      "content": "2",
+      "pos": [
+        14082,
+        14083
+      ]
+    },
+    {
+      "content": "Medium",
+      "pos": [
+        14109,
+        14115
+      ]
+    },
+    {
+      "content": "SloDWGroupC02",
+      "pos": [
+        14130,
+        14143
+      ]
+    },
+    {
+      "content": "4",
+      "pos": [
+        14147,
+        14148
+      ]
+    },
+    {
+      "content": "Medium",
+      "pos": [
+        14174,
+        14180
+      ]
+    },
+    {
+      "content": "SloDWGroupC03",
+      "pos": [
+        14195,
+        14208
+      ]
+    },
+    {
+      "content": "8",
+      "pos": [
+        14212,
+        14213
+      ]
+    },
+    {
+      "content": "Medium",
+      "pos": [
+        14239,
+        14245
+      ]
+    },
+    {
+      "content": "SloDWGroupC04",
+      "pos": [
+        14260,
+        14273
+      ]
+    },
+    {
+      "content": "16",
+      "pos": [
+        14277,
+        14279
+      ]
+    },
+    {
+      "content": "High",
+      "pos": [
+        14304,
+        14308
+      ]
+    },
+    {
+      "content": "SloDWGroupC05",
+      "pos": [
+        14325,
+        14338
+      ]
+    },
+    {
+      "content": "32",
+      "pos": [
+        14342,
+        14344
+      ]
+    },
+    {
+      "content": "High",
+      "pos": [
+        14369,
+        14373
+      ]
+    },
+    {
+      "content": "SloDWGroupC06",
+      "pos": [
+        14390,
+        14403
+      ]
+    },
+    {
+      "content": "64",
+      "pos": [
+        14407,
+        14409
+      ]
+    },
+    {
+      "content": "High",
+      "pos": [
+        14434,
+        14438
+      ]
+    },
+    {
+      "content": "SloDWGroupC07",
+      "pos": [
+        14455,
+        14468
+      ]
+    },
+    {
+      "content": "128",
+      "pos": [
+        14472,
+        14475
+      ]
+    },
+    {
+      "content": "High",
+      "pos": [
+        14499,
+        14503
+      ]
+    },
+    {
+      "content": "So, for example, if DW500 is the current DWU setting for your SQL Data Warehouse then the active workload groups would be mapped to the resource classes as follows:",
+      "pos": [
+        14519,
+        14683
+      ]
+    },
+    {
+      "content": "Resource Class",
+      "pos": [
+        14687,
+        14701
+      ]
+    },
+    {
+      "content": "Workload Group",
+      "pos": [
+        14704,
+        14718
+      ]
+    },
+    {
+      "content": "Concurrency Slots Used",
+      "pos": [
+        14721,
+        14743
+      ]
+    },
+    {
+      "content": "Importance",
+      "pos": [
+        14748,
+        14758
+      ]
+    },
+    {
+      "content": "smallrc",
+      "pos": [
+        14839,
+        14846
+      ]
+    },
+    {
+      "content": "SloDWGroupC00",
+      "pos": [
+        14856,
+        14869
+      ]
+    },
+    {
+      "content": "1",
+      "pos": [
+        14873,
+        14874
+      ]
+    },
+    {
+      "content": "Medium",
+      "pos": [
+        14900,
+        14906
+      ]
+    },
+    {
+      "content": "mediumrc",
+      "pos": [
+        14915,
+        14923
+      ]
+    },
+    {
+      "content": "SloDWGroupC02",
+      "pos": [
+        14932,
+        14945
+      ]
+    },
+    {
+      "content": "4",
+      "pos": [
+        14949,
+        14950
+      ]
+    },
+    {
+      "content": "Medium",
+      "pos": [
+        14976,
+        14982
+      ]
+    },
+    {
+      "content": "largerc",
+      "pos": [
+        14991,
+        14998
+      ]
+    },
+    {
+      "content": "SloDWGroupC03",
+      "pos": [
+        15008,
+        15021
+      ]
+    },
+    {
+      "content": "8",
+      "pos": [
+        15025,
+        15026
+      ]
+    },
+    {
+      "content": "Medium",
+      "pos": [
+        15052,
+        15058
+      ]
+    },
+    {
+      "content": "xlargerc",
+      "pos": [
+        15067,
+        15075
+      ]
+    },
+    {
+      "content": "SloDWGroupC04",
+      "pos": [
+        15084,
+        15097
+      ]
+    },
+    {
+      "content": "16",
+      "pos": [
+        15101,
+        15103
+      ]
+    },
+    {
+      "content": "High",
+      "pos": [
+        15128,
+        15132
+      ]
+    },
+    {
+      "content": "To look at the differences in memory resource allocation in detail from the perspective of the resource governor use the following query:",
+      "pos": [
+        15142,
+        15279
+      ]
+    },
+    {
+      "pos": [
+        17249,
+        17375
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> The query above can also be used to analyse active and historic usage of the workload groups when troubleshooting"
+    },
+    {
+      "content": "Workload management examples",
+      "pos": [
+        17381,
+        17409
+      ]
+    },
+    {
+      "content": "This section provides some additional examples to work through for managing users and detecting queries that are queuing.",
+      "pos": [
+        17411,
+        17532
+      ]
+    },
+    {
+      "content": "Managing users",
+      "pos": [
+        17538,
+        17552
+      ]
+    },
+    {
+      "content": "To grant access to a user to the SQL Data Warehouse they will first need a login.",
+      "pos": [
+        17554,
+        17635
+      ]
+    },
+    {
+      "content": "Open a connection to the master database for your SQL Data Warehouse and execute the following commands:",
+      "pos": [
+        17637,
+        17741
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> it is a good idea to create users for your logins in the master database for when working with both Azure SQL database and SQL Data Warehouse.",
+      "pos": [
+        17847,
+        18002
+      ]
+    },
+    {
+      "content": "There are two server roles available at this level that require the login to have a user in master in order to grant membership.",
+      "pos": [
+        18003,
+        18131
+      ]
+    },
+    {
+      "content": "The roles are <ph id=\"ph1\">`Loginmanager`</ph> and <ph id=\"ph2\">`dbmanager`</ph>.",
+      "pos": [
+        18132,
+        18177
+      ]
+    },
+    {
+      "content": "In both Azure SQL database and SQL Data Warehouse these roles grant rights to manage logins and to create databases.",
+      "pos": [
+        18178,
+        18294
+      ]
+    },
+    {
+      "content": "This is different to SQL Server.",
+      "pos": [
+        18295,
+        18327
+      ]
+    },
+    {
+      "content": "For more details please refer to the [Managing Databases and Logins in Azure SQL Database] article for more details.",
+      "pos": [
+        18328,
+        18444
+      ]
+    },
+    {
+      "content": "Once the login has been created then a user account now needs to be added.",
+      "pos": [
+        18446,
+        18520
+      ]
+    },
+    {
+      "content": "Open a connection to the SQL Data Warehouse database and execute the following command:",
+      "pos": [
+        18522,
+        18609
+      ]
+    },
+    {
+      "content": "Once complete permissions will need to be granted to the user.",
+      "pos": [
+        18662,
+        18724
+      ]
+    },
+    {
+      "content": "The example below grants <ph id=\"ph1\">`CONTROL`</ph> on the SQL Data Warehouse database.",
+      "pos": [
+        18725,
+        18795
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">`CONTROL`</ph> at the database level is the equivalent of db_owner in SQL Server.",
+      "pos": [
+        18796,
+        18872
+      ]
+    },
+    {
+      "content": "To see the workload management roles use the following query:",
+      "pos": [
+        18931,
+        18992
+      ]
+    },
+    {
+      "content": "To add a user to an increase workload management role use the following query:",
+      "pos": [
+        19164,
+        19242
+      ]
+    },
+    {
+      "content": "To remove a user from an workload management role use the following query:",
+      "pos": [
+        19300,
+        19374
+      ]
+    },
+    {
+      "pos": [
+        19435,
+        19501
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> It is not possible to remove a user from the smallrc."
+    },
+    {
+      "content": "To see which users are members of a given role use the following query:",
+      "pos": [
+        19503,
+        19574
+      ]
+    },
+    {
+      "content": "Queued query detection",
+      "pos": [
+        19945,
+        19967
+      ]
+    },
+    {
+      "pos": [
+        19968,
+        20084
+      ],
+      "content": "To identify queries that are held in a concurrency queue you can always refer to the <ph id=\"ph1\">`sys.dm_pdw_exec_requests`</ph> DMV."
+    },
+    {
+      "content": "SQL Data Warehouse has specific wait types for measuring concurrency.",
+      "pos": [
+        20600,
+        20669
+      ]
+    },
+    {
+      "content": "They are:",
+      "pos": [
+        20672,
+        20681
+      ]
+    },
+    {
+      "content": "LocalQueriesConcurrencyResourceType",
+      "pos": [
+        20686,
+        20721
+      ]
+    },
+    {
+      "content": "UserConcurrencyResourceType",
+      "pos": [
+        20724,
+        20751
+      ]
+    },
+    {
+      "content": "DmsConcurrencyResourceType",
+      "pos": [
+        20754,
+        20780
+      ]
+    },
+    {
+      "content": "BackupConcurrencyResourceType",
+      "pos": [
+        20783,
+        20812
+      ]
+    },
+    {
+      "content": "The LocalQueriesConcurrencyResourceType refers to queries that sit outside of the concurrency slot framework.",
+      "pos": [
+        20814,
+        20923
+      ]
+    },
+    {
+      "content": "DMV queries and system functions such as <ph id=\"ph1\">`SELECT @@VERSION`</ph> are examples of local queries.",
+      "pos": [
+        20924,
+        21014
+      ]
+    },
+    {
+      "content": "The UserConcurrencyResourceType refers to queries that sit inside the concurrency slot framework.",
+      "pos": [
+        21016,
+        21113
+      ]
+    },
+    {
+      "content": "Queries against end user tables represent examples which would use this resource type.",
+      "pos": [
+        21114,
+        21200
+      ]
+    },
+    {
+      "content": "The DmsConcurrencyResourceType refers to waits resulting from data movement operations.",
+      "pos": [
+        21202,
+        21289
+      ]
+    },
+    {
+      "content": "The BackupConcurrencyResourceType can be seen when a database is being backed up.",
+      "pos": [
+        21291,
+        21372
+      ]
+    },
+    {
+      "content": "The maximum value for this resource type is 1.",
+      "pos": [
+        21373,
+        21419
+      ]
+    },
+    {
+      "content": "If multiple backups have been requested at the same time the others will queue.",
+      "pos": [
+        21420,
+        21499
+      ]
+    },
+    {
+      "pos": [
+        21502,
+        21645
+      ],
+      "content": "To perform analysis of currently queued queries to find out what resources a request is waiting for please refer to the <ph id=\"ph1\">`sys.dm_pdw_waits`</ph> DMV."
+    },
+    {
+      "content": "To view just the resource waits consumed by a given query you can refer to the <ph id=\"ph1\">`sys.dm_pdw_resource_waits`</ph> DMV.",
+      "pos": [
+        22953,
+        23064
+      ]
+    },
+    {
+      "content": "Resource wait time only measures the time waiting for resources to be provided as opposed to signal wait time which is the time it takes for the underlying SQL Server's to schedule the query onto the CPU.",
+      "pos": [
+        23065,
+        23269
+      ]
+    },
+    {
+      "pos": [
+        23753,
+        23863
+      ],
+      "content": "Finally, for historic trend analysis of waits then SQL Datawarehouse provides the <ph id=\"ph1\">`sys.dm_pdw_wait_stats`</ph> DMV."
+    },
+    {
+      "content": "Next steps",
+      "pos": [
+        24083,
+        24093
+      ]
+    },
+    {
+      "pos": [
+        24094,
+        24150
+      ],
+      "content": "For more development tips, see <bpt id=\"p1\">[</bpt>development overview<ept id=\"p1\">][]</ept>."
+    }
+  ],
+  "content": "<properties\n   pageTitle=\"Concurrency and workload management in SQL Data Warehouse | Microsoft Azure\"\n   description=\"Understand concurrency and workload management in Azure SQL Data Warehouse for developing solutions.\"\n   services=\"sql-data-warehouse\"\n   documentationCenter=\"NA\"\n   authors=\"jrowlandjones\"\n   manager=\"barbkess\"\n   editor=\"jrowlandjones\"/>\n\n<tags\n   ms.service=\"sql-data-warehouse\"\n   ms.devlang=\"NA\"\n   ms.topic=\"article\"\n   ms.tgt_pltfrm=\"NA\"\n   ms.workload=\"data-services\"\n   ms.date=\"06/26/2015\"\n   ms.author=\"JRJ@BigBangData.co.uk;barbkess\"/>\n\n# Concurrency and workload management in SQL Data Warehouse\nTo deliver predictable performance at scale SQL Data Warehouse implements mechanisms for managing both workload concurrency and computational resource assignment.\n\nThis article introduces you to the concepts of concurrency and workload management; explaining how both features have been implemented and how you can control them in your data warehouse.\n\n## Concurrency\nIt is important to understand that concurrency in SQL Data Warehouse is governed by two concepts; **concurrent queries** and **concurrency slots**. \n\nConcurrent queries equates to the number of queries executing at the same time. SQL Data Warehouse supports up to 32 **concurrent queries**. Each query execution counts as a single query regardless of whether it is a serial query (single threaded) or parallel query (multi-threaded). This is a fixed cap and applies to all service levels and all queries. \n\nConcurrency slots is a more dynamic concept and is relative to the Data Warehouse Unit (DWU) service level objective for your data warehouse. As you increase the number of DWU allocated to SQL Data Warehouse more compute resources are assigned. However, increasing DWU also increases the number of **concurrency slots** available.\n\nAs a general rule, each concurrently executing query consumes one or more concurrency slots. The exact number of slots depends on three factors:\n\n1. The DWU setting for the SQL Data Warehouse\n2. The **resource class** that the user belongs to\n3. Whether the query or operation is governed by the concurrency slot model \n\n> [AZURE.NOTE] It is worth noting that not every query is governed by the concurrency slot query rule. However, most user queries are. Some queries and operations do not consume concurrency slots at all. These queries and operations are still limited by the concurrent query limit which is why both rules are described. Please refer to the [resource class exceptions](#exceptions) section below for more details. \n\nThe table below describes the limits for both concurrent queries and concurrency slots; assuming your query is resource governed.\n\n<!--\n| Concurrency Slot Consumption | DW100 | DW200 | DW300 | DW400 | DW500 | DW600 | DW1000 | DW1200 | DW1500 | DW2000 | DW3000 | DW6000 |\n| :--------------------------- | :---- | :---- | :---- | :---- | :---- | :---- | :----- | :----- | :----- | :----- | :----- | :----- |\n| Max Concurrent Queries       | 32    | 32    | 32    | 32    | 32    | 32    | 32     | 32     | 32     | 32     | 32     | 32     |\n| Max Concurrency Slots        | 4     | 8     | 12    | 16    | 20    | 24    | 40     | 48     | 60     | 80     | 120    | 240    |\n-->\n\n| Concurrency Slot Consumption | DW100 | DW200 | DW300 | DW400 | DW500 | DW600 | DW1000 | DW1200 | DW1500 | DW2000 |\n| :--------------------------- | :---- | :---- | :---- | :---- | :---- | :---- | :----- | :----- | :----- | :----- | \n| Max Concurrent Queries       | 32    | 32    | 32    | 32    | 32    | 32    | 32     | 32     | 32     | 32     | \n| Max Concurrency Slots        | 4     | 8     | 12    | 16    | 20    | 24    | 40     | 48     | 60     | 80     |\n\nSQL Data Warehouse query workloads have to live within these thresholds. If there are more than 32 concurrent queries or you exceed the number of concurrency slots then the query will be queued until both thresholds can be satisfied.\n\n## Workload management\n\nSQL Data Warehouse exposes four different resource classes in the form of **database roles** as part of its workload management implementation.  \n\nThe roles are:\n\n- smallrc\n- mediumrc\n- largerc\n- xlargerc\n\nResource classes are an essential part of SQL Data Warehouse workload management. They govern the computational resources allocated to the query.\n\nBy default each user is a member of the small resource class - smallrc. However, any user can be added to one or more of the higher resource classes. As a general rule, SQL Data Warehouse will take the highest role membership for query execution. Adding a user to a higher resource class will increase the resources for that user but it will also consume greater concurrency slots; potentially limiting your concurrency. This is due to the fact that as more resources are allocated to one query the system needs to limit resources consumed by others. There is no free lunch.\n\nThe most important resource governed by the higher resource class is memory. Most data warehouse tables of any meaningful size will be using clustered columnstore indexes. Whilst this typically provides the best performance for data warehouse workloads maintaining them is a memory intensive operation. It is often highly beneficial to use the higher resource classes for data management operations such as index rebuilds.\n\nSQL Data Warehouse has implemented resource classes through the use of database roles. To become a member of a higher resource class and increase your memory simply and priority you simply add your database user to one of the roles / resource classes mentioned above.\n\n### Resource class membership\n\nYou can add and remove yourself to the workload management database role using the `sp_addrolemember` and `sp_droprolemember` procedures. Note you will require `ALTER ROLE` permission to do this. You are not able to use the ALTER ROLE DDL syntax. You must use the aforementioned stored procedures. A full example of how to create logins and users is provided in the [managing users)[#managing-users] section at the end of this article. \n\n> [AZURE.NOTE] Rather than adding a user into and out of a workload management group it is often simpler to initiate those more intensive operations through a separate login/user that is permanently assigned to the higher resource class.\n\n### Memory allocation\n\nThe following table details the increase in memory available to each query; subject to the resource class applied to the user executing it:\n\n<!--\n| Memory Available (per dist) | Priority | DW100  | DW200  | DW300  | DW400   | DW500   | DW600   | DW1000  | DW1200  | DW1500  | DW2000  | DW3000  | DW6000   |\n| :-------------------------- | :------- | :----  | :----- | :----- | :------ | :------ | :------ | :------ | :------ | :------ | :------ | :------ | :------- |\n| smallrc(default) (s)        | Medium   | 100 MB | 100 MB | 100 MB | 100  MB | 100 MB  | 100 MB  | 100 MB  | 100 MB  | 100 MB  | 100 MB  | 100  MB | 100   MB |\n| mediumrc (m)                | Medium   | 100 MB | 200 MB | 200 MB | 400  MB | 400 MB  | 400 MB  | 800 MB  | 800 MB  | 800 MB  | 1600 MB | 1600 MB | 3200  MB |\n| largerc (l)                 | High     | 200 MB | 400 MB | 400 MB | 800  MB | 800 MB  | 800 MB  | 1600 MB | 1600 MB | 1600 MB | 3200 MB | 3200 MB | 6400  MB |\n| xlargerc (xl)               | High     | 400 MB | 800 MB | 800 MB | 1600 MB | 1600 MB | 1600 MB | 3200 MB | 3200 MB | 3200 MB | 6400 MB | 6400 MB | 12800 MB |\n-->\n\n<!--\n| Memory Available (per dist) | Priority | DW100  | DW200  | DW300  | DW400   | DW500   | DW600   | DW1000  | DW1200  | DW1500  | DW2000  |\n| :-------------------------- | :------- | :----  | :----- | :----- | :------ | :------ | :------ | :------ | :------ | :------ | :------ |\n| smallrc(default) (s)        | Medium   | 100 MB | 100 MB | 100 MB | 100  MB | 100 MB  | 100 MB  | 100 MB  | 100 MB  | 100 MB  | 100 MB  |\n| mediumrc (m)                | Medium   | 100 MB | 200 MB | 200 MB | 400  MB | 400 MB  | 400 MB  | 800 MB  | 800 MB  | 800 MB  | 1600 MB |\n| largerc (l)                 | High     | 200 MB | 400 MB | 400 MB | 800  MB | 800 MB  | 800 MB  | 1600 MB | 1600 MB | 1600 MB | 3200 MB |\n| xlargerc (xl)               | High     | 400 MB | 800 MB | 800 MB | 1600 MB | 1600 MB | 1600 MB | 3200 MB | 3200 MB | 3200 MB | 6400 MB |\n-->\n\n| Memory Available (per dist) | DW100  | DW200  | DW300  | DW400   | DW500   | DW600   | DW1000  | DW1200  | DW1500  | DW2000  |\n| :-------------------------- | :----  | :----- | :----- | :------ | :------ | :------ | :------ | :------ | :------ | :------ |\n| smallrc(default) (s)        | 100 MB | 100 MB | 100 MB | 100  MB | 100 MB  | 100 MB  | 100 MB  | 100 MB  | 100 MB  | 100 MB  |\n| mediumrc (m)                | 100 MB | 200 MB | 200 MB | 400  MB | 400 MB  | 400 MB  | 800 MB  | 800 MB  | 800 MB  | 1600 MB |\n| largerc (l)                 | 200 MB | 400 MB | 400 MB | 800  MB | 800 MB  | 800 MB  | 1600 MB | 1600 MB | 1600 MB | 3200 MB |\n| xlargerc (xl)               | 400 MB | 800 MB | 800 MB | 1600 MB | 1600 MB | 1600 MB | 3200 MB | 3200 MB | 3200 MB | 6400 MB |\n\n### Concurrency slot consumption\n\nFurthermore, as mentioned above, the higher the resource class assigned to the user the greater the concurrency slot consumption. The following table documents the consumption of concurrency slots by queries in a given resource class.\n\n<!--\n| Consumption | DW100 | DW200 | DW300 | DW400 | DW500 | DW600 | DW1000 | DW1200 | DW1500 | DW2000 | DW3000 | DW6000 |\n| :--------------------------- | :---- | :---- | :---- | :---- | :---- | :---- | :----- | :----- | :----- | :----- | :----- | :----- |\n| Max Concurrent Queries       | 32    | 32    | 32    | 32    | 32    | 32    | 32     | 32     | 32     | 32     | 32     | 32     |\n| Max Concurrency Slots        | 4     | 8     | 12    | 16    | 20    | 24    | 40     | 48     | 60     | 80     | 120    | 240    |\n| smallrc(default) (s)         | 1     | 1     | 1     | 1     | 1     | 1     | 1      | 1      | 1      | 1      | 1      | 1      |\n| mediumrc (m)                 | 1     | 2     | 2     | 4     | 4     | 4     | 8      | 8      | 8      | 16     | 16     | 32     |\n| largerc (l)                  | 2     | 4     | 4     | 8     | 8     | 8     | 16     | 16     | 16     | 32     | 32     | 64     |\n| xlargerc (xl)                | 4     | 8     | 8     | 16    | 16    | 16    | 32     | 32     | 32     | 64     | 64     | 128    |\n-->\n\n| Consumption | DW100 | DW200 | DW300 | DW400 | DW500 | DW600 | DW1000 | DW1200 | DW1500 | DW2000 |\n| :--------------------------- | :---- | :---- | :---- | :---- | :---- | :---- | :----- | :----- | :----- | :----- |\n| Max Concurrent Queries       | 32    | 32    | 32    | 32    | 32    | 32    | 32     | 32     | 32     | 32     |\n| Max Concurrency Slots        | 4     | 8     | 12    | 16    | 20    | 24    | 40     | 48     | 60     | 80     |\n| smallrc(default) (s)         | 1     | 1     | 1     | 1     | 1     | 1     | 1      | 1      | 1      | 1      |\n| mediumrc (m)                 | 1     | 2     | 2     | 4     | 4     | 4     | 8      | 8      | 8      | 16     |\n| largerc (l)                  | 2     | 4     | 4     | 8     | 8     | 8     | 16     | 16     | 16     | 32     |\n| xlargerc (xl)                | 4     | 8     | 8     | 16    | 16    | 16    | 32     | 32     | 32     | 64     |\n\n### Exceptions\n\nThere are occasions where membership of a higher resource class does not alter the resources assigned to the query or operation. Typically this occurs when the resources required to fulfil the action are low. In these cases the default or small resource class (smallrc) is always used irrespective of the resource class assigned to the user. As an example, `CREATE LOGIN` will always run in the smallrc. The resources required to fulfil this operation are very low and so it would not make sense to include the query in the concurrency slot model. It would be wasteful to pre-allocate large amounts of memory for this action. By excluding `CREATE LOGIN` from the concurrency slot model SQL Data Warehouse can be much more efficient.  \n\nBelow is a list of statements and operations that **are** governed by resource classes:\n\n- INSERT-SELECT\n- UPDATE\n- DELETE\n- SELECT (when not exclusively querying DMVs)\n- ALTER INDEX REBUILD\n- ALTER INDEX REORGANIZE\n- ALTER TABLE REBUILD\n- CREATE CLUSTERED INDEX\n- CREATE CLUSTERED COLUMNSTORE INDEX\n- CREATE TABLE AS SELECT \n- Data loading \n\n<!--\nRemoved as these two are not confirmed / supported under SQLDW\n- CREATE REMOTE TABLE AS SELECT\n- CREATE EXTERNAL TABLE AS SELECT \n-->\n   \n> [AZURE.NOTE] It is worth highlighting that `SELECT` queries executing exclusively against dynamic management views and catalog views are **not** governed by resource classes.\n\nIt is important to remember that the majority of end user queries are likely to be governed by resource classes. The general rule is that the active query workload must fit inside both the concurrent query and concurrency slot thresholds unless it has been specifically excluded by the platform. As an end user you cannot choose to exclude a query from the concurrency slot model. Once either threshold has been exceeded queries will begin to queue. Queued queries will be addressed in priority order followed by submission time.\n\n### Internals \n\nUnder the covers of SQL Data Warehouse's workload management things are a little bit more complicated. The resource classes are dynamically mapped to a generic set of workload management groups within resource governor. The groups used will depend on the DWU value for the warehouse. However, there are total of eight workload groups used by SQL Data Warehouse. They are:\n\n- SloDWGroupC00\n- SloDWGroupC01\n- SloDWGroupC02\n- SloDWGroupC03\n- SloDWGroupC04\n- SloDWGroupC05\n- SloDWGroupC06\n- SloDWGroupC07\n\nThese 8 groups map across to the concurrency slot consumption\n\n| Workload Group | Concurrency Slot Mapping | Priority Mapping |\n| :------------  | :----------------------- | :--------------- |\n| SloDWGroupC00  | 1                        | Medium           |\n| SloDWGroupC01  | 2                        | Medium           |\n| SloDWGroupC02  | 4                        | Medium           |\n| SloDWGroupC03  | 8                        | Medium           |\n| SloDWGroupC04  | 16                       | High             |\n| SloDWGroupC05  | 32                       | High             |\n| SloDWGroupC06  | 64                       | High             |\n| SloDWGroupC07  | 128                      | High             |\n\nSo, for example, if DW500 is the current DWU setting for your SQL Data Warehouse then the active workload groups would be mapped to the resource classes as follows:\n\n| Resource Class | Workload Group | Concurrency Slots Used   | Importance |\n| :------------- | :------------- | :---------------------   | :--------- |\n| smallrc        | SloDWGroupC00  | 1                        | Medium     |\n| mediumrc       | SloDWGroupC02  | 4                        | Medium     |\n| largerc        | SloDWGroupC03  | 8                        | Medium     |\n| xlargerc       | SloDWGroupC04  | 16                       | High       |\n\nTo look at the differences in memory resource allocation in detail from the perspective of the resource governor use the following query:\n\n```\nWITH rg\nAS\n(   SELECT  pn.name                                 AS node_name\n    ,       pn.[type]                               AS node_type\n    ,       pn.pdw_node_id                          AS node_id\n    ,       rp.name                                 AS pool_name\n    ,       rp.max_memory_kb*1.0/1024               AS pool_max_mem_MB\n    ,       wg.name                                 AS group_name\n    ,       wg.importance                           AS group_importance\n    ,       wg.request_max_memory_grant_percent     AS group_request_max_memory_grant_pcnt\n    ,       wg.max_dop                              AS group_max_dop\n    ,       wg.effective_max_dop                    AS group_effective_max_dop\n    ,       wg.total_request_count                  AS group_total_request_count\n    ,       wg.total_queued_request_count           AS group_total_queued_request_count\n    ,       wg.active_request_count                 AS group_active_request_count\n    ,       wg.queued_request_count                 AS group_queued_request_count\n    FROM    sys.dm_pdw_nodes_resource_governor_workload_groups wg\n    JOIN    sys.dm_pdw_nodes_resource_governor_resource_pools rp    ON  wg.pdw_node_id  = rp.pdw_node_id\n                                                                    AND wg.pool_id      = rp.pool_id\n    JOIN    sys.dm_pdw_nodes pn                                     ON  wg.pdw_node_id  = pn.pdw_node_id\n    WHERE   wg.name like 'SloDWGroup%'\n    AND     rp.name = 'SloDWPool'\n) \nSELECT  pool_name\n,       pool_max_mem_MB\n,       group_name\n,       group_importance\n,       (pool_max_mem_MB/100)*group_request_max_memory_grant_pcnt AS max_memory_grant_MB\n,       node_name\n,       node_type\n,       group_total_request_count\n,       group_total_queued_request_count\n,       group_active_request_count\n,       group_queued_request_count\nFROM    rg\nORDER BY \n    node_name\n,   group_request_max_memory_grant_pcnt\n,   group_importance\n;\n```\n\n> [AZURE.NOTE] The query above can also be used to analyse active and historic usage of the workload groups when troubleshooting \n\n## Workload management examples\n\nThis section provides some additional examples to work through for managing users and detecting queries that are queuing.\n\n### Managing users\n\nTo grant access to a user to the SQL Data Warehouse they will first need a login.\n\nOpen a connection to the master database for your SQL Data Warehouse and execute the following commands:\n\n```\nCREATE LOGIN newperson WITH PASSWORD = 'mypassword'\n\nCREATE USER newperson for LOGIN newperson\n```\n\n[AZURE.NOTE] it is a good idea to create users for your logins in the master database for when working with both Azure SQL database and SQL Data Warehouse. There are two server roles available at this level that require the login to have a user in master in order to grant membership. The roles are `Loginmanager` and `dbmanager`. In both Azure SQL database and SQL Data Warehouse these roles grant rights to manage logins and to create databases. This is different to SQL Server. For more details please refer to the [Managing Databases and Logins in Azure SQL Database] article for more details.\n\nOnce the login has been created then a user account now needs to be added.\n\nOpen a connection to the SQL Data Warehouse database and execute the following command:\n\n```\nCREATE USER newperson FOR LOGIN newperson\n```\n\nOnce complete permissions will need to be granted to the user. The example below grants `CONTROL` on the SQL Data Warehouse database. `CONTROL` at the database level is the equivalent of db_owner in SQL Server.\n\n```\nGRANT CONTROL ON DATABASE::MySQLDW to newperson\n```\n\nTo see the workload management roles use the following query:\n\n```\nSELECT  ro.[name]           AS [db_role_name]\nFROM    sys.database_principals ro\nWHERE   ro.[type_desc]      = 'DATABASE_ROLE'\nAND     ro.[is_fixed_role]  = 0\n;\n```\n\nTo add a user to an increase workload management role use the following query:\n\n``` \nEXEC sp_addrolemember 'largerc', 'newperson' \n```\n\nTo remove a user from an workload management role use the following query:\n\n``` \nEXEC sp_droprolemember 'largerc', 'newperson' \n```\n\n> [AZURE.NOTE] It is not possible to remove a user from the smallrc.\n\nTo see which users are members of a given role use the following query:\n\n```\nSELECT  r.name AS role_principal_name\n,       m.name AS member_principal_name\nFROM    sys.database_role_members rm\nJOIN    sys.database_principals AS r            ON rm.role_principal_id     = r.principal_id\nJOIN    sys.database_principals AS m            ON rm.member_principal_id   = m.principal_id\nWHERE   r.name IN ('mediumrc','largerc', 'xlargerc')\n;\n```\n\n### Queued query detection\nTo identify queries that are held in a concurrency queue you can always refer to the `sys.dm_pdw_exec_requests` DMV.\n\n```\nSELECT   r.[request_id]                                 AS Request_ID\n        ,r.[status]                                     AS Request_Status\n        ,r.[submit_time]                                AS Request_SubmitTime\n        ,r.[start_time]                                 AS Request_StartTime\n        ,DATEDIFF(ms,[submit_time],[start_time])        AS Request_InitiateDuration_ms\n        ,r.resource_class                               AS Request_resource_class\nFROM    sys.dm_pdw_exec_requests r\n;\n```\n\nSQL Data Warehouse has specific wait types for measuring concurrency. \n\nThey are:\n \n- LocalQueriesConcurrencyResourceType\n- UserConcurrencyResourceType\n- DmsConcurrencyResourceType\n- BackupConcurrencyResourceType\n\nThe LocalQueriesConcurrencyResourceType refers to queries that sit outside of the concurrency slot framework. DMV queries and system functions such as `SELECT @@VERSION` are examples of local queries.\n\nThe UserConcurrencyResourceType refers to queries that sit inside the concurrency slot framework. Queries against end user tables represent examples which would use this resource type.\n\nThe DmsConcurrencyResourceType refers to waits resulting from data movement operations.\n\nThe BackupConcurrencyResourceType can be seen when a database is being backed up. The maximum value for this resource type is 1. If multiple backups have been requested at the same time the others will queue.\n\n\nTo perform analysis of currently queued queries to find out what resources a request is waiting for please refer to the `sys.dm_pdw_waits` DMV.\n\n```\nSELECT  w.[wait_id]\n,       w.[session_id]\n,       w.[type]                                            AS Wait_type\n,       w.[object_type]\n,       w.[object_name]\n,       w.[request_id]\n,       w.[request_time]\n,       w.[acquire_time]\n,       w.[state]\n,       w.[priority]\n,       SESSION_ID()                                        AS Current_session\n,       s.[status]                                          AS Session_status\n,       s.[login_name]\n,       s.[query_count]\n,       s.[client_id]\n,       s.[sql_spid]\n,       r.[command]                                         AS Request_command\n,       r.[label]\n,       r.[status]                                          AS Request_status\n,       r.[submit_time]\n,       r.[start_time]\n,       r.[end_compile_time]\n,       r.[end_time]\n,       DATEDIFF(ms,r.[submit_time],r.[start_time])         AS Request_queue_time_ms\n,       DATEDIFF(ms,r.[start_time],r.[end_compile_time])    AS Request_compile_time_ms\n,       DATEDIFF(ms,r.[end_compile_time],r.[end_time])      AS Request_execution_time_ms\n,       r.[total_elapsed_time]\nFROM    sys.dm_pdw_waits w\nJOIN    sys.dm_pdw_exec_sessions s  ON w.[session_id] = s.[session_id]\nJOIN    sys.dm_pdw_exec_requests r  ON w.[request_id] = r.[request_id]\nWHERE   w.[session_id] <> SESSION_ID()\n;\n```\n\nTo view just the resource waits consumed by a given query you can refer to the `sys.dm_pdw_resource_waits` DMV. Resource wait time only measures the time waiting for resources to be provided as opposed to signal wait time which is the time it takes for the underlying SQL Server's to schedule the query onto the CPU. \n\n```\nSELECT  [session_id]\n,       [type]\n,       [object_type]\n,       [object_name]\n,       [request_id]\n,       [request_time]\n,       [acquire_time]\n,       DATEDIFF(ms,[request_time],[acquire_time])  AS acquire_duration_ms\n,       [concurrency_slots_used]                    AS concurrency_slots_reserved\n,       [resource_class]\n,       [wait_id]                                   AS queue_position\nFROM    sys.dm_pdw_resource_waits\nWHERE   [session_id] <> SESSION_ID()\n;\n```\n\nFinally, for historic trend analysis of waits then SQL Datawarehouse provides the `sys.dm_pdw_wait_stats` DMV.\n\n```\nSELECT  w.[pdw_node_id]\n,       w.[wait_name]\n,       w.[max_wait_time]\n,       w.[request_count]\n,       w.[signal_time]\n,       w.[completed_count]\n,       w.[wait_time]\nFROM    sys.dm_pdw_wait_stats w\n;\n```\n\n## Next steps\nFor more development tips, see [development overview][].\n\n<!--Image references-->\n\n<!--Article references-->\n[development overview]: sql-data-warehouse-overview-develop.md\n\n<!--MSDN references-->\n[Managing Databases and Logins in Azure SQL Database]:https://msdn.microsoft.com/en-us/library/azure/ee336235.aspx\n\n<!--Other Web references-->\n\n\n"
+}

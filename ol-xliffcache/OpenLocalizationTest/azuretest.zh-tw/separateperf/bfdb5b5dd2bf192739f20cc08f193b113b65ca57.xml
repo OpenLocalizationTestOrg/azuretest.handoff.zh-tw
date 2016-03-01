@@ -1,0 +1,686 @@
+{
+  "nodes": [
+    {
+      "content": "Use Azure Event Hubs with Apache Spark in HDInsight to process streaming data | Microsoft Azure",
+      "pos": [
+        28,
+        123
+      ]
+    },
+    {
+      "content": "Step-by-step instructions on how to send a data stream to Azure Event Hub and then receive those events in Spark using a Zeppelin notebook",
+      "pos": [
+        143,
+        281
+      ]
+    },
+    {
+      "content": "Spark Streaming: Process events from Azure Event Hubs with Apache Spark on HDInsight",
+      "pos": [
+        622,
+        706
+      ]
+    },
+    {
+      "content": "Spark Streaming extends the core Spark API to build scalable, high-throughput, fault-tolerant stream processing applications.",
+      "pos": [
+        708,
+        833
+      ]
+    },
+    {
+      "content": "Data can be ingested from many sources.",
+      "pos": [
+        834,
+        873
+      ]
+    },
+    {
+      "content": "In this article we use Event Hubs to ingest data.",
+      "pos": [
+        874,
+        923
+      ]
+    },
+    {
+      "content": "Event Hubs is a highly scalable ingestion system that can intake millions of events per second.",
+      "pos": [
+        924,
+        1019
+      ]
+    },
+    {
+      "content": "In this tutorial, you will learn how to create an Azure Event Hub, how to ingest messages into an Event Hub using a console application in C#, and to retrieve them in parallel using a Zeppelin notebook configured for Apache Spark in HDInsight.",
+      "pos": [
+        1022,
+        1265
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> To follow the instructions in this article, you will have to use both versions of the Azure portal.",
+      "pos": [
+        1269,
+        1381
+      ]
+    },
+    {
+      "content": "To create an Event Hub you will use the <bpt id=\"p1\">[</bpt>Azure portal<ept id=\"p1\">](https://manage.windowsazure.com)</ept>.",
+      "pos": [
+        1382,
+        1470
+      ]
+    },
+    {
+      "content": "To work with the HDInsight Spark cluster, you will use the <bpt id=\"p1\">[</bpt>Azure Preview Portal<ept id=\"p1\">](https://ms.portal.azure.com/)</ept>.",
+      "pos": [
+        1471,
+        1583
+      ]
+    },
+    {
+      "content": "Prerequisites:",
+      "pos": [
+        1589,
+        1603
+      ]
+    },
+    {
+      "content": "You must have the following:",
+      "pos": [
+        1607,
+        1635
+      ]
+    },
+    {
+      "content": "An Azure subscription.",
+      "pos": [
+        1639,
+        1661
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt>Get Azure free trial<ept id=\"p1\">](http://azure.microsoft.com/documentation/videos/get-azure-free-trial-for-testing-hadoop-in-hdinsight/)</ept>.",
+      "pos": [
+        1662,
+        1792
+      ]
+    },
+    {
+      "content": "An Apache Spark cluster.",
+      "pos": [
+        1795,
+        1819
+      ]
+    },
+    {
+      "content": "For instructions, see <bpt id=\"p1\">[</bpt>Provision Apache Spark clusters in Azure HDInsight<ept id=\"p1\">](hdinsight-apache-spark-provision-clusters.md)</ept>.",
+      "pos": [
+        1820,
+        1941
+      ]
+    },
+    {
+      "pos": [
+        1944,
+        2016
+      ],
+      "content": "An <bpt id=\"p1\">[</bpt>Azure Event Hub<ept id=\"p1\">](service-bus-event-hubs-csharp-ephcs-getstarted.md)</ept>."
+    },
+    {
+      "content": "A workstation with Microsoft Visual Studio 2013.",
+      "pos": [
+        2019,
+        2067
+      ]
+    },
+    {
+      "content": "For instructions, see <bpt id=\"p1\">[</bpt>Install Visual Studio<ept id=\"p1\">](https://msdn.microsoft.com/library/e2h7fzkw.aspx)</ept>.",
+      "pos": [
+        2068,
+        2164
+      ]
+    },
+    {
+      "pos": [
+        2168,
+        2219
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"createeventhub\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Create Azure Event Hub"
+    },
+    {
+      "pos": [
+        2224,
+        2351
+      ],
+      "content": "From the <bpt id=\"p1\">[</bpt>Azure portal<ept id=\"p1\">](https://manage.windowsazure.com)</ept>, select <bpt id=\"p2\">**</bpt>NEW<ept id=\"p2\">**</ept> &gt; <bpt id=\"p3\">**</bpt>Service Bus<ept id=\"p3\">**</ept> &gt; <bpt id=\"p4\">**</bpt>Event Hub<ept id=\"p4\">**</ept> &gt; <bpt id=\"p5\">**</bpt>Custom Create<ept id=\"p5\">**</ept>."
+    },
+    {
+      "content": "On the <bpt id=\"p1\">**</bpt>Add a new Event Hub<ept id=\"p1\">**</ept> screen, enter an <bpt id=\"p2\">**</bpt>Event Hub Name<ept id=\"p2\">**</ept>, select the <bpt id=\"p3\">**</bpt>Region<ept id=\"p3\">**</ept> to create the hub in, and create a new namespace or select an existing one.",
+      "pos": [
+        2356,
+        2521
+      ]
+    },
+    {
+      "content": "Click the <bpt id=\"p1\">**</bpt>Arrow<ept id=\"p1\">**</ept> to continue.",
+      "pos": [
+        2522,
+        2554
+      ]
+    },
+    {
+      "content": "wizard page 1",
+      "pos": [
+        2562,
+        2575
+      ]
+    },
+    {
+      "pos": [
+        2727,
+        2850
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> You should select the same <bpt id=\"p1\">**</bpt>Location<ept id=\"p1\">**</ept> as your Apache Spark cluster in HDInsight to reduce latency and costs."
+    },
+    {
+      "content": "On the <bpt id=\"p1\">**</bpt>Configure Event Hub<ept id=\"p1\">**</ept> screen, enter the <bpt id=\"p2\">**</bpt>Partition count<ept id=\"p2\">**</ept> and <bpt id=\"p3\">**</bpt>Message Retention<ept id=\"p3\">**</ept> values, and then click the check mark.",
+      "pos": [
+        2855,
+        2988
+      ]
+    },
+    {
+      "content": "For this example, use a partition count of 10 and a message retention of 1.",
+      "pos": [
+        2989,
+        3064
+      ]
+    },
+    {
+      "content": "Note the partition count because you will need this value later.",
+      "pos": [
+        3065,
+        3129
+      ]
+    },
+    {
+      "content": "wizard page 2",
+      "pos": [
+        3137,
+        3150
+      ]
+    },
+    {
+      "pos": [
+        3330,
+        3443
+      ],
+      "content": "Click the Event Hub that you created, click <bpt id=\"p1\">**</bpt>Configure<ept id=\"p1\">**</ept>, and then create two access policies for the event hub."
+    },
+    {
+      "pos": [
+        3449,
+        3617
+      ],
+      "content": "<table>\n <tr><th>Name</th><th>Permissions</th></tr>\n <tr><td>mysendpolicy</td><td>Send</td></tr>\n <tr><td>myreceivepolicy</td><td>Listen</td></tr>\n </table>",
+      "leadings": [
+        "",
+        "   ",
+        "   ",
+        "   ",
+        "   "
+      ],
+      "nodes": [
+        {
+          "content": "Name",
+          "pos": [
+            17,
+            21
+          ]
+        },
+        {
+          "content": "Permissions",
+          "pos": [
+            30,
+            41
+          ]
+        },
+        {
+          "content": "mysendpolicy",
+          "pos": [
+            61,
+            73
+          ]
+        },
+        {
+          "content": "Send",
+          "pos": [
+            82,
+            86
+          ]
+        },
+        {
+          "content": "myreceivepolicy",
+          "pos": [
+            106,
+            121
+          ]
+        },
+        {
+          "content": "Listen",
+          "pos": [
+            130,
+            136
+          ]
+        }
+      ]
+    },
+    {
+      "content": "After You create the permissions, select the <bpt id=\"p1\">**</bpt>Save<ept id=\"p1\">**</ept> icon at the bottom of the page.",
+      "pos": [
+        3623,
+        3708
+      ]
+    },
+    {
+      "content": "This creates the shared access policies that will be used to send (<bpt id=\"p1\">**</bpt>mysendpolicy<ept id=\"p1\">**</ept>) and listen (<bpt id=\"p2\">**</bpt>myreceivepolicy<ept id=\"p2\">**</ept>) to this Event Hub.",
+      "pos": [
+        3709,
+        3845
+      ]
+    },
+    {
+      "content": "policies",
+      "pos": [
+        3853,
+        3861
+      ]
+    },
+    {
+      "content": "On the same page, take a note of the policy keys generated for the two policies.",
+      "pos": [
+        4017,
+        4097
+      ]
+    },
+    {
+      "content": "Save these keys because they will be used later.",
+      "pos": [
+        4098,
+        4146
+      ]
+    },
+    {
+      "content": "policy keys",
+      "pos": [
+        4154,
+        4165
+      ]
+    },
+    {
+      "pos": [
+        4310,
+        4471
+      ],
+      "content": "On the <bpt id=\"p1\">**</bpt>Dashboard<ept id=\"p1\">**</ept> page, click <bpt id=\"p2\">**</bpt>Connection Information<ept id=\"p2\">**</ept> from the bottom to retrieve and save the connection strings for the Event Hub using the two policies."
+    },
+    {
+      "content": "policy keys",
+      "pos": [
+        4479,
+        4490
+      ]
+    },
+    {
+      "pos": [
+        4794,
+        4877
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"receivezeppelin\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Receive messages in Spark on HDInsight using Zeppelin"
+    },
+    {
+      "pos": [
+        4879,
+        5043
+      ],
+      "content": "In this section, you create a <bpt id=\"p1\">[</bpt>Zeppelin<ept id=\"p1\">](https://zeppelin.incubator.apache.org)</ept> notebook to receive messages from the Event Hub into the Spark cluster in HDInsight."
+    },
+    {
+      "content": "From the <bpt id=\"p1\">[</bpt>Azure Preview Portal<ept id=\"p1\">](https://ms.portal.azure.com/)</ept>, from the startboard, click the tile for your Spark cluster (if you pinned it to the startboard).",
+      "pos": [
+        5048,
+        5207
+      ]
+    },
+    {
+      "content": "You can also navigate to your cluster under <bpt id=\"p1\">**</bpt>Browse All<ept id=\"p1\">**</ept> &gt; <bpt id=\"p2\">**</bpt>HDInsight Clusters<ept id=\"p2\">**</ept>.",
+      "pos": [
+        5208,
+        5292
+      ]
+    },
+    {
+      "content": "Launch the Zeppelin notebook.",
+      "pos": [
+        5300,
+        5329
+      ]
+    },
+    {
+      "content": "From the Spark cluster blade, click <bpt id=\"p1\">**</bpt>Quick Links<ept id=\"p1\">**</ept>, and then from the <bpt id=\"p2\">**</bpt>Cluster Dashboard<ept id=\"p2\">**</ept> blade, click <bpt id=\"p3\">**</bpt>Zeppelin Notebook<ept id=\"p3\">**</ept>.",
+      "pos": [
+        5330,
+        5458
+      ]
+    },
+    {
+      "content": "When prompted, enter the admin credentials for the cluster.",
+      "pos": [
+        5459,
+        5518
+      ]
+    },
+    {
+      "content": "Follow the instructions on the page that opens up to launch the notebook.",
+      "pos": [
+        5519,
+        5592
+      ]
+    },
+    {
+      "content": "Create a new notebook.",
+      "pos": [
+        5597,
+        5619
+      ]
+    },
+    {
+      "content": "From the header pane, click <bpt id=\"p1\">**</bpt>Notebook<ept id=\"p1\">**</ept>, and from the drop-down, click <bpt id=\"p2\">**</bpt>Create New Note<ept id=\"p2\">**</ept>.",
+      "pos": [
+        5620,
+        5712
+      ]
+    },
+    {
+      "content": "Create a new Zeppelin notebook",
+      "pos": [
+        5720,
+        5750
+      ]
+    },
+    {
+      "content": "On the same page, under the <bpt id=\"p1\">**</bpt>Notebook<ept id=\"p1\">**</ept> heading, you should see a new notebook with the name starting with <bpt id=\"p2\">**</bpt>Note XXXXXXXXX<ept id=\"p2\">**</ept>.",
+      "pos": [
+        5892,
+        6019
+      ]
+    },
+    {
+      "content": "Click the new notebook.",
+      "pos": [
+        6020,
+        6043
+      ]
+    },
+    {
+      "content": "On the web page for the new notebook, click the heading, and change the name of the notebook if you want to.",
+      "pos": [
+        6048,
+        6156
+      ]
+    },
+    {
+      "content": "Press ENTER to save the name change.",
+      "pos": [
+        6157,
+        6193
+      ]
+    },
+    {
+      "content": "Also, make sure the notebook header shows a <bpt id=\"p1\">**</bpt>Connected<ept id=\"p1\">**</ept> status in the top-right corner.",
+      "pos": [
+        6194,
+        6283
+      ]
+    },
+    {
+      "content": "Zeppelin notebook status",
+      "pos": [
+        6291,
+        6315
+      ]
+    },
+    {
+      "content": "In the empty paragraph that is created by default in the new notebook, paste the following snippet and replace the placeholders to use your event hub configuration.",
+      "pos": [
+        6454,
+        6618
+      ]
+    },
+    {
+      "content": "In this snippet, you receive the stream from Event Hub and register the stream into a temporary table, called <bpt id=\"p1\">**</bpt>mytemptable<ept id=\"p1\">**</ept>.",
+      "pos": [
+        6619,
+        6745
+      ]
+    },
+    {
+      "content": "In the next section, we will start the sender application.",
+      "pos": [
+        6746,
+        6804
+      ]
+    },
+    {
+      "content": "You can then read the data directly from the table.",
+      "pos": [
+        6805,
+        6856
+      ]
+    },
+    {
+      "pos": [
+        7968,
+        8010
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"runapps\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Run the applications"
+    },
+    {
+      "content": "From the Zeppelin notebook, run the paragraph with the snippet.",
+      "pos": [
+        8015,
+        8078
+      ]
+    },
+    {
+      "content": "Press <bpt id=\"p1\">**</bpt>SHIFT + ENTER<ept id=\"p1\">**</ept> or the <bpt id=\"p2\">**</bpt>Play<ept id=\"p2\">**</ept> button at the top-right corner.",
+      "pos": [
+        8079,
+        8150
+      ]
+    },
+    {
+      "content": "The status on the right-corner of the paragraph should progress from READY, PENDING, RUNNING to FINISHED.",
+      "pos": [
+        8156,
+        8261
+      ]
+    },
+    {
+      "content": "The output will show up in the bottom of the same paragraph.",
+      "pos": [
+        8262,
+        8322
+      ]
+    },
+    {
+      "content": "The screenshot looks like the following:",
+      "pos": [
+        8323,
+        8363
+      ]
+    },
+    {
+      "content": "Output of the snippet",
+      "pos": [
+        8371,
+        8392
+      ]
+    },
+    {
+      "pos": [
+        8550,
+        8662
+      ],
+      "content": "Run the <bpt id=\"p1\">**</bpt>Sender<ept id=\"p1\">**</ept> project and press <bpt id=\"p2\">**</bpt>Enter<ept id=\"p2\">**</ept> in the console window to start sending messages to the Event Hub."
+    },
+    {
+      "content": "From the Zeppelin notebook, in a new paragraph, enter the following snippet to read the messages received in Spark.",
+      "pos": [
+        8667,
+        8782
+      ]
+    },
+    {
+      "pos": [
+        8846,
+        8926
+      ],
+      "content": "The following screen capture shows the messages received in the <bpt id=\"p1\">**</bpt>mytemptable<ept id=\"p1\">**</ept>."
+    },
+    {
+      "content": "Receive the messages in Zeppelin",
+      "pos": [
+        8934,
+        8966
+      ]
+    },
+    {
+      "content": "Restart the Spark SQL interpreter to exit the application.",
+      "pos": [
+        9136,
+        9194
+      ]
+    },
+    {
+      "content": "Click the <bpt id=\"p1\">**</bpt>Interpreter<ept id=\"p1\">**</ept> tab at the top, and for the Spark interpreter, click <bpt id=\"p2\">**</bpt>Restart<ept id=\"p2\">**</ept>.",
+      "pos": [
+        9195,
+        9286
+      ]
+    },
+    {
+      "content": "Restart the Zeppelin intepreter",
+      "pos": [
+        9294,
+        9325
+      ]
+    },
+    {
+      "pos": [
+        9481,
+        9564
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"sparkstreamingha\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Run the streaming application with high availability"
+    },
+    {
+      "content": "Using Zeppelin to receive streaming data into Spark cluster on HDInsight is a good approach to prototype your application.",
+      "pos": [
+        9566,
+        9688
+      ]
+    },
+    {
+      "content": "However, to run your streaming application in a production setup with high-availability and resilience, you need to do the following:",
+      "pos": [
+        9689,
+        9822
+      ]
+    },
+    {
+      "content": "Copy over the dependency jar to the storage account associated with the cluster.",
+      "pos": [
+        9827,
+        9907
+      ]
+    },
+    {
+      "content": "Build a streaming application.",
+      "pos": [
+        9911,
+        9941
+      ]
+    },
+    {
+      "content": "RDP into the cluster and copy over the application jar to the headnode of the cluster.",
+      "pos": [
+        9945,
+        10031
+      ]
+    },
+    {
+      "content": "RDP into the cluster and run the application on the cluster node.",
+      "pos": [
+        10035,
+        10100
+      ]
+    },
+    {
+      "pos": [
+        10102,
+        10324
+      ],
+      "content": "Instructions on how to perform these steps and a sample streaming application can be downloaded from GitHub at <bpt id=\"p1\">[</bpt>https://github.com/hdinsight/hdinsight-spark-examples<ept id=\"p1\">](https://github.com/hdinsight/hdinsight-spark-examples)</ept>."
+    },
+    {
+      "pos": [
+        10330,
+        10360
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"seealso\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>See also"
+    },
+    {
+      "content": "Overview: Apache Spark on Azure HDInsight",
+      "pos": [
+        10366,
+        10407
+      ]
+    },
+    {
+      "content": "Quick Start: Provision Apache Spark on HDInsight and run interactive queries using Spark SQL",
+      "pos": [
+        10448,
+        10540
+      ]
+    },
+    {
+      "content": "Use Spark in HDInsight for building machine learning applications",
+      "pos": [
+        10608,
+        10673
+      ]
+    },
+    {
+      "content": "Perform interactive data analysis using Spark in HDInsight with BI tools",
+      "pos": [
+        10739,
+        10811
+      ]
+    },
+    {
+      "content": "Manage resources for the Apache Spark cluster in Azure HDInsight",
+      "pos": [
+        10856,
+        10920
+      ]
+    },
+    {
+      "content": "test",
+      "pos": [
+        11476,
+        11480
+      ]
+    }
+  ],
+  "content": "<properties \n    pageTitle=\"Use Azure Event Hubs with Apache Spark in HDInsight to process streaming data | Microsoft Azure\" \n    description=\"Step-by-step instructions on how to send a data stream to Azure Event Hub and then receive those events in Spark using a Zeppelin notebook\" \n    services=\"hdinsight\" \n    documentationCenter=\"\" \n    authors=\"nitinme\" \n    manager=\"paulettm\" \n    editor=\"cgronlun\"\n    tags=\"azure-portal\"/>\n\n<tags \n    ms.service=\"hdinsight\" \n    ms.workload=\"big-data\" \n    ms.tgt_pltfrm=\"na\" \n    ms.devlang=\"na\" \n    ms.topic=\"article\" \n    ms.date=\"07/31/2015\" \n    ms.author=\"nitinme\"/>\n\n\n# Spark Streaming: Process events from Azure Event Hubs with Apache Spark on HDInsight\n\nSpark Streaming extends the core Spark API to build scalable, high-throughput, fault-tolerant stream processing applications. Data can be ingested from many sources. In this article we use Event Hubs to ingest data. Event Hubs is a highly scalable ingestion system that can intake millions of events per second. \n\nIn this tutorial, you will learn how to create an Azure Event Hub, how to ingest messages into an Event Hub using a console application in C#, and to retrieve them in parallel using a Zeppelin notebook configured for Apache Spark in HDInsight.\n\n> [AZURE.NOTE] To follow the instructions in this article, you will have to use both versions of the Azure portal. To create an Event Hub you will use the [Azure portal](https://manage.windowsazure.com). To work with the HDInsight Spark cluster, you will use the [Azure Preview Portal](https://ms.portal.azure.com/).  \n\n**Prerequisites:**\n\nYou must have the following:\n\n- An Azure subscription. See [Get Azure free trial](http://azure.microsoft.com/documentation/videos/get-azure-free-trial-for-testing-hadoop-in-hdinsight/).\n- An Apache Spark cluster. For instructions, see [Provision Apache Spark clusters in Azure HDInsight](hdinsight-apache-spark-provision-clusters.md).\n- An [Azure Event Hub](service-bus-event-hubs-csharp-ephcs-getstarted.md).\n- A workstation with Microsoft Visual Studio 2013. For instructions, see [Install Visual Studio](https://msdn.microsoft.com/library/e2h7fzkw.aspx).\n\n##<a name=\"createeventhub\"></a>Create Azure Event Hub\n\n1. From the [Azure portal](https://manage.windowsazure.com), select **NEW** > **Service Bus** > **Event Hub** > **Custom Create**.\n\n2. On the **Add a new Event Hub** screen, enter an **Event Hub Name**, select the **Region** to create the hub in, and create a new namespace or select an existing one. Click the **Arrow** to continue.\n\n    ![wizard page 1](./media/hdinsight-apache-spark-csharp-apache-zeppelin-eventhub-streaming/HDI.Spark.Streaming.Create.Event.Hub.png \"Create an Azure Event Hub\")\n\n    > [AZURE.NOTE] You should select the same **Location** as your Apache Spark cluster in HDInsight to reduce latency and costs.\n\n3. On the **Configure Event Hub** screen, enter the **Partition count** and **Message Retention** values, and then click the check mark. For this example, use a partition count of 10 and a message retention of 1. Note the partition count because you will need this value later.\n\n    ![wizard page 2](./media/hdinsight-apache-spark-csharp-apache-zeppelin-eventhub-streaming/HDI.Spark.Streaming.Create.Event.Hub2.png \"Specify partition size and retention days for Event Hub\")\n\n4. Click the Event Hub that you created, click **Configure**, and then create two access policies for the event hub.\n\n    <table>\n    <tr><th>Name</th><th>Permissions</th></tr>\n    <tr><td>mysendpolicy</td><td>Send</td></tr>\n    <tr><td>myreceivepolicy</td><td>Listen</td></tr>\n    </table>\n\n    After You create the permissions, select the **Save** icon at the bottom of the page. This creates the shared access policies that will be used to send (**mysendpolicy**) and listen (**myreceivepolicy**) to this Event Hub.\n\n    ![policies](./media/hdinsight-apache-spark-csharp-apache-zeppelin-eventhub-streaming/HDI.Spark.Streaming.Event.Hub.Policies.png \"Create Event Hub policies\")\n\n    \n5. On the same page, take a note of the policy keys generated for the two policies. Save these keys because they will be used later.\n\n    ![policy keys](./media/hdinsight-apache-spark-csharp-apache-zeppelin-eventhub-streaming/HDI.Spark.Streaming.Event.Hub.Policy.Keys.png \"Save policy keys\")\n\n6. On the **Dashboard** page, click **Connection Information** from the bottom to retrieve and save the connection strings for the Event Hub using the two policies.\n\n    ![policy keys](./media/hdinsight-apache-spark-csharp-apache-zeppelin-eventhub-streaming/HDI.Spark.Streaming.Event.Hub.Policy.Connection.Strings.png \"Save policy connection strings\")\n\n[AZURE.INCLUDE [service-bus-event-hubs-get-started-send-csharp](../../includes/service-bus-event-hubs-get-started-send-csharp.md)]\n\n##<a name=\"receivezeppelin\"></a>Receive messages in Spark on HDInsight using Zeppelin\n\nIn this section, you create a [Zeppelin](https://zeppelin.incubator.apache.org) notebook to receive messages from the Event Hub into the Spark cluster in HDInsight.\n\n1. From the [Azure Preview Portal](https://ms.portal.azure.com/), from the startboard, click the tile for your Spark cluster (if you pinned it to the startboard). You can also navigate to your cluster under **Browse All** > **HDInsight Clusters**.   \n\n2. Launch the Zeppelin notebook. From the Spark cluster blade, click **Quick Links**, and then from the **Cluster Dashboard** blade, click **Zeppelin Notebook**. When prompted, enter the admin credentials for the cluster. Follow the instructions on the page that opens up to launch the notebook.\n\n2. Create a new notebook. From the header pane, click **Notebook**, and from the drop-down, click **Create New Note**.\n\n    ![Create a new Zeppelin notebook](./media/hdinsight-apache-spark-csharp-apache-zeppelin-eventhub-streaming/HDI.Spark.CreateNewNote.png \"Create a new Zeppelin notebook\")\n\n    On the same page, under the **Notebook** heading, you should see a new notebook with the name starting with **Note XXXXXXXXX**. Click the new notebook.\n\n3. On the web page for the new notebook, click the heading, and change the name of the notebook if you want to. Press ENTER to save the name change. Also, make sure the notebook header shows a **Connected** status in the top-right corner.\n\n    ![Zeppelin notebook status](./media/hdinsight-apache-spark-csharp-apache-zeppelin-eventhub-streaming/HDI.Spark.NewNote.Connected.png \"Zeppelin notebook status\")\n\n4. In the empty paragraph that is created by default in the new notebook, paste the following snippet and replace the placeholders to use your event hub configuration. In this snippet, you receive the stream from Event Hub and register the stream into a temporary table, called **mytemptable**. In the next section, we will start the sender application. You can then read the data directly from the table.\n\n        import org.apache.spark.streaming.{Seconds, StreamingContext}\n        import org.apache.spark.streaming.eventhubs.EventHubsUtils\n        import sqlContext.implicits._\n        \n        val ehParams = Map[String, String](\n          \"eventhubs.policyname\" -> \"<name of policy with listen permissions>\",\n          \"eventhubs.policykey\" -> \"<key of policy with listen permissions>\",\n          \"eventhubs.namespace\" -> \"<service bus namespace>\",\n          \"eventhubs.name\" -> \"<event hub in the service bus namespace>\",\n          \"eventhubs.partition.count\" -> \"1\",\n          \"eventhubs.consumergroup\" -> \"$default\",\n          \"eventhubs.checkpoint.dir\" -> \"/<check point directory in your storage account>\",\n          \"eventhubs.checkpoint.interval\" -> \"10\"\n        )\n        \n        val ssc =  new StreamingContext(sc, Seconds(10))\n        val stream = EventHubsUtils.createUnionStream(ssc, ehParams)\n        \n        case class Message(msg: String)\n        stream.map(msg=>Message(new String(msg))).foreachRDD(rdd=>rdd.toDF().registerTempTable(\"mytemptable\"))\n\n        stream.print\n        ssc.start\n\n\n##<a name=\"runapps\"></a>Run the applications\n\n1. From the Zeppelin notebook, run the paragraph with the snippet. Press **SHIFT + ENTER** or the **Play** button at the top-right corner.\n\n    The status on the right-corner of the paragraph should progress from READY, PENDING, RUNNING to FINISHED. The output will show up in the bottom of the same paragraph. The screenshot looks like the following:\n\n    ![Output of the snippet](./media/hdinsight-apache-spark-csharp-apache-zeppelin-eventhub-streaming/HDI.Spark.Streaming.Event.Hub.Zeppelin.Code.Output.png \"Output of the snipet\")\n\n2. Run the **Sender** project and press **Enter** in the console window to start sending messages to the Event Hub.\n\n3. From the Zeppelin notebook, in a new paragraph, enter the following snippet to read the messages received in Spark.\n\n        %sql \n        select * from mytemptable limit 10\n\n    The following screen capture shows the messages received in the **mytemptable**.\n\n    ![Receive the messages in Zeppelin](./media/hdinsight-apache-spark-csharp-apache-zeppelin-eventhub-streaming/HDI.Spark.Streaming.Event.Hub.Zeppelin.Output.png \"Receive messages in Zeppelin notebook\")\n\n4. Restart the Spark SQL interpreter to exit the application. Click the **Interpreter** tab at the top, and for the Spark interpreter, click **Restart**.\n\n    ![Restart the Zeppelin intepreter](./media/hdinsight-apache-spark-csharp-apache-zeppelin-eventhub-streaming/HDI.Spark.Zeppelin.Restart.Interpreter.png \"Restart the Zeppelin intepreter\")\n\n##<a name=\"sparkstreamingha\"></a>Run the streaming application with high availability\n\nUsing Zeppelin to receive streaming data into Spark cluster on HDInsight is a good approach to prototype your application. However, to run your streaming application in a production setup with high-availability and resilience, you need to do the following:\n\n1. Copy over the dependency jar to the storage account associated with the cluster.\n2. Build a streaming application.\n3. RDP into the cluster and copy over the application jar to the headnode of the cluster.\n3. RDP into the cluster and run the application on the cluster node.\n\nInstructions on how to perform these steps and a sample streaming application can be downloaded from GitHub at [https://github.com/hdinsight/hdinsight-spark-examples](https://github.com/hdinsight/hdinsight-spark-examples). \n\n\n##<a name=\"seealso\"></a>See also\n\n\n* [Overview: Apache Spark on Azure HDInsight](hdinsight-apache-spark-overview.md)\n* [Quick Start: Provision Apache Spark on HDInsight and run interactive queries using Spark SQL](hdinsight-apache-spark-zeppelin-notebook-jupyter-spark-sql.md)\n* [Use Spark in HDInsight for building machine learning applications](hdinsight-apache-spark-ipython-notebook-machine-learning.md)\n* [Perform interactive data analysis using Spark in HDInsight with BI tools](hdinsight-apache-spark-use-bi-tools.md)\n* [Manage resources for the Apache Spark cluster in Azure HDInsight](hdinsight-apache-spark-resource-manager.md)\n\n\n[hdinsight-versions]: ../hdinsight-component-versioning/\n[hdinsight-upload-data]: ../hdinsight-upload-data/\n[hdinsight-storage]: ../hdinsight-use-blob-storage/\n\n[azure-purchase-options]: http://azure.microsoft.com/pricing/purchase-options/\n[azure-member-offers]: http://azure.microsoft.com/pricing/member-offers/\n[azure-free-trial]: http://azure.microsoft.com/pricing/free-trial/\n[azure-management-portal]: https://manage.windowsazure.com/\n[azure-create-storageaccount]: ../storage-create-storage-account/ \n\ntest\n"
+}

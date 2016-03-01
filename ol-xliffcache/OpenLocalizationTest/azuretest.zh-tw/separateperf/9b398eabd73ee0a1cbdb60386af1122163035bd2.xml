@@ -1,0 +1,1297 @@
+{
+  "nodes": [
+    {
+      "content": "Use custom activities in an Azure Data Factory pipeline",
+      "pos": [
+        28,
+        83
+      ]
+    },
+    {
+      "content": "Learn how to create custom activities and use them in an Azure Data Factory pipeline.",
+      "pos": [
+        103,
+        188
+      ]
+    },
+    {
+      "content": "Use custom activities in an Azure Data Factory pipeline",
+      "pos": [
+        516,
+        571
+      ]
+    },
+    {
+      "content": "Azure Data Factory supports built-in activities such as <bpt id=\"p1\">**</bpt>Copy Activity<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>HDInsight Activity<ept id=\"p2\">**</ept> to be used in pipelines to move and process data.",
+      "pos": [
+        572,
+        722
+      ]
+    },
+    {
+      "content": "You can also create a custom .NET activity with your own transformation/processing logic and use the activity in a pipeline.",
+      "pos": [
+        723,
+        847
+      ]
+    },
+    {
+      "content": "You can configure the activity to run using either an <bpt id=\"p1\">**</bpt>Azure HDInsight<ept id=\"p1\">**</ept> cluster or an <bpt id=\"p2\">**</bpt>Azure Batch<ept id=\"p2\">**</ept> service.",
+      "pos": [
+        848,
+        960
+      ]
+    },
+    {
+      "content": "This article describes how to create a custom activity and use it in an Azure Data Factory pipeline.",
+      "pos": [
+        965,
+        1065
+      ]
+    },
+    {
+      "content": "It also provides a detailed walkthrough with step-by-step instructions for creating and using a custom activity.",
+      "pos": [
+        1066,
+        1178
+      ]
+    },
+    {
+      "content": "The walkthrough uses the HDInsight linked service.",
+      "pos": [
+        1179,
+        1229
+      ]
+    },
+    {
+      "content": "To use the Azure Batch linked service instead, you create a linked service of type <bpt id=\"p1\">**</bpt>AzureBatch<ept id=\"p1\">**</ept> and use it in the activity section of the pipeline JSON (<bpt id=\"p2\">**</bpt>linkedServiceName<ept id=\"p2\">**</ept>).",
+      "pos": [
+        1230,
+        1408
+      ]
+    },
+    {
+      "content": "See the <bpt id=\"p1\">[</bpt>Azure Batch Linked Service<ept id=\"p1\">](#AzureBatch)</ept> section for details on using Azure Batch with the custom activity.",
+      "pos": [
+        1409,
+        1525
+      ]
+    },
+    {
+      "pos": [
+        1531,
+        1567
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"walkthrough\" /&gt;</ph> Walkthrough"
+    },
+    {
+      "content": "This Walkthrough provides you with step-by-step instructions for creating a custom activity and using the activity in an Azure Data Factory pipeline.",
+      "pos": [
+        1568,
+        1717
+      ]
+    },
+    {
+      "content": "This walkthrough extends the tutorial from the <bpt id=\"p1\">[</bpt>Get started with Azure Data Factory<ept id=\"p1\">][adfgetstarted]</ept>.",
+      "pos": [
+        1718,
+        1818
+      ]
+    },
+    {
+      "content": "If you want to see the custom activity working, you need to go through the Get started tutorial first and then do this walkthrough.",
+      "pos": [
+        1819,
+        1950
+      ]
+    },
+    {
+      "content": "Prerequisites:",
+      "pos": [
+        1955,
+        1969
+      ]
+    },
+    {
+      "content": "Tutorial from <bpt id=\"p1\">[</bpt>Get started with Azure Data Factory<ept id=\"p1\">][adfgetstarted]</ept>.",
+      "pos": [
+        1976,
+        2043
+      ]
+    },
+    {
+      "content": "You must complete the tutorial from this article before doing this walkthrough.",
+      "pos": [
+        2044,
+        2123
+      ]
+    },
+    {
+      "content": "Visual Studio 2012 or 2013",
+      "pos": [
+        2126,
+        2152
+      ]
+    },
+    {
+      "pos": [
+        2155,
+        2216
+      ],
+      "content": "Download and install <bpt id=\"p1\">[</bpt>Azure .NET SDK<ept id=\"p1\">][azure-developer-center]</ept>"
+    },
+    {
+      "content": "Download the latest <bpt id=\"p1\">[</bpt>NuGet package for Azure Data Factory<ept id=\"p1\">](https://www.nuget.org/packages/Microsoft.Azure.Management.DataFactories/)</ept> and Install it.",
+      "pos": [
+        2219,
+        2367
+      ]
+    },
+    {
+      "content": "Instructions are in the walkthrough.",
+      "pos": [
+        2368,
+        2404
+      ]
+    },
+    {
+      "content": "Download and install NuGet package for Azure Storage.",
+      "pos": [
+        2407,
+        2460
+      ]
+    },
+    {
+      "content": "Instructions are in the walkthrough, so you can skip this step.",
+      "pos": [
+        2461,
+        2524
+      ]
+    },
+    {
+      "content": "Step 1: Create a custom activity",
+      "pos": [
+        2529,
+        2561
+      ]
+    },
+    {
+      "pos": [
+        2567,
+        3254
+      ],
+      "content": "Create a .NET Class Library project.\n<ol type=\"a\">\n    <li>Launch <b>Visual Studio 2012</b> or <b>Visual Studio 2013</b>.</li>\n    <li>Click <b>File</b>, point to <b>New</b>, and click <b>Project</b>.</li> \n    <li>Expand <b>Templates</b>, and select <b>Visual C#</b>. In this walkthrough, you use C#, but you can use any .NET language to develop the custom activity.</li> \n    <li>Select <b>Class Library</b> from the list of project types on the right.</li>\n    <li>Enter <b>MyDotNetActivity</b> for the <b>Name</b>.</li> \n    <li>Select <b>C:\\ADFGetStarted</b> for the <b>Location</b>.</li>\n    <li>Click <b>OK</b> to create the project.</li>\n</ol>",
+      "leadings": [
+        "",
+        "    ",
+        "    ",
+        "    ",
+        "    ",
+        "    ",
+        "    ",
+        "    ",
+        "    ",
+        "    "
+      ],
+      "nodes": [
+        {
+          "content": "Create a .NET Class Library project.",
+          "pos": [
+            0,
+            36
+          ]
+        },
+        {
+          "content": "Launch <ph id=\"ph1\">&lt;b&gt;</ph>Visual Studio 2012<ph id=\"ph2\">&lt;/b&gt;</ph> or <ph id=\"ph3\">&lt;b&gt;</ph>Visual Studio 2013<ph id=\"ph4\">&lt;/b&gt;</ph>.",
+          "pos": [
+            59,
+            121
+          ]
+        },
+        {
+          "content": "Click <ph id=\"ph1\">&lt;b&gt;</ph>File<ph id=\"ph2\">&lt;/b&gt;</ph>, point to <ph id=\"ph3\">&lt;b&gt;</ph>New<ph id=\"ph4\">&lt;/b&gt;</ph>, and click <ph id=\"ph5\">&lt;b&gt;</ph>Project<ph id=\"ph6\">&lt;/b&gt;</ph>.",
+          "pos": [
+            135,
+            200
+          ]
+        },
+        {
+          "content": "Expand <b>Templates</b>, and select <b>Visual C#</b>. In this walkthrough, you use C#, but you can use any .NET language to develop the custom activity.",
+          "pos": [
+            215,
+            367
+          ],
+          "nodes": [
+            {
+              "content": "Expand <ph id=\"ph1\">&lt;b&gt;</ph>Templates<ph id=\"ph2\">&lt;/b&gt;</ph>, and select <ph id=\"ph3\">&lt;b&gt;</ph>Visual C#<ph id=\"ph4\">&lt;/b&gt;</ph>.",
+              "pos": [
+                0,
+                53
+              ]
+            },
+            {
+              "content": "In this walkthrough, you use C#, but you can use any .NET language to develop the custom activity.",
+              "pos": [
+                54,
+                152
+              ]
+            }
+          ]
+        },
+        {
+          "content": "Select <ph id=\"ph1\">&lt;b&gt;</ph>Class Library<ph id=\"ph2\">&lt;/b&gt;</ph> from the list of project types on the right.",
+          "pos": [
+            382,
+            454
+          ]
+        },
+        {
+          "content": "Enter <ph id=\"ph1\">&lt;b&gt;</ph>MyDotNetActivity<ph id=\"ph2\">&lt;/b&gt;</ph> for the <ph id=\"ph3\">&lt;b&gt;</ph>Name<ph id=\"ph4\">&lt;/b&gt;</ph>.",
+          "pos": [
+            468,
+            518
+          ]
+        },
+        {
+          "content": "Select <ph id=\"ph1\">&lt;b&gt;</ph>C:\\ADFGetStarted<ph id=\"ph2\">&lt;/b&gt;</ph> for the <ph id=\"ph3\">&lt;b&gt;</ph>Location<ph id=\"ph4\">&lt;/b&gt;</ph>.",
+          "pos": [
+            533,
+            588
+          ]
+        },
+        {
+          "content": "Click <ph id=\"ph1\">&lt;b&gt;</ph>OK<ph id=\"ph2\">&lt;/b&gt;</ph> to create the project.",
+          "pos": [
+            602,
+            640
+          ]
+        }
+      ]
+    },
+    {
+      "pos": [
+        3259,
+        3359
+      ],
+      "content": "Click <ph id=\"ph1\">&lt;b&gt;</ph>Tools<ph id=\"ph2\">&lt;/b&gt;</ph>, point to <ph id=\"ph3\">&lt;b&gt;</ph>NuGet Package Manager<ph id=\"ph4\">&lt;/b&gt;</ph>, and click <ph id=\"ph5\">&lt;b&gt;</ph>Package Manager Console<ph id=\"ph6\">&lt;/b&gt;</ph>."
+    },
+    {
+      "pos": [
+        3364,
+        3491
+      ],
+      "content": "In the <ph id=\"ph1\">&lt;b&gt;</ph>Package Manager Console<ph id=\"ph2\">&lt;/b&gt;</ph>, execute the following command to import <ph id=\"ph3\">&lt;b&gt;</ph>Microsoft.Azure.Management.DataFactories<ph id=\"ph4\">&lt;/b&gt;</ph>."
+    },
+    {
+      "content": "Import the Azure Storage NuGet package in to the project.",
+      "pos": [
+        3563,
+        3620
+      ]
+    },
+    {
+      "pos": [
+        3664,
+        3737
+      ],
+      "content": "Add the following <bpt id=\"p1\">**</bpt>using<ept id=\"p1\">**</ept> statements to the source file in the project."
+    },
+    {
+      "pos": [
+        4070,
+        4133
+      ],
+      "content": "Change the name of the <bpt id=\"p1\">**</bpt>namespace<ept id=\"p1\">**</ept> to <bpt id=\"p2\">**</bpt>MyDotNetActivityNS<ept id=\"p2\">**</ept>."
+    },
+    {
+      "pos": [
+        4176,
+        4297
+      ],
+      "content": "Change the name of the class to <bpt id=\"p1\">**</bpt>MyDotNetActivity<ept id=\"p1\">**</ept> and derive it from the <bpt id=\"p2\">**</bpt>IDotNetActivity<ept id=\"p2\">**</ept> interface as shown below."
+    },
+    {
+      "pos": [
+        4359,
+        4518
+      ],
+      "content": "Implement (Add) the <bpt id=\"p1\">**</bpt>Execute<ept id=\"p1\">**</ept> method of the <bpt id=\"p2\">**</bpt>IDotNetActivity<ept id=\"p2\">**</ept> interface to the <bpt id=\"p3\">**</bpt>MyDotNetActivity<ept id=\"p3\">**</ept> class and copy the following sample code to the method."
+    },
+    {
+      "content": "Add the following helper methods.",
+      "pos": [
+        9377,
+        9410
+      ]
+    },
+    {
+      "content": "The <bpt id=\"p1\">**</bpt>Execute<ept id=\"p1\">**</ept> method invokes these helper methods.",
+      "pos": [
+        9411,
+        9463
+      ]
+    },
+    {
+      "content": "The <bpt id=\"p1\">**</bpt>GetConnectionString<ept id=\"p1\">**</ept> method retrieves the Azure Storage connection string and the <bpt id=\"p2\">**</bpt>GetFolderPath<ept id=\"p2\">**</ept> method retrieves the blob location.",
+      "pos": [
+        9464,
+        9606
+      ]
+    },
+    {
+      "content": "Compile the project.",
+      "pos": [
+        10321,
+        10341
+      ]
+    },
+    {
+      "content": "Click <bpt id=\"p1\">**</bpt>Build<ept id=\"p1\">**</ept> from the menu and click <bpt id=\"p2\">**</bpt>Build Solution<ept id=\"p2\">**</ept>.",
+      "pos": [
+        10342,
+        10401
+      ]
+    },
+    {
+      "pos": [
+        10406,
+        10515
+      ],
+      "content": "Launch <bpt id=\"p1\">**</bpt>Windows Explorer<ept id=\"p1\">**</ept>, and navigate to <bpt id=\"p2\">**</bpt>bin\\debug<ept id=\"p2\">**</ept> or <bpt id=\"p3\">**</bpt>bin\\release<ept id=\"p3\">**</ept> folder depending type of build."
+    },
+    {
+      "content": "Create a zip file <bpt id=\"p1\">**</bpt>MyDotNetActivity.zip<ept id=\"p1\">**</ept> that contain all the binaries in the",
+      "pos": [
+        10520,
+        10599
+      ]
+    },
+    {
+      "content": "\\bin\\Debug folder.",
+      "pos": [
+        10616,
+        10634
+      ]
+    },
+    {
+      "content": "You may want to include the MyDotNetActivity.pdb file so that you get additional details such as line number in the source code that caused the issue in case of a failure.",
+      "pos": [
+        10635,
+        10806
+      ]
+    },
+    {
+      "content": "Upload <bpt id=\"p1\">**</bpt>MyDotNetActivity.zip<ept id=\"p1\">**</ept> as a blob to the blob container: <bpt id=\"p2\">**</bpt>customactvitycontainer<ept id=\"p2\">**</ept> in the Azure blob storage that the <bpt id=\"p3\">**</bpt>StorageLinkedService<ept id=\"p3\">**</ept> linked service in the <bpt id=\"p4\">**</bpt>ADFTutorialDataFactory<ept id=\"p4\">**</ept> uses.",
+      "pos": [
+        10812,
+        11018
+      ]
+    },
+    {
+      "content": "Create the blob container <bpt id=\"p1\">**</bpt>customactivitycontainer<ept id=\"p1\">**</ept> if it does not already exist.",
+      "pos": [
+        11020,
+        11103
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> If you add this .NET activity project to a solution in Visual Studio that contains a Data Factory project, you do not need to perform the last two steps of creating the zip file and manually uploading it to the Azure blob storage.",
+      "pos": [
+        11107,
+        11350
+      ]
+    },
+    {
+      "content": "When you publish Data Factory entities using Visual Studio, these steps are automatically done by the publishing process.",
+      "pos": [
+        11351,
+        11472
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt>Build your first pipeline using Visual Studio<ept id=\"p1\">](data-factory-build-your-first-pipeline-using-vs.md)</ept> and <bpt id=\"p2\">[</bpt>Copy data from Azure Blob to Azure SQL<ept id=\"p2\">](data-factory-get-started-using-vs.md)</ept> articles to learn about creating and publishing Data Factory entities using Visual Studio.",
+      "pos": [
+        11473,
+        11750
+      ]
+    },
+    {
+      "content": "Step 2: Use the custom activity in a pipeline",
+      "pos": [
+        11758,
+        11803
+      ]
+    },
+    {
+      "content": "Here are the steps you will be performing in this step:",
+      "pos": [
+        11804,
+        11859
+      ]
+    },
+    {
+      "content": "Create a linked service for the HDInsight cluster on which the custom activity will run as a map-only job.",
+      "pos": [
+        11864,
+        11970
+      ]
+    },
+    {
+      "content": "Create an output table that the pipeline in this sample will produce.",
+      "pos": [
+        11975,
+        12044
+      ]
+    },
+    {
+      "content": "Create and run a pipeline that uses the custom activity you created in step 1.",
+      "pos": [
+        12048,
+        12126
+      ]
+    },
+    {
+      "content": "Create a linked service for  HDInsight cluster that will be used to run the custom activity",
+      "pos": [
+        12134,
+        12225
+      ]
+    },
+    {
+      "content": "The Azure Data Factory service supports creation of an on-demand cluster and use it to process input to produce output data.",
+      "pos": [
+        12226,
+        12350
+      ]
+    },
+    {
+      "content": "You can also use your own cluster to perform the same.",
+      "pos": [
+        12351,
+        12405
+      ]
+    },
+    {
+      "content": "When you use on-demand HDInsight cluster, a cluster gets created for each slice.",
+      "pos": [
+        12406,
+        12486
+      ]
+    },
+    {
+      "content": "Whereas, if you use your own HDInsight cluster, the cluster is ready to process the slice immediately.",
+      "pos": [
+        12487,
+        12589
+      ]
+    },
+    {
+      "content": "Therefore, when you use on-demand cluster, you may not see the output data as quickly as when you use your own cluster.",
+      "pos": [
+        12590,
+        12709
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> At runtime, an instance of a .NET activity runs only on one worker node in the HDInsight cluster; it cannot be scaled to run on multiple nodes.",
+      "pos": [
+        12714,
+        12870
+      ]
+    },
+    {
+      "content": "Multiple instances of .NET activity can run in parallel on different nodes of the HDInsight cluster.",
+      "pos": [
+        12871,
+        12971
+      ]
+    },
+    {
+      "pos": [
+        12974,
+        13267
+      ],
+      "content": "If you have extended the <bpt id=\"p1\">[</bpt>Get started with Azure Data Factory<ept id=\"p1\">][adfgetstarted]</ept> tutorial with the walkthrough from <bpt id=\"p2\">[</bpt>Use Pig and Hive with Azure Data Factory<ept id=\"p2\">][hivewalkthrough]</ept>, you can skip creation of this linked service and use the linked service you already have in the ADFTutorialDataFactory."
+    },
+    {
+      "content": "To use an on-demand HDInsight cluster",
+      "pos": [
+        13275,
+        13312
+      ]
+    },
+    {
+      "pos": [
+        13317,
+        13400
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Azure Portal<ept id=\"p1\">**</ept>, click <bpt id=\"p2\">**</bpt>Author and Deploy<ept id=\"p2\">**</ept> in the Data Factory home page."
+    },
+    {
+      "pos": [
+        13404,
+        13532
+      ],
+      "content": "In the Data Factory Editor, click <bpt id=\"p1\">**</bpt>New compute<ept id=\"p1\">**</ept> from the command bar and select <bpt id=\"p2\">**</bpt>On-demand HDInsight cluster<ept id=\"p2\">**</ept> from the menu."
+    },
+    {
+      "content": "Do the following in the JSON script:",
+      "pos": [
+        13536,
+        13572
+      ]
+    },
+    {
+      "pos": [
+        13581,
+        13657
+      ],
+      "content": "For the <bpt id=\"p1\">**</bpt>clusterSize<ept id=\"p1\">**</ept> property, specify the size of the HDInsight cluster."
+    },
+    {
+      "content": "For the <bpt id=\"p1\">**</bpt>jobsContainer<ept id=\"p1\">**</ept> property, specify the name of the default container where the cluster logs will be stored.",
+      "pos": [
+        13665,
+        13781
+      ]
+    },
+    {
+      "content": "For the purpose of this tutorial, specify <bpt id=\"p1\">**</bpt>adfjobscontainer<ept id=\"p1\">**</ept>.",
+      "pos": [
+        13782,
+        13845
+      ]
+    },
+    {
+      "pos": [
+        13853,
+        13949
+      ],
+      "content": "For the <bpt id=\"p1\">**</bpt>timeToLive<ept id=\"p1\">**</ept> property, specify how long the customer can be idle before it is deleted."
+    },
+    {
+      "content": "For the <bpt id=\"p1\">**</bpt>version<ept id=\"p1\">**</ept> property, specify the HDInsight version you want to use.",
+      "pos": [
+        13958,
+        14034
+      ]
+    },
+    {
+      "content": "If you exclude this property, the latest version is used.",
+      "pos": [
+        14035,
+        14092
+      ]
+    },
+    {
+      "pos": [
+        14102,
+        14215
+      ],
+      "content": "For the <bpt id=\"p1\">**</bpt>linkedServiceName<ept id=\"p1\">**</ept>, specify <bpt id=\"p2\">**</bpt>StorageLinkedService<ept id=\"p2\">**</ept> that you had created in the Get started tutorial."
+    },
+    {
+      "pos": [
+        14226,
+        14578
+      ],
+      "content": "{\n   \"name\": \"HDInsightOnDemandLinkedService\",\n   \"properties\": {\n     \"type\": \"HDInsightOnDemand\",\n     \"typeProperties\": {\n       \"clusterSize\": \"1\",\n       \"timeToLive\": \"00:05:00\",\n       \"version\": \"3.1\",\n       \"linkedServiceName\": \"StorageLinkedService\"\n     }\n   }\n }",
+      "leadings": [
+        "",
+        "       ",
+        "       ",
+        "       ",
+        "       ",
+        "       ",
+        "       ",
+        "       ",
+        "       ",
+        "       ",
+        "       ",
+        "       "
+      ],
+      "nodes": [
+        {
+          "content": "{",
+          "pos": [
+            0,
+            1
+          ]
+        },
+        {
+          "content": "\"name\": \"HDInsightOnDemandLinkedService\",",
+          "pos": [
+            5,
+            46
+          ]
+        },
+        {
+          "content": "\"properties\": {",
+          "pos": [
+            50,
+            65
+          ]
+        },
+        {
+          "content": "\"type\": \"HDInsightOnDemand\",",
+          "pos": [
+            71,
+            99
+          ]
+        },
+        {
+          "content": "\"typeProperties\": {",
+          "pos": [
+            105,
+            124
+          ]
+        },
+        {
+          "content": "\"clusterSize\": \"1\",",
+          "pos": [
+            132,
+            151
+          ]
+        },
+        {
+          "content": "\"timeToLive\": \"00:05:00\",",
+          "pos": [
+            159,
+            184
+          ]
+        },
+        {
+          "content": "\"version\": \"3.1\",",
+          "pos": [
+            192,
+            209
+          ]
+        },
+        {
+          "content": "\"linkedServiceName\": \"StorageLinkedService\"",
+          "pos": [
+            217,
+            260
+          ]
+        },
+        {
+          "content": "}",
+          "pos": [
+            266,
+            267
+          ]
+        },
+        {
+          "content": "}",
+          "pos": [
+            271,
+            272
+          ]
+        },
+        {
+          "content": "}",
+          "pos": [
+            274,
+            275
+          ]
+        }
+      ]
+    },
+    {
+      "pos": [
+        14583,
+        14648
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>Deploy<ept id=\"p1\">**</ept> on the command bar to deploy the linked service."
+    },
+    {
+      "content": "To use your own HDInsight cluster:",
+      "pos": [
+        14658,
+        14692
+      ]
+    },
+    {
+      "pos": [
+        14698,
+        14781
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Azure Portal<ept id=\"p1\">**</ept>, click <bpt id=\"p2\">**</bpt>Author and Deploy<ept id=\"p2\">**</ept> in the Data Factory home page."
+    },
+    {
+      "pos": [
+        14785,
+        14907
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Data Factory Editor<ept id=\"p1\">**</ept>, click <bpt id=\"p2\">**</bpt>New compute<ept id=\"p2\">**</ept> from the command bar and select <bpt id=\"p3\">**</bpt>HDInsight cluster<ept id=\"p3\">**</ept> from the menu."
+    },
+    {
+      "content": "Do the following in the JSON script:",
+      "pos": [
+        14911,
+        14947
+      ]
+    },
+    {
+      "content": "For the <bpt id=\"p1\">**</bpt>clusterUri<ept id=\"p1\">**</ept> property, enter the URL for your HDInsight.",
+      "pos": [
+        14956,
+        15022
+      ]
+    },
+    {
+      "content": "For example: https://",
+      "pos": [
+        15023,
+        15044
+      ]
+    },
+    {
+      "content": ".azurehdinsight.net/",
+      "pos": [
+        15057,
+        15077
+      ]
+    },
+    {
+      "pos": [
+        15090,
+        15181
+      ],
+      "content": "For the <bpt id=\"p1\">**</bpt>UserName<ept id=\"p1\">**</ept> property, enter the user name who has access to the HDInsight cluster."
+    },
+    {
+      "pos": [
+        15189,
+        15252
+      ],
+      "content": "For the <bpt id=\"p1\">**</bpt>Password<ept id=\"p1\">**</ept> property, enter the password for the user."
+    },
+    {
+      "content": "For the <bpt id=\"p1\">**</bpt>LinkedServiceName<ept id=\"p1\">**</ept> property, enter <bpt id=\"p2\">**</bpt>StorageLinkedService<ept id=\"p2\">**</ept>.",
+      "pos": [
+        15261,
+        15332
+      ]
+    },
+    {
+      "content": "This is the linked service you had created in the Get started tutorial.",
+      "pos": [
+        15333,
+        15404
+      ]
+    },
+    {
+      "pos": [
+        15410,
+        15475
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>Deploy<ept id=\"p1\">**</ept> on the command bar to deploy the linked service."
+    },
+    {
+      "content": "Create an output table",
+      "pos": [
+        15481,
+        15503
+      ]
+    },
+    {
+      "pos": [
+        15508,
+        15622
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Data Factory editor<ept id=\"p1\">**</ept>, click <bpt id=\"p2\">**</bpt>New dataset<ept id=\"p2\">**</ept>, and then click <bpt id=\"p3\">**</bpt>Azure Blob storage<ept id=\"p3\">**</ept> from the command bar."
+    },
+    {
+      "content": "Replace the JSON script in the right pane with the following JSON script:",
+      "pos": [
+        15626,
+        15699
+      ]
+    },
+    {
+      "content": "Output location is <bpt id=\"p1\">**</bpt>adftutorial/customactivityoutput/YYYYMMDDHH/<ept id=\"p1\">**</ept> where YYYYMMDDHH is the year, month, date, and hour of the slice being produced.",
+      "pos": [
+        16416,
+        16564
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt>Developer Reference<ept id=\"p1\">][adf-developer-reference]</ept> for details.",
+      "pos": [
+        16565,
+        16628
+      ]
+    },
+    {
+      "pos": [
+        16634,
+        16690
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>Deploy<ept id=\"p1\">**</ept> on the command bar to deploy the table."
+    },
+    {
+      "content": "Create and run a pipeline that uses the custom activity",
+      "pos": [
+        16697,
+        16752
+      ]
+    },
+    {
+      "content": "In the Data Factory Editor, click <bpt id=\"p1\">**</bpt>New pipeline<ept id=\"p1\">**</ept> on the command bar.",
+      "pos": [
+        16760,
+        16830
+      ]
+    },
+    {
+      "content": "If you do not see the command, click <bpt id=\"p1\">**</bpt>... (Ellipsis)<ept id=\"p1\">**</ept> to see it.",
+      "pos": [
+        16831,
+        16897
+      ]
+    },
+    {
+      "content": "Replace the JSON in the right pane with the following JSON script.",
+      "pos": [
+        16902,
+        16968
+      ]
+    },
+    {
+      "content": "If you want to use your own cluster and followed the steps to create the <bpt id=\"p1\">**</bpt>HDInsightLinkedService<ept id=\"p1\">**</ept> linked service, replace <bpt id=\"p2\">**</bpt>HDInsightOnDemandLinkedService<ept id=\"p2\">**</ept> with <bpt id=\"p3\">**</bpt>HDInsightLinkedService<ept id=\"p3\">**</ept> in the following JSON.",
+      "pos": [
+        16969,
+        17182
+      ]
+    },
+    {
+      "content": "Replace <bpt id=\"p1\">**</bpt>StartDateTime<ept id=\"p1\">**</ept> value with the three days prior to current day and <bpt id=\"p2\">**</bpt>EndDateTime<ept id=\"p2\">**</ept> value with the current day.",
+      "pos": [
+        18722,
+        18842
+      ]
+    },
+    {
+      "content": "Both StartDateTime and EndDateTime must be in <bpt id=\"p1\">[</bpt>ISO format<ept id=\"p1\">](http://en.wikipedia.org/wiki/ISO_8601)</ept>.",
+      "pos": [
+        18843,
+        18941
+      ]
+    },
+    {
+      "content": "For example: 2014-10-14T16:32:41Z.",
+      "pos": [
+        18942,
+        18976
+      ]
+    },
+    {
+      "content": "The output table is scheduled to be produced every day, so there will be three slices produced.",
+      "pos": [
+        18977,
+        19072
+      ]
+    },
+    {
+      "content": "Note the following:",
+      "pos": [
+        19078,
+        19097
+      ]
+    },
+    {
+      "pos": [
+        19106,
+        19192
+      ],
+      "content": "There is one activity in the activities section and it is of type: <bpt id=\"p1\">**</bpt>DotNetActivity<ept id=\"p1\">**</ept>."
+    },
+    {
+      "pos": [
+        19199,
+        19287
+      ],
+      "content": "Use the same input table <bpt id=\"p1\">**</bpt>EmpTableFromBlob<ept id=\"p1\">**</ept> that you used in the Get started tutorial."
+    },
+    {
+      "pos": [
+        19294,
+        19380
+      ],
+      "content": "Use a new output table <bpt id=\"p1\">**</bpt>OutputTableForCustom<ept id=\"p1\">**</ept> that you will create in the next step."
+    },
+    {
+      "pos": [
+        19387,
+        19456
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>AssemblyName<ept id=\"p1\">**</ept> is set to the name of the DLL: <bpt id=\"p2\">**</bpt>MyActivities.dll<ept id=\"p2\">**</ept>."
+    },
+    {
+      "pos": [
+        19463,
+        19528
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>EntryPoint<ept id=\"p1\">**</ept> is set to <bpt id=\"p2\">**</bpt>MyDotNetActivityNS.MyDotNetActivity<ept id=\"p2\">**</ept>."
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>PackageLinkedService<ept id=\"p1\">**</ept> is set to <bpt id=\"p2\">**</bpt>MyBlobStore<ept id=\"p2\">**</ept> that was created as part of the tutorial from <bpt id=\"p3\">[</bpt>Get started with Azure Data Factory<ept id=\"p3\">][adfgetstarted]</ept>.",
+      "pos": [
+        19535,
+        19685
+      ]
+    },
+    {
+      "content": "This blob store contains the custom activity zip file.",
+      "pos": [
+        19686,
+        19740
+      ]
+    },
+    {
+      "pos": [
+        19747,
+        19822
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>PackageFile<ept id=\"p1\">**</ept> is set to <bpt id=\"p2\">**</bpt>customactivitycontainer/MyDotNetActivity.zip<ept id=\"p2\">**</ept>."
+    },
+    {
+      "pos": [
+        19832,
+        19891
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>Deploy<ept id=\"p1\">**</ept> on the command bar to deploy the pipeline."
+    },
+    {
+      "pos": [
+        19895,
+        19991
+      ],
+      "content": "Verify that the output files are generated in the blob storage in the <bpt id=\"p1\">**</bpt>adftutorial<ept id=\"p1\">**</ept> container."
+    },
+    {
+      "content": "output from custom activity",
+      "pos": [
+        19999,
+        20026
+      ]
+    },
+    {
+      "content": "If you open the output file, you should see the output similar to the following:",
+      "pos": [
+        20079,
+        20159
+      ]
+    },
+    {
+      "content": "adftutorial/,emp.txt,2,WORKERNODE0,03/27/2015 19:23:28",
+      "pos": [
+        20169,
+        20223
+      ]
+    },
+    {
+      "content": "(blob location), (name of the blob), (number of lines in the blob), (node on which the activity ran), (date time stamp)",
+      "pos": [
+        20230,
+        20349
+      ]
+    },
+    {
+      "content": "Use the <bpt id=\"p1\">[</bpt>Azure Portal<ept id=\"p1\">][azure-preview-portal]</ept> or Azure PowerShell cmdlets to monitor your data factory, pipelines, and data sets.",
+      "pos": [
+        20355,
+        20483
+      ]
+    },
+    {
+      "content": "You can see messages from the <bpt id=\"p1\">**</bpt>ActivityLogger<ept id=\"p1\">**</ept> in the code for the custom activity in the logs (specifically user-0.log) that you can download from the portal or using cmdlets.",
+      "pos": [
+        20484,
+        20662
+      ]
+    },
+    {
+      "content": "download logs from custom activity",
+      "pos": [
+        20670,
+        20704
+      ]
+    },
+    {
+      "pos": [
+        20770,
+        20904
+      ],
+      "content": "See <bpt id=\"p1\">[</bpt>Monitor and Manage Pipelines<ept id=\"p1\">](data-factory-monitor-manage-pipelines.md)</ept> for detailed steps for monitoring datasets and pipelines."
+    },
+    {
+      "content": "Updating a custom activity",
+      "pos": [
+        20915,
+        20941
+      ]
+    },
+    {
+      "content": "If you update the code for the custom activity, build it, and upload the zip file that contains new binaries to the blob storage.",
+      "pos": [
+        20942,
+        21071
+      ]
+    },
+    {
+      "pos": [
+        21081,
+        21139
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"AzureBatch\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph> Using Azure Batch linked service"
+    },
+    {
+      "pos": [
+        21143,
+        21397
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> See <bpt id=\"p1\">[</bpt>Azure Batch Technical Overview<ept id=\"p1\">][batch-technical-overview]</ept> for an overview of the Azure Batch service and see <bpt id=\"p2\">[</bpt>Getting Started with the Azure Batch Library for .NET<ept id=\"p2\">][batch-get-started]</ept> to quickly get started with the Azure Batch service."
+    },
+    {
+      "content": "You can run your custom .NET activities using Azure Batch as a compute resource.",
+      "pos": [
+        21399,
+        21479
+      ]
+    },
+    {
+      "content": "You will have to create your own Azure Batch pools and specify the number of VMs along with other configurations.",
+      "pos": [
+        21480,
+        21593
+      ]
+    },
+    {
+      "content": "Azure Batch pools provides the following features to customers:",
+      "pos": [
+        21594,
+        21657
+      ]
+    },
+    {
+      "content": "Create pools containing a single core to thousands of cores.",
+      "pos": [
+        21662,
+        21722
+      ]
+    },
+    {
+      "content": "Auto scale VM count based on a formula",
+      "pos": [
+        21726,
+        21764
+      ]
+    },
+    {
+      "content": "Support VMs of any size",
+      "pos": [
+        21768,
+        21791
+      ]
+    },
+    {
+      "content": "Configurable number of tasks per VM",
+      "pos": [
+        21795,
+        21830
+      ]
+    },
+    {
+      "content": "Queue unlimited number of tasks",
+      "pos": [
+        21834,
+        21865
+      ]
+    },
+    {
+      "content": "Here are the high-level steps for using the Azure Batch Linked Service in the walkthrough described in the previous section:",
+      "pos": [
+        21868,
+        21992
+      ]
+    },
+    {
+      "content": "Create an Azure Batch account using the Azure Management Portal.",
+      "pos": [
+        21997,
+        22061
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt>Azure Batch Technical Overview<ept id=\"p1\">][batch-create-account]</ept> article for instructions.",
+      "pos": [
+        22062,
+        22146
+      ]
+    },
+    {
+      "content": "Note down the Azure Batch account name and account key.",
+      "pos": [
+        22147,
+        22202
+      ]
+    },
+    {
+      "content": "You can also use <bpt id=\"p1\">[</bpt>New-AzureBatchAccount<ept id=\"p1\">][new-azure-batch-account]</ept> cmdlet to create an Azure Batch account.",
+      "pos": [
+        22209,
+        22315
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt>Using Azure PowerShell to Manage Azure Batch Account<ept id=\"p1\">][azure-batch-blog]</ept> for detailed instructions on using this cmdlet.",
+      "pos": [
+        22316,
+        22440
+      ]
+    },
+    {
+      "content": "Create an Azure Batch pool.",
+      "pos": [
+        22445,
+        22472
+      ]
+    },
+    {
+      "content": "You can download the source code for the <bpt id=\"p1\">[</bpt>Azure Batch Explorer tool<ept id=\"p1\">][batch-explorer]</ept>, compile, and use it  (or) use <bpt id=\"p2\">[</bpt>Azure Batch Library for .NET<ept id=\"p2\">][batch-net-library]</ept> to create a Azure Batch pool.",
+      "pos": [
+        22473,
+        22668
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt>Azure Batch Explorer Sample Walkthrough<ept id=\"p1\">][batch-explorer-walkthrough]</ept> for step-by-step instructions for using the Azure Batch Explorer.",
+      "pos": [
+        22669,
+        22808
+      ]
+    },
+    {
+      "pos": [
+        22818,
+        22915
+      ],
+      "content": "You can also use <bpt id=\"p1\">[</bpt>New-AzureBatchPool<ept id=\"p1\">][new-azure-batch-pool]</ept> cmdlet to create an Azure Batch pool."
+    },
+    {
+      "content": "Create an Azure Batch Linked Service using the following JSON template.",
+      "pos": [
+        22921,
+        22992
+      ]
+    },
+    {
+      "content": "The Data Factory Editor displays a similar template for you to start with.",
+      "pos": [
+        22993,
+        23067
+      ]
+    },
+    {
+      "content": "Specify the Azure Batch account name, account key and pool name in the JSON snippet.",
+      "pos": [
+        23068,
+        23152
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> Append \"<bpt id=\"p1\">**</bpt>.&lt;region name<ept id=\"p1\">**</ept>\" to the name of your batch account for the <bpt id=\"p2\">**</bpt>accountName<ept id=\"p2\">**</ept> property.",
+      "pos": [
+        23609,
+        23716
+      ]
+    },
+    {
+      "content": "Example: \"mybatchaccount.eastus\".",
+      "pos": [
+        23717,
+        23750
+      ]
+    },
+    {
+      "content": "Another option is to provide the batchUri endpoint as shown below.",
+      "pos": [
+        23751,
+        23817
+      ]
+    },
+    {
+      "pos": [
+        23911,
+        24042
+      ],
+      "content": "See <bpt id=\"p1\">[</bpt>Azure Batch Linked Service MSDN topic<ept id=\"p1\">](https://msdn.microsoft.com/library/mt163609.aspx)</ept> for descriptions of these properties."
+    },
+    {
+      "pos": [
+        24049,
+        24218
+      ],
+      "content": "In the Data Factory Editor, open JSON definition for the pipeline you created in the walkthrough and replace <bpt id=\"p1\">**</bpt>HDInsightLinkedService<ept id=\"p1\">**</ept> with <bpt id=\"p2\">**</bpt>AzureBatchLinkedService<ept id=\"p2\">**</ept>."
+    },
+    {
+      "content": "You may want to change the start and end times for the pipeline so that you can test the scenario with the Azure Batch service.",
+      "pos": [
+        24223,
+        24350
+      ]
+    },
+    {
+      "content": "You can see the Azure Batch tasks associated with processing the slices in the Azure Batch Explorer as shown in the following diagram.",
+      "pos": [
+        24356,
+        24490
+      ]
+    },
+    {
+      "content": "Azure Batch tasks",
+      "pos": [
+        24498,
+        24515
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> The Data Factory service does not support an on-demand option for Azure Batch as it does for HDInsight.",
+      "pos": [
+        24558,
+        24674
+      ]
+    },
+    {
+      "content": "You can only use your own Azure Batch pool in an Azure data factory.",
+      "pos": [
+        24675,
+        24743
+      ]
+    },
+    {
+      "content": "See Also",
+      "pos": [
+        24752,
+        24760
+      ]
+    },
+    {
+      "pos": [
+        24762,
+        24969
+      ],
+      "content": "<bpt id=\"p1\">[</bpt>Azure Data Factory Updates: Execute ADF Custom .NET activities using Azure Batch<ept id=\"p1\">](http://azure.microsoft.com/blog/2015/05/01/azure-data-factory-updates-execute-adf-custom-net-activities-using-azure-batch/)</ept>."
+    },
+    {
+      "content": "test",
+      "pos": [
+        26982,
+        26986
+      ]
+    }
+  ],
+  "content": "<properties \n    pageTitle=\"Use custom activities in an Azure Data Factory pipeline\" \n    description=\"Learn how to create custom activities and use them in an Azure Data Factory pipeline.\" \n    services=\"data-factory\" \n    documentationCenter=\"\" \n    authors=\"spelluru\" \n    manager=\"jhubbard\" \n    editor=\"monicar\"/>\n\n<tags \n    ms.service=\"data-factory\" \n    ms.workload=\"data-services\" \n    ms.tgt_pltfrm=\"na\" \n    ms.devlang=\"na\" \n    ms.topic=\"article\" \n    ms.date=\"08/28/2015\" \n    ms.author=\"spelluru\"/>\n\n# Use custom activities in an Azure Data Factory pipeline\nAzure Data Factory supports built-in activities such as **Copy Activity** and **HDInsight Activity** to be used in pipelines to move and process data. You can also create a custom .NET activity with your own transformation/processing logic and use the activity in a pipeline. You can configure the activity to run using either an **Azure HDInsight** cluster or an **Azure Batch** service.   \n\nThis article describes how to create a custom activity and use it in an Azure Data Factory pipeline. It also provides a detailed walkthrough with step-by-step instructions for creating and using a custom activity. The walkthrough uses the HDInsight linked service. To use the Azure Batch linked service instead, you create a linked service of type **AzureBatch** and use it in the activity section of the pipeline JSON (**linkedServiceName**). See the [Azure Batch Linked Service](#AzureBatch) section for details on using Azure Batch with the custom activity.\n\n\n## <a name=\"walkthrough\" /> Walkthrough\nThis Walkthrough provides you with step-by-step instructions for creating a custom activity and using the activity in an Azure Data Factory pipeline. This walkthrough extends the tutorial from the [Get started with Azure Data Factory][adfgetstarted]. If you want to see the custom activity working, you need to go through the Get started tutorial first and then do this walkthrough. \n\n**Prerequisites:**\n\n\n- Tutorial from [Get started with Azure Data Factory][adfgetstarted]. You must complete the tutorial from this article before doing this walkthrough.\n- Visual Studio 2012 or 2013\n- Download and install [Azure .NET SDK][azure-developer-center]\n- Download the latest [NuGet package for Azure Data Factory](https://www.nuget.org/packages/Microsoft.Azure.Management.DataFactories/) and Install it. Instructions are in the walkthrough.\n- Download and install NuGet package for Azure Storage. Instructions are in the walkthrough, so you can skip this step.\n\n## Step 1: Create a custom activity\n\n1.  Create a .NET Class Library project.\n    <ol type=\"a\">\n        <li>Launch <b>Visual Studio 2012</b> or <b>Visual Studio 2013</b>.</li>\n        <li>Click <b>File</b>, point to <b>New</b>, and click <b>Project</b>.</li> \n        <li>Expand <b>Templates</b>, and select <b>Visual C#</b>. In this walkthrough, you use C#, but you can use any .NET language to develop the custom activity.</li> \n        <li>Select <b>Class Library</b> from the list of project types on the right.</li>\n        <li>Enter <b>MyDotNetActivity</b> for the <b>Name</b>.</li> \n        <li>Select <b>C:\\ADFGetStarted</b> for the <b>Location</b>.</li>\n        <li>Click <b>OK</b> to create the project.</li>\n    </ol>\n2.  Click <b>Tools</b>, point to <b>NuGet Package Manager</b>, and click <b>Package Manager Console</b>.\n3.  In the <b>Package Manager Console</b>, execute the following command to import <b>Microsoft.Azure.Management.DataFactories</b>. \n\n        Install-Package Microsoft.Azure.Management.DataFactories\n\n4. Import the Azure Storage NuGet package in to the project.\n\n        Install-Package Azure.Storage\n\n5. Add the following **using** statements to the source file in the project.\n\n        using System.IO;\n        using System.Globalization;\n        using System.Diagnostics;\n    \n        using Microsoft.Azure.Management.DataFactories.Models;\n        using Microsoft.Azure.Management.DataFactories.Runtime;\n\n        using Microsoft.WindowsAzure.Storage;\n        using Microsoft.WindowsAzure.Storage.Blob;\n  \n6. Change the name of the **namespace** to **MyDotNetActivityNS**.\n\n        namespace MyDotNetActivityNS\n\n7. Change the name of the class to **MyDotNetActivity** and derive it from the **IDotNetActivity** interface as shown below.\n\n        public class MyDotNetActivity : IDotNetActivity\n\n8. Implement (Add) the **Execute** method of the **IDotNetActivity** interface to the **MyDotNetActivity** class and copy the following sample code to the method. \n\n\n    The following sample code counts the number of lines in the input blob and produces the following content in the output blob: path to the blob, number of lines in the blob, the machine on which the activity ran, current date-time.\n\n        public IDictionary<string, string> Execute(IEnumerable<LinkedService> linkedServices, IEnumerable<Table> tables, Activity activity, IActivityLogger logger)\n        {\n            IDictionary<string, string> extendedProperties = ((DotNetActivity)activity.TypeProperties).ExtendedProperties;\n\n            AzureStorageLinkedService inputLinkedService, outputLinkedService;\n            CustomDataset inputLocation;\n            AzureBlobDataset outputLocation;\n\n            Table inputTable = tables.Single(table => table.Name == activity.Inputs.Single().Name);\n            inputLocation = inputTable.Properties.TypeProperties as CustomDataset;\n\n            // using First method instead of Single since we are using the same \n            // Azure Storage linked service for input and output. \n            inputLinkedService = linkedServices.First(linkedService => linkedService.Name == inputTable.Properties.LinkedServiceName).Properties.TypeProperties as AzureStorageLinkedService;\n\n\n            string output = string.Empty;\n\n            logger.Write(\"Before anything...\");\n\n            logger.Write(\"Printing dictionary entities if any...\");\n            foreach (KeyValuePair<string, string> entry in extendedProperties)\n            {\n                logger.Write(\"<key:{0}> <value:{1}>\", entry.Key, entry.Value);\n            }\n\n            string connectionString = GetConnectionString(inputLinkedService);\n            string folderPath = GetFolderPath(inputTable);\n\n            logger.Write(\"Reading blob from: {0}\", folderPath);\n\n            CloudStorageAccount inputStorageAccount = CloudStorageAccount.Parse(connectionString);\n            CloudBlobClient inputClient = inputStorageAccount.CreateCloudBlobClient();\n\n            BlobContinuationToken continuationToken = null;\n\n            do\n            {\n                BlobResultSegment result = inputClient.ListBlobsSegmented(folderPath,\n                                            true,\n                                            BlobListingDetails.Metadata,\n                                            null,\n                                            continuationToken,\n                                            null,\n                                            null);\n                foreach (IListBlobItem listBlobItem in result.Results)\n                {\n                    CloudBlockBlob inputBlob = listBlobItem as CloudBlockBlob;\n                    int count = 0;\n                    if (inputBlob != null)\n                    {\n                        using (StreamReader sr = new StreamReader(inputBlob.OpenRead()))\n                        {\n                            while (!sr.EndOfStream)\n                            {\n                                string line = sr.ReadLine();\n                                if (count == 0)\n                                {\n                                    logger.Write(\"First line: [{0}]\", line);\n                                }\n                                count++;\n                            }\n\n                        }\n\n                    }\n                    output += string.Format(CultureInfo.InvariantCulture,\n                                    \"{0},{1},{2},{3},{4}\\n\",\n                                    folderPath,\n                                    inputBlob.Name,\n                                    count,\n                                    Environment.MachineName,\n                                    DateTime.UtcNow);\n\n                }\n                continuationToken = result.ContinuationToken;\n\n            } while (continuationToken != null);\n\n            Table outputTable = tables.Single(table => table.Name == activity.Outputs.Single().Name);\n            outputLocation = outputTable.Properties.TypeProperties as AzureBlobDataset;\n            outputLinkedService = linkedServices.First(linkedService => linkedService.Name == outputTable.Properties.LinkedServiceName).Properties.TypeProperties as AzureStorageLinkedService;\n\n            connectionString = GetConnectionString(outputLinkedService);\n            folderPath = GetFolderPath(outputTable);\n\n            logger.Write(\"Writing blob to: {0}\", folderPath);\n\n            CloudStorageAccount outputStorageAccount = CloudStorageAccount.Parse(connectionString);\n            Uri outputBlobUri = new Uri(outputStorageAccount.BlobEndpoint, folderPath + \"/\" + Guid.NewGuid() + \".csv\");\n\n            CloudBlockBlob outputBlob = new CloudBlockBlob(outputBlobUri, outputStorageAccount.Credentials);\n            outputBlob.UploadText(output);\n\n            return new Dictionary<string, string>();\n\n        }\n\n9. Add the following helper methods. The **Execute** method invokes these helper methods. The **GetConnectionString** method retrieves the Azure Storage connection string and the **GetFolderPath** method retrieves the blob location. \n\n\n        private static string GetConnectionString(AzureStorageLinkedService asset)\n        {\n\n            if (asset == null)\n            {\n                return null;\n            }\n\n            return asset.ConnectionString;\n        }\n\n        \n        private static string GetFolderPath(Table dataArtifact)\n        {\n            if (dataArtifact == null || dataArtifact.Properties == null)\n            {\n                return null;\n            }\n\n            AzureBlobDataset blobDataset = dataArtifact.Properties.TypeProperties as AzureBlobDataset;\n            if (blobDataset == null)\n            {\n                return null;\n            }\n\n            return blobDataset.FolderPath;\n        }\n   \n\n10. Compile the project. Click **Build** from the menu and click **Build Solution**.\n11. Launch **Windows Explorer**, and navigate to **bin\\debug** or **bin\\release** folder depending type of build.\n12. Create a zip file **MyDotNetActivity.zip** that contain all the binaries in the <project folder>\\bin\\Debug folder. You may want to include the MyDotNetActivity.pdb file so that you get additional details such as line number in the source code that caused the issue in case of a failure. \n13. Upload **MyDotNetActivity.zip** as a blob to the blob container: **customactvitycontainer** in the Azure blob storage that the **StorageLinkedService** linked service in the **ADFTutorialDataFactory** uses.  Create the blob container **customactivitycontainer** if it does not already exist.\n\n> [AZURE.NOTE] If you add this .NET activity project to a solution in Visual Studio that contains a Data Factory project, you do not need to perform the last two steps of creating the zip file and manually uploading it to the Azure blob storage. When you publish Data Factory entities using Visual Studio, these steps are automatically done by the publishing process. See [Build your first pipeline using Visual Studio](data-factory-build-your-first-pipeline-using-vs.md) and [Copy data from Azure Blob to Azure SQL](data-factory-get-started-using-vs.md) articles to learn about creating and publishing Data Factory entities using Visual Studio.  \n\n\n## Step 2: Use the custom activity in a pipeline\nHere are the steps you will be performing in this step:\n\n1. Create a linked service for the HDInsight cluster on which the custom activity will run as a map-only job. \n2. Create an output table that the pipeline in this sample will produce.\n3. Create and run a pipeline that uses the custom activity you created in step 1. \n \n### Create a linked service for  HDInsight cluster that will be used to run the custom activity\nThe Azure Data Factory service supports creation of an on-demand cluster and use it to process input to produce output data. You can also use your own cluster to perform the same. When you use on-demand HDInsight cluster, a cluster gets created for each slice. Whereas, if you use your own HDInsight cluster, the cluster is ready to process the slice immediately. Therefore, when you use on-demand cluster, you may not see the output data as quickly as when you use your own cluster. \n\n> [AZURE.NOTE] At runtime, an instance of a .NET activity runs only on one worker node in the HDInsight cluster; it cannot be scaled to run on multiple nodes. Multiple instances of .NET activity can run in parallel on different nodes of the HDInsight cluster. \n\nIf you have extended the [Get started with Azure Data Factory][adfgetstarted] tutorial with the walkthrough from [Use Pig and Hive with Azure Data Factory][hivewalkthrough], you can skip creation of this linked service and use the linked service you already have in the ADFTutorialDataFactory.\n\n\n#### To use an on-demand HDInsight cluster\n\n1. In the **Azure Portal**, click **Author and Deploy** in the Data Factory home page.\n2. In the Data Factory Editor, click **New compute** from the command bar and select **On-demand HDInsight cluster** from the menu.\n2. Do the following in the JSON script: \n    1. For the **clusterSize** property, specify the size of the HDInsight cluster.\n    2. For the **jobsContainer** property, specify the name of the default container where the cluster logs will be stored. For the purpose of this tutorial, specify **adfjobscontainer**.\n    3. For the **timeToLive** property, specify how long the customer can be idle before it is deleted. \n    4. For the **version** property, specify the HDInsight version you want to use. If you exclude this property, the latest version is used.  \n    5. For the **linkedServiceName**, specify **StorageLinkedService** that you had created in the Get started tutorial. \n\n        {\n          \"name\": \"HDInsightOnDemandLinkedService\",\n          \"properties\": {\n            \"type\": \"HDInsightOnDemand\",\n            \"typeProperties\": {\n              \"clusterSize\": \"1\",\n              \"timeToLive\": \"00:05:00\",\n              \"version\": \"3.1\",\n              \"linkedServiceName\": \"StorageLinkedService\"\n            }\n          }\n        }\n\n2. Click **Deploy** on the command bar to deploy the linked service.\n   \n#### To use your own HDInsight cluster: \n\n1. In the **Azure Portal**, click **Author and Deploy** in the Data Factory home page.\n2. In the **Data Factory Editor**, click **New compute** from the command bar and select **HDInsight cluster** from the menu.\n2. Do the following in the JSON script: \n    1. For the **clusterUri** property, enter the URL for your HDInsight. For example: https://<clustername>.azurehdinsight.net/     \n    2. For the **UserName** property, enter the user name who has access to the HDInsight cluster.\n    3. For the **Password** property, enter the password for the user. \n    4. For the **LinkedServiceName** property, enter **StorageLinkedService**. This is the linked service you had created in the Get started tutorial. \n\n2. Click **Deploy** on the command bar to deploy the linked service.\n\n### Create an output table\n\n1. In the **Data Factory editor**, click **New dataset**, and then click **Azure Blob storage** from the command bar.\n2. Replace the JSON script in the right pane with the following JSON script:\n\n        {\n          \"name\": \"OutputTableForCustom\",\n          \"properties\": {\n            \"type\": \"AzureBlob\",\n            \"linkedServiceName\": \"StorageLinkedService\",\n            \"typeProperties\": {\n              \"folderPath\": \"adftutorial/customactivityoutput/{Slice}\",\n              \"partitionedBy\": [\n                {\n                  \"name\": \"Slice\",\n                  \"value\": {\n                    \"type\": \"DateTime\",\n                    \"date\": \"SliceStart\",\n                    \"format\": \"yyyyMMddHH\"\n                  }\n                }\n              ]\n            },\n            \"availability\": {\n              \"frequency\": \"Hour\",\n              \"interval\": 1\n            }\n          }\n        }\n\n    Output location is **adftutorial/customactivityoutput/YYYYMMDDHH/** where YYYYMMDDHH is the year, month, date, and hour of the slice being produced. See [Developer Reference][adf-developer-reference] for details. \n\n2. Click **Deploy** on the command bar to deploy the table.\n\n\n### Create and run a pipeline that uses the custom activity\n   \n1. In the Data Factory Editor, click **New pipeline** on the command bar. If you do not see the command, click **... (Ellipsis)** to see it. \n2. Replace the JSON in the right pane with the following JSON script. If you want to use your own cluster and followed the steps to create the **HDInsightLinkedService** linked service, replace **HDInsightOnDemandLinkedService** with **HDInsightLinkedService** in the following JSON. \n        \n        {\n          \"name\": \"ADFTutorialPipelineCustom\",\n          \"properties\": {\n            \"description\": \"Use custom activity\",\n            \"activities\": [\n              {\n                \"Name\": \"MyDotNetActivity\",\n                \"Type\": \"DotNetActivity\",\n                \"Inputs\": [\n                  {\n                    \"Name\": \"EmpTableFromBlob\"\n                  }\n                ],\n                \"Outputs\": [\n                  {\n                    \"Name\": \"OutputTableForCustom\"\n                  }\n                ],\n                \"LinkedServiceName\": \"HDInsightOnDemandLinkedService\",\n                \"typeProperties\": {\n                  \"AssemblyName\": \"MyDotNetActivity.dll\",\n                  \"EntryPoint\": \"MyDotNetActivityNS.MyDotNetActivity\",\n                  \"PackageLinkedService\": \"StorageLinkedService\",\n                  \"PackageFile\": \"customactivitycontainer/MyDotNetActivity.zip\",\n                  \"extendedProperties\": {\n                    \"SliceStart\": \"$$Text.Format('{0:yyyyMMddHH-mm}', Time.AddMinutes(SliceStart, 0))\"\n                  }\n                },\n                \"Policy\": {\n                  \"Concurrency\": 1,\n                  \"ExecutionPriorityOrder\": \"OldestFirst\",\n                  \"Retry\": 3,\n                  \"Timeout\": \"00:30:00\",\n                  \"Delay\": \"00:00:00\"\n                }\n              }\n            ],\n            \"start\": \"2015-02-13T00:00:00Z\",\n            \"end\": \"2015-02-14T00:00:00Z\",\n            \"isPaused\": false\n          }\n        }\n\n    Replace **StartDateTime** value with the three days prior to current day and **EndDateTime** value with the current day. Both StartDateTime and EndDateTime must be in [ISO format](http://en.wikipedia.org/wiki/ISO_8601). For example: 2014-10-14T16:32:41Z. The output table is scheduled to be produced every day, so there will be three slices produced.\n\n    Note the following: \n\n    - There is one activity in the activities section and it is of type: **DotNetActivity**.\n    - Use the same input table **EmpTableFromBlob** that you used in the Get started tutorial.\n    - Use a new output table **OutputTableForCustom** that you will create in the next step.\n    - **AssemblyName** is set to the name of the DLL: **MyActivities.dll**.\n    - **EntryPoint** is set to **MyDotNetActivityNS.MyDotNetActivity**.\n    - **PackageLinkedService** is set to **MyBlobStore** that was created as part of the tutorial from [Get started with Azure Data Factory][adfgetstarted]. This blob store contains the custom activity zip file.\n    - **PackageFile** is set to **customactivitycontainer/MyDotNetActivity.zip**.\n     \n4. Click **Deploy** on the command bar to deploy the pipeline.\n8. Verify that the output files are generated in the blob storage in the **adftutorial** container.\n\n    ![output from custom activity][image-data-factory-ouput-from-custom-activity]\n\n9. If you open the output file, you should see the output similar to the following:\n    \n    adftutorial/,emp.txt,2,WORKERNODE0,03/27/2015 19:23:28 \n\n    (blob location), (name of the blob), (number of lines in the blob), (node on which the activity ran), (date time stamp)\n\n10. Use the [Azure Portal][azure-preview-portal] or Azure PowerShell cmdlets to monitor your data factory, pipelines, and data sets. You can see messages from the **ActivityLogger** in the code for the custom activity in the logs (specifically user-0.log) that you can download from the portal or using cmdlets.\n\n    ![download logs from custom activity][image-data-factory-download-logs-from-custom-activity]\n    \n   \nSee [Monitor and Manage Pipelines](data-factory-monitor-manage-pipelines.md) for detailed steps for monitoring datasets and pipelines.      \n\n## Updating a custom activity\nIf you update the code for the custom activity, build it, and upload the zip file that contains new binaries to the blob storage. \n    \n## <a name=\"AzureBatch\"></a> Using Azure Batch linked service \n> [AZURE.NOTE] See [Azure Batch Technical Overview][batch-technical-overview] for an overview of the Azure Batch service and see [Getting Started with the Azure Batch Library for .NET][batch-get-started] to quickly get started with the Azure Batch service.\n\nYou can run your custom .NET activities using Azure Batch as a compute resource. You will have to create your own Azure Batch pools and specify the number of VMs along with other configurations. Azure Batch pools provides the following features to customers:\n\n1. Create pools containing a single core to thousands of cores.\n2. Auto scale VM count based on a formula\n3. Support VMs of any size\n4. Configurable number of tasks per VM\n5. Queue unlimited number of tasks\n\n\nHere are the high-level steps for using the Azure Batch Linked Service in the walkthrough described in the previous section:\n\n1. Create an Azure Batch account using the Azure Management Portal. See [Azure Batch Technical Overview][batch-create-account] article for instructions. Note down the Azure Batch account name and account key. \n\n    You can also use [New-AzureBatchAccount][new-azure-batch-account] cmdlet to create an Azure Batch account. See [Using Azure PowerShell to Manage Azure Batch Account][azure-batch-blog] for detailed instructions on using this cmdlet. \n2. Create an Azure Batch pool. You can download the source code for the [Azure Batch Explorer tool][batch-explorer], compile, and use it  (or) use [Azure Batch Library for .NET][batch-net-library] to create a Azure Batch pool. See [Azure Batch Explorer Sample Walkthrough][batch-explorer-walkthrough] for step-by-step instructions for using the Azure Batch Explorer.\n    \n    You can also use [New-AzureBatchPool][new-azure-batch-pool] cmdlet to create an Azure Batch pool. \n\n2. Create an Azure Batch Linked Service using the following JSON template. The Data Factory Editor displays a similar template for you to start with. Specify the Azure Batch account name, account key and pool name in the JSON snippet. \n\n        {\n          \"name\": \"AzureBatchLinkedService\",\n          \"properties\": {\n            \"type\": \"AzureBatch\",\n            \"typeProperties\": {\n              \"accountName\": \"<Azure Batch account name>\",\n              \"accessKey\": \"<Azure Batch account key>\",\n              \"poolName\": \"<Azure Batch pool name>\",\n              \"linkedServiceName\": \"<Specify associated storage linked service reference here>\"\n            }\n          }\n        }\n\n    > [AZURE.NOTE] Append \"**.<region name**\" to the name of your batch account for the **accountName** property. Example: \"mybatchaccount.eastus\". Another option is to provide the batchUri endpoint as shown below.  \n\n        accountName: \"adfteam\",\n        batchUri: \"https://eastus.batch.azure.com\",\n \n    See [Azure Batch Linked Service MSDN topic](https://msdn.microsoft.com/library/mt163609.aspx) for descriptions of these properties. \n\n2.  In the Data Factory Editor, open JSON definition for the pipeline you created in the walkthrough and replace **HDInsightLinkedService** with **AzureBatchLinkedService**.\n3.  You may want to change the start and end times for the pipeline so that you can test the scenario with the Azure Batch service. \n4.  You can see the Azure Batch tasks associated with processing the slices in the Azure Batch Explorer as shown in the following diagram.\n\n    ![Azure Batch tasks][image-data-factory-azure-batch-tasks]\n\n> [AZURE.NOTE] The Data Factory service does not support an on-demand option for Azure Batch as it does for HDInsight. You can only use your own Azure Batch pool in an Azure data factory.    \n\n## See Also\n\n[Azure Data Factory Updates: Execute ADF Custom .NET activities using Azure Batch](http://azure.microsoft.com/blog/2015/05/01/azure-data-factory-updates-execute-adf-custom-net-activities-using-azure-batch/). \n\n[batch-net-library]: ../batch/batch-dotnet-get-started.md\n[batch-explorer]: https://github.com/Azure/azure-batch-samples/tree/master/CSharp/BatchExplorer\n[batch-explorer-walkthrough]: http://blogs.technet.com/b/windowshpc/archive/2015/01/20/azure-batch-explorer-sample-walkthrough.aspx\n[batch-create-account]: ../batch/batch-technical-overview.md/#batch-concepts\n[batch-technical-overview]: ../batch/batch-technical-overview.md\n[batch-get-started]: ../batch/batch-dotnet-get-started.md\n[monitor-manage-using-powershell]: data-factory-monitor-manage-using-powershell.md\n[adf-tutorial]: data-factory-tutorial.md\n[use-custom-activities]: data-factory-use-custom-activities.md\n[troubleshoot]: data-factory-troubleshoot.md\n[data-factory-introduction]: data-factory-introduction.md\n[azure-powershell-install]: https://github.com/Azure/azure-sdk-tools/releases\n\n\n[developer-reference]: http://go.microsoft.com/fwlink/?LinkId=516908\n[cmdlet-reference]: http://go.microsoft.com/fwlink/?LinkId=517456\n\n[new-azure-batch-account]: https://msdn.microsoft.com/library/mt125880.aspx\n[new-azure-batch-pool]: https://msdn.microsoft.com/library/mt125936.aspx\n[azure-batch-blog]: http://blogs.technet.com/b/windowshpc/archive/2014/10/28/using-azure-powershell-to-manage-azure-batch-account.aspx\n\n[nuget-package]: http://go.microsoft.com/fwlink/?LinkId=517478\n[azure-developer-center]: http://azure.microsoft.com/develop/net/\n[adf-developer-reference]: http://go.microsoft.com/fwlink/?LinkId=516908\n[azure-preview-portal]: https://portal.azure.com/\n\n[adfgetstarted]: data-factory-get-started.md\n[hivewalkthrough]: data-factory-data-transformation-activities.md\n\n[image-data-factory-ouput-from-custom-activity]: ./media/data-factory-use-custom-activities/OutputFilesFromCustomActivity.png\n\n[image-data-factory-download-logs-from-custom-activity]: ./media/data-factory-use-custom-activities/DownloadLogsFromCustomActivity.png\n\n[image-data-factory-azure-batch-tasks]: ./media/data-factory-use-custom-activities/AzureBatchTasks.png\n \ntest\n"
+}

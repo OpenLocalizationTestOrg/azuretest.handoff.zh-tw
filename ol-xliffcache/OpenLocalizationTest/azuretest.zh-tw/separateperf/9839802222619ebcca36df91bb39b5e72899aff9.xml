@@ -1,0 +1,257 @@
+{
+  "nodes": [
+    {
+      "content": "Proactive Metric Packing",
+      "pos": [
+        26,
+        50
+      ]
+    },
+    {
+      "content": "An overview of using Proactive Metric Packing in the Resource Balancer",
+      "pos": [
+        68,
+        138
+      ]
+    },
+    {
+      "content": "Proactive Metric Packing",
+      "pos": [
+        427,
+        451
+      ]
+    },
+    {
+      "content": "A common configuration for the Service Fabric Resource Balancer is to achieve equal utilization per every metric on every node.",
+      "pos": [
+        453,
+        580
+      ]
+    },
+    {
+      "content": "Resource Balancer is also in charge for finding a place for service when new service requests arrive.",
+      "pos": [
+        581,
+        682
+      ]
+    },
+    {
+      "content": "If there is not enough free space to place new service replicas (all replicas of all service's partitions), Resource Balancer will try to create space for it by moving existing workloads around.",
+      "pos": [
+        683,
+        877
+      ]
+    },
+    {
+      "content": "While this is perfectly normal, depending on how full the cluster is and the level of workload fragmentation, it can take time.",
+      "pos": [
+        878,
+        1005
+      ]
+    },
+    {
+      "content": "For example, if the cluster is decently utilized and if customer wants to add new service with a large default load (e.g. max node capacity for one or more metrics) it may happen that the Resource Balancer needs to move many replicas in order to place new service.",
+      "pos": [
+        1007,
+        1271
+      ]
+    },
+    {
+      "content": "Also, if services are stateful and large, executing the necessary moves could take some time since data needs to be copied.",
+      "pos": [
+        1272,
+        1395
+      ]
+    },
+    {
+      "content": "Both of these concerns can extend new service creation time.",
+      "pos": [
+        1396,
+        1456
+      ]
+    },
+    {
+      "content": "While generally services should be tolerant of occasional slow creation times, some workloads are less tolerant and want to be created as soon as possible, meaning that in a steady state the Resource Balancer needs to ensure that the cluster is “defragmented” in order to provide a greater chance that there is sufficient available room for new workloads.",
+      "pos": [
+        1457,
+        1812
+      ]
+    },
+    {
+      "content": "The proactive metric packing (a.k.a.",
+      "pos": [
+        1814,
+        1850
+      ]
+    },
+    {
+      "content": "defragmentation) mechanism runs as a part of the Resource Balancer’s balancing phase with the goal to minimize the service creation time by packing workloads onto fewer nodes, rather than distributing them as during balancing.",
+      "pos": [
+        1851,
+        2077
+      ]
+    },
+    {
+      "content": "When a metrics is configured for defragmentation the Resource Balancer aims to achieve maximal average standard deviation, rather than the minimal average standard deviation used when balancing.",
+      "pos": [
+        2078,
+        2272
+      ]
+    },
+    {
+      "content": "With maximum deviation, the Resource Balancer will try to place as many services as possible on some nodes while keeping as many nodes as possible empty.",
+      "pos": [
+        2274,
+        2427
+      ]
+    },
+    {
+      "content": "Besides that, one of the basic constraints for placing new services is that replicas cannot be in same upgrade domain or fault domain.",
+      "pos": [
+        2428,
+        2562
+      ]
+    },
+    {
+      "content": "As the goal is to be able to add new services quickly, Resource Balancer should aim to have minimal standard deviation of load distribution among upgrade domains and fault domains (sum of the services loads per upgrade domain/fault domain).",
+      "pos": [
+        2563,
+        2803
+      ]
+    },
+    {
+      "content": "The result will be same amount of free space per upgrade domain/fault domain.",
+      "pos": [
+        2804,
+        2881
+      ]
+    },
+    {
+      "content": "Defragmentation also respects all other constraints in the system such as Affinity, Placement Constraints, and node metric Capacity.",
+      "pos": [
+        2882,
+        3014
+      ]
+    },
+    {
+      "content": "Resource Balancer Cluster Configuration",
+      "pos": [
+        3019,
+        3058
+      ]
+    },
+    {
+      "content": "Within the cluster manifest, the following several different configuration values that define the overall behavior of the metric packing feature under Resource Balancer:",
+      "pos": [
+        3059,
+        3228
+      ]
+    },
+    {
+      "content": "DefragmentationMetrics – Metrics that Resource Balancer should consider for proactive packing/defragmentation.",
+      "pos": [
+        3234,
+        3344
+      ]
+    },
+    {
+      "content": "All configured metrics should be specified in this list (just like in the Activity and Balancing threshold lists).",
+      "pos": [
+        3346,
+        3460
+      ]
+    },
+    {
+      "content": "If the metric is specified with the value “true” it will be treated as a defragmentation metric, but with value “false” (or if it is not specified in this list) it will not be considered for defragmentation.",
+      "pos": [
+        3461,
+        3668
+      ]
+    },
+    {
+      "content": "BalacingThreshholds",
+      "pos": [
+        3876,
+        3895
+      ]
+    },
+    {
+      "content": "Balancing thresholds govern how fragmented the cluster can become with regard to a particular metric before the Resource Balancer runs balancing phase (which will do metric packing logic).",
+      "pos": [
+        3897,
+        4085
+      ]
+    },
+    {
+      "content": "If the metric is considered as defragmentation metric, balancing threshold is the minimum ratio between the maximally used and minimally used nodes per upgrade or fault domain that the Resource Balancer allows to exist, before it does defragmentation in the cluster.",
+      "pos": [
+        4086,
+        4352
+      ]
+    },
+    {
+      "content": "If any upgrade or fault domain has this ration smaller than threshold, defragmentation phase will kick in.",
+      "pos": [
+        4353,
+        4459
+      ]
+    },
+    {
+      "content": "The following figure shows two examples, where the balancing threshold for the given metric is 10.",
+      "pos": [
+        4461,
+        4559
+      ]
+    },
+    {
+      "content": "![Balancing Threshold][Image1]",
+      "pos": [
+        4561,
+        4591
+      ]
+    },
+    {
+      "content": "Note that at this time, the \"utilization\" on a node does not take into consideration the size of the node as determined by the capacity of the node, but only the absolute use that is currently reported on the node for the specified metric.",
+      "pos": [
+        4593,
+        4832
+      ]
+    },
+    {
+      "content": "If the metric is not specified, default value is 1.",
+      "pos": [
+        4834,
+        4885
+      ]
+    },
+    {
+      "content": "In that case, defragmentation will be performed until cluster has at least 1 empty node in every upgrade domain and in every fault domain.",
+      "pos": [
+        4886,
+        5024
+      ]
+    },
+    {
+      "content": "Value 0 means don’t take into account this metric during balancing phase – either if it is considered for defragmentation or not.",
+      "pos": [
+        5026,
+        5155
+      ]
+    },
+    {
+      "content": "The code example shows that balancing thresholds for metrics are configured per metric via the FabricSettings element within the cluster manifest.",
+      "pos": [
+        5157,
+        5303
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">\n##</ph> Next steps\n\nFor more information: <bpt id=\"p1\">[</bpt><ept id=\"p1\">Resource Balancer Architecture](service-fabric-resource-balancer-architecture.md)</ept><ph id=\"ph2\">\n\n[Image1]: media/service-fabric-resource-balancer-proactive-metric-packing/PMP.png</ph>",
+      "pos": [
+        5572,
+        5775
+      ]
+    }
+  ],
+  "content": "<properties\n   pageTitle=\"Proactive Metric Packing\"\n   description=\"An overview of using Proactive Metric Packing in the Resource Balancer\"\n   services=\"service-fabric\"\n   documentationCenter=\".net\"\n   authors=\"abhic\"\n   manager=\"timlt\"\n   editor=\"\"/>\n\n<tags\n   ms.service=\"Service-Fabric\"\n   ms.devlang=\"dotnet\"\n   ms.topic=\"article\"\n   ms.tgt_pltfrm=\"NA\"\n   ms.workload=\"NA\"\n   ms.date=\"04/27/2015\"\n   ms.author=\"abhic\"/>\n\n# Proactive Metric Packing\n\nA common configuration for the Service Fabric Resource Balancer is to achieve equal utilization per every metric on every node. Resource Balancer is also in charge for finding a place for service when new service requests arrive. If there is not enough free space to place new service replicas (all replicas of all service's partitions), Resource Balancer will try to create space for it by moving existing workloads around. While this is perfectly normal, depending on how full the cluster is and the level of workload fragmentation, it can take time.\n\nFor example, if the cluster is decently utilized and if customer wants to add new service with a large default load (e.g. max node capacity for one or more metrics) it may happen that the Resource Balancer needs to move many replicas in order to place new service. Also, if services are stateful and large, executing the necessary moves could take some time since data needs to be copied. Both of these concerns can extend new service creation time. While generally services should be tolerant of occasional slow creation times, some workloads are less tolerant and want to be created as soon as possible, meaning that in a steady state the Resource Balancer needs to ensure that the cluster is “defragmented” in order to provide a greater chance that there is sufficient available room for new workloads.\n\nThe proactive metric packing (a.k.a. defragmentation) mechanism runs as a part of the Resource Balancer’s balancing phase with the goal to minimize the service creation time by packing workloads onto fewer nodes, rather than distributing them as during balancing. When a metrics is configured for defragmentation the Resource Balancer aims to achieve maximal average standard deviation, rather than the minimal average standard deviation used when balancing.\n\nWith maximum deviation, the Resource Balancer will try to place as many services as possible on some nodes while keeping as many nodes as possible empty. Besides that, one of the basic constraints for placing new services is that replicas cannot be in same upgrade domain or fault domain. As the goal is to be able to add new services quickly, Resource Balancer should aim to have minimal standard deviation of load distribution among upgrade domains and fault domains (sum of the services loads per upgrade domain/fault domain). The result will be same amount of free space per upgrade domain/fault domain. Defragmentation also respects all other constraints in the system such as Affinity, Placement Constraints, and node metric Capacity.\n\n## Resource Balancer Cluster Configuration\nWithin the cluster manifest, the following several different configuration values that define the overall behavior of the metric packing feature under Resource Balancer:\n\n### DefragmentationMetrics – Metrics that Resource Balancer should consider for proactive packing/defragmentation.\n\nAll configured metrics should be specified in this list (just like in the Activity and Balancing threshold lists). If the metric is specified with the value “true” it will be treated as a defragmentation metric, but with value “false” (or if it is not specified in this list) it will not be considered for defragmentation.\n\n``` xml\n<FabricSettings>\n  <Section Name=\"DefragmentationMetrics\">\n    <Parameter Name=\"MetricName1\" Value=\"true\"/>\n    <Parameter Name=\"MetricName2\" Value=\"false\"/>\n  </Section>\n</FabricSettings>\n```\n\n### BalacingThreshholds\n\nBalancing thresholds govern how fragmented the cluster can become with regard to a particular metric before the Resource Balancer runs balancing phase (which will do metric packing logic). If the metric is considered as defragmentation metric, balancing threshold is the minimum ratio between the maximally used and minimally used nodes per upgrade or fault domain that the Resource Balancer allows to exist, before it does defragmentation in the cluster. If any upgrade or fault domain has this ration smaller than threshold, defragmentation phase will kick in.\n\nThe following figure shows two examples, where the balancing threshold for the given metric is 10.\n\n![Balancing Threshold][Image1]\n\nNote that at this time, the \"utilization\" on a node does not take into consideration the size of the node as determined by the capacity of the node, but only the absolute use that is currently reported on the node for the specified metric.\n\nIf the metric is not specified, default value is 1. In that case, defragmentation will be performed until cluster has at least 1 empty node in every upgrade domain and in every fault domain.\n\nValue 0 means don’t take into account this metric during balancing phase – either if it is considered for defragmentation or not.\n\nThe code example shows that balancing thresholds for metrics are configured per metric via the FabricSettings element within the cluster manifest.\n\n``` xml\n<FabricSettings>\n  <Section Name=\"MetricBalancingThresholds\">\n    <Parameter Name=\"MetricName\" Value=\"10\"/>\n  </Section>\n</FabricSettings>\n```\n\n<!--Every topic should have next steps and links to the next logical set of content to keep the customer engaged-->\n## Next steps\n\nFor more information: [Resource Balancer Architecture](service-fabric-resource-balancer-architecture.md)\n\n[Image1]: media/service-fabric-resource-balancer-proactive-metric-packing/PMP.png\n "
+}

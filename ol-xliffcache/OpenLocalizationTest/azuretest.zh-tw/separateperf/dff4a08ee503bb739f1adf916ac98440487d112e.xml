@@ -1,0 +1,481 @@
+{
+  "nodes": [
+    {
+      "content": "App Model v2.0 | Microsoft Azure",
+      "pos": [
+        27,
+        59
+      ]
+    },
+    {
+      "content": "How to build a .NET MVC Web App that signs users in with both personal Microsoft Account and work or school accounts.",
+      "pos": [
+        78,
+        195
+      ]
+    },
+    {
+      "content": "App model v2.0 preview: Add sign-in to an .NET MVC web app",
+      "pos": [
+        516,
+        574
+      ]
+    },
+    {
+      "content": "With the v2.0 app model, you can quickly add authentication to your web apps with support for both personal Microsoft accounts and work or school accounts.",
+      "pos": [
+        576,
+        731
+      ]
+    },
+    {
+      "content": "In ASP.NET web apps, you can accomplish this using Microsoft's OWIN middleware included in .NET Framework 4.5.",
+      "pos": [
+        733,
+        843
+      ]
+    },
+    {
+      "content": "This information applies to the v2.0 app model public preview.",
+      "pos": [
+        866,
+        928
+      ]
+    },
+    {
+      "content": "For instructions on how to integrate with the generally available Azure AD service, please refer to the <bpt id=\"p1\">[</bpt>Azure Active Directory Developer Guide<ept id=\"p1\">](active-directory-developers-guide.md)</ept>.",
+      "pos": [
+        930,
+        1113
+      ]
+    },
+    {
+      "content": "Here we'll use OWIN to:",
+      "pos": [
+        1116,
+        1139
+      ]
+    },
+    {
+      "content": "Sign the user into the app using Azure AD and the v2.0 app model.",
+      "pos": [
+        1144,
+        1209
+      ]
+    },
+    {
+      "content": "Display some information about the user.",
+      "pos": [
+        1214,
+        1254
+      ]
+    },
+    {
+      "content": "Sign the user out of the app.",
+      "pos": [
+        1259,
+        1288
+      ]
+    },
+    {
+      "content": "In order to do this, you'll need to:",
+      "pos": [
+        1290,
+        1326
+      ]
+    },
+    {
+      "content": "Register an app.",
+      "pos": [
+        1331,
+        1347
+      ]
+    },
+    {
+      "content": "Set up your app to use the OWIN authentication pipeline.",
+      "pos": [
+        1351,
+        1407
+      ]
+    },
+    {
+      "content": "Use OWIN to issue sign-in and sign-out requests to Azure AD.",
+      "pos": [
+        1411,
+        1471
+      ]
+    },
+    {
+      "content": "Print out data about the user.",
+      "pos": [
+        1475,
+        1505
+      ]
+    },
+    {
+      "content": "The code for this tutorial is maintained <bpt id=\"p1\">[</bpt>on GitHub<ept id=\"p1\">](https://github.com/AzureADQuickStarts/AppModelv2-WebApp-OpenIdConnect-DotNet)</ept>.",
+      "pos": [
+        1507,
+        1638
+      ]
+    },
+    {
+      "content": "To follow along, you can <bpt id=\"p1\">[</bpt>download the app's skeleton as a .zip<ept id=\"p1\">](https://github.com/AzureADQuickStarts/AppModelv2-WebApp-OpenIdConnect-DotNet/archive/skeleton.zip)</ept> or clone the skeleton:",
+      "pos": [
+        1640,
+        1826
+      ]
+    },
+    {
+      "content": "The completed app is provided at the end of this tutorial as well.",
+      "pos": [
+        1944,
+        2010
+      ]
+    },
+    {
+      "content": "1. Register an App",
+      "pos": [
+        2015,
+        2033
+      ]
+    },
+    {
+      "content": "Create a new app at <bpt id=\"p1\">[</bpt>apps.dev.microsoft.com<ept id=\"p1\">](https://apps.dev.microsoft.com)</ept>, or follow these <bpt id=\"p2\">[</bpt>detailed steps<ept id=\"p2\">](active-directory-v2-app-registration.md)</ept>.",
+      "pos": [
+        2034,
+        2186
+      ]
+    },
+    {
+      "content": "Make sure to:",
+      "pos": [
+        2188,
+        2201
+      ]
+    },
+    {
+      "pos": [
+        2205,
+        2280
+      ],
+      "content": "Copy down the <bpt id=\"p1\">**</bpt>Application Id<ept id=\"p1\">**</ept> assigned to your app, you'll need it soon."
+    },
+    {
+      "pos": [
+        2283,
+        2321
+      ],
+      "content": "Add the <bpt id=\"p1\">**</bpt>Web<ept id=\"p1\">**</ept> platform for your app."
+    },
+    {
+      "content": "Enter the correct <bpt id=\"p1\">**</bpt>Redirect URI<ept id=\"p1\">**</ept>.",
+      "pos": [
+        2324,
+        2359
+      ]
+    },
+    {
+      "content": "The redirect uri indicates to Azure AD where authentication responses should be directed - the default for this tutorial is <ph id=\"ph1\">`https://localhost:44326/`</ph>.",
+      "pos": [
+        2360,
+        2511
+      ]
+    },
+    {
+      "content": "2. Set up your app to use the OWIN authentication pipeline",
+      "pos": [
+        2516,
+        2574
+      ]
+    },
+    {
+      "content": "Here, we'll configure the OWIN middleware to use the OpenID Connect authentication protocol.",
+      "pos": [
+        2575,
+        2667
+      ]
+    },
+    {
+      "content": "OWIN will be used to issue sign-in and sign-out requests, manage the user's session, and get information about the user, amongst other things.",
+      "pos": [
+        2669,
+        2811
+      ]
+    },
+    {
+      "pos": [
+        2817,
+        2955
+      ],
+      "content": "To begin, open the <ph id=\"ph1\">`web.config`</ph> file in the root of the project, and enter your app's configuration values in the <ph id=\"ph2\">`&lt;appSettings&gt;`</ph> section."
+    },
+    {
+      "pos": [
+        2964,
+        3057
+      ],
+      "content": "The <ph id=\"ph1\">`ida:ClientId`</ph> is the <bpt id=\"p1\">**</bpt>Application Id<ept id=\"p1\">**</ept> assigned to your app in the registration portal."
+    },
+    {
+      "pos": [
+        3066,
+        3138
+      ],
+      "content": "The <ph id=\"ph1\">`ida:RedirectUri`</ph> is the <bpt id=\"p1\">**</bpt>Redirect Uri<ept id=\"p1\">**</ept> you entered in the portal."
+    },
+    {
+      "content": "Next, add the OWIN middleware NuGet packages to the project using the Package Manager Console.",
+      "pos": [
+        3144,
+        3238
+      ]
+    },
+    {
+      "content": "Add an \"OWIN Startup Class\" to the project called <ph id=\"ph1\">`Startup.cs`</ph>  Right click on the project --&gt; <bpt id=\"p1\">**</bpt>Add<ept id=\"p1\">**</ept> --&gt; <bpt id=\"p2\">**</bpt>New Item<ept id=\"p2\">**</ept> --&gt; Search for \"OWIN\".",
+      "pos": [
+        3413,
+        3555
+      ]
+    },
+    {
+      "content": "The OWIN middleware will invoke the <ph id=\"ph1\">`Configuration(...)`</ph> method when your app starts.",
+      "pos": [
+        3557,
+        3642
+      ]
+    },
+    {
+      "content": "Change the class declaration to <ph id=\"ph1\">`public partial class Startup`</ph> - we've already implemented part of this class for you in another file.",
+      "pos": [
+        3647,
+        3781
+      ]
+    },
+    {
+      "content": "In the <ph id=\"ph1\">`Configuration(...)`</ph> method, make a call to ConfigureAuth(...) to set up authentication for your web app",
+      "pos": [
+        3783,
+        3894
+      ]
+    },
+    {
+      "content": "Open the file <ph id=\"ph1\">`App_Start\\Startup.Auth.cs`</ph> and implement the <ph id=\"ph2\">`ConfigureAuth(...)`</ph> method.",
+      "pos": [
+        4033,
+        4121
+      ]
+    },
+    {
+      "content": "The parameters you provide in <ph id=\"ph1\">`OpenIdConnectAuthenticationOptions`</ph> will serve as coordinates for your app to communicate with Azure AD.",
+      "pos": [
+        4123,
+        4258
+      ]
+    },
+    {
+      "content": "You'll also need to set up Cookie Authentication - the OpenID Connect middleware uses cookies underneath the covers.",
+      "pos": [
+        4260,
+        4376
+      ]
+    },
+    {
+      "content": "3. Use OWIN to issue sign-in and sign-out requests to Azure AD",
+      "pos": [
+        6262,
+        6324
+      ]
+    },
+    {
+      "content": "Your app is now properly configured to communicate with the v2.0 endpoint using the OpenID Connect authentication protocol.",
+      "pos": [
+        6325,
+        6448
+      ]
+    },
+    {
+      "content": "OWIN has taken care of all of the ugly details of crafting authentication messages, validating tokens from Azure AD, and maintaining user session.",
+      "pos": [
+        6450,
+        6596
+      ]
+    },
+    {
+      "content": "All that remains is to give your users a way to sign in and sign out.",
+      "pos": [
+        6598,
+        6667
+      ]
+    },
+    {
+      "content": "You can use authorize tags in your controllers to require that user signs in before accessing a certain page.",
+      "pos": [
+        6671,
+        6780
+      ]
+    },
+    {
+      "content": "Open <ph id=\"ph1\">`Controllers\\HomeController.cs`</ph>, and add the <ph id=\"ph2\">`[Authorize]`</ph> tag to the About controller.",
+      "pos": [
+        6782,
+        6874
+      ]
+    },
+    {
+      "content": "You can also use OWIN to directly issue authentication requests from within your code.",
+      "pos": [
+        6939,
+        7025
+      ]
+    },
+    {
+      "content": "Open <ph id=\"ph1\">`Controllers\\AccountController.cs`</ph>.",
+      "pos": [
+        7027,
+        7067
+      ]
+    },
+    {
+      "content": "In the SignIn() and SignOut() actions, issue OpenID Connect challenge and sign-out requests, respectively.",
+      "pos": [
+        7069,
+        7175
+      ]
+    },
+    {
+      "content": "Now, open <ph id=\"ph1\">`Views\\Shared\\_LoginPartial.cshtml`</ph>.",
+      "pos": [
+        7814,
+        7860
+      ]
+    },
+    {
+      "content": "This is where you'll show the user your app's sign-in and sign-out links, and print out the user's name in a view.",
+      "pos": [
+        7862,
+        7976
+      ]
+    },
+    {
+      "content": "4. Display user information",
+      "pos": [
+        8701,
+        8728
+      ]
+    },
+    {
+      "content": "When authenticating users with OpenID Connect, the v2.0 endpoint returns an id_token to the app that contains <bpt id=\"p1\">[</bpt>claims<ept id=\"p1\">](active-directory-v2-tokens.md#id_tokens)</ept>, or assertions about the user.",
+      "pos": [
+        8729,
+        8919
+      ]
+    },
+    {
+      "content": "You can use these claims to personalize your app:",
+      "pos": [
+        8921,
+        8970
+      ]
+    },
+    {
+      "content": "Open the <ph id=\"ph1\">`Controllers\\HomeController.cs`</ph> file.",
+      "pos": [
+        8974,
+        9020
+      ]
+    },
+    {
+      "content": "You can access the user's claims in your controllers via the <ph id=\"ph1\">`ClaimsPrincipal.Current`</ph> security principal object.",
+      "pos": [
+        9022,
+        9135
+      ]
+    },
+    {
+      "content": "Finally, build and run your app!",
+      "pos": [
+        9969,
+        10001
+      ]
+    },
+    {
+      "content": "Sign in with either a personal Microsoft Account or a work or school account, and notice how the user's identity is reflected in the top navigation bar.",
+      "pos": [
+        10004,
+        10156
+      ]
+    },
+    {
+      "content": "You now have a web app secured using industry standard protocols that can authenticate users with both their personal and work/school accounts.",
+      "pos": [
+        10158,
+        10301
+      ]
+    },
+    {
+      "pos": [
+        10303,
+        10536
+      ],
+      "content": "For reference, the completed sample (without your configuration values) <bpt id=\"p1\">[</bpt>is provided as a .zip here<ept id=\"p1\">](https://github.com/AzureADQuickStarts/AppModelv2-WebApp-OpenIdConnect-DotNet/archive/complete.zip)</ept>, or you can clone it from GitHub:"
+    },
+    {
+      "content": "Next Steps",
+      "pos": [
+        10657,
+        10667
+      ]
+    },
+    {
+      "content": "You can now move onto more advanced topics.",
+      "pos": [
+        10669,
+        10712
+      ]
+    },
+    {
+      "content": "You may want to try:",
+      "pos": [
+        10714,
+        10734
+      ]
+    },
+    {
+      "content": "Secure a Web API with the v2.0 app model &gt;&gt;",
+      "pos": [
+        10737,
+        10780
+      ]
+    },
+    {
+      "content": "For additional resources, check out:",
+      "pos": [
+        10833,
+        10869
+      ]
+    },
+    {
+      "content": "The App Model v2.0 Preview &gt;&gt;",
+      "pos": [
+        10873,
+        10902
+      ]
+    },
+    {
+      "content": "StackOverflow \"azure-active-directory\" tag &gt;&gt;",
+      "pos": [
+        10949,
+        10994
+      ]
+    },
+    {
+      "content": "test",
+      "pos": [
+        11063,
+        11067
+      ]
+    }
+  ],
+  "content": "<properties\n    pageTitle=\"App Model v2.0 | Microsoft Azure\"\n    description=\"How to build a .NET MVC Web App that signs users in with both personal Microsoft Account and work or school accounts.\"\n    services=\"active-directory\"\n    documentationCenter=\".net\"\n    authors=\"dstrockis\"\n    manager=\"mbaldwin\"\n    editor=\"\"/>\n\n<tags\n    ms.service=\"active-directory\"\n    ms.workload=\"identity\"\n    ms.tgt_pltfrm=\"na\"\n    ms.devlang=\"dotnet\"\n    ms.topic=\"article\"\n    ms.date=\"08/12/2015\"\n    ms.author=\"dastrock\"/>\n\n# App model v2.0 preview: Add sign-in to an .NET MVC web app\n\nWith the v2.0 app model, you can quickly add authentication to your web apps with support for both personal Microsoft accounts and work or school accounts.  In ASP.NET web apps, you can accomplish this using Microsoft's OWIN middleware included in .NET Framework 4.5.\n\n  > [AZURE.NOTE]\n    This information applies to the v2.0 app model public preview.  For instructions on how to integrate with the generally available Azure AD service, please refer to the [Azure Active Directory Developer Guide](active-directory-developers-guide.md).\n\n Here we'll use OWIN to:\n-   Sign the user into the app using Azure AD and the v2.0 app model.\n-   Display some information about the user.\n-   Sign the user out of the app.\n\nIn order to do this, you'll need to:\n\n1. Register an app.\n2. Set up your app to use the OWIN authentication pipeline.\n3. Use OWIN to issue sign-in and sign-out requests to Azure AD.\n4. Print out data about the user.\n\nThe code for this tutorial is maintained [on GitHub](https://github.com/AzureADQuickStarts/AppModelv2-WebApp-OpenIdConnect-DotNet).  To follow along, you can [download the app's skeleton as a .zip](https://github.com/AzureADQuickStarts/AppModelv2-WebApp-OpenIdConnect-DotNet/archive/skeleton.zip) or clone the skeleton:\n\n```git clone --branch skeleton https://github.com/AzureADQuickStarts/AppModelv2-WebApp-OpenIdConnect-DotNet.git```\n\nThe completed app is provided at the end of this tutorial as well.\n\n## 1. Register an App\nCreate a new app at [apps.dev.microsoft.com](https://apps.dev.microsoft.com), or follow these [detailed steps](active-directory-v2-app-registration.md).  Make sure to:\n\n- Copy down the **Application Id** assigned to your app, you'll need it soon.\n- Add the **Web** platform for your app.\n- Enter the correct **Redirect URI**. The redirect uri indicates to Azure AD where authentication responses should be directed - the default for this tutorial is `https://localhost:44326/`.\n\n## 2. Set up your app to use the OWIN authentication pipeline\nHere, we'll configure the OWIN middleware to use the OpenID Connect authentication protocol.  OWIN will be used to issue sign-in and sign-out requests, manage the user's session, and get information about the user, amongst other things.\n\n-   To begin, open the `web.config` file in the root of the project, and enter your app's configuration values in the `<appSettings>` section.\n    -   The `ida:ClientId` is the **Application Id** assigned to your app in the registration portal.\n    -   The `ida:RedirectUri` is the **Redirect Uri** you entered in the portal.\n\n-   Next, add the OWIN middleware NuGet packages to the project using the Package Manager Console.\n\n```\nPM> Install-Package Microsoft.Owin.Security.OpenIdConnect\nPM> Install-Package Microsoft.Owin.Security.Cookies\nPM> Install-Package Microsoft.Owin.Host.SystemWeb\n```\n\n-   Add an \"OWIN Startup Class\" to the project called `Startup.cs`  Right click on the project --> **Add** --> **New Item** --> Search for \"OWIN\".  The OWIN middleware will invoke the `Configuration(...)` method when your app starts.\n-   Change the class declaration to `public partial class Startup` - we've already implemented part of this class for you in another file.  In the `Configuration(...)` method, make a call to ConfigureAuth(...) to set up authentication for your web app  \n\n```C#\npublic partial class Startup\n{\n    public void Configuration(IAppBuilder app)\n    {\n        ConfigureAuth(app);\n    }\n}\n```\n\n-   Open the file `App_Start\\Startup.Auth.cs` and implement the `ConfigureAuth(...)` method.  The parameters you provide in `OpenIdConnectAuthenticationOptions` will serve as coordinates for your app to communicate with Azure AD.  You'll also need to set up Cookie Authentication - the OpenID Connect middleware uses cookies underneath the covers.\n\n```C#\npublic void ConfigureAuth(IAppBuilder app)\n             {\n                     app.SetDefaultSignInAsAuthenticationType(CookieAuthenticationDefaults.AuthenticationType);\n\n                     app.UseCookieAuthentication(new CookieAuthenticationOptions());\n\n                     app.UseOpenIdConnectAuthentication(\n                             new OpenIdConnectAuthenticationOptions\n                             {\n                                     // The `Authority` represents the v2.0 endpoint - https://login.microsoftonline.com/common/v2.0\n                                     // The `Scope` describes the permissions that your app will need.  See https://azure.microsoft.com/documentation/articles/active-directory-v2-scopes/\n                                     // In a real application you could use issuer validation for additional checks, like making sure the user's organization has signed up for your app, for instance.\n\n                                     ClientId = clientId,\n                                     Authority = String.Format(CultureInfo.InvariantCulture, aadInstance, \"common\", \"/v2.0\"),\n                                     RedirectUri = redirectUri,\n                                     Scope = \"openid\",\n                                     PostLogoutRedirectUri = redirectUri,\n                                     TokenValidationParameters = new TokenValidationParameters\n                                     {\n                                             ValidateIssuer = false,\n                                     },\n                                     Notifications = new OpenIdConnectAuthenticationNotifications\n                                     {\n                                             AuthenticationFailed = OnAuthenticationFailed,\n                                     }\n                             });\n             }\n```\n\n## 3. Use OWIN to issue sign-in and sign-out requests to Azure AD\nYour app is now properly configured to communicate with the v2.0 endpoint using the OpenID Connect authentication protocol.  OWIN has taken care of all of the ugly details of crafting authentication messages, validating tokens from Azure AD, and maintaining user session.  All that remains is to give your users a way to sign in and sign out.\n\n- You can use authorize tags in your controllers to require that user signs in before accessing a certain page.  Open `Controllers\\HomeController.cs`, and add the `[Authorize]` tag to the About controller.\n\n```C#\n[Authorize]\npublic ActionResult About()\n{\n  ...\n```\n\n-   You can also use OWIN to directly issue authentication requests from within your code.  Open `Controllers\\AccountController.cs`.  In the SignIn() and SignOut() actions, issue OpenID Connect challenge and sign-out requests, respectively.\n\n```C#\npublic void SignIn()\n{\n    // Send an OpenID Connect sign-in request.\n    if (!Request.IsAuthenticated)\n    {\n        HttpContext.GetOwinContext().Authentication.Challenge(new AuthenticationProperties { RedirectUri = \"/\" }, OpenIdConnectAuthenticationDefaults.AuthenticationType);\n    }\n}\n\n// BUGBUG: Ending a session with the v2.0 endpoint is not yet supported.  Here, we just end the session with the web app.  \npublic void SignOut()\n{\n    // Send an OpenID Connect sign-out request.\n    HttpContext.GetOwinContext().Authentication.SignOut(CookieAuthenticationDefaults.AuthenticationType);\n    Response.Redirect(\"/\");\n}\n```\n\n-   Now, open `Views\\Shared\\_LoginPartial.cshtml`.  This is where you'll show the user your app's sign-in and sign-out links, and print out the user's name in a view.\n\n```HTML\n@if (Request.IsAuthenticated)\n{\n    <text>\n        <ul class=\"nav navbar-nav navbar-right\">\n            <li class=\"navbar-text\">\n\n                @*The 'preferred_username' claim can be used for showing the user's primary way of identifying themselves.*@\n\n                Hello, @(System.Security.Claims.ClaimsPrincipal.Current.FindFirst(\"preferred_username\").Value)!\n            </li>\n            <li>\n                @Html.ActionLink(\"Sign out\", \"SignOut\", \"Account\")\n            </li>\n        </ul>\n    </text>\n}\nelse\n{\n    <ul class=\"nav navbar-nav navbar-right\">\n        <li>@Html.ActionLink(\"Sign in\", \"SignIn\", \"Account\", routeValues: null, htmlAttributes: new { id = \"loginLink\" })</li>\n    </ul>\n}\n```\n\n## 4. Display user information\nWhen authenticating users with OpenID Connect, the v2.0 endpoint returns an id_token to the app that contains [claims](active-directory-v2-tokens.md#id_tokens), or assertions about the user.  You can use these claims to personalize your app:\n\n- Open the `Controllers\\HomeController.cs` file.  You can access the user's claims in your controllers via the `ClaimsPrincipal.Current` security principal object.\n\n```C#\n[Authorize]\npublic ActionResult About()\n{\n    ViewBag.Name = ClaimsPrincipal.Current.FindFirst(\"name\").Value;\n\n    // The object ID claim will only be emitted for work or school accounts at this time.\n    Claim oid = ClaimsPrincipal.Current.FindFirst(\"http://schemas.microsoft.com/identity/claims/objectidentifier\");\n    ViewBag.ObjectId = oid == null ? string.Empty : oid.Value;\n\n    // The 'preferred_username' claim can be used for showing the user's primary way of identifying themselves\n    ViewBag.Username = ClaimsPrincipal.Current.FindFirst(\"preferred_username\").Value;\n\n    // The subject or nameidentifier claim can be used to uniquely identify the user\n    ViewBag.Subject = ClaimsPrincipal.Current.FindFirst(\"http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier\").Value;\n\n    return View();\n}\n```\n\nFinally, build and run your app!   Sign in with either a personal Microsoft Account or a work or school account, and notice how the user's identity is reflected in the top navigation bar.  You now have a web app secured using industry standard protocols that can authenticate users with both their personal and work/school accounts.\n\nFor reference, the completed sample (without your configuration values) [is provided as a .zip here](https://github.com/AzureADQuickStarts/AppModelv2-WebApp-OpenIdConnect-DotNet/archive/complete.zip), or you can clone it from GitHub:\n\n```git clone --branch complete https://github.com/AzureADQuickStarts/AppModelv2-WebApp-OpenIdConnect-DotNet.git```\n\n## Next Steps\n\nYou can now move onto more advanced topics.  You may want to try:\n\n[Secure a Web API with the v2.0 app model >>](active-directory-devquickstarts-webapi-dotnet.md)\n\nFor additional resources, check out:\n- [The App Model v2.0 Preview >>](active-directory-appmodel-v2-overview.md)\n- [StackOverflow \"azure-active-directory\" tag >>](http://stackoverflow.com/questions/tagged/azure-active-directory)\n\ntest\n"
+}

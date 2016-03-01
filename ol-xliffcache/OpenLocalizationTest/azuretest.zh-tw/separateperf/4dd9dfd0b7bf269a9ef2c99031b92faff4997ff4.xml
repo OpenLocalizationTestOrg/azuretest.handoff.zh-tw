@@ -1,0 +1,2511 @@
+{
+  "nodes": [
+    {
+      "content": "Indexer Operations (Azure Search Service REST API: 2015-02-28-Preview)",
+      "pos": [
+        24,
+        94
+      ]
+    },
+    {
+      "content": "Indexer Operations (Azure Search Service REST API: 2015-02-28-Preview)",
+      "pos": [
+        110,
+        180
+      ]
+    },
+    {
+      "content": "Indexer Operations (Azure Search Service REST API: 2015-02-28-Preview)",
+      "pos": [
+        441,
+        511
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> This article describes indexers in the <bpt id=\"p1\">[</bpt>2015-02-28-Preview<ept id=\"p1\">](search-api-2015-02-28-preview.md)</ept>.",
+      "pos": [
+        515,
+        622
+      ]
+    },
+    {
+      "content": "Currently the only difference between the <ph id=\"ph1\">`2015-02-28`</ph> version documented on <bpt id=\"p1\">[</bpt>MSDN<ept id=\"p1\">](http://go.mirosoft.com/fwlink/p/?LinkID=528173)</ept> and the <ph id=\"ph2\">`2015-02-28-Preview`</ph> version described here is that the preview provides <bpt id=\"p2\">*</bpt>fieldMappings<ept id=\"p2\">*</ept>, as described in <bpt id=\"p3\">[</bpt>Create Indexer<ept id=\"p3\">](#CreateIndexer)</ept>.",
+      "pos": [
+        623,
+        902
+      ]
+    },
+    {
+      "content": "Overview",
+      "pos": [
+        907,
+        915
+      ]
+    },
+    {
+      "content": "Azure Search can integrate directly with some common data sources, removing the need to write code to index your data.",
+      "pos": [
+        917,
+        1035
+      ]
+    },
+    {
+      "content": "To set up this up, you can call the Azure Search API to create and manage <bpt id=\"p1\">**</bpt>indexers<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>data sources<ept id=\"p2\">**</ept>.",
+      "pos": [
+        1036,
+        1144
+      ]
+    },
+    {
+      "content": "An <bpt id=\"p1\">**</bpt>indexer<ept id=\"p1\">**</ept> is a resource that connects data sources with target search indexes.",
+      "pos": [
+        1147,
+        1230
+      ]
+    },
+    {
+      "content": "An indexer is used in the following ways:",
+      "pos": [
+        1231,
+        1272
+      ]
+    },
+    {
+      "content": "Perform a one-time copy of the data to populate an index.",
+      "pos": [
+        1277,
+        1334
+      ]
+    },
+    {
+      "content": "Sync an index with changes in the data source on a schedule.",
+      "pos": [
+        1337,
+        1397
+      ]
+    },
+    {
+      "content": "The schedule is part of the indexer definition.",
+      "pos": [
+        1398,
+        1445
+      ]
+    },
+    {
+      "content": "Invoke on-demand to update an index as needed.",
+      "pos": [
+        1448,
+        1494
+      ]
+    },
+    {
+      "content": "An <bpt id=\"p1\">**</bpt>indexer<ept id=\"p1\">**</ept> is useful when you want regular updates to an index.",
+      "pos": [
+        1497,
+        1564
+      ]
+    },
+    {
+      "content": "You can either set up an inline schedule as part of an indexer definition, or run it on demand using <bpt id=\"p1\">[</bpt>Run Indexer<ept id=\"p1\">](#RunIndexer)</ept>.",
+      "pos": [
+        1565,
+        1693
+      ]
+    },
+    {
+      "content": "A <bpt id=\"p1\">**</bpt>data source<ept id=\"p1\">**</ept> specifies what data needs to be indexed, credentials to access the data, and policies to enable Azure Search to efficiently identify changes in the data (such as modified or deleted rows in a database table).",
+      "pos": [
+        1696,
+        1922
+      ]
+    },
+    {
+      "content": "It's defined as an independent resource so that it can be used by multiple indexers.",
+      "pos": [
+        1923,
+        2007
+      ]
+    },
+    {
+      "content": "The following data sources are currently supported:",
+      "pos": [
+        2009,
+        2060
+      ]
+    },
+    {
+      "content": "Azure SQL Database and SQL Server on Azure VMs",
+      "pos": [
+        2064,
+        2110
+      ]
+    },
+    {
+      "content": "Azure DocumentDB",
+      "pos": [
+        2113,
+        2129
+      ]
+    },
+    {
+      "content": "We're considering adding support for additional data sources in the future.",
+      "pos": [
+        2132,
+        2207
+      ]
+    },
+    {
+      "content": "To help us prioritize these decisions, please provide your feedback on the <bpt id=\"p1\">[</bpt>Azure Search feedback forum<ept id=\"p1\">](http://feedback.azure.com/forums/263029-azure-search)</ept>.",
+      "pos": [
+        2208,
+        2367
+      ]
+    },
+    {
+      "pos": [
+        2369,
+        2518
+      ],
+      "content": "See <bpt id=\"p1\">[</bpt>Limits and constraints<ept id=\"p1\">](https://msdn.microsoft.com/library/azure/dn798934.aspx)</ept> for maximum limits related to indexer and data source resources."
+    },
+    {
+      "content": "Typical Usage Flow",
+      "pos": [
+        2523,
+        2541
+      ]
+    },
+    {
+      "pos": [
+        2543,
+        2697
+      ],
+      "content": "You can create and manage indexers and data sources via simple HTTP requests (POST, GET, PUT, DELETE) against a given <ph id=\"ph1\">`data source`</ph> or <ph id=\"ph2\">`indexer`</ph> resource."
+    },
+    {
+      "content": "Setting up automatic indexing is typically a four step process:",
+      "pos": [
+        2699,
+        2762
+      ]
+    },
+    {
+      "content": "Identify the data source that contains the data that needs to be indexed.",
+      "pos": [
+        2767,
+        2840
+      ]
+    },
+    {
+      "content": "Keep in mind that Azure Search may not support all of the data types present in your data source.",
+      "pos": [
+        2841,
+        2938
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt>Supported data types<ept id=\"p1\">](https://msdn.microsoft.com/library/azure/dn798938.aspx)</ept> for the list.",
+      "pos": [
+        2939,
+        3035
+      ]
+    },
+    {
+      "content": "Create an Azure Search index whose schema is compatible with your data source.",
+      "pos": [
+        3040,
+        3118
+      ]
+    },
+    {
+      "pos": [
+        3125,
+        3216
+      ],
+      "content": "Create an Azure Search data source as described in <bpt id=\"p1\">[</bpt>Create Data Source<ept id=\"p1\">](#CreateDataSource)</ept>."
+    },
+    {
+      "pos": [
+        3223,
+        3300
+      ],
+      "content": "Create an Azure Search indexer as described <bpt id=\"p1\">[</bpt>Create Indexer<ept id=\"p1\">](#CreateIndexer)</ept>."
+    },
+    {
+      "content": "You should plan on creating one indexer for every target index and data source combination.",
+      "pos": [
+        3302,
+        3393
+      ]
+    },
+    {
+      "content": "You can have multiple indexers writing into the same index, and you can reuse the same data source for multiple indexers.",
+      "pos": [
+        3394,
+        3515
+      ]
+    },
+    {
+      "content": "However, an indexer can only consume one data source at a time, and can only write to a single index.",
+      "pos": [
+        3516,
+        3617
+      ]
+    },
+    {
+      "content": "After creating an indexer, you can retrieve its execution status using the <bpt id=\"p1\">[</bpt>Get Indexer Status<ept id=\"p1\">](#GetIndexerStatus)</ept> operation.",
+      "pos": [
+        3620,
+        3745
+      ]
+    },
+    {
+      "content": "You can also run an indexer at any time (instead of or in addition to running it periodically on a schedule) using the <bpt id=\"p1\">[</bpt>Run Indexer<ept id=\"p1\">](#RunIndexer)</ept> operation.",
+      "pos": [
+        3746,
+        3902
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">\n\n\n##</ph> Create Data Source\n\nYou can create a new data source within an Azure Search service using an HTTP POST request.",
+      "pos": [
+        3960,
+        4077
+      ]
+    },
+    {
+      "content": "POST https://[service name].search.windows.net/datasources?api-version=[api-version]\n    Content-Type: application/json\n    api-key: [admin key]\n\nAlternatively, you can use PUT and specify the data source name on the URI.",
+      "pos": [
+        4087,
+        4308
+      ]
+    },
+    {
+      "content": "If the data source does not exist, it will be created.",
+      "pos": [
+        4309,
+        4363
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">PUT https://[service name].search.windows.net/datasources/[datasource name]?api-version=[api-version]\n\n**</bpt>Note<ept id=\"p1\">**</ept>: The maximum number of data sources allowed varies by pricing tier.",
+      "pos": [
+        4369,
+        4548
+      ]
+    },
+    {
+      "content": "The free service allows up to 3 data sources.",
+      "pos": [
+        4549,
+        4594
+      ]
+    },
+    {
+      "content": "Standard service allows 50 data sources.",
+      "pos": [
+        4595,
+        4635
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt><ept id=\"p1\">Limits and constraints](https://msdn.microsoft.com/library/azure/dn798934.aspx)</ept> for details.",
+      "pos": [
+        4636,
+        4733
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Request<ept id=\"p1\">**</ept>\n\nHTTPS is required for all service requests.",
+      "pos": [
+        4735,
+        4791
+      ]
+    },
+    {
+      "content": "The <bpt id=\"p1\">**</bpt>Create Data Source<ept id=\"p1\">**</ept> request can be constructed using either a POST or PUT method.",
+      "pos": [
+        4792,
+        4880
+      ]
+    },
+    {
+      "content": "When using POST, you must provide a data source name in the request body along with the data source definition.",
+      "pos": [
+        4881,
+        4992
+      ]
+    },
+    {
+      "content": "With PUT, the name is part of the URL.",
+      "pos": [
+        4993,
+        5031
+      ]
+    },
+    {
+      "content": "If the data source doesn't exist, it is created.",
+      "pos": [
+        5032,
+        5080
+      ]
+    },
+    {
+      "content": "If it already exists, it is updated to the new definition.",
+      "pos": [
+        5081,
+        5139
+      ]
+    },
+    {
+      "content": "The data source name must be lower case, start with a letter or number, have no slashes or dots, and be less than 128 characters.",
+      "pos": [
+        5142,
+        5271
+      ]
+    },
+    {
+      "content": "After starting the data source name with a letter or number, the rest of the name can include any letter, number and dashes, as long as the dashes are not consecutive.",
+      "pos": [
+        5272,
+        5439
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt><ept id=\"p1\">Naming rules](https://msdn.microsoft.com/library/azure/dn857353.aspx)</ept> for details.",
+      "pos": [
+        5440,
+        5527
+      ]
+    },
+    {
+      "content": "The <ph id=\"ph1\">`api-version`</ph> is required.",
+      "pos": [
+        5529,
+        5559
+      ]
+    },
+    {
+      "content": "The current version is <ph id=\"ph1\">`2015-02-28`</ph>.",
+      "pos": [
+        5560,
+        5596
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt><ept id=\"p1\">Azure Search versioning](https://msdn.microsoft.com/library/azure/dn864560.aspx)</ept> has details and more information about alternative versions.",
+      "pos": [
+        5597,
+        5739
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Request Headers<ept id=\"p1\">**</ept>\n\nThe following list describes the required and optional request headers.",
+      "pos": [
+        5741,
+        5833
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">- `Content-Type`</ph>: Required.",
+      "pos": [
+        5836,
+        5863
+      ]
+    },
+    {
+      "content": "Set this to <ph id=\"ph1\">`application/json`</ph><ph id=\"ph2\">\n- `api-key`</ph>: Required.",
+      "pos": [
+        5864,
+        5917
+      ]
+    },
+    {
+      "content": "The <ph id=\"ph1\">`api-key`</ph> is used to authenticate the request to your Search service.",
+      "pos": [
+        5918,
+        5991
+      ]
+    },
+    {
+      "content": "It is a string value, unique to your service.",
+      "pos": [
+        5992,
+        6037
+      ]
+    },
+    {
+      "content": "The <bpt id=\"p1\">**</bpt>Create Data Source<ept id=\"p1\">**</ept> request must include an <ph id=\"ph1\">`api-key`</ph> header set to your admin key (as opposed to a query key).",
+      "pos": [
+        6038,
+        6156
+      ]
+    },
+    {
+      "content": "You will also need the service name to construct the request URL.",
+      "pos": [
+        6160,
+        6225
+      ]
+    },
+    {
+      "content": "You can get both the service name and <ph id=\"ph1\">`api-key`</ph> from your service dashboard in the <bpt id=\"p1\">[</bpt><ept id=\"p1\">Azure management portal](https://portal.azure.com/)</ept>.",
+      "pos": [
+        6226,
+        6362
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt><ept id=\"p1\">Create a Search service in the portal](search-create-service-portal.md)</ept> for page navigation help.",
+      "pos": [
+        6363,
+        6465
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">&lt;a name=\"CreateDataSourceRequestSyntax\"&gt;&lt;/a&gt;</ph><bpt id=\"p1\">\n**</bpt>Request Body Syntax<ept id=\"p1\">**</ept>\n\nThe body of the request contains a data source definition, which includes type of the data source, credentials to read the data, as well as an optional data change detection and data deletion detection policies that are used to efficiently identify changed or deleted data in the data source when used with a periodically scheduled indexer.",
+      "pos": [
+        6467,
+        6877
+      ]
+    },
+    {
+      "content": "The syntax for structuring the request payload is as follows.",
+      "pos": [
+        6881,
+        6942
+      ]
+    },
+    {
+      "content": "A sample request is provided further on in this topic.",
+      "pos": [
+        6943,
+        6997
+      ]
+    },
+    {
+      "content": "{ \n        \"name\" : \"Required for POST, optional for PUT.",
+      "pos": [
+        7003,
+        7060
+      ]
+    },
+    {
+      "content": "The name of the data source\",\n        \"description\" : \"Optional.",
+      "pos": [
+        7061,
+        7125
+      ]
+    },
+    {
+      "content": "Anything you want, or nothing at all\",\n        \"type\" : \"Required.",
+      "pos": [
+        7126,
+        7192
+      ]
+    },
+    {
+      "content": "Must be 'azuresql' or 'documentdb'\",\n        \"credentials\" : { \"connectionString\" : \"Required.",
+      "pos": [
+        7193,
+        7287
+      ]
+    },
+    {
+      "content": "Connection string for your data source\" },\n        \"container\" : { \"name\" : \"Required.",
+      "pos": [
+        7288,
+        7374
+      ]
+    },
+    {
+      "content": "The name of the table or collection you wish to index\" },\n        \"dataChangeDetectionPolicy\" : { Optional.",
+      "pos": [
+        7375,
+        7482
+      ]
+    },
+    {
+      "content": "See below for details }, \n        \"dataDeletionDetectionPolicy\" : { Optional.",
+      "pos": [
+        7483,
+        7560
+      ]
+    },
+    {
+      "content": "See below for details }\n    }\n\nRequest contains the following properties: \n\n<ph id=\"ph1\">- `name`</ph>: Required.",
+      "pos": [
+        7561,
+        7656
+      ]
+    },
+    {
+      "content": "The name of the data source.",
+      "pos": [
+        7657,
+        7685
+      ]
+    },
+    {
+      "content": "A data source name must only contain lowercase letters, digits or dashes, cannot start or end with dashes and is limited to 128 characters.",
+      "pos": [
+        7686,
+        7825
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">- `description`</ph>: An optional description.",
+      "pos": [
+        7826,
+        7867
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">- `type`</ph>: Required.",
+      "pos": [
+        7869,
+        7888
+      ]
+    },
+    {
+      "content": "Must be one of the supported data source types:\n    <ph id=\"ph1\">- `azuresql`</ph> - Azure SQL Database or SQL Server on Azure VMs\n    <ph id=\"ph2\">- `documentdb`</ph> - Azure DocumentDB\n<ph id=\"ph3\">- `credentials`</ph>:\n    - The required <ph id=\"ph4\">`connectionString`</ph> property specifies the connection string for the data source.",
+      "pos": [
+        7889,
+        8156
+      ]
+    },
+    {
+      "content": "The format of the connection string depends on the data source type: \n        - For Azure SQL, this is the usual SQL Server connection string.",
+      "pos": [
+        8157,
+        8299
+      ]
+    },
+    {
+      "content": "If you're using the Azure management portal to retrieve the connection string, use the <ph id=\"ph1\">`ADO.NET connection string`</ph> option.",
+      "pos": [
+        8300,
+        8422
+      ]
+    },
+    {
+      "content": "- For DocumentDB, the connection string must be in the following format: <ph id=\"ph1\">`\"AccountEndpoint=https://[your account name].documents.azure.com;AccountKey=[your account key];Database=[your database id]\"`</ph>.",
+      "pos": [
+        8431,
+        8630
+      ]
+    },
+    {
+      "content": "All of the values are required.",
+      "pos": [
+        8631,
+        8662
+      ]
+    },
+    {
+      "content": "You can find them in the <bpt id=\"p1\">[</bpt><ept id=\"p1\">Azure management portal](https://portal.azure.com/)</ept>.",
+      "pos": [
+        8663,
+        8741
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">- `container`</ph>: \n    - The required <ph id=\"ph2\">`name`</ph> property specifies the table or view (for Azure SQL data source) or collection (for DocumentDB data source) that will be indexed.",
+      "pos": [
+        8754,
+        8925
+      ]
+    },
+    {
+      "content": "- DocumentDB data sources also support an optional <ph id=\"ph1\">`query`</ph> property that allows you to specify a query that flattens an arbitrary JSON document layout into a flat schema that Azure Search can index.",
+      "pos": [
+        8931,
+        9129
+      ]
+    },
+    {
+      "content": "- The optional <ph id=\"ph1\">`dataChangeDetectionPolicy`</ph> and <ph id=\"ph2\">`dataDeletionDetectionPolicy`</ph> are described below.",
+      "pos": [
+        9133,
+        9230
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">&lt;a name=\"DataChangeDetectionPolicies\"&gt;&lt;/a&gt;</ph><bpt id=\"p1\">\n**</bpt>Data Change Detection Policies<ept id=\"p1\">**</ept>\n\nThe purpose of a data change detection policy is to efficiently identify changed data items.",
+      "pos": [
+        9232,
+        9403
+      ]
+    },
+    {
+      "content": "Supported policies vary based on the data source type.",
+      "pos": [
+        9404,
+        9458
+      ]
+    },
+    {
+      "content": "Sections below describe each policy.",
+      "pos": [
+        9459,
+        9495
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>NOTE:<ept id=\"p1\">**</ept> You can switch data detection policies after the indexer is already created, using the <bpt id=\"p2\">[</bpt><ept id=\"p2\">Reset Indexer](#ResetIndexer)</ept> API.",
+      "pos": [
+        9498,
+        9630
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">***</bpt>High Watermark Change Detection Policy<ept id=\"p1\">***</ept> \n\nUse this policy when your data source contains a column or property that meets the following criteria:\n \n- All inserts specify a value for the column.",
+      "pos": [
+        9632,
+        9829
+      ]
+    },
+    {
+      "content": "- All updates to an item also change the value of the column.",
+      "pos": [
+        9831,
+        9892
+      ]
+    },
+    {
+      "content": "- The value of this column increases with each change.",
+      "pos": [
+        9894,
+        9948
+      ]
+    },
+    {
+      "content": "- Queries that use a filter clause similar to the following <ph id=\"ph1\">`WHERE [High Water Mark Column] &gt; [Current High Water Mark Value]`</ph> can be executed efficiently.",
+      "pos": [
+        9949,
+        10104
+      ]
+    },
+    {
+      "content": "For example, when using Azure SQL data sources, an indexed <ph id=\"ph1\">`rowversion`</ph> column is the ideal candidate for use with with the high water mark policy.",
+      "pos": [
+        10106,
+        10253
+      ]
+    },
+    {
+      "content": "When using DocumentDB data sources, you must use the <ph id=\"ph1\">`_ts`</ph> property provided by DocumentDB.",
+      "pos": [
+        10256,
+        10347
+      ]
+    },
+    {
+      "content": "This policy can be specified as follows:\n\n    <bpt id=\"p1\">{ \n        \"@odata.type\" : \"#Microsoft.Azure.Search.HighWaterMarkChangeDetectionPolicy\",\n        \"highWaterMarkColumnName\" : \"[a row version or last_updated column name]\" \n    } \n\n***</bpt>SQL Integrated Change Detection Policy<ept id=\"p1\">***</ept>\n\nIf your SQL database supports <bpt id=\"p2\">[</bpt><ept id=\"p2\">change tracking](https://msdn.microsoft.com/library/bb933875.aspx)</ept>, we recommend using SQL Integrated Change Tracking Policy.",
+      "pos": [
+        10350,
+        10778
+      ]
+    },
+    {
+      "content": "This policy enables the most efficient change tracking, and allows Azure Search to identify deleted rows without you having to have an explicit \"soft delete\" column in your schema.",
+      "pos": [
+        10779,
+        10959
+      ]
+    },
+    {
+      "content": "Integrated change tracking is supported starting with the following SQL Server database versions: \n- SQL Server 2008 R2, if you're using SQL Server on Azure VMs.",
+      "pos": [
+        10961,
+        11122
+      ]
+    },
+    {
+      "content": "- Azure SQL Database V12, if you're using Azure SQL Database.",
+      "pos": [
+        11123,
+        11184
+      ]
+    },
+    {
+      "content": "When using SQL Integrated Change Tracking policy, do not specify a separate data deletion detection policy - this policy has built-in support for identifying deleted rows.",
+      "pos": [
+        11188,
+        11359
+      ]
+    },
+    {
+      "content": "This policy can only be used with tables; it cannot be used with views.",
+      "pos": [
+        11362,
+        11433
+      ]
+    },
+    {
+      "content": "You need to enable change tracking for the table you're using before you can use this policy.",
+      "pos": [
+        11434,
+        11527
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt><ept id=\"p1\">Enable and disable change tracking](https://msdn.microsoft.com/library/bb964713.aspx)</ept> for instructions.",
+      "pos": [
+        11528,
+        11636
+      ]
+    },
+    {
+      "content": "When structuring the <bpt id=\"p1\">**</bpt>Create Data Source<ept id=\"p1\">**</ept> request, SQL integrated change tracking policy can be specified as follows:\n\n    <ph id=\"ph1\">{ \n        \"@odata.type\" : \"#Microsoft.Azure.Search.SqlIntegratedChangeTrackingPolicy\" \n    }\n\n&lt;a name=\"DataDeletionDetectionPolicies\"&gt;&lt;/a&gt;</ph><bpt id=\"p2\">\n**</bpt>Data Deletion Detection Policies<ept id=\"p2\">**</ept>\n\nThe purpose of a data deletion detection policy is to efficiently identify deleted data items.",
+      "pos": [
+        11643,
+        12040
+      ]
+    },
+    {
+      "content": "Currently, the only supported policy is the <ph id=\"ph1\">`Soft Delete`</ph> policy, which allows identifying deleted items based on the value of a <ph id=\"ph2\">`soft delete`</ph> column or property in the data source.",
+      "pos": [
+        12041,
+        12222
+      ]
+    },
+    {
+      "content": "This policy can be specified as follows:\n\n    <bpt id=\"p1\">{ \n        \"@odata.type\" : \"#Microsoft.Azure.Search.SoftDeleteColumnDeletionDetectionPolicy\",\n        \"softDeleteColumnName\" : \"the column that specifies whether a row was deleted\", \n        \"softDeleteMarkerValue\" : \"the value that identifies a row as deleted\" \n    }\n\n**</bpt>NOTE:<ept id=\"p1\">**</ept> Only columns with string, integer, or boolean values are supported.",
+      "pos": [
+        12223,
+        12616
+      ]
+    },
+    {
+      "content": "The value used as <ph id=\"ph1\">`softDeleteMarkerValue`</ph> must be a string, even if the corresponding column holds integers or booleans.",
+      "pos": [
+        12617,
+        12737
+      ]
+    },
+    {
+      "content": "For example, if the value that appears in your data source is 1, use <ph id=\"ph1\">`\"1\"`</ph> as the <ph id=\"ph2\">`softDeleteMarkerValue`</ph>.",
+      "pos": [
+        12738,
+        12844
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">&lt;a name=\"CreateDataSourceRequestExamples\"&gt;&lt;/a&gt;</ph><bpt id=\"p1\">\n**</bpt>Request Body Examples<ept id=\"p1\">**</ept>\n\nIf you intend to use the data source with an indexer that runs on a schedule, this example shows how to specify change and deletion detection policies: \n\n    { \n        \"name\" : \"asqldatasource\",\n        \"description\" : \"a description\",\n        \"type\" : \"azuresql\",\n        \"credentials\" : { \"connectionString\" : \"Server=tcp:....database.windows.net,1433;Database=...;User ID=...;Password=...;Trusted_Connection=False;Encrypt=True;Connection Timeout=30;\" },\n        \"container\" : { \"name\" : \"sometable\" },\n        \"dataChangeDetectionPolicy\" : { \"@odata.type\" : \"#Microsoft.Azure.Search.HighWaterMarkChangeDetectionPolicy\", \"highWaterMarkColumnName\" : \"RowVersion\" }, \n        \"dataDeletionDetectionPolicy\" : { \"@odata.type\" : \"#Microsoft.Azure.Search.SoftDeleteColumnDeletionDetectionPolicy\", \"softDeleteColumnName\" : \"IsDeleted\", \"softDeleteMarkerValue\" : \"true\" }\n    }\n\nIf you only intend to use the data source for one-time copy of the data, the policies can be omitted:\n\n    <bpt id=\"p2\">{ \n        \"name\" : \"asqldatasource\",\n        \"description\" : \"anything you want, or nothing at all\",\n        \"type\" : \"azuresql\",\n        \"credentials\" : { \"connectionString\" : \"Server=tcp:....database.windows.net,1433;Database=...;User ID=...;Password=...;Trusted_Connection=False;Encrypt=True;Connection Timeout=30;\" },\n        \"container\" : { \"name\" : \"sometable\" }\n    } \n\n**</bpt>Response<ept id=\"p2\">**</ept>\n\nFor a successful request: 201 Created.",
+      "pos": [
+        12850,
+        14335
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">&lt;a name=\"UpdateDataSource\"&gt;&lt;/a&gt;</ph><ph id=\"ph2\">\n##</ph> Update Data Source\n\nYou can update an existing data source using an HTTP PUT request.",
+      "pos": [
+        14338,
+        14458
+      ]
+    },
+    {
+      "content": "You specify the name of the data source to update on the request URI:\n\n    PUT https://[service name].search.windows.net/datasources/[datasource name]?api-version=[api-version]\n    Content-Type: application/json\n    api-key: [admin key]\n\nThe <ph id=\"ph1\">`api-version`</ph> is required.",
+      "pos": [
+        14459,
+        14727
+      ]
+    },
+    {
+      "content": "The current version is <ph id=\"ph1\">`2015-02-28`</ph>.",
+      "pos": [
+        14728,
+        14764
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt><ept id=\"p1\">Azure Search versioning](https://msdn.microsoft.com/library/azure/dn864560.aspx)</ept> has details and more information about alternative versions.",
+      "pos": [
+        14765,
+        14907
+      ]
+    },
+    {
+      "content": "The <ph id=\"ph1\">`api-key`</ph> must be an admin key (as opposed to a query key).",
+      "pos": [
+        14909,
+        14972
+      ]
+    },
+    {
+      "content": "Refer to the authentication section in <bpt id=\"p1\">[</bpt><ept id=\"p1\">Search Service REST API](https://msdn.microsoft.com/library/azure/dn798935.aspx)</ept> to learn more about keys.",
+      "pos": [
+        14973,
+        15119
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt><ept id=\"p1\">Create a Search service in the portal](search-create-service-portal.md)</ept> explains how to get the service URL and key properties used in the request.",
+      "pos": [
+        15120,
+        15268
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Request<ept id=\"p1\">**</ept>",
+      "pos": [
+        15270,
+        15281
+      ]
+    },
+    {
+      "content": "The request body syntax is the same as for <bpt id=\"p1\">[</bpt><ept id=\"p1\">Create Data Source requests](#CreateDataSourceRequestSyntax)</ept>.",
+      "pos": [
+        15282,
+        15387
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Response<ept id=\"p1\">**</ept>",
+      "pos": [
+        15389,
+        15401
+      ]
+    },
+    {
+      "content": "For a successful request: 201 Created if a new data source was created, and 204 No Content if an existing data source was updated.",
+      "pos": [
+        15402,
+        15532
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>NOTE:<ept id=\"p1\">**</ept>",
+      "pos": [
+        15534,
+        15543
+      ]
+    },
+    {
+      "content": "Some properties cannot be updated on an existing data source.",
+      "pos": [
+        15544,
+        15605
+      ]
+    },
+    {
+      "content": "For example, you cannot change the type of an existing data source.",
+      "pos": [
+        15606,
+        15673
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">&lt;a name=\"ListDataSource\"&gt;&lt;/a&gt;</ph><ph id=\"ph2\">\n##</ph> List Data Sources\n\nThe <bpt id=\"p1\">**</bpt>List Data Sources<ept id=\"p1\">**</ept> operation returns a list of the data sources in your Azure Search service.",
+      "pos": [
+        15677,
+        15829
+      ]
+    },
+    {
+      "content": "GET https://[service name].search.windows.net/datasources?api-version=[api-version]\n    api-key: [admin key]\n\nThe <ph id=\"ph1\">`api-version`</ph> is required.",
+      "pos": [
+        15836,
+        15976
+      ]
+    },
+    {
+      "content": "The current version is <ph id=\"ph1\">`2015-02-28`</ph>.",
+      "pos": [
+        15977,
+        16013
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt><ept id=\"p1\">Azure Search versioning](https://msdn.microsoft.com/library/azure/dn864560.aspx)</ept> has details and more information about alternative versions.",
+      "pos": [
+        16014,
+        16156
+      ]
+    },
+    {
+      "content": "The <ph id=\"ph1\">`api-key`</ph> must be an admin key (as opposed to a query key).",
+      "pos": [
+        16158,
+        16221
+      ]
+    },
+    {
+      "content": "Refer to the authentication section in <bpt id=\"p1\">[</bpt><ept id=\"p1\">Search Service REST API](https://msdn.microsoft.com/library/azure/dn798935.aspx)</ept> to learn more about keys.",
+      "pos": [
+        16222,
+        16368
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt><ept id=\"p1\">Create a Search service in the portal](search-create-service-portal.md)</ept> explains how to get the service URL and key properties used in the request.",
+      "pos": [
+        16369,
+        16517
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Response<ept id=\"p1\">**</ept>\n\nFor a successful request: 200 OK.",
+      "pos": [
+        16519,
+        16566
+      ]
+    },
+    {
+      "content": "Here is an example response body:\n\n    {\n      \"value\" : [\n        {\n          \"name\": \"datasource1\",\n          \"type\": \"azuresql\",\n          ... other data source properties\n        }]\n    }\n\nNote that you can filter the response down to just the properties you're interested in.",
+      "pos": [
+        16568,
+        16848
+      ]
+    },
+    {
+      "content": "For example, if you want only a list of data source names, use the OData <ph id=\"ph1\">`$select`</ph> query option:\n\n    GET /datasources?api-version=205-02-28&amp;$select=name\n\nIn this case, the response from the above example would appear as follows: \n\n    {\n      \"value\" : [ { \"name\": \"datasource1\" }, ... ]\n    }\n\nThis is a useful technique to save bandwidth if you have a lot of data sources in your Search service.",
+      "pos": [
+        16849,
+        17247
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">&lt;a name=\"GetDataSource\"&gt;&lt;/a&gt;</ph><ph id=\"ph2\">\n##</ph> Get Data Source\n\nThe <bpt id=\"p1\">**</bpt>Get Data Source<ept id=\"p1\">**</ept> operation gets the data source definition from Azure Search.",
+      "pos": [
+        17249,
+        17382
+      ]
+    },
+    {
+      "content": "GET https://[service name].search.windows.net/datasources/[datasource name]?api-version=[api-version]\n    api-key: [admin key]\n\nThe <ph id=\"ph1\">`api-version`</ph> is required.",
+      "pos": [
+        17388,
+        17546
+      ]
+    },
+    {
+      "content": "The current version is <ph id=\"ph1\">`2015-02-28`</ph>.",
+      "pos": [
+        17547,
+        17583
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt><ept id=\"p1\">Azure Search versioning](https://msdn.microsoft.com/library/azure/dn864560.aspx)</ept> has details and more information about alternative versions.",
+      "pos": [
+        17584,
+        17726
+      ]
+    },
+    {
+      "content": "The <ph id=\"ph1\">`api-key`</ph> must be an admin key (as opposed to a query key).",
+      "pos": [
+        17728,
+        17791
+      ]
+    },
+    {
+      "content": "Refer to the authentication section in <bpt id=\"p1\">[</bpt><ept id=\"p1\">Search Service REST API](https://msdn.microsoft.com/library/azure/dn798935.aspx)</ept> to learn more about keys.",
+      "pos": [
+        17792,
+        17938
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt><ept id=\"p1\">Create a Search service in the portal](search-create-service-portal.md)</ept> explains how to get the service URL and key properties used in the request.",
+      "pos": [
+        17939,
+        18087
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Response<ept id=\"p1\">**</ept>\n\nStatus Code: 200 OK is returned for a successful response.",
+      "pos": [
+        18089,
+        18161
+      ]
+    },
+    {
+      "content": "The response is similar to examples in <bpt id=\"p1\">[</bpt><ept id=\"p1\">Create Data Source example requests](#CreateDataSourceRequestExamples)</ept>: \n\n    <bpt id=\"p2\">{ \n        \"name\" : \"asqldatasource\",\n        \"description\" : \"a description\",\n        \"type\" : \"azuresql\",\n        \"credentials\" : { \"connectionString\" : \"Server=tcp:....database.windows.net,1433;Database=...;User ID=...;Password=...;Trusted_Connection=False;Encrypt=True;Connection Timeout=30;\" },\n        \"container\" : { \"name\" : \"sometable\" },\n        \"dataChangeDetectionPolicy\" : { \n            \"@odata.type\" : \"#Microsoft.Azure.Search.HighWaterMarkChangeDetectionPolicy\",\n            \"highWaterMarkColumnName\" : \"RowVersion\" }, \n        \"dataDeletionDetectionPolicy\" : { \n            \"@odata.type\" : \"#Microsoft.Azure.Search.SoftDeleteColumnDeletionDetectionPolicy\",\n            \"softDeleteColumnName\" : \"IsDeleted\", \n            \"softDeleteMarkerValue\" : \"true\" }\n    }\n\n**</bpt>NOTE<ept id=\"p2\">**</ept> Do not set the <ph id=\"ph1\">`Accept`</ph> request header to <ph id=\"ph2\">`application/json;odata.metadata=none`</ph> when calling this API as doing so will cause <ph id=\"ph3\">`@odata.type`</ph> attribute to be omitted from the response and you won't be able to differentiate between data change and data deletion detection policies of different types.",
+      "pos": [
+        18163,
+        19366
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">&lt;a name=\"DeleteDataSource\"&gt;&lt;/a&gt;</ph><ph id=\"ph2\">\n##</ph> Delete Data Source\n\nThe <bpt id=\"p1\">**</bpt>Delete Data Source<ept id=\"p1\">**</ept> operation removes a data source from your Azure Search service.",
+      "pos": [
+        19369,
+        19514
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">DELETE https://[service name].search.windows.net/datasources/[datasource name]?api-version=[api-version]\n    api-key: [admin key]\n\n**</bpt>NOTE<ept id=\"p1\">**</ept> If any indexers reference the data source that you're deleting, the delete operation will still proceed.",
+      "pos": [
+        19520,
+        19764
+      ]
+    },
+    {
+      "content": "However, those indexers will transition into an error state upon their next run.",
+      "pos": [
+        19765,
+        19845
+      ]
+    },
+    {
+      "content": "The <ph id=\"ph1\">`api-version`</ph> is required.",
+      "pos": [
+        19849,
+        19879
+      ]
+    },
+    {
+      "content": "The current version is <ph id=\"ph1\">`2015-02-28`</ph>.",
+      "pos": [
+        19880,
+        19916
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt><ept id=\"p1\">Azure Search versioning](https://msdn.microsoft.com/library/azure/dn864560.aspx)</ept> has details and more information about alternative versions.",
+      "pos": [
+        19917,
+        20059
+      ]
+    },
+    {
+      "content": "The <ph id=\"ph1\">`api-key`</ph> must be an admin key (as opposed to a query key).",
+      "pos": [
+        20061,
+        20124
+      ]
+    },
+    {
+      "content": "Refer to the authentication section in <bpt id=\"p1\">[</bpt><ept id=\"p1\">Search Service REST API](https://msdn.microsoft.com/library/azure/dn798935.aspx)</ept> to learn more about keys.",
+      "pos": [
+        20125,
+        20271
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt><ept id=\"p1\">Create a Search service in the portal](search-create-service-portal.md)</ept> explains how to get the service URL and key properties used in the request.",
+      "pos": [
+        20272,
+        20420
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Response<ept id=\"p1\">**</ept>\n\nStatus Code: 204 No Content is returned for a successful response.",
+      "pos": [
+        20422,
+        20502
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">&lt;a name=\"CreateIndexer\"&gt;&lt;/a&gt;</ph><ph id=\"ph2\">\n##</ph> Create Indexer\n\nYou can create a new indexer within an Azure Search service using an HTTP POST request.",
+      "pos": [
+        20504,
+        20639
+      ]
+    },
+    {
+      "content": "POST https://[service name].search.windows.net/indexers?api-version=[api-version]\n    Content-Type: application/json\n    api-key: [admin key]\n\nAlternatively, you can use PUT and specify the data source name on the URI.",
+      "pos": [
+        20649,
+        20867
+      ]
+    },
+    {
+      "content": "If the data source does not exist, it will be created.",
+      "pos": [
+        20868,
+        20922
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">PUT https://[service name].search.windows.net/indexers/[indexer name]?api-version=[api-version]\n\n**</bpt>Note<ept id=\"p1\">**</ept>: The maximum number of indexers allowed varies by pricing tier.",
+      "pos": [
+        20928,
+        21097
+      ]
+    },
+    {
+      "content": "The free service allows up to 3 indexers.",
+      "pos": [
+        21098,
+        21139
+      ]
+    },
+    {
+      "content": "Standard service allows 50 indexers.",
+      "pos": [
+        21140,
+        21176
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt><ept id=\"p1\">Limits and constraints](https://msdn.microsoft.com/library/azure/dn798934.aspx)</ept> for details.",
+      "pos": [
+        21177,
+        21274
+      ]
+    },
+    {
+      "content": "The <ph id=\"ph1\">`api-version`</ph> is required.",
+      "pos": [
+        21276,
+        21306
+      ]
+    },
+    {
+      "content": "The current version is <ph id=\"ph1\">`2015-02-28`</ph>.",
+      "pos": [
+        21307,
+        21343
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt><ept id=\"p1\">Azure Search versioning](https://msdn.microsoft.com/library/azure/dn864560.aspx)</ept> has details and more information about alternative versions.",
+      "pos": [
+        21344,
+        21486
+      ]
+    },
+    {
+      "content": "The <ph id=\"ph1\">`api-key`</ph> must be an admin key (as opposed to a query key).",
+      "pos": [
+        21488,
+        21551
+      ]
+    },
+    {
+      "content": "Refer to the authentication section in <bpt id=\"p1\">[</bpt><ept id=\"p1\">Search Service REST API](https://msdn.microsoft.com/library/azure/dn798935.aspx)</ept> to learn more about keys.",
+      "pos": [
+        21552,
+        21698
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt><ept id=\"p1\">Create a Search service in the portal](search-create-service-portal.md)</ept> explains how to get the service URL and key properties used in the request.",
+      "pos": [
+        21699,
+        21847
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">&lt;a name=\"CreateIndexerRequestSyntax\"&gt;&lt;/a&gt;</ph><bpt id=\"p1\">\n**</bpt>Request Body Syntax<ept id=\"p1\">**</ept>\n\nThe body of the request contains an indexer definition, which specifies the data source and the target index for indexing, as well as optional indexing schedule and parameters.",
+      "pos": [
+        21850,
+        22093
+      ]
+    },
+    {
+      "content": "The syntax for structuring the request payload is as follows.",
+      "pos": [
+        22097,
+        22158
+      ]
+    },
+    {
+      "content": "A sample request is provided further on in this topic.",
+      "pos": [
+        22159,
+        22213
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">{ \n        \"name\" : \"Required for POST, optional for PUT. The name of the indexer\",\n        \"description\" : \"Optional. Anything you want, or null\",\n        \"dataSourceName\" : \"Required. The name of an existing data source\",\n        \"targetIndexName\" : \"Required. The name of an existing index\",\n        \"schedule\" : { Optional. See Indexing Schedule below. },\n        \"parameters\" : { Optional. See Indexing Parameters below. },\n        \"fieldMappings\" : { Optional. See Field Mappings below. }\n    }\n\n**</bpt>Indexer Schedule<ept id=\"p1\">**</ept>\n\nAn indexer can optionally specify a schedule.",
+      "pos": [
+        22219,
+        22788
+      ]
+    },
+    {
+      "content": "If a schedule is present, the indexer will run periodically as per schedule.",
+      "pos": [
+        22789,
+        22865
+      ]
+    },
+    {
+      "content": "Schedule has the following attributes:\n\n<ph id=\"ph1\">- `interval`</ph>: Required.",
+      "pos": [
+        22866,
+        22929
+      ]
+    },
+    {
+      "content": "A duration value that specifies an interval or period for indexer runs.",
+      "pos": [
+        22930,
+        23001
+      ]
+    },
+    {
+      "content": "The smallest allowed interval is 5 minutes; the longest is one day.",
+      "pos": [
+        23002,
+        23069
+      ]
+    },
+    {
+      "content": "It must be formatted as an XSD \"dayTimeDuration\" value (a restricted subset of an <bpt id=\"p1\">[</bpt><ept id=\"p1\">ISO 8601 duration](http://www.w3.org/TR/xmlschema11-2/#dayTimeDuration)</ept> value).",
+      "pos": [
+        23070,
+        23232
+      ]
+    },
+    {
+      "content": "The pattern for this is: <ph id=\"ph1\">`P(nD)(T(nH)(nM))`</ph>.",
+      "pos": [
+        23233,
+        23277
+      ]
+    },
+    {
+      "content": "Examples: <ph id=\"ph1\">`PT15M`</ph> for every 15 minutes, <ph id=\"ph2\">`PT2H`</ph> for every 2 hours.",
+      "pos": [
+        23278,
+        23343
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">- `startTime`</ph>: Required.",
+      "pos": [
+        23346,
+        23370
+      ]
+    },
+    {
+      "content": "An UTC datetime when the indexer should start running.",
+      "pos": [
+        23371,
+        23425
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Indexer Parameters<ept id=\"p1\">**</ept>\n\nAn indexer can optionally specify several parameters that affect its behavior.",
+      "pos": [
+        23428,
+        23530
+      ]
+    },
+    {
+      "content": "All of the parameters are optional.",
+      "pos": [
+        23531,
+        23566
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">- `maxFailedItems`</ph>: The number of items that can fail to be indexed before an indexer run is considered a failure.",
+      "pos": [
+        23570,
+        23684
+      ]
+    },
+    {
+      "content": "Default is 0.",
+      "pos": [
+        23685,
+        23698
+      ]
+    },
+    {
+      "content": "Information about failed items is returned by the <bpt id=\"p1\">[</bpt><ept id=\"p1\">Get Indexer Status](#GetIndexerStatus)</ept> operation.",
+      "pos": [
+        23699,
+        23799
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">- `maxFailedItemsPerBatch`</ph>: The number of items that can fail to be indexed in each batch before an indexer run is considered a failure.",
+      "pos": [
+        23802,
+        23938
+      ]
+    },
+    {
+      "content": "Default is 0.",
+      "pos": [
+        23939,
+        23952
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">- `base64EncodeKeys`</ph>: Specifies whether or not document keys will be base-64 encoded.",
+      "pos": [
+        23954,
+        24039
+      ]
+    },
+    {
+      "content": "Azure Search imposes restrictions on characters that can be present in a document key.",
+      "pos": [
+        24040,
+        24126
+      ]
+    },
+    {
+      "content": "However, the values in your source data may contain characters that are invalid.",
+      "pos": [
+        24127,
+        24207
+      ]
+    },
+    {
+      "content": "If it is necessary to index such values as document keys, this flag can be set to true.",
+      "pos": [
+        24208,
+        24295
+      ]
+    },
+    {
+      "content": "Default is <ph id=\"ph1\">`false`</ph>.",
+      "pos": [
+        24296,
+        24315
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Field Mappings<ept id=\"p1\">**</ept>\n\nYou can use field mappings to map a field name in the data source to a different field name in the target index.",
+      "pos": [
+        24317,
+        24449
+      ]
+    },
+    {
+      "content": "For example, consider a source table with a field <ph id=\"ph1\">`_id`</ph>.",
+      "pos": [
+        24450,
+        24506
+      ]
+    },
+    {
+      "content": "Azure Search doesn't allow a field name starting with an underscore, so the field must be renamed.",
+      "pos": [
+        24507,
+        24605
+      ]
+    },
+    {
+      "content": "This can be done using the <ph id=\"ph1\">`fieldMappings`</ph> property of indexer as follows: \n    \n    \"fieldMappings\" : [ { \"sourceFieldName\" : \"_id\", \"targetFieldName\" : \"id\" } ] \n\nYou can specify multiple field mappings: \n\n    \"fieldMappings\" : [ \n        { \"sourceFieldName\" : \"_id\", \"targetFieldName\" : \"id\" },\n        { \"sourceFieldName\" : \"_timestamp\", \"targetFieldName\" : \"timestamp\" },\n     ]\n\nBoth source and target field names are case-insensitive.",
+      "pos": [
+        24606,
+        25047
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">&lt;a name=\"FieldMappingFunctions\"&gt;&lt;/a&gt;</ph><bpt id=\"p1\">\n***</bpt>Field Mapping Functions<ept id=\"p1\">***</ept>\n\nField mappings can also be used to transform source field values using <bpt id=\"p2\">*</bpt>mapping functions<ept id=\"p2\">*</ept>.",
+      "pos": [
+        25049,
+        25208
+      ]
+    },
+    {
+      "content": "Only one such function is currently supported: <ph id=\"ph1\">`jsonArrayToStringCollection`</ph>.",
+      "pos": [
+        25210,
+        25287
+      ]
+    },
+    {
+      "content": "It parses a field that contains a string formatted as a JSON array into a Collection(Edm.String) field in the target index.",
+      "pos": [
+        25288,
+        25411
+      ]
+    },
+    {
+      "content": "It is intended for use with Azure SQL indexer in particular, since SQL doesn't have a native collection data type.",
+      "pos": [
+        25412,
+        25526
+      ]
+    },
+    {
+      "content": "It can be used as follows: \n\n    \"fieldMappings\" : [ { \"sourceFieldName\" : \"tags\", \"mappingFunction\" : { \"name\" : \"jsonArrayToStringCollection\" } } ] \n\nFor example, if the source field contains the string <ph id=\"ph1\">`[\"red\", \"white\", \"blue\"]`</ph>, then the target field of type <ph id=\"ph2\">`Collection(Edm.String)`</ph> will be populated with the three values <ph id=\"ph3\">`\"red\"`</ph>, <ph id=\"ph4\">`\"white\"`</ph> and <ph id=\"ph5\">`\"blue\"`</ph>.",
+      "pos": [
+        25527,
+        25887
+      ]
+    },
+    {
+      "content": "NOTE: <ph id=\"ph1\">`targetFieldName`</ph> property is optional; if left out, the <ph id=\"ph2\">`sourceFieldName`</ph> value is used).",
+      "pos": [
+        25890,
+        25986
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">&lt;a name=\"CreateIndexerRequestExamples\"&gt;&lt;/a&gt;</ph><bpt id=\"p1\">\n**</bpt>Request Body Examples<ept id=\"p1\">**</ept>\n\nThe following example creates an indexer that copies data from the table referenced by the <ph id=\"ph2\">`ordersds`</ph> data source to the <ph id=\"ph3\">`orders`</ph> index on a schedule that starts on Jan 1, 2015 UTC and runs hourly.",
+      "pos": [
+        25989,
+        26257
+      ]
+    },
+    {
+      "content": "Each indexer invocation will be successful if no more than 5 items fail to be indexed in each batch, and no more than 10 items fail to be indexed in total.",
+      "pos": [
+        26258,
+        26413
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">{\n        \"name\" : \"myindexer\",\n        \"description\" : \"a cool indexer\",\n        \"dataSourceName\" : \"ordersds\",\n        \"targetIndexName\" : \"orders\",\n        \"schedule\" : { \"interval\" : \"PT1H\", \"startTime\" : \"2015-01-01T00:00:00Z\" },\n        \"parameters\" : { \"maxFailedItems\" : 10, \"maxFailedItemsPerBatch\" : 5, \"base64EncodeKeys\": false }\n    }\n\n**</bpt>Response<ept id=\"p1\">**</ept>\n\n201 Created for a successful request.",
+      "pos": [
+        26420,
+        26819
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">&lt;a name=\"UpdateIndexer\"&gt;&lt;/a&gt;</ph><ph id=\"ph2\">\n##</ph> Update Indexer\n\nYou can update an existing indexer using an HTTP PUT request.",
+      "pos": [
+        26822,
+        26931
+      ]
+    },
+    {
+      "content": "You specify the name of the indexer to update on the request URI:\n\n    PUT https://[service name].search.windows.net/indexers/[indexer name]?api-version=[api-version]\n    Content-Type: application/json\n    api-key: [admin key]\n\nThe <ph id=\"ph1\">`api-version`</ph> is required.",
+      "pos": [
+        26932,
+        27190
+      ]
+    },
+    {
+      "content": "The current version is <ph id=\"ph1\">`2015-02-28`</ph>.",
+      "pos": [
+        27191,
+        27227
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt><ept id=\"p1\">Azure Search versioning](https://msdn.microsoft.com/library/azure/dn864560.aspx)</ept> has details and more information about alternative versions.",
+      "pos": [
+        27228,
+        27370
+      ]
+    },
+    {
+      "content": "The <ph id=\"ph1\">`api-key`</ph> must be an admin key (as opposed to a query key).",
+      "pos": [
+        27372,
+        27435
+      ]
+    },
+    {
+      "content": "Refer to the authentication section in <bpt id=\"p1\">[</bpt><ept id=\"p1\">Search Service REST API](https://msdn.microsoft.com/library/azure/dn798935.aspx)</ept> to learn more about keys.",
+      "pos": [
+        27436,
+        27582
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt><ept id=\"p1\">Create a Search service in the portal](search-create-service-portal.md)</ept> explains how to get the service URL and key properties used in the request.",
+      "pos": [
+        27583,
+        27731
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Request<ept id=\"p1\">**</ept>\n\nThe request body syntax is the same as for <bpt id=\"p2\">[</bpt><ept id=\"p2\">Create Indexer requests](#CreateIndexerRequestSyntax)</ept>.",
+      "pos": [
+        27733,
+        27844
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Response<ept id=\"p1\">**</ept>\n\nFor a successful request: 201 Created if a new indexer was created, and 204 No Content if an existing indexer was updated.",
+      "pos": [
+        27846,
+        27982
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">&lt;a name=\"ListIndexers\"&gt;&lt;/a&gt;</ph><ph id=\"ph2\">\n##</ph> List Indexers\n\nThe <bpt id=\"p1\">**</bpt>List Indexers<ept id=\"p1\">**</ept> operation returns the list of indexers in your Azure Search service.",
+      "pos": [
+        27985,
+        28121
+      ]
+    },
+    {
+      "content": "GET https://[service name].search.windows.net/indexers?api-version=[api-version]\n    api-key: [admin key]\n\n\nThe <ph id=\"ph1\">`api-version`</ph> is required.",
+      "pos": [
+        28128,
+        28266
+      ]
+    },
+    {
+      "content": "The preview version is <ph id=\"ph1\">`2015-02-28-Preview`</ph>.",
+      "pos": [
+        28267,
+        28311
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt><ept id=\"p1\">Azure Search versioning](https://msdn.microsoft.com/library/azure/dn864560.aspx)</ept> has details and more information about alternative versions.",
+      "pos": [
+        28312,
+        28454
+      ]
+    },
+    {
+      "content": "The <ph id=\"ph1\">`api-key`</ph> must be an admin key (as opposed to a query key).",
+      "pos": [
+        28456,
+        28519
+      ]
+    },
+    {
+      "content": "Refer to the authentication section in <bpt id=\"p1\">[</bpt><ept id=\"p1\">Search Service REST API](https://msdn.microsoft.com/library/azure/dn798935.aspx)</ept> to learn more about keys.",
+      "pos": [
+        28520,
+        28666
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt><ept id=\"p1\">Create a Search service in the portal](search-create-service-portal.md)</ept> explains how to get the service URL and key properties used in the request.",
+      "pos": [
+        28667,
+        28815
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Response<ept id=\"p1\">**</ept>\n\nFor a successful request: 200 OK.",
+      "pos": [
+        28817,
+        28864
+      ]
+    },
+    {
+      "content": "Here is an example response body:\n\n    {\n      \"value\" : [\n      {\n        \"name\" : \"myindexer\",\n        \"description\" : \"a cool indexer\",\n        \"dataSourceName\" : \"ordersds\",\n        \"targetIndexName\" : \"orders\",\n        ... other indexer properties\n      }]\n    }\n\nNote that you can filter the response down to just the properties you're interested in.",
+      "pos": [
+        28866,
+        29222
+      ]
+    },
+    {
+      "content": "For example, if you want only a list of indexer names, use the OData <ph id=\"ph1\">`$select`</ph> query option:\n\n    GET /indexers?api-version=2014-10-20-Preview&amp;$select=name\n\nIn this case, the response from the above example would appear as follows: \n\n    {\n      \"value\" : [ { \"name\": \"myindexer\" } ]\n    }\n\nThis is a useful technique to save bandwidth if you have a lot of indexers in your Search service.",
+      "pos": [
+        29223,
+        29612
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">&lt;a name=\"GetIndexer\"&gt;&lt;/a&gt;</ph><ph id=\"ph2\">\n##</ph> Get Indexer\n\nThe <bpt id=\"p1\">**</bpt>Get Indexer<ept id=\"p1\">**</ept> operation gets the indexer definition from Azure Search.",
+      "pos": [
+        29615,
+        29733
+      ]
+    },
+    {
+      "content": "GET https://[service name].search.windows.net/indexers/[indexer name]?api-version=[api-version]\n    api-key: [admin key]\n\nThe <ph id=\"ph1\">`api-version`</ph> is required.",
+      "pos": [
+        29739,
+        29891
+      ]
+    },
+    {
+      "content": "The preview version is <ph id=\"ph1\">`2015-02-28-Preview`</ph>.",
+      "pos": [
+        29892,
+        29936
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt><ept id=\"p1\">Azure Search versioning](https://msdn.microsoft.com/library/azure/dn864560.aspx)</ept> has details and more information about alternative versions.",
+      "pos": [
+        29937,
+        30079
+      ]
+    },
+    {
+      "content": "The <ph id=\"ph1\">`api-key`</ph> must be an admin key (as opposed to a query key).",
+      "pos": [
+        30081,
+        30144
+      ]
+    },
+    {
+      "content": "Refer to the authentication section in <bpt id=\"p1\">[</bpt><ept id=\"p1\">Search Service REST API](https://msdn.microsoft.com/library/azure/dn798935.aspx)</ept> to learn more about keys.",
+      "pos": [
+        30145,
+        30291
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt><ept id=\"p1\">Create a Search service in the portal](search-create-service-portal.md)</ept> explains how to get the service URL and key properties used in the request.",
+      "pos": [
+        30292,
+        30440
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Response<ept id=\"p1\">**</ept>\n\nStatus Code: 200 OK is returned for a successful response.",
+      "pos": [
+        30442,
+        30514
+      ]
+    },
+    {
+      "content": "The response is similar to examples in <bpt id=\"p1\">[</bpt><ept id=\"p1\">Create Indexer example requests](#CreateIndexerRequestExamples)</ept>: \n\n    <ph id=\"ph1\">{\n        \"name\" : \"myindexer\",\n        \"description\" : \"a cool indexer\",\n        \"dataSourceName\" : \"ordersds\",\n        \"targetIndexName\" : \"orders\",\n        \"schedule\" : { \"interval\" : \"PT1H\", \"startTime\" : \"2015-01-01T00:00:00Z\" },\n        \"parameters\" : { \"maxFailedItems\" : 10, \"maxFailedItemsPerBatch\" : 5, \"base64EncodeKeys\": false }\n    }\n\n\n&lt;a name=\"DeleteIndexer\"&gt;&lt;/a&gt;</ph><ph id=\"ph2\">\n##</ph> Delete Indexer\n\nThe <bpt id=\"p2\">**</bpt>Delete Indexer<ept id=\"p2\">**</ept> operation removes an indexer from your Azure Search service.",
+      "pos": [
+        30516,
+        31107
+      ]
+    },
+    {
+      "content": "DELETE https://[service name].search.windows.net/indexers/[indexer name]?api-version=[api-version]\n    api-key: [admin key]\n\nWhen an indexer is deleted, the indexer executions in progress at that time will run to completion, but no further executions will be scheduled.",
+      "pos": [
+        31113,
+        31382
+      ]
+    },
+    {
+      "content": "Attempts to use a non-existent indexer will result in HTTP status code 404 Not Found.",
+      "pos": [
+        31383,
+        31468
+      ]
+    },
+    {
+      "content": "The <ph id=\"ph1\">`api-version`</ph> is required.",
+      "pos": [
+        31472,
+        31502
+      ]
+    },
+    {
+      "content": "The preview version is <ph id=\"ph1\">`2015-02-28-Preview`</ph>.",
+      "pos": [
+        31503,
+        31547
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt><ept id=\"p1\">Azure Search versioning](https://msdn.microsoft.com/library/azure/dn864560.aspx)</ept> has details and more information about alternative versions.",
+      "pos": [
+        31548,
+        31690
+      ]
+    },
+    {
+      "content": "The <ph id=\"ph1\">`api-key`</ph> must be an admin key (as opposed to a query key).",
+      "pos": [
+        31692,
+        31755
+      ]
+    },
+    {
+      "content": "Refer to the authentication section in <bpt id=\"p1\">[</bpt><ept id=\"p1\">Search Service REST API](https://msdn.microsoft.com/library/azure/dn798935.aspx)</ept> to learn more about keys.",
+      "pos": [
+        31756,
+        31902
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt><ept id=\"p1\">Create a Search service in the portal](search-create-service-portal.md)</ept> explains how to get the service URL and key properties used in the request.",
+      "pos": [
+        31903,
+        32051
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Response<ept id=\"p1\">**</ept>\n\nStatus Code: 204 No Content is returned for a successful response.",
+      "pos": [
+        32053,
+        32133
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">&lt;a name=\"RunIndexer\"&gt;&lt;/a&gt;</ph><ph id=\"ph2\">\n##</ph> Run Indexer\n\nIn addition to running periodically on a schedule, an indexer can also be invoked on demand via the <bpt id=\"p1\">**</bpt>Run Indexer<ept id=\"p1\">**</ept> operation: \n\n    POST https://[service name].search.windows.net/indexers/[indexer name]/run?api-version=[api-version]\n    api-key: [admin key]\n\nThe <ph id=\"ph3\">`api-version`</ph> is required.",
+      "pos": [
+        32135,
+        32467
+      ]
+    },
+    {
+      "content": "The preview version is <ph id=\"ph1\">`2015-02-28-Preview`</ph>.",
+      "pos": [
+        32468,
+        32512
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt><ept id=\"p1\">Azure Search versioning](https://msdn.microsoft.com/library/azure/dn864560.aspx)</ept> has details and more information about alternative versions.",
+      "pos": [
+        32513,
+        32655
+      ]
+    },
+    {
+      "content": "The <ph id=\"ph1\">`api-key`</ph> must be an admin key (as opposed to a query key).",
+      "pos": [
+        32657,
+        32720
+      ]
+    },
+    {
+      "content": "Refer to the authentication section in <bpt id=\"p1\">[</bpt><ept id=\"p1\">Search Service REST API](https://msdn.microsoft.com/library/azure/dn798935.aspx)</ept> to learn more about keys.",
+      "pos": [
+        32721,
+        32867
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt><ept id=\"p1\">Create a Search service in the portal](search-create-service-portal.md)</ept> explains how to get the service URL and key properties used in the request.",
+      "pos": [
+        32868,
+        33016
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Response<ept id=\"p1\">**</ept>\n\nStatus Code: 202 Accepted is returned for a successful response.",
+      "pos": [
+        33018,
+        33096
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">&lt;a name=\"GetIndexerStatus\"&gt;&lt;/a&gt;</ph><ph id=\"ph2\">\n##</ph> Get Indexer Status\n\nThe <bpt id=\"p1\">**</bpt>Get Indexer Status<ept id=\"p1\">**</ept> operation retrieves the current status and execution history of an indexer: \n\n    GET https://[service name].search.windows.net/indexers/[indexer name]/status?api-version=[api-version]\n    api-key: [admin key]\n\n\nThe <ph id=\"ph3\">`api-version`</ph> is required.",
+      "pos": [
+        33098,
+        33422
+      ]
+    },
+    {
+      "content": "The preview version is <ph id=\"ph1\">`2015-02-28-Preview`</ph>.",
+      "pos": [
+        33423,
+        33467
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt><ept id=\"p1\">Azure Search versioning](https://msdn.microsoft.com/library/azure/dn864560.aspx)</ept> has details and more information about alternative versions.",
+      "pos": [
+        33468,
+        33610
+      ]
+    },
+    {
+      "content": "The <ph id=\"ph1\">`api-key`</ph> must be an admin key (as opposed to a query key).",
+      "pos": [
+        33612,
+        33675
+      ]
+    },
+    {
+      "content": "Refer to the authentication section in <bpt id=\"p1\">[</bpt><ept id=\"p1\">Search Service REST API](https://msdn.microsoft.com/library/azure/dn798935.aspx)</ept> to learn more about keys.",
+      "pos": [
+        33676,
+        33822
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt><ept id=\"p1\">Create a Search service in the portal](search-create-service-portal.md)</ept> explains how to get the service URL and key properties used in the request.",
+      "pos": [
+        33823,
+        33971
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Response<ept id=\"p1\">**</ept>\n\nStatus Code: 200 OK for a successful response.",
+      "pos": [
+        33973,
+        34033
+      ]
+    },
+    {
+      "content": "The response body contains information about overall indexer health status, the last indexer invocation, as well as the history of recent indexer invocations (if present).",
+      "pos": [
+        34035,
+        34206
+      ]
+    },
+    {
+      "content": "A sample response body looks like this: \n\n    <bpt id=\"p1\">{\n        \"status\":\"running\",\n        \"lastResult\": {\n            \"status\":\"success\",\n            \"errorMessage\":null,\n            \"startTime\":\"2014-11-26T03:37:18.853Z\",\n            \"endTime\":\"2014-11-26T03:37:19.012Z\",\n            \"errors\":[],\n            \"itemsProcessed\":11,\n            \"itemsFailed\":0,\n            \"initialTrackingState\":null,\n            \"finalTrackingState\":null\n         },\n        \"executionHistory\":[ {\n            \"status\":\"success\",\n            \"errorMessage\":null,\n            \"startTime\":\"2014-11-26T03:37:18.853Z\",\n            \"endTime\":\"2014-11-26T03:37:19.012Z\",\n            \"errors\":[],\n            \"itemsProcessed\":11,\n            \"itemsFailed\":0,\n            \"initialTrackingState\":null,\n            \"finalTrackingState\":null\n        }]\n    }\n\n**</bpt>Indexer Status<ept id=\"p1\">**</ept>\n\nIndexer status can be one of the following  values:\n\n<ph id=\"ph1\">- `running`</ph> indicates that the indexer is running normally.",
+      "pos": [
+        34209,
+        35168
+      ]
+    },
+    {
+      "content": "Note that some of the indexer executions may still be failing, so it's a good idea to check the <ph id=\"ph1\">`lastResult`</ph> property as well.",
+      "pos": [
+        35169,
+        35295
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">- `error`</ph> indicates that the indexer experienced an error that cannot be corrected without human intervention.",
+      "pos": [
+        35298,
+        35408
+      ]
+    },
+    {
+      "content": "For example, the data source credentials may have expired, or the schema of the data source or of the target index has changed in a breaking way.",
+      "pos": [
+        35409,
+        35554
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Indexer Execution Result<ept id=\"p1\">**</ept>\n\nAn indexer execution result contains information about a single indexer execution.",
+      "pos": [
+        35557,
+        35669
+      ]
+    },
+    {
+      "content": "The latest result is surfaced as the <ph id=\"ph1\">`lastResult`</ph> property of the indexer status.",
+      "pos": [
+        35670,
+        35751
+      ]
+    },
+    {
+      "content": "Other recent results, if present, are returned as the <ph id=\"ph1\">`executionHistory`</ph> property of the indexer status.",
+      "pos": [
+        35752,
+        35856
+      ]
+    },
+    {
+      "content": "Indexer execution result contains the following properties: \n\n<ph id=\"ph1\">- `status`</ph>: the status of an execution.",
+      "pos": [
+        35859,
+        35960
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt><ept id=\"p1\">Indexer Execution Status](#IndexerExecutionStatus)</ept> below for details.",
+      "pos": [
+        35961,
+        36035
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">- `errorMessage`</ph>: error message for a failed execution.",
+      "pos": [
+        36038,
+        36093
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">- `startTime`</ph>: the time in UTC when this execution started.",
+      "pos": [
+        36096,
+        36155
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">- `endTime`</ph>: the time in UTC when this execution ended.",
+      "pos": [
+        36157,
+        36212
+      ]
+    },
+    {
+      "content": "This value is not set if the execution is still in progress.",
+      "pos": [
+        36213,
+        36273
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">- `errors`</ph>: a list of item-level errors, if any.",
+      "pos": [
+        36275,
+        36323
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">- `itemsProcessed`</ph>: the number of data source items (for example, table rows) that the indexer attempted to index during this execution.",
+      "pos": [
+        36326,
+        36462
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">- `itemsFailed`</ph>: the number of items that failed during this execution.",
+      "pos": [
+        36465,
+        36536
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">- `initialTrackingState`</ph>: always <ph id=\"ph2\">`null`</ph> for the first indexer execution, or if the data change tracking policy is not enabled on the data source used.",
+      "pos": [
+        36541,
+        36691
+      ]
+    },
+    {
+      "content": "If such a policy is enabled, in subsequent executions this value indicates the first (lowest) change tracking value processed by this execution.",
+      "pos": [
+        36692,
+        36836
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">- `finalTrackingState`</ph>: always <ph id=\"ph2\">`null`</ph> if the data change tracking policy is not enabled on the data source used.",
+      "pos": [
+        36839,
+        36951
+      ]
+    },
+    {
+      "content": "Otherwise, indicates the latest (highest) change tracking value successfully processed by this execution.",
+      "pos": [
+        36952,
+        37057
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">&lt;a name=\"IndexerExecutionStatus\"&gt;&lt;/a&gt;</ph><bpt id=\"p1\">\n**</bpt>Indexer Execution Status<ept id=\"p1\">**</ept>\n\nIndexer execution status captures the status of a single indexer execution.",
+      "pos": [
+        37060,
+        37203
+      ]
+    },
+    {
+      "content": "It can have the following values:\n\n<ph id=\"ph1\">- `success`</ph> indicates that the indexer execution has completed successfully.",
+      "pos": [
+        37204,
+        37315
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">- `inProgress`</ph> indicates that the indexer execution is in progress.",
+      "pos": [
+        37317,
+        37384
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">- `transientFailure`</ph> indicates that an indexer execution has failed.",
+      "pos": [
+        37387,
+        37455
+      ]
+    },
+    {
+      "content": "See <ph id=\"ph1\">`errorMessage`</ph> property for details.",
+      "pos": [
+        37456,
+        37496
+      ]
+    },
+    {
+      "content": "The failure may or may not require human intervention to fix - for example, fixing a schema incom\n- patibility between the data source and the target index requires user action, while a temporary data source downtime does not.",
+      "pos": [
+        37497,
+        37723
+      ]
+    },
+    {
+      "content": "Indexer invocations will continue per schedule, if one is present.",
+      "pos": [
+        37724,
+        37790
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">- `persistentFailure`</ph> indicates that the indexer has failed in a way that requires human intervention.",
+      "pos": [
+        37793,
+        37895
+      ]
+    },
+    {
+      "content": "Scheduled indexer executions stop.",
+      "pos": [
+        37896,
+        37930
+      ]
+    },
+    {
+      "content": "After addressing the issue, use Reset Indexer API to restart the scheduled executions.",
+      "pos": [
+        37931,
+        38017
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">- `reset`</ph> indicates that the indexer has been reset by a call to Reset Indexer API (see below).",
+      "pos": [
+        38020,
+        38115
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">&lt;a name=\"ResetIndexer\"&gt;&lt;/a&gt;</ph><ph id=\"ph2\">\n##</ph> Reset Indexer\n\nThe <bpt id=\"p1\">**</bpt>Reset Indexer<ept id=\"p1\">**</ept> operation resets the change tracking state associated with the indexer.",
+      "pos": [
+        38118,
+        38257
+      ]
+    },
+    {
+      "content": "This allows you to trigger from-scratch re-indexing (for example, if your data source schema has changed), or to change the data change detection policy for a data source associated with the indexer.",
+      "pos": [
+        38258,
+        38457
+      ]
+    },
+    {
+      "content": "POST https://[service name].search.windows.net/indexers/[indexer name]/reset?api-version=[api-version]\n    api-key: [admin key]\n\nThe <ph id=\"ph1\">`api-version`</ph> is required.",
+      "pos": [
+        38466,
+        38625
+      ]
+    },
+    {
+      "content": "The preview version is <ph id=\"ph1\">`2015-02-28-Preview`</ph>.",
+      "pos": [
+        38626,
+        38670
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt><ept id=\"p1\">Azure Search versioning](https://msdn.microsoft.com/library/azure/dn864560.aspx)</ept> has details and more information about alternative versions.",
+      "pos": [
+        38671,
+        38813
+      ]
+    },
+    {
+      "content": "The <ph id=\"ph1\">`api-key`</ph> must be an admin key (as opposed to a query key).",
+      "pos": [
+        38815,
+        38878
+      ]
+    },
+    {
+      "content": "Refer to the authentication section in <bpt id=\"p1\">[</bpt><ept id=\"p1\">Search Service REST API](https://msdn.microsoft.com/library/azure/dn798935.aspx)</ept> to learn more about keys.",
+      "pos": [
+        38879,
+        39025
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt><ept id=\"p1\">Create a Search service in the portal](search-create-service-portal.md)</ept> explains how to get the service URL and key properties used in the request.",
+      "pos": [
+        39026,
+        39174
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Response<ept id=\"p1\">**</ept>\n\nStatus Code: 204 No Content for a successful response.",
+      "pos": [
+        39176,
+        39244
+      ]
+    },
+    {
+      "content": "Mapping between SQL Data Types and Azure Search Data Types",
+      "pos": [
+        39249,
+        39307
+      ]
+    },
+    {
+      "content": "SQL data type",
+      "pos": [
+        39347,
+        39360
+      ]
+    },
+    {
+      "content": "Allowed target index field types",
+      "pos": [
+        39372,
+        39404
+      ]
+    },
+    {
+      "content": "Notes",
+      "pos": [
+        39414,
+        39419
+      ]
+    },
+    {
+      "content": "bit",
+      "pos": [
+        39440,
+        39443
+      ]
+    },
+    {
+      "content": "Edm.Boolean, Edm.String",
+      "pos": [
+        39453,
+        39476
+      ]
+    },
+    {
+      "content": "int, smallint, tinyint",
+      "pos": [
+        39507,
+        39529
+      ]
+    },
+    {
+      "content": "Edm.Int32, Edm.Int64, Edm.String",
+      "pos": [
+        39539,
+        39571
+      ]
+    },
+    {
+      "content": "bigint",
+      "pos": [
+        39602,
+        39608
+      ]
+    },
+    {
+      "content": "Edm.Int64, Edm.String",
+      "pos": [
+        39618,
+        39639
+      ]
+    },
+    {
+      "content": "real, float",
+      "pos": [
+        39670,
+        39681
+      ]
+    },
+    {
+      "content": "Edm.Double, Edm.String",
+      "pos": [
+        39691,
+        39713
+      ]
+    },
+    {
+      "content": "smallmoney, money",
+      "pos": [
+        39744,
+        39761
+      ]
+    },
+    {
+      "content": "decimal",
+      "pos": [
+        39765,
+        39772
+      ]
+    },
+    {
+      "content": "numeric",
+      "pos": [
+        39776,
+        39783
+      ]
+    },
+    {
+      "content": "Edm.String",
+      "pos": [
+        39794,
+        39804
+      ]
+    },
+    {
+      "content": "Azure Search does not support converting decimal types into Edm.Double because this would lose precision",
+      "pos": [
+        39814,
+        39918
+      ]
+    },
+    {
+      "content": "char, nchar, varchar, nvarchar",
+      "pos": [
+        39940,
+        39970
+      ]
+    },
+    {
+      "content": "Edm.String",
+      "pos": [
+        39980,
+        39990
+      ]
+    },
+    {
+      "content": "Collection(Edm.String)",
+      "pos": [
+        39995,
+        40017
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt><ept id=\"p1\">Field Mapping Functions](#FieldMappingFunctions)</ept> in this document for details on how to transform a string column into a Collection(Edm.String)",
+      "pos": [
+        40027,
+        40175
+      ]
+    },
+    {
+      "content": "smalldatetime, datetime, datetime2, date, datetimeoffset",
+      "pos": [
+        40196,
+        40252
+      ]
+    },
+    {
+      "content": "Edm.DateTimeOffset, Edm.String",
+      "pos": [
+        40262,
+        40292
+      ]
+    },
+    {
+      "content": "uniqueidentifer",
+      "pos": [
+        40323,
+        40338
+      ]
+    },
+    {
+      "content": "Edm.String",
+      "pos": [
+        40348,
+        40358
+      ]
+    },
+    {
+      "content": "geography",
+      "pos": [
+        40389,
+        40398
+      ]
+    },
+    {
+      "content": "Edm.GeographyPoint",
+      "pos": [
+        40408,
+        40426
+      ]
+    },
+    {
+      "content": "Only geography instances of type POINT with SRID 4326 (which is the default) are supported",
+      "pos": [
+        40436,
+        40526
+      ]
+    },
+    {
+      "content": "rowversion",
+      "pos": [
+        40547,
+        40557
+      ]
+    },
+    {
+      "content": "N/A",
+      "pos": [
+        40567,
+        40570
+      ]
+    },
+    {
+      "content": "Row-version columns cannot be stored in the search index, but they can be used for change tracking",
+      "pos": [
+        40580,
+        40678
+      ]
+    },
+    {
+      "content": "time, timespan",
+      "pos": [
+        40699,
+        40713
+      ]
+    },
+    {
+      "content": "binary, varbinary, image,",
+      "pos": [
+        40717,
+        40742
+      ]
+    },
+    {
+      "content": "xml, geometry, CLR types",
+      "pos": [
+        40746,
+        40770
+      ]
+    },
+    {
+      "content": "N/A",
+      "pos": [
+        40780,
+        40783
+      ]
+    },
+    {
+      "content": "Not supported",
+      "pos": [
+        40793,
+        40806
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">\n\n##</ph> Mapping between JSON Data Types and Azure Search Data Types",
+      "pos": [
+        40826,
+        40890
+      ]
+    },
+    {
+      "content": "JSON data type",
+      "pos": [
+        40930,
+        40944
+      ]
+    },
+    {
+      "content": "Allowed target index field types",
+      "pos": [
+        40955,
+        40987
+      ]
+    },
+    {
+      "content": "Notes",
+      "pos": [
+        40997,
+        41002
+      ]
+    },
+    {
+      "content": "bool",
+      "pos": [
+        41023,
+        41027
+      ]
+    },
+    {
+      "content": "Edm.Boolean, Edm.String",
+      "pos": [
+        41037,
+        41060
+      ]
+    },
+    {
+      "content": "Integral numbers",
+      "pos": [
+        41091,
+        41107
+      ]
+    },
+    {
+      "content": "Edm.Int32, Edm.Int64, Edm.String",
+      "pos": [
+        41117,
+        41149
+      ]
+    },
+    {
+      "content": "Floating-point numbers",
+      "pos": [
+        41180,
+        41202
+      ]
+    },
+    {
+      "content": "Edm.Double, Edm.String",
+      "pos": [
+        41212,
+        41234
+      ]
+    },
+    {
+      "content": "string",
+      "pos": [
+        41265,
+        41271
+      ]
+    },
+    {
+      "content": "Edm.String",
+      "pos": [
+        41281,
+        41291
+      ]
+    },
+    {
+      "content": "arrays of primitive types, e.g. [ \"a\", \"b\", \"c\" ]",
+      "pos": [
+        41322,
+        41371
+      ]
+    },
+    {
+      "content": "Collection(Edm.String)",
+      "pos": [
+        41381,
+        41403
+      ]
+    },
+    {
+      "content": "Strings that look like dates",
+      "pos": [
+        41434,
+        41462
+      ]
+    },
+    {
+      "content": "Edm.DateTimeOffset, Edm.String",
+      "pos": [
+        41472,
+        41502
+      ]
+    },
+    {
+      "content": "GeoJSON point objects",
+      "pos": [
+        41533,
+        41554
+      ]
+    },
+    {
+      "content": "Edm.GeographyPoint",
+      "pos": [
+        41564,
+        41582
+      ]
+    },
+    {
+      "content": "GeoJSON points are JSON objects in the following format: { \"type\" : \"Point\", \"coordinates\" : [long, lat] }",
+      "pos": [
+        41592,
+        41698
+      ]
+    },
+    {
+      "content": "Other JSON objects",
+      "pos": [
+        41720,
+        41738
+      ]
+    },
+    {
+      "content": "N/A",
+      "pos": [
+        41748,
+        41751
+      ]
+    },
+    {
+      "content": "Not supported; Azure Search currently supports only primitive types and string collections",
+      "pos": [
+        41761,
+        41851
+      ]
+    }
+  ],
+  "content": "<properties \npageTitle=\"Indexer Operations (Azure Search Service REST API: 2015-02-28-Preview)\" \ndescription=\"Indexer Operations (Azure Search Service REST API: 2015-02-28-Preview)\" \nservices=\"search\" \ndocumentationCenter=\"\" \nauthors=\"HeidiSteen\" \nmanager=\"mblythe\" \neditor=\"\" />\n\n<tags \nms.service=\"search\" \nms.devlang=\"rest-api\" \nms.workload=\"search\" ms.topic=\"article\"  \nms.tgt_pltfrm=\"na\" \nms.date=\"07/08/2015\" \nms.author=\"heidist\" />\n\n#Indexer Operations (Azure Search Service REST API: 2015-02-28-Preview)\n\n> [AZURE.NOTE] This article describes indexers in the [2015-02-28-Preview](search-api-2015-02-28-preview.md). Currently the only difference between the `2015-02-28` version documented on [MSDN](http://go.mirosoft.com/fwlink/p/?LinkID=528173) and the `2015-02-28-Preview` version described here is that the preview provides *fieldMappings*, as described in [Create Indexer](#CreateIndexer).\n\n## Overview\n\nAzure Search can integrate directly with some common data sources, removing the need to write code to index your data. To set up this up, you can call the Azure Search API to create and manage **indexers** and **data sources**. \n\nAn **indexer** is a resource that connects data sources with target search indexes. An indexer is used in the following ways: \n\n- Perform a one-time copy of the data to populate an index.\n- Sync an index with changes in the data source on a schedule. The schedule is part of the indexer definition.\n- Invoke on-demand to update an index as needed. \n\nAn **indexer** is useful when you want regular updates to an index. You can either set up an inline schedule as part of an indexer definition, or run it on demand using [Run Indexer](#RunIndexer). \n\nA **data source** specifies what data needs to be indexed, credentials to access the data, and policies to enable Azure Search to efficiently identify changes in the data (such as modified or deleted rows in a database table). It's defined as an independent resource so that it can be used by multiple indexers.\n\nThe following data sources are currently supported:\n\n- Azure SQL Database and SQL Server on Azure VMs\n- Azure DocumentDB \n\nWe're considering adding support for additional data sources in the future. To help us prioritize these decisions, please provide your feedback on the [Azure Search feedback forum](http://feedback.azure.com/forums/263029-azure-search).\n\nSee [Limits and constraints](https://msdn.microsoft.com/library/azure/dn798934.aspx) for maximum limits related to indexer and data source resources.\n\n## Typical Usage Flow\n\nYou can create and manage indexers and data sources via simple HTTP requests (POST, GET, PUT, DELETE) against a given `data source` or `indexer` resource.\n\nSetting up automatic indexing is typically a four step process:\n\n1. Identify the data source that contains the data that needs to be indexed. Keep in mind that Azure Search may not support all of the data types present in your data source. See [Supported data types](https://msdn.microsoft.com/library/azure/dn798938.aspx) for the list.\n\n2. Create an Azure Search index whose schema is compatible with your data source.\n  \n3. Create an Azure Search data source as described in [Create Data Source](#CreateDataSource).\n  \n4. Create an Azure Search indexer as described [Create Indexer](#CreateIndexer).\n\nYou should plan on creating one indexer for every target index and data source combination. You can have multiple indexers writing into the same index, and you can reuse the same data source for multiple indexers. However, an indexer can only consume one data source at a time, and can only write to a single index. \n\nAfter creating an indexer, you can retrieve its execution status using the [Get Indexer Status](#GetIndexerStatus) operation. You can also run an indexer at any time (instead of or in addition to running it periodically on a schedule) using the [Run Indexer](#RunIndexer) operation.\n\n<!-- MSDN has 2 art files plus a API topic link list -->\n\n\n## Create Data Source\n\nYou can create a new data source within an Azure Search service using an HTTP POST request.\n    \n    POST https://[service name].search.windows.net/datasources?api-version=[api-version]\n    Content-Type: application/json\n    api-key: [admin key]\n\nAlternatively, you can use PUT and specify the data source name on the URI. If the data source does not exist, it will be created.\n\n    PUT https://[service name].search.windows.net/datasources/[datasource name]?api-version=[api-version]\n\n**Note**: The maximum number of data sources allowed varies by pricing tier. The free service allows up to 3 data sources. Standard service allows 50 data sources. See [Limits and constraints](https://msdn.microsoft.com/library/azure/dn798934.aspx) for details.\n\n**Request**\n\nHTTPS is required for all service requests. The **Create Data Source** request can be constructed using either a POST or PUT method. When using POST, you must provide a data source name in the request body along with the data source definition. With PUT, the name is part of the URL. If the data source doesn't exist, it is created. If it already exists, it is updated to the new definition. \n\nThe data source name must be lower case, start with a letter or number, have no slashes or dots, and be less than 128 characters. After starting the data source name with a letter or number, the rest of the name can include any letter, number and dashes, as long as the dashes are not consecutive. See [Naming rules](https://msdn.microsoft.com/library/azure/dn857353.aspx) for details.\n\nThe `api-version` is required. The current version is `2015-02-28`. [Azure Search versioning](https://msdn.microsoft.com/library/azure/dn864560.aspx) has details and more information about alternative versions.\n\n**Request Headers**\n\nThe following list describes the required and optional request headers. \n\n- `Content-Type`: Required. Set this to `application/json`\n- `api-key`: Required. The `api-key` is used to authenticate the request to your Search service. It is a string value, unique to your service. The **Create Data Source** request must include an `api-key` header set to your admin key (as opposed to a query key). \n \nYou will also need the service name to construct the request URL. You can get both the service name and `api-key` from your service dashboard in the [Azure management portal](https://portal.azure.com/). See [Create a Search service in the portal](search-create-service-portal.md) for page navigation help.\n\n<a name=\"CreateDataSourceRequestSyntax\"></a>\n**Request Body Syntax**\n\nThe body of the request contains a data source definition, which includes type of the data source, credentials to read the data, as well as an optional data change detection and data deletion detection policies that are used to efficiently identify changed or deleted data in the data source when used with a periodically scheduled indexer. \n\n\nThe syntax for structuring the request payload is as follows. A sample request is provided further on in this topic.\n\n    { \n        \"name\" : \"Required for POST, optional for PUT. The name of the data source\",\n        \"description\" : \"Optional. Anything you want, or nothing at all\",\n        \"type\" : \"Required. Must be 'azuresql' or 'documentdb'\",\n        \"credentials\" : { \"connectionString\" : \"Required. Connection string for your data source\" },\n        \"container\" : { \"name\" : \"Required. The name of the table or collection you wish to index\" },\n        \"dataChangeDetectionPolicy\" : { Optional. See below for details }, \n        \"dataDeletionDetectionPolicy\" : { Optional. See below for details }\n    }\n\nRequest contains the following properties: \n\n- `name`: Required. The name of the data source. A data source name must only contain lowercase letters, digits or dashes, cannot start or end with dashes and is limited to 128 characters.\n- `description`: An optional description. \n- `type`: Required. Must be one of the supported data source types:\n    - `azuresql` - Azure SQL Database or SQL Server on Azure VMs\n    - `documentdb` - Azure DocumentDB\n- `credentials`:\n    - The required `connectionString` property specifies the connection string for the data source. The format of the connection string depends on the data source type: \n        - For Azure SQL, this is the usual SQL Server connection string. If you're using the Azure management portal to retrieve the connection string, use the `ADO.NET connection string` option.\n        - For DocumentDB, the connection string must be in the following format: `\"AccountEndpoint=https://[your account name].documents.azure.com;AccountKey=[your account key];Database=[your database id]\"`. All of the values are required. You can find them in the [Azure management portal](https://portal.azure.com/).   \n        \n- `container`: \n    - The required `name` property specifies the table or view (for Azure SQL data source) or collection (for DocumentDB data source) that will be indexed. \n    - DocumentDB data sources also support an optional `query` property that allows you to specify a query that flattens an arbitrary JSON document layout into a flat schema that Azure Search can index.   \n- The optional `dataChangeDetectionPolicy` and `dataDeletionDetectionPolicy` are described below.\n\n<a name=\"DataChangeDetectionPolicies\"></a>\n**Data Change Detection Policies**\n\nThe purpose of a data change detection policy is to efficiently identify changed data items. Supported policies vary based on the data source type. Sections below describe each policy. \n\n**NOTE:** You can switch data detection policies after the indexer is already created, using the [Reset Indexer](#ResetIndexer) API.\n\n***High Watermark Change Detection Policy*** \n\nUse this policy when your data source contains a column or property that meets the following criteria:\n \n- All inserts specify a value for the column. \n- All updates to an item also change the value of the column. \n- The value of this column increases with each change.\n- Queries that use a filter clause similar to the following `WHERE [High Water Mark Column] > [Current High Water Mark Value]` can be executed efficiently.\n\nFor example, when using Azure SQL data sources, an indexed `rowversion` column is the ideal candidate for use with with the high water mark policy. \n\nWhen using DocumentDB data sources, you must use the `_ts` property provided by DocumentDB.\n \nThis policy can be specified as follows:\n\n    { \n        \"@odata.type\" : \"#Microsoft.Azure.Search.HighWaterMarkChangeDetectionPolicy\",\n        \"highWaterMarkColumnName\" : \"[a row version or last_updated column name]\" \n    } \n\n***SQL Integrated Change Detection Policy***\n\nIf your SQL database supports [change tracking](https://msdn.microsoft.com/library/bb933875.aspx), we recommend using SQL Integrated Change Tracking Policy. This policy enables the most efficient change tracking, and allows Azure Search to identify deleted rows without you having to have an explicit \"soft delete\" column in your schema.\n\nIntegrated change tracking is supported starting with the following SQL Server database versions: \n- SQL Server 2008 R2, if you're using SQL Server on Azure VMs.\n- Azure SQL Database V12, if you're using Azure SQL Database.  \n\nWhen using SQL Integrated Change Tracking policy, do not specify a separate data deletion detection policy - this policy has built-in support for identifying deleted rows. \n\nThis policy can only be used with tables; it cannot be used with views. You need to enable change tracking for the table you're using before you can use this policy. See [Enable and disable change tracking](https://msdn.microsoft.com/library/bb964713.aspx) for instructions.    \n \nWhen structuring the **Create Data Source** request, SQL integrated change tracking policy can be specified as follows:\n\n    { \n        \"@odata.type\" : \"#Microsoft.Azure.Search.SqlIntegratedChangeTrackingPolicy\" \n    }\n\n<a name=\"DataDeletionDetectionPolicies\"></a>\n**Data Deletion Detection Policies**\n\nThe purpose of a data deletion detection policy is to efficiently identify deleted data items. Currently, the only supported policy is the `Soft Delete` policy, which allows identifying deleted items based on the value of a `soft delete` column or property in the data source. This policy can be specified as follows:\n\n    { \n        \"@odata.type\" : \"#Microsoft.Azure.Search.SoftDeleteColumnDeletionDetectionPolicy\",\n        \"softDeleteColumnName\" : \"the column that specifies whether a row was deleted\", \n        \"softDeleteMarkerValue\" : \"the value that identifies a row as deleted\" \n    }\n\n**NOTE:** Only columns with string, integer, or boolean values are supported. The value used as `softDeleteMarkerValue` must be a string, even if the corresponding column holds integers or booleans. For example, if the value that appears in your data source is 1, use `\"1\"` as the `softDeleteMarkerValue`.    \n\n<a name=\"CreateDataSourceRequestExamples\"></a>\n**Request Body Examples**\n\nIf you intend to use the data source with an indexer that runs on a schedule, this example shows how to specify change and deletion detection policies: \n\n    { \n        \"name\" : \"asqldatasource\",\n        \"description\" : \"a description\",\n        \"type\" : \"azuresql\",\n        \"credentials\" : { \"connectionString\" : \"Server=tcp:....database.windows.net,1433;Database=...;User ID=...;Password=...;Trusted_Connection=False;Encrypt=True;Connection Timeout=30;\" },\n        \"container\" : { \"name\" : \"sometable\" },\n        \"dataChangeDetectionPolicy\" : { \"@odata.type\" : \"#Microsoft.Azure.Search.HighWaterMarkChangeDetectionPolicy\", \"highWaterMarkColumnName\" : \"RowVersion\" }, \n        \"dataDeletionDetectionPolicy\" : { \"@odata.type\" : \"#Microsoft.Azure.Search.SoftDeleteColumnDeletionDetectionPolicy\", \"softDeleteColumnName\" : \"IsDeleted\", \"softDeleteMarkerValue\" : \"true\" }\n    }\n\nIf you only intend to use the data source for one-time copy of the data, the policies can be omitted:\n\n    { \n        \"name\" : \"asqldatasource\",\n        \"description\" : \"anything you want, or nothing at all\",\n        \"type\" : \"azuresql\",\n        \"credentials\" : { \"connectionString\" : \"Server=tcp:....database.windows.net,1433;Database=...;User ID=...;Password=...;Trusted_Connection=False;Encrypt=True;Connection Timeout=30;\" },\n        \"container\" : { \"name\" : \"sometable\" }\n    } \n\n**Response**\n\nFor a successful request: 201 Created. \n\n<a name=\"UpdateDataSource\"></a>\n## Update Data Source\n\nYou can update an existing data source using an HTTP PUT request. You specify the name of the data source to update on the request URI:\n\n    PUT https://[service name].search.windows.net/datasources/[datasource name]?api-version=[api-version]\n    Content-Type: application/json\n    api-key: [admin key]\n\nThe `api-version` is required. The current version is `2015-02-28`. [Azure Search versioning](https://msdn.microsoft.com/library/azure/dn864560.aspx) has details and more information about alternative versions.\n\nThe `api-key` must be an admin key (as opposed to a query key). Refer to the authentication section in [Search Service REST API](https://msdn.microsoft.com/library/azure/dn798935.aspx) to learn more about keys. [Create a Search service in the portal](search-create-service-portal.md) explains how to get the service URL and key properties used in the request.\n\n**Request**\nThe request body syntax is the same as for [Create Data Source requests](#CreateDataSourceRequestSyntax).\n\n**Response**\nFor a successful request: 201 Created if a new data source was created, and 204 No Content if an existing data source was updated.\n\n**NOTE:**\nSome properties cannot be updated on an existing data source. For example, you cannot change the type of an existing data source.  \n\n<a name=\"ListDataSource\"></a>\n## List Data Sources\n\nThe **List Data Sources** operation returns a list of the data sources in your Azure Search service. \n\n    GET https://[service name].search.windows.net/datasources?api-version=[api-version]\n    api-key: [admin key]\n\nThe `api-version` is required. The current version is `2015-02-28`. [Azure Search versioning](https://msdn.microsoft.com/library/azure/dn864560.aspx) has details and more information about alternative versions.\n\nThe `api-key` must be an admin key (as opposed to a query key). Refer to the authentication section in [Search Service REST API](https://msdn.microsoft.com/library/azure/dn798935.aspx) to learn more about keys. [Create a Search service in the portal](search-create-service-portal.md) explains how to get the service URL and key properties used in the request.\n\n**Response**\n\nFor a successful request: 200 OK.\n\nHere is an example response body:\n\n    {\n      \"value\" : [\n        {\n          \"name\": \"datasource1\",\n          \"type\": \"azuresql\",\n          ... other data source properties\n        }]\n    }\n\nNote that you can filter the response down to just the properties you're interested in. For example, if you want only a list of data source names, use the OData `$select` query option:\n\n    GET /datasources?api-version=205-02-28&$select=name\n\nIn this case, the response from the above example would appear as follows: \n\n    {\n      \"value\" : [ { \"name\": \"datasource1\" }, ... ]\n    }\n\nThis is a useful technique to save bandwidth if you have a lot of data sources in your Search service.\n\n<a name=\"GetDataSource\"></a>\n## Get Data Source\n\nThe **Get Data Source** operation gets the data source definition from Azure Search.\n\n    GET https://[service name].search.windows.net/datasources/[datasource name]?api-version=[api-version]\n    api-key: [admin key]\n\nThe `api-version` is required. The current version is `2015-02-28`. [Azure Search versioning](https://msdn.microsoft.com/library/azure/dn864560.aspx) has details and more information about alternative versions.\n\nThe `api-key` must be an admin key (as opposed to a query key). Refer to the authentication section in [Search Service REST API](https://msdn.microsoft.com/library/azure/dn798935.aspx) to learn more about keys. [Create a Search service in the portal](search-create-service-portal.md) explains how to get the service URL and key properties used in the request.\n\n**Response**\n\nStatus Code: 200 OK is returned for a successful response.\n\nThe response is similar to examples in [Create Data Source example requests](#CreateDataSourceRequestExamples): \n\n    { \n        \"name\" : \"asqldatasource\",\n        \"description\" : \"a description\",\n        \"type\" : \"azuresql\",\n        \"credentials\" : { \"connectionString\" : \"Server=tcp:....database.windows.net,1433;Database=...;User ID=...;Password=...;Trusted_Connection=False;Encrypt=True;Connection Timeout=30;\" },\n        \"container\" : { \"name\" : \"sometable\" },\n        \"dataChangeDetectionPolicy\" : { \n            \"@odata.type\" : \"#Microsoft.Azure.Search.HighWaterMarkChangeDetectionPolicy\",\n            \"highWaterMarkColumnName\" : \"RowVersion\" }, \n        \"dataDeletionDetectionPolicy\" : { \n            \"@odata.type\" : \"#Microsoft.Azure.Search.SoftDeleteColumnDeletionDetectionPolicy\",\n            \"softDeleteColumnName\" : \"IsDeleted\", \n            \"softDeleteMarkerValue\" : \"true\" }\n    }\n\n**NOTE** Do not set the `Accept` request header to `application/json;odata.metadata=none` when calling this API as doing so will cause `@odata.type` attribute to be omitted from the response and you won't be able to differentiate between data change and data deletion detection policies of different types. \n\n<a name=\"DeleteDataSource\"></a>\n## Delete Data Source\n\nThe **Delete Data Source** operation removes a data source from your Azure Search service.\n\n    DELETE https://[service name].search.windows.net/datasources/[datasource name]?api-version=[api-version]\n    api-key: [admin key]\n\n**NOTE** If any indexers reference the data source that you're deleting, the delete operation will still proceed. However, those indexers will transition into an error state upon their next run.  \n\nThe `api-version` is required. The current version is `2015-02-28`. [Azure Search versioning](https://msdn.microsoft.com/library/azure/dn864560.aspx) has details and more information about alternative versions.\n\nThe `api-key` must be an admin key (as opposed to a query key). Refer to the authentication section in [Search Service REST API](https://msdn.microsoft.com/library/azure/dn798935.aspx) to learn more about keys. [Create a Search service in the portal](search-create-service-portal.md) explains how to get the service URL and key properties used in the request.\n\n**Response**\n\nStatus Code: 204 No Content is returned for a successful response.\n\n<a name=\"CreateIndexer\"></a>\n## Create Indexer\n\nYou can create a new indexer within an Azure Search service using an HTTP POST request.\n    \n    POST https://[service name].search.windows.net/indexers?api-version=[api-version]\n    Content-Type: application/json\n    api-key: [admin key]\n\nAlternatively, you can use PUT and specify the data source name on the URI. If the data source does not exist, it will be created.\n\n    PUT https://[service name].search.windows.net/indexers/[indexer name]?api-version=[api-version]\n\n**Note**: The maximum number of indexers allowed varies by pricing tier. The free service allows up to 3 indexers. Standard service allows 50 indexers. See [Limits and constraints](https://msdn.microsoft.com/library/azure/dn798934.aspx) for details.\n\nThe `api-version` is required. The current version is `2015-02-28`. [Azure Search versioning](https://msdn.microsoft.com/library/azure/dn864560.aspx) has details and more information about alternative versions.\n\nThe `api-key` must be an admin key (as opposed to a query key). Refer to the authentication section in [Search Service REST API](https://msdn.microsoft.com/library/azure/dn798935.aspx) to learn more about keys. [Create a Search service in the portal](search-create-service-portal.md) explains how to get the service URL and key properties used in the request.\n\n\n<a name=\"CreateIndexerRequestSyntax\"></a>\n**Request Body Syntax**\n\nThe body of the request contains an indexer definition, which specifies the data source and the target index for indexing, as well as optional indexing schedule and parameters. \n\n\nThe syntax for structuring the request payload is as follows. A sample request is provided further on in this topic.\n\n    { \n        \"name\" : \"Required for POST, optional for PUT. The name of the indexer\",\n        \"description\" : \"Optional. Anything you want, or null\",\n        \"dataSourceName\" : \"Required. The name of an existing data source\",\n        \"targetIndexName\" : \"Required. The name of an existing index\",\n        \"schedule\" : { Optional. See Indexing Schedule below. },\n        \"parameters\" : { Optional. See Indexing Parameters below. },\n        \"fieldMappings\" : { Optional. See Field Mappings below. }\n    }\n\n**Indexer Schedule**\n\nAn indexer can optionally specify a schedule. If a schedule is present, the indexer will run periodically as per schedule. Schedule has the following attributes:\n\n- `interval`: Required. A duration value that specifies an interval or period for indexer runs. The smallest allowed interval is 5 minutes; the longest is one day. It must be formatted as an XSD \"dayTimeDuration\" value (a restricted subset of an [ISO 8601 duration](http://www.w3.org/TR/xmlschema11-2/#dayTimeDuration) value). The pattern for this is: `P(nD)(T(nH)(nM))`. Examples: `PT15M` for every 15 minutes, `PT2H` for every 2 hours. \n\n- `startTime`: Required. An UTC datetime when the indexer should start running. \n\n**Indexer Parameters**\n\nAn indexer can optionally specify several parameters that affect its behavior. All of the parameters are optional.  \n\n- `maxFailedItems`: The number of items that can fail to be indexed before an indexer run is considered a failure. Default is 0. Information about failed items is returned by the [Get Indexer Status](#GetIndexerStatus) operation. \n\n- `maxFailedItemsPerBatch`: The number of items that can fail to be indexed in each batch before an indexer run is considered a failure. Default is 0.\n\n- `base64EncodeKeys`: Specifies whether or not document keys will be base-64 encoded. Azure Search imposes restrictions on characters that can be present in a document key. However, the values in your source data may contain characters that are invalid. If it is necessary to index such values as document keys, this flag can be set to true. Default is `false`.\n\n**Field Mappings**\n\nYou can use field mappings to map a field name in the data source to a different field name in the target index. For example, consider a source table with a field `_id`. Azure Search doesn't allow a field name starting with an underscore, so the field must be renamed. This can be done using the `fieldMappings` property of indexer as follows: \n    \n    \"fieldMappings\" : [ { \"sourceFieldName\" : \"_id\", \"targetFieldName\" : \"id\" } ] \n\nYou can specify multiple field mappings: \n\n    \"fieldMappings\" : [ \n        { \"sourceFieldName\" : \"_id\", \"targetFieldName\" : \"id\" },\n        { \"sourceFieldName\" : \"_timestamp\", \"targetFieldName\" : \"timestamp\" },\n     ]\n\nBoth source and target field names are case-insensitive.\n\n<a name=\"FieldMappingFunctions\"></a>\n***Field Mapping Functions***\n\nField mappings can also be used to transform source field values using *mapping functions*.\n\nOnly one such function is currently supported: `jsonArrayToStringCollection`. It parses a field that contains a string formatted as a JSON array into a Collection(Edm.String) field in the target index. It is intended for use with Azure SQL indexer in particular, since SQL doesn't have a native collection data type. It can be used as follows: \n\n    \"fieldMappings\" : [ { \"sourceFieldName\" : \"tags\", \"mappingFunction\" : { \"name\" : \"jsonArrayToStringCollection\" } } ] \n\nFor example, if the source field contains the string `[\"red\", \"white\", \"blue\"]`, then the target field of type `Collection(Edm.String)` will be populated with the three values `\"red\"`, `\"white\"` and `\"blue\"`. \n\nNOTE: `targetFieldName` property is optional; if left out, the `sourceFieldName` value is used). \n\n<a name=\"CreateIndexerRequestExamples\"></a>\n**Request Body Examples**\n\nThe following example creates an indexer that copies data from the table referenced by the `ordersds` data source to the `orders` index on a schedule that starts on Jan 1, 2015 UTC and runs hourly. Each indexer invocation will be successful if no more than 5 items fail to be indexed in each batch, and no more than 10 items fail to be indexed in total. \n\n    {\n        \"name\" : \"myindexer\",\n        \"description\" : \"a cool indexer\",\n        \"dataSourceName\" : \"ordersds\",\n        \"targetIndexName\" : \"orders\",\n        \"schedule\" : { \"interval\" : \"PT1H\", \"startTime\" : \"2015-01-01T00:00:00Z\" },\n        \"parameters\" : { \"maxFailedItems\" : 10, \"maxFailedItemsPerBatch\" : 5, \"base64EncodeKeys\": false }\n    }\n\n**Response**\n\n201 Created for a successful request.\n\n\n<a name=\"UpdateIndexer\"></a>\n## Update Indexer\n\nYou can update an existing indexer using an HTTP PUT request. You specify the name of the indexer to update on the request URI:\n\n    PUT https://[service name].search.windows.net/indexers/[indexer name]?api-version=[api-version]\n    Content-Type: application/json\n    api-key: [admin key]\n\nThe `api-version` is required. The current version is `2015-02-28`. [Azure Search versioning](https://msdn.microsoft.com/library/azure/dn864560.aspx) has details and more information about alternative versions.\n\nThe `api-key` must be an admin key (as opposed to a query key). Refer to the authentication section in [Search Service REST API](https://msdn.microsoft.com/library/azure/dn798935.aspx) to learn more about keys. [Create a Search service in the portal](search-create-service-portal.md) explains how to get the service URL and key properties used in the request.\n\n**Request**\n\nThe request body syntax is the same as for [Create Indexer requests](#CreateIndexerRequestSyntax).\n\n**Response**\n\nFor a successful request: 201 Created if a new indexer was created, and 204 No Content if an existing indexer was updated.\n\n\n<a name=\"ListIndexers\"></a>\n## List Indexers\n\nThe **List Indexers** operation returns the list of indexers in your Azure Search service. \n\n    GET https://[service name].search.windows.net/indexers?api-version=[api-version]\n    api-key: [admin key]\n\n\nThe `api-version` is required. The preview version is `2015-02-28-Preview`. [Azure Search versioning](https://msdn.microsoft.com/library/azure/dn864560.aspx) has details and more information about alternative versions.\n\nThe `api-key` must be an admin key (as opposed to a query key). Refer to the authentication section in [Search Service REST API](https://msdn.microsoft.com/library/azure/dn798935.aspx) to learn more about keys. [Create a Search service in the portal](search-create-service-portal.md) explains how to get the service URL and key properties used in the request.\n\n**Response**\n\nFor a successful request: 200 OK.\n\nHere is an example response body:\n\n    {\n      \"value\" : [\n      {\n        \"name\" : \"myindexer\",\n        \"description\" : \"a cool indexer\",\n        \"dataSourceName\" : \"ordersds\",\n        \"targetIndexName\" : \"orders\",\n        ... other indexer properties\n      }]\n    }\n\nNote that you can filter the response down to just the properties you're interested in. For example, if you want only a list of indexer names, use the OData `$select` query option:\n\n    GET /indexers?api-version=2014-10-20-Preview&$select=name\n\nIn this case, the response from the above example would appear as follows: \n\n    {\n      \"value\" : [ { \"name\": \"myindexer\" } ]\n    }\n\nThis is a useful technique to save bandwidth if you have a lot of indexers in your Search service.\n\n\n<a name=\"GetIndexer\"></a>\n## Get Indexer\n\nThe **Get Indexer** operation gets the indexer definition from Azure Search.\n\n    GET https://[service name].search.windows.net/indexers/[indexer name]?api-version=[api-version]\n    api-key: [admin key]\n\nThe `api-version` is required. The preview version is `2015-02-28-Preview`. [Azure Search versioning](https://msdn.microsoft.com/library/azure/dn864560.aspx) has details and more information about alternative versions.\n\nThe `api-key` must be an admin key (as opposed to a query key). Refer to the authentication section in [Search Service REST API](https://msdn.microsoft.com/library/azure/dn798935.aspx) to learn more about keys. [Create a Search service in the portal](search-create-service-portal.md) explains how to get the service URL and key properties used in the request.\n\n**Response**\n\nStatus Code: 200 OK is returned for a successful response.\n\nThe response is similar to examples in [Create Indexer example requests](#CreateIndexerRequestExamples): \n\n    {\n        \"name\" : \"myindexer\",\n        \"description\" : \"a cool indexer\",\n        \"dataSourceName\" : \"ordersds\",\n        \"targetIndexName\" : \"orders\",\n        \"schedule\" : { \"interval\" : \"PT1H\", \"startTime\" : \"2015-01-01T00:00:00Z\" },\n        \"parameters\" : { \"maxFailedItems\" : 10, \"maxFailedItemsPerBatch\" : 5, \"base64EncodeKeys\": false }\n    }\n\n\n<a name=\"DeleteIndexer\"></a>\n## Delete Indexer\n\nThe **Delete Indexer** operation removes an indexer from your Azure Search service.\n\n    DELETE https://[service name].search.windows.net/indexers/[indexer name]?api-version=[api-version]\n    api-key: [admin key]\n\nWhen an indexer is deleted, the indexer executions in progress at that time will run to completion, but no further executions will be scheduled. Attempts to use a non-existent indexer will result in HTTP status code 404 Not Found. \n \nThe `api-version` is required. The preview version is `2015-02-28-Preview`. [Azure Search versioning](https://msdn.microsoft.com/library/azure/dn864560.aspx) has details and more information about alternative versions.\n\nThe `api-key` must be an admin key (as opposed to a query key). Refer to the authentication section in [Search Service REST API](https://msdn.microsoft.com/library/azure/dn798935.aspx) to learn more about keys. [Create a Search service in the portal](search-create-service-portal.md) explains how to get the service URL and key properties used in the request.\n\n**Response**\n\nStatus Code: 204 No Content is returned for a successful response.\n\n<a name=\"RunIndexer\"></a>\n## Run Indexer\n\nIn addition to running periodically on a schedule, an indexer can also be invoked on demand via the **Run Indexer** operation: \n\n    POST https://[service name].search.windows.net/indexers/[indexer name]/run?api-version=[api-version]\n    api-key: [admin key]\n\nThe `api-version` is required. The preview version is `2015-02-28-Preview`. [Azure Search versioning](https://msdn.microsoft.com/library/azure/dn864560.aspx) has details and more information about alternative versions.\n\nThe `api-key` must be an admin key (as opposed to a query key). Refer to the authentication section in [Search Service REST API](https://msdn.microsoft.com/library/azure/dn798935.aspx) to learn more about keys. [Create a Search service in the portal](search-create-service-portal.md) explains how to get the service URL and key properties used in the request.\n\n**Response**\n\nStatus Code: 202 Accepted is returned for a successful response.\n\n<a name=\"GetIndexerStatus\"></a>\n## Get Indexer Status\n\nThe **Get Indexer Status** operation retrieves the current status and execution history of an indexer: \n\n    GET https://[service name].search.windows.net/indexers/[indexer name]/status?api-version=[api-version]\n    api-key: [admin key]\n\n\nThe `api-version` is required. The preview version is `2015-02-28-Preview`. [Azure Search versioning](https://msdn.microsoft.com/library/azure/dn864560.aspx) has details and more information about alternative versions.\n\nThe `api-key` must be an admin key (as opposed to a query key). Refer to the authentication section in [Search Service REST API](https://msdn.microsoft.com/library/azure/dn798935.aspx) to learn more about keys. [Create a Search service in the portal](search-create-service-portal.md) explains how to get the service URL and key properties used in the request.\n\n**Response**\n\nStatus Code: 200 OK for a successful response.\n\nThe response body contains information about overall indexer health status, the last indexer invocation, as well as the history of recent indexer invocations (if present). \n\nA sample response body looks like this: \n\n    {\n        \"status\":\"running\",\n        \"lastResult\": {\n            \"status\":\"success\",\n            \"errorMessage\":null,\n            \"startTime\":\"2014-11-26T03:37:18.853Z\",\n            \"endTime\":\"2014-11-26T03:37:19.012Z\",\n            \"errors\":[],\n            \"itemsProcessed\":11,\n            \"itemsFailed\":0,\n            \"initialTrackingState\":null,\n            \"finalTrackingState\":null\n         },\n        \"executionHistory\":[ {\n            \"status\":\"success\",\n            \"errorMessage\":null,\n            \"startTime\":\"2014-11-26T03:37:18.853Z\",\n            \"endTime\":\"2014-11-26T03:37:19.012Z\",\n            \"errors\":[],\n            \"itemsProcessed\":11,\n            \"itemsFailed\":0,\n            \"initialTrackingState\":null,\n            \"finalTrackingState\":null\n        }]\n    }\n\n**Indexer Status**\n\nIndexer status can be one of the following  values:\n\n- `running` indicates that the indexer is running normally. Note that some of the indexer executions may still be failing, so it's a good idea to check the `lastResult` property as well. \n\n- `error` indicates that the indexer experienced an error that cannot be corrected without human intervention. For example, the data source credentials may have expired, or the schema of the data source or of the target index has changed in a breaking way. \n\n**Indexer Execution Result**\n\nAn indexer execution result contains information about a single indexer execution. The latest result is surfaced as the `lastResult` property of the indexer status. Other recent results, if present, are returned as the `executionHistory` property of the indexer status. \n\nIndexer execution result contains the following properties: \n\n- `status`: the status of an execution. See [Indexer Execution Status](#IndexerExecutionStatus) below for details. \n\n- `errorMessage`: error message for a failed execution. \n\n- `startTime`: the time in UTC when this execution started.\n\n- `endTime`: the time in UTC when this execution ended. This value is not set if the execution is still in progress.\n\n- `errors`: a list of item-level errors, if any. \n\n- `itemsProcessed`: the number of data source items (for example, table rows) that the indexer attempted to index during this execution. \n\n- `itemsFailed`: the number of items that failed during this execution.  \n \n- `initialTrackingState`: always `null` for the first indexer execution, or if the data change tracking policy is not enabled on the data source used. If such a policy is enabled, in subsequent executions this value indicates the first (lowest) change tracking value processed by this execution. \n\n- `finalTrackingState`: always `null` if the data change tracking policy is not enabled on the data source used. Otherwise, indicates the latest (highest) change tracking value successfully processed by this execution. \n\n<a name=\"IndexerExecutionStatus\"></a>\n**Indexer Execution Status**\n\nIndexer execution status captures the status of a single indexer execution. It can have the following values:\n\n- `success` indicates that the indexer execution has completed successfully.\n\n- `inProgress` indicates that the indexer execution is in progress. \n\n- `transientFailure` indicates that an indexer execution has failed. See `errorMessage` property for details. The failure may or may not require human intervention to fix - for example, fixing a schema incom\n- patibility between the data source and the target index requires user action, while a temporary data source downtime does not. Indexer invocations will continue per schedule, if one is present. \n\n- `persistentFailure` indicates that the indexer has failed in a way that requires human intervention. Scheduled indexer executions stop. After addressing the issue, use Reset Indexer API to restart the scheduled executions. \n\n- `reset` indicates that the indexer has been reset by a call to Reset Indexer API (see below). \n\n<a name=\"ResetIndexer\"></a>\n## Reset Indexer\n\nThe **Reset Indexer** operation resets the change tracking state associated with the indexer. This allows you to trigger from-scratch re-indexing (for example, if your data source schema has changed), or to change the data change detection policy for a data source associated with the indexer.   \n\n    POST https://[service name].search.windows.net/indexers/[indexer name]/reset?api-version=[api-version]\n    api-key: [admin key]\n\nThe `api-version` is required. The preview version is `2015-02-28-Preview`. [Azure Search versioning](https://msdn.microsoft.com/library/azure/dn864560.aspx) has details and more information about alternative versions.\n\nThe `api-key` must be an admin key (as opposed to a query key). Refer to the authentication section in [Search Service REST API](https://msdn.microsoft.com/library/azure/dn798935.aspx) to learn more about keys. [Create a Search service in the portal](search-create-service-portal.md) explains how to get the service URL and key properties used in the request.\n\n**Response**\n\nStatus Code: 204 No Content for a successful response.\n\n## Mapping between SQL Data Types and Azure Search Data Types\n\n<table style=\"font-size:12\">\n<tr>\n<td>SQL data type</td>  \n<td>Allowed target index field types</td>\n<td>Notes</td>\n</tr>\n<tr>\n<td>bit</td>\n<td>Edm.Boolean, Edm.String</td>\n<td></td>\n</tr>\n<tr>\n<td>int, smallint, tinyint</td>\n<td>Edm.Int32, Edm.Int64, Edm.String</td>\n<td></td>\n</tr>\n<tr>\n<td>bigint</td>\n<td>Edm.Int64, Edm.String</td>\n<td></td>\n</tr>\n<tr>\n<td>real, float</td>\n<td>Edm.Double, Edm.String</td>\n<td></td>\n</tr>\n<tr>\n<td>smallmoney, money<br>decimal<br>numeric\n</td>\n<td>Edm.String</td>\n<td>Azure Search does not support converting decimal types into Edm.Double because this would lose precision\n</td>\n</tr>\n<tr>\n<td>char, nchar, varchar, nvarchar</td>\n<td>Edm.String<br/>Collection(Edm.String)</td>\n<td>See [Field Mapping Functions](#FieldMappingFunctions) in this document for details on how to transform a string column into a Collection(Edm.String)</td>\n</tr>\n<tr>\n<td>smalldatetime, datetime, datetime2, date, datetimeoffset</td>\n<td>Edm.DateTimeOffset, Edm.String</td>\n<td></td>\n</tr>\n<tr>\n<td>uniqueidentifer</td>\n<td>Edm.String</td>\n<td></td>\n</tr>\n<tr>\n<td>geography</td>\n<td>Edm.GeographyPoint</td>\n<td>Only geography instances of type POINT with SRID 4326 (which is the default) are supported</td>\n</tr>\n<tr>\n<td>rowversion</td>\n<td>N/A</td>\n<td>Row-version columns cannot be stored in the search index, but they can be used for change tracking</td>\n</tr>\n<tr>\n<td>time, timespan<br>binary, varbinary, image,<br>xml, geometry, CLR types</td>\n<td>N/A</td>\n<td>Not supported</td>\n</tr>\n</table>\n\n## Mapping between JSON Data Types and Azure Search Data Types\n\n<table style=\"font-size:12\">\n<tr>\n<td>JSON data type</td> \n<td>Allowed target index field types</td>\n<td>Notes</td>\n</tr>\n<tr>\n<td>bool</td>\n<td>Edm.Boolean, Edm.String</td>\n<td></td>\n</tr>\n<tr>\n<td>Integral numbers</td>\n<td>Edm.Int32, Edm.Int64, Edm.String</td>\n<td></td>\n</tr>\n<tr>\n<td>Floating-point numbers</td>\n<td>Edm.Double, Edm.String</td>\n<td></td>\n</tr>\n<tr>\n<td>string</td>\n<td>Edm.String</td>\n<td></td>\n</tr>\n<tr>\n<td>arrays of primitive types, e.g. [ \"a\", \"b\", \"c\" ]</td>\n<td>Collection(Edm.String)</td>\n<td></td>\n</tr>\n<tr>\n<td>Strings that look like dates</td>\n<td>Edm.DateTimeOffset, Edm.String</td>\n<td></td>\n</tr>\n<tr>\n<td>GeoJSON point objects</td>\n<td>Edm.GeographyPoint</td>\n<td>GeoJSON points are JSON objects in the following format: { \"type\" : \"Point\", \"coordinates\" : [long, lat] } </td>\n</tr>\n<tr>\n<td>Other JSON objects</td>\n<td>N/A</td>\n<td>Not supported; Azure Search currently supports only primitive types and string collections</td>\n</tr>\n</table> "
+}

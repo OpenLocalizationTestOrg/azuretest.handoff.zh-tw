@@ -1,0 +1,530 @@
+{
+  "nodes": [
+    {
+      "content": "Enable heap dumps for Hadoop services on HDInsight | Microsoft Azure",
+      "pos": [
+        27,
+        95
+      ]
+    },
+    {
+      "content": "Enable heap dumps for Hadoop services from Linux-based HDInsight clusters for debugging and analysis.",
+      "pos": [
+        114,
+        215
+      ]
+    },
+    {
+      "content": "Enable heap dumps for Hadoop services on Linux-based HDInsight (Preview)",
+      "pos": [
+        545,
+        617
+      ]
+    },
+    {
+      "content": "Heap dumps contain a snapshot of the application's memory, including the values of variables at the time the dump was created.",
+      "pos": [
+        704,
+        830
+      ]
+    },
+    {
+      "content": "So they are very useful for diagnosing problems that occur at run-time.",
+      "pos": [
+        831,
+        902
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> The information in this article only applies to Linux-based HDInsight.",
+      "pos": [
+        906,
+        989
+      ]
+    },
+    {
+      "content": "For information on Windows-based HDInsight, see <bpt id=\"p1\">[</bpt>Enable heap dumps for Hadoop services on Windows-based HDInsight<ept id=\"p1\">](hdinsight-hadoop-collect-debug-heap-dumps.md)</ept>",
+      "pos": [
+        990,
+        1150
+      ]
+    },
+    {
+      "pos": [
+        1155,
+        1191
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"whichServices\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Services"
+    },
+    {
+      "content": "You can enable heap dumps for the following services:",
+      "pos": [
+        1193,
+        1246
+      ]
+    },
+    {
+      "pos": [
+        1251,
+        1275
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>hcatalog<ept id=\"p1\">**</ept> - tempelton"
+    },
+    {
+      "pos": [
+        1279,
+        1325
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>hive<ept id=\"p1\">**</ept> - hiveserver2, metastore, derbyserver"
+    },
+    {
+      "pos": [
+        1329,
+        1361
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>mapreduce<ept id=\"p1\">**</ept> - jobhistoryserver"
+    },
+    {
+      "pos": [
+        1365,
+        1420
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>yarn<ept id=\"p1\">**</ept> - resourcemanager, nodemanager, timelineserver"
+    },
+    {
+      "pos": [
+        1424,
+        1472
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>hdfs<ept id=\"p1\">**</ept> - datanode, secondarynamenode, namenode"
+    },
+    {
+      "content": "You can also enable heap dumps for the map and reduce processes ran by HDInsight.",
+      "pos": [
+        1474,
+        1555
+      ]
+    },
+    {
+      "pos": [
+        1560,
+        1625
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"configuration\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Understanding heap dump configuration"
+    },
+    {
+      "content": "Heap dumps are enabled by passing options (sometimes known as opts, or parameters) to the JVM when a service is started.",
+      "pos": [
+        1627,
+        1747
+      ]
+    },
+    {
+      "content": "For most Hadoop services, this can be accomplished by modifying the shell script used to start the service.",
+      "pos": [
+        1748,
+        1855
+      ]
+    },
+    {
+      "content": "In each script, there is an export for <bpt id=\"p1\">**</bpt>\\*\\_OPTS<ept id=\"p1\">**</ept>, which contains the options passed to the JVM.",
+      "pos": [
+        1857,
+        1955
+      ]
+    },
+    {
+      "content": "For example, in the <bpt id=\"p1\">**</bpt>hadoop-env.sh<ept id=\"p1\">**</ept> script, the line that begins with <ph id=\"ph1\">`export HADOOP_NAMENODE_OPTS=`</ph> contains the options for the NameNode service.",
+      "pos": [
+        1956,
+        2105
+      ]
+    },
+    {
+      "content": "Map and reduce processes are slightly different, as these are a child process of the MapReduce service.",
+      "pos": [
+        2107,
+        2210
+      ]
+    },
+    {
+      "content": "Each map or reduce process runs in a child container, and there are two entries that contain the JVM options for these.",
+      "pos": [
+        2211,
+        2330
+      ]
+    },
+    {
+      "content": "Both contained in <bpt id=\"p1\">**</bpt>mapred-site.xml<ept id=\"p1\">**</ept>:",
+      "pos": [
+        2331,
+        2369
+      ]
+    },
+    {
+      "content": "mapreduce.admin.map.child.java.opts",
+      "pos": [
+        2375,
+        2410
+      ]
+    },
+    {
+      "content": "mapreduce.admin.reduce.child.java.opts",
+      "pos": [
+        2417,
+        2455
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> We recommend using Ambari to modify both the scripts and mapred-site.xml settings, as Ambari will handle replicating changes across nodes in the cluster.",
+      "pos": [
+        2461,
+        2627
+      ]
+    },
+    {
+      "content": "See the <bpt id=\"p1\">[</bpt>Using Ambari<ept id=\"p1\">](#using-ambari)</ept> section for specific steps.",
+      "pos": [
+        2628,
+        2693
+      ]
+    },
+    {
+      "content": "Enable heap dumps",
+      "pos": [
+        2698,
+        2715
+      ]
+    },
+    {
+      "content": "The following option enables heap dumps when an OutOfMemoryError occurs:",
+      "pos": [
+        2717,
+        2789
+      ]
+    },
+    {
+      "content": "The <bpt id=\"p1\">**</bpt>+<ept id=\"p1\">**</ept> indicates that this option is enabled.",
+      "pos": [
+        2828,
+        2876
+      ]
+    },
+    {
+      "content": "The default is disabled.",
+      "pos": [
+        2877,
+        2901
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.WARNING]</ph> Heap dumps are not enabled for Hadoop services on HDInsight by default, as the dump files can be large.",
+      "pos": [
+        2905,
+        3024
+      ]
+    },
+    {
+      "content": "If you do enable them for troubleshooting, remember to disable them once you have reproduced the problem and gathered the dump files.",
+      "pos": [
+        3025,
+        3158
+      ]
+    },
+    {
+      "content": "Dump location",
+      "pos": [
+        3163,
+        3176
+      ]
+    },
+    {
+      "content": "The default location for the dump file is the current working directory.",
+      "pos": [
+        3178,
+        3250
+      ]
+    },
+    {
+      "content": "You can control where the file is stored using the following option:",
+      "pos": [
+        3251,
+        3319
+      ]
+    },
+    {
+      "pos": [
+        3349,
+        3448
+      ],
+      "content": "For example, using <ph id=\"ph1\">`-XX:HeapDumpPath=/tmp`</ph> will cause the dumps to be stored in the /tmp directory."
+    },
+    {
+      "content": "Scripts",
+      "pos": [
+        3453,
+        3460
+      ]
+    },
+    {
+      "content": "You can also trigger a script when an <bpt id=\"p1\">**</bpt>OutOfMemoryError<ept id=\"p1\">**</ept> occurs.",
+      "pos": [
+        3462,
+        3528
+      ]
+    },
+    {
+      "content": "For example, triggering a notification so you know that the error has occurred.",
+      "pos": [
+        3529,
+        3608
+      ]
+    },
+    {
+      "content": "This is controlled using the following option:",
+      "pos": [
+        3609,
+        3655
+      ]
+    },
+    {
+      "pos": [
+        3703,
+        3838
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> Since Hadoop is a distributed system, any script used must be placed on all nodes in the cluster that the service runs on."
+    },
+    {
+      "content": "The script must also be in a location that is accessible by the account the service runs as, and must provide execute permissions.",
+      "pos": [
+        3843,
+        3973
+      ]
+    },
+    {
+      "content": "For example, you may wish to store scripts in <ph id=\"ph1\">`/usr/local/bin`</ph> and use <ph id=\"ph2\">`chmod go+rx /usr/local/bin/filename.sh`</ph> to grant read and execute permissions.",
+      "pos": [
+        3974,
+        4124
+      ]
+    },
+    {
+      "content": "Using Ambari",
+      "pos": [
+        4128,
+        4140
+      ]
+    },
+    {
+      "content": "To modify the configuration for a service, use the following steps:",
+      "pos": [
+        4142,
+        4209
+      ]
+    },
+    {
+      "content": "Open the Ambari web UI for your cluster.",
+      "pos": [
+        4214,
+        4254
+      ]
+    },
+    {
+      "content": "The URL will be https://YOURCLUSTERNAME.azurehdinsight.net.",
+      "pos": [
+        4255,
+        4314
+      ]
+    },
+    {
+      "content": "When prompted, authenticate to the site using the HTTP account name (default: admin,) and password for your cluster.",
+      "pos": [
+        4320,
+        4436
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> You may be prompted a second time by Ambari for the user name and password.",
+      "pos": [
+        4444,
+        4532
+      ]
+    },
+    {
+      "content": "If so, just re-enter the same account name and password",
+      "pos": [
+        4533,
+        4588
+      ]
+    },
+    {
+      "content": "Using the list of on the left, select the service area you want to modify.",
+      "pos": [
+        4593,
+        4667
+      ]
+    },
+    {
+      "content": "For example, <bpt id=\"p1\">**</bpt>HDFS<ept id=\"p1\">**</ept>.",
+      "pos": [
+        4668,
+        4690
+      ]
+    },
+    {
+      "content": "In the center area, select the <bpt id=\"p1\">**</bpt>Configs<ept id=\"p1\">**</ept> tab.",
+      "pos": [
+        4691,
+        4738
+      ]
+    },
+    {
+      "content": "Image of Ambari web with HDFS Configs tab selected",
+      "pos": [
+        4746,
+        4796
+      ]
+    },
+    {
+      "content": "Using the <bpt id=\"p1\">**</bpt>Filter...<ept id=\"p1\">**</ept> entry, enter <bpt id=\"p2\">**</bpt>opts<ept id=\"p2\">**</ept>.",
+      "pos": [
+        4862,
+        4908
+      ]
+    },
+    {
+      "content": "This will filter the list of configuration items to only those containing this text, and is a quick way to find the shell script, or <bpt id=\"p1\">**</bpt>template<ept id=\"p1\">**</ept> that can be used to set these options.",
+      "pos": [
+        4909,
+        5093
+      ]
+    },
+    {
+      "content": "Filtered list",
+      "pos": [
+        5101,
+        5114
+      ]
+    },
+    {
+      "content": "Find the <bpt id=\"p1\">**</bpt>\\*\\_OPTS<ept id=\"p1\">**</ept> entry for the service you want to enable heap dumps for, and add the options you wish to enable.",
+      "pos": [
+        5173,
+        5291
+      ]
+    },
+    {
+      "content": "In the following image, I've added <ph id=\"ph1\">`-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/`</ph> to the <bpt id=\"p1\">**</bpt>HADOOP\\_NAMENODE\\_OPTS<ept id=\"p1\">**</ept> entry:",
+      "pos": [
+        5292,
+        5424
+      ]
+    },
+    {
+      "content": "HADOOP_NAMENODE_OPTS with -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/",
+      "pos": [
+        5432,
+        5512
+      ]
+    },
+    {
+      "pos": [
+        5572,
+        5778
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> When enabling heap dumps for the map or reduce child process, you will instead look for the fields labled <bpt id=\"p1\">**</bpt>mapreduce.admin.map.child.java.opts<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>mapreduce.admin.reduce.child.java.opts<ept id=\"p2\">**</ept>."
+    },
+    {
+      "content": "Use the <bpt id=\"p1\">**</bpt>Save<ept id=\"p1\">**</ept> button to save the changes.",
+      "pos": [
+        5784,
+        5828
+      ]
+    },
+    {
+      "content": "You will be allowed to enter a short note describing the changes.",
+      "pos": [
+        5829,
+        5894
+      ]
+    },
+    {
+      "pos": [
+        5899,
+        6005
+      ],
+      "content": "Once the changes have been applied, the <bpt id=\"p1\">**</bpt>Restart required<ept id=\"p1\">**</ept> icon will appear beside one or more services."
+    },
+    {
+      "content": "restart required icon and restart button",
+      "pos": [
+        6013,
+        6053
+      ]
+    },
+    {
+      "content": "Select each service that needs a restart, and use the <bpt id=\"p1\">**</bpt>Service Actions<ept id=\"p1\">**</ept> button to <bpt id=\"p2\">**</bpt>Turn On Maintenance Mode<ept id=\"p2\">**</ept>.",
+      "pos": [
+        6125,
+        6238
+      ]
+    },
+    {
+      "content": "This prevents alerts from being generated from this service when you restart it.",
+      "pos": [
+        6239,
+        6319
+      ]
+    },
+    {
+      "content": "Turn on maintenance mode menu",
+      "pos": [
+        6327,
+        6356
+      ]
+    },
+    {
+      "pos": [
+        6424,
+        6534
+      ],
+      "content": "Once you have enabled maintenance mode, use the <bpt id=\"p1\">**</bpt>Restart<ept id=\"p1\">**</ept> button for the service to <bpt id=\"p2\">**</bpt>Restart All Effected<ept id=\"p2\">**</ept>"
+    },
+    {
+      "content": "Restart All Affected entry",
+      "pos": [
+        6542,
+        6568
+      ]
+    },
+    {
+      "pos": [
+        6637,
+        6725
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> the entries for the <bpt id=\"p1\">**</bpt>Restart<ept id=\"p1\">**</ept> button may be different for other services."
+    },
+    {
+      "content": "Once the services have been restarted, use the <bpt id=\"p1\">**</bpt>Service Actions<ept id=\"p1\">**</ept> button to <bpt id=\"p2\">**</bpt>Turn Off Maintenance Mode<ept id=\"p2\">**</ept>.",
+      "pos": [
+        6730,
+        6837
+      ]
+    },
+    {
+      "content": "This Ambari to resume monitoring for alerts for the service.",
+      "pos": [
+        6838,
+        6898
+      ]
+    },
+    {
+      "content": "test",
+      "pos": [
+        6900,
+        6904
+      ]
+    }
+  ],
+  "content": "<properties\n    pageTitle=\"Enable heap dumps for Hadoop services on HDInsight | Microsoft Azure\"\n    description=\"Enable heap dumps for Hadoop services from Linux-based HDInsight clusters for debugging and analysis.\"\n    services=\"hdinsight\"\n    documentationCenter=\"\"\n    authors=\"Blackmist\"\n    manager=\"paulettm\"\n    editor=\"cgronlun\"\n    tags=\"azure-portal\"/>\n\n<tags\n    ms.service=\"hdinsight\"\n    ms.workload=\"big-data\"\n    ms.tgt_pltfrm=\"na\"\n    ms.devlang=\"na\"\n    ms.topic=\"article\"\n    ms.date=\"09/02/2015\"\n    ms.author=\"larryfr\"/>\n\n\n#Enable heap dumps for Hadoop services on Linux-based HDInsight (Preview)\n\n[AZURE.INCLUDE [heapdump-selector](../../includes/hdinsight-selector-heap-dump.md)]\n\nHeap dumps contain a snapshot of the application's memory, including the values of variables at the time the dump was created. So they are very useful for diagnosing problems that occur at run-time.\n\n> [AZURE.NOTE] The information in this article only applies to Linux-based HDInsight. For information on Windows-based HDInsight, see [Enable heap dumps for Hadoop services on Windows-based HDInsight](hdinsight-hadoop-collect-debug-heap-dumps.md)\n\n## <a name=\"whichServices\"></a>Services\n\nYou can enable heap dumps for the following services:\n\n*  **hcatalog** - tempelton\n*  **hive** - hiveserver2, metastore, derbyserver\n*  **mapreduce** - jobhistoryserver\n*  **yarn** - resourcemanager, nodemanager, timelineserver\n*  **hdfs** - datanode, secondarynamenode, namenode\n\nYou can also enable heap dumps for the map and reduce processes ran by HDInsight.\n\n## <a name=\"configuration\"></a>Understanding heap dump configuration\n\nHeap dumps are enabled by passing options (sometimes known as opts, or parameters) to the JVM when a service is started. For most Hadoop services, this can be accomplished by modifying the shell script used to start the service.\n\nIn each script, there is an export for **\\*\\_OPTS**, which contains the options passed to the JVM. For example, in the **hadoop-env.sh** script, the line that begins with `export HADOOP_NAMENODE_OPTS=` contains the options for the NameNode service.\n\nMap and reduce processes are slightly different, as these are a child process of the MapReduce service. Each map or reduce process runs in a child container, and there are two entries that contain the JVM options for these. Both contained in **mapred-site.xml**:\n\n* **mapreduce.admin.map.child.java.opts**\n* **mapreduce.admin.reduce.child.java.opts**\n\n> [AZURE.NOTE] We recommend using Ambari to modify both the scripts and mapred-site.xml settings, as Ambari will handle replicating changes across nodes in the cluster. See the [Using Ambari](#using-ambari) section for specific steps.\n\n###Enable heap dumps\n\nThe following option enables heap dumps when an OutOfMemoryError occurs:\n\n    -XX:+HeapDumpOnOutOfMemoryError\n\nThe **+** indicates that this option is enabled. The default is disabled.\n\n> [AZURE.WARNING] Heap dumps are not enabled for Hadoop services on HDInsight by default, as the dump files can be large. If you do enable them for troubleshooting, remember to disable them once you have reproduced the problem and gathered the dump files.\n\n###Dump location\n\nThe default location for the dump file is the current working directory. You can control where the file is stored using the following option:\n\n    -XX:HeapDumpPath=/path\n\nFor example, using `-XX:HeapDumpPath=/tmp` will cause the dumps to be stored in the /tmp directory.\n\n###Scripts\n\nYou can also trigger a script when an **OutOfMemoryError** occurs. For example, triggering a notification so you know that the error has occurred. This is controlled using the following option:\n\n    -XX:OnOutOfMemoryError=/path/to/script\n\n> [AZURE.NOTE] Since Hadoop is a distributed system, any script used must be placed on all nodes in the cluster that the service runs on.\n>\n> The script must also be in a location that is accessible by the account the service runs as, and must provide execute permissions. For example, you may wish to store scripts in `/usr/local/bin` and use `chmod go+rx /usr/local/bin/filename.sh` to grant read and execute permissions.\n\n##Using Ambari\n\nTo modify the configuration for a service, use the following steps:\n\n1. Open the Ambari web UI for your cluster. The URL will be https://YOURCLUSTERNAME.azurehdinsight.net.\n\n    When prompted, authenticate to the site using the HTTP account name (default: admin,) and password for your cluster.\n\n    > [AZURE.NOTE] You may be prompted a second time by Ambari for the user name and password. If so, just re-enter the same account name and password\n\n2. Using the list of on the left, select the service area you want to modify. For example, **HDFS**. In the center area, select the **Configs** tab.\n\n    ![Image of Ambari web with HDFS Configs tab selected](./media/hdinsight-hadoop-heap-dump-linux/serviceconfig.png)\n\n3. Using the **Filter...** entry, enter **opts**. This will filter the list of configuration items to only those containing this text, and is a quick way to find the shell script, or **template** that can be used to set these options.\n\n    ![Filtered list](./media/hdinsight-hadoop-heap-dump-linux/filter.png)\n\n4. Find the **\\*\\_OPTS** entry for the service you want to enable heap dumps for, and add the options you wish to enable. In the following image, I've added `-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/` to the **HADOOP\\_NAMENODE\\_OPTS** entry:\n\n    ![HADOOP_NAMENODE_OPTS with -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/](./media/hdinsight-hadoop-heap-dump-linux/opts.png)\n\n    > [AZURE.NOTE] When enabling heap dumps for the map or reduce child process, you will instead look for the fields labled **mapreduce.admin.map.child.java.opts** and **mapreduce.admin.reduce.child.java.opts**.\n\n    Use the **Save** button to save the changes. You will be allowed to enter a short note describing the changes.\n\n5. Once the changes have been applied, the **Restart required** icon will appear beside one or more services.\n\n    ![restart required icon and restart button](./media/hdinsight-hadoop-heap-dump-linux/restartrequiredicon.png)\n\n6. Select each service that needs a restart, and use the **Service Actions** button to **Turn On Maintenance Mode**. This prevents alerts from being generated from this service when you restart it.\n\n    ![Turn on maintenance mode menu](./media/hdinsight-hadoop-heap-dump-linux/maintenancemode.png)\n\n7. Once you have enabled maintenance mode, use the **Restart** button for the service to **Restart All Effected**\n\n    ![Restart All Affected entry](./media/hdinsight-hadoop-heap-dump-linux/restartbutton.png)\n\n    > [AZURE.NOTE] the entries for the **Restart** button may be different for other services.\n\n8. Once the services have been restarted, use the **Service Actions** button to **Turn Off Maintenance Mode**. This Ambari to resume monitoring for alerts for the service.\n\ntest\n"
+}

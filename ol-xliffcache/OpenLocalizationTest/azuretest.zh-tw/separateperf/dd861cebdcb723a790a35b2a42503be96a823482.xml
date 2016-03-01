@@ -1,0 +1,656 @@
+{
+  "nodes": [
+    {
+      "content": "Copy output data to an on-premises SQL Server database (Azure Portal)",
+      "pos": [
+        28,
+        97
+      ]
+    },
+    {
+      "content": "This walkthrough extends the tutorial using Data Factory Editor in the Azure Portal such that the pipeline copies output data to a SQL Server database.",
+      "pos": [
+        117,
+        268
+      ]
+    },
+    {
+      "content": "Walkthrough: Copy campaign effectiveness data to an on-premises SQL Server database",
+      "pos": [
+        596,
+        679
+      ]
+    },
+    {
+      "content": "In this walkthrough, you will learn how to set up the environment to enable the pipeline to work with your on-premises data.",
+      "pos": [
+        681,
+        805
+      ]
+    },
+    {
+      "content": "In the last step of log processing scenario from the first walkthrough with Partition -&gt; Enrich -&gt; Analyze workflow, the marketing campaign effectiveness output was copied to an Azure SQL database.",
+      "pos": [
+        808,
+        1005
+      ]
+    },
+    {
+      "content": "You could also move this data to on-premises SQL Server for analytics within your organization.",
+      "pos": [
+        1006,
+        1101
+      ]
+    },
+    {
+      "content": "In order to copy the marketing campaign effectiveness data from Azure Blob to on-premises SQL Server, you need to create additional on-premises Linked Service, Table and Pipeline using the same set of cmdlets introduced in the first walkthrough.",
+      "pos": [
+        1104,
+        1349
+      ]
+    },
+    {
+      "content": "Pr-requisites",
+      "pos": [
+        1354,
+        1367
+      ]
+    },
+    {
+      "pos": [
+        1369,
+        1542
+      ],
+      "content": "You <bpt id=\"p1\">**</bpt>must<ept id=\"p1\">**</ept> perform the walkthrough in the <bpt id=\"p2\">[</bpt>Tutorial: Move and process log files using Data Factory<ept id=\"p2\">][datafactorytutorial]</ept> before performing the walkthrough in this article."
+    },
+    {
+      "pos": [
+        1545,
+        1798
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>(recommended)<ept id=\"p1\">**</ept> Review and practice the walkthrough in the <bpt id=\"p2\">[</bpt>Enable your pipeline to work with on-premises data<ept id=\"p2\">][useonpremisesdatasources]</ept> article for a walkthrough on creating a pipeline to move data from on-premises SQL Server to an Azure blob store."
+    },
+    {
+      "content": "In this walkthrough, you will perform the following steps:",
+      "pos": [
+        1801,
+        1859
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt>Step 1: Create a data management gateway<ept id=\"p1\">](#OnPremStep1)</ept>.",
+      "pos": [
+        1865,
+        1922
+      ]
+    },
+    {
+      "content": "The Data Management Gateway  is a client agent that provides access to on-premises data sources in your organization from the cloud.",
+      "pos": [
+        1923,
+        2055
+      ]
+    },
+    {
+      "content": "The gateway enables transfer of data between an on premise SQL Server and Azure data stores.",
+      "pos": [
+        2056,
+        2148
+      ]
+    },
+    {
+      "content": "You must have at least one gateway installed in your corporate environment as well as register it with the Azure Data Factory before adding on-premises SQL Server database as a linked service to an Azure data factory.",
+      "pos": [
+        2156,
+        2373
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt>Step 2: Create a linked service for the on-premises SQL Server<ept id=\"p1\">](#OnPremStep2)</ept>.",
+      "pos": [
+        2378,
+        2457
+      ]
+    },
+    {
+      "content": "In this step, you first create a database and a table on your on-premises SQL Server computer and then create the linked service: <bpt id=\"p1\">**</bpt>OnPremSqlLinkedService<ept id=\"p1\">**</ept>.",
+      "pos": [
+        2458,
+        2615
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt>Step 3: Create table and pipeline<ept id=\"p1\">](#OnPremStep3)</ept>.",
+      "pos": [
+        2621,
+        2671
+      ]
+    },
+    {
+      "content": "In this step, you will create a table <bpt id=\"p1\">**</bpt>MarketingCampaignEffectivenessOnPremSQLTable<ept id=\"p1\">**</ept> and pipeline <bpt id=\"p2\">**</bpt>EgressDataToOnPremPipeline<ept id=\"p2\">**</ept>.",
+      "pos": [
+        2672,
+        2803
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt>Step 4: Monitor pipeline and view the result<ept id=\"p1\">](#OnPremStep4)</ept>.",
+      "pos": [
+        2809,
+        2870
+      ]
+    },
+    {
+      "content": "In this step, you will monitor the pipelines, tables, and data slices by using the Azure Portal.",
+      "pos": [
+        2871,
+        2967
+      ]
+    },
+    {
+      "pos": [
+        2973,
+        3040
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"OnPremStep1\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph> Step 1: Create a Data Management Gateway"
+    },
+    {
+      "content": "The Data Management Gateway is a client agent that provides access to on-premises data sources in your organization from the cloud.",
+      "pos": [
+        3042,
+        3173
+      ]
+    },
+    {
+      "content": "The gateway enables transfer of data between an on premise SQL Server and Azure data stores.",
+      "pos": [
+        3174,
+        3266
+      ]
+    },
+    {
+      "content": "You must have at least one gateway installed in your corporate environment as well as register it with the Azure Data Factory before adding on-premises SQL Server database as a linked service to an Azure data factory.",
+      "pos": [
+        3270,
+        3487
+      ]
+    },
+    {
+      "content": "If you have an existing data gateway that you can use, skip this step.",
+      "pos": [
+        3489,
+        3559
+      ]
+    },
+    {
+      "content": "Create a logical data gateway.",
+      "pos": [
+        3565,
+        3595
+      ]
+    },
+    {
+      "content": "In the <bpt id=\"p1\">**</bpt>Azure Preview Portal<ept id=\"p1\">**</ept>, click <bpt id=\"p2\">**</bpt>Linked Services<ept id=\"p2\">**</ept> on the <bpt id=\"p3\">**</bpt>DATA FACTORY<ept id=\"p3\">**</ept> blade for your data factory.",
+      "pos": [
+        3596,
+        3707
+      ]
+    },
+    {
+      "pos": [
+        3712,
+        3762
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>Add (+) Data Gateway<ept id=\"p1\">**</ept> on the command bar."
+    },
+    {
+      "pos": [
+        3769,
+        3821
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>New data gateway<ept id=\"p1\">**</ept> blade, click <bpt id=\"p2\">**</bpt>CREATE<ept id=\"p2\">**</ept>."
+    },
+    {
+      "pos": [
+        3826,
+        3901
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Create<ept id=\"p1\">**</ept> blade, enter <bpt id=\"p2\">**</bpt>MyGateway<ept id=\"p2\">**</ept> for the Data gateway <bpt id=\"p3\">**</bpt>name<ept id=\"p3\">**</ept>."
+    },
+    {
+      "pos": [
+        3906,
+        3954
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>PICK A REGION<ept id=\"p1\">**</ept> and change it if needed."
+    },
+    {
+      "pos": [
+        3960,
+        3997
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>OK<ept id=\"p1\">**</ept> in the <bpt id=\"p2\">**</bpt>Create<ept id=\"p2\">**</ept> blade."
+    },
+    {
+      "pos": [
+        4003,
+        4042
+      ],
+      "content": "You should see the <bpt id=\"p1\">**</bpt>Configure<ept id=\"p1\">**</ept> blade."
+    },
+    {
+      "content": "In the <bpt id=\"p1\">**</bpt>Configure<ept id=\"p1\">**</ept> blade, click <bpt id=\"p2\">**</bpt>Install directly on this computer<ept id=\"p2\">**</ept>.",
+      "pos": [
+        4048,
+        4120
+      ]
+    },
+    {
+      "content": "This will download, install, and configure the gateway on your computer and registers the gateway with the service.",
+      "pos": [
+        4121,
+        4236
+      ]
+    },
+    {
+      "content": "If you have an existing gateway installed on your computer that you want to link to this logical gateway on the portal, use the key on this blade to re-register your gateway using Data Management Gateway Configuration Manager (Preview) tool.",
+      "pos": [
+        4237,
+        4478
+      ]
+    },
+    {
+      "content": "Data Management Gateway Configuration Manager",
+      "pos": [
+        4486,
+        4531
+      ]
+    },
+    {
+      "content": "Click <bpt id=\"p1\">**</bpt>OK<ept id=\"p1\">**</ept> to close the <bpt id=\"p2\">**</bpt>Configure<ept id=\"p2\">**</ept> blade and <bpt id=\"p3\">**</bpt>OK<ept id=\"p3\">**</ept> to close the <bpt id=\"p4\">**</bpt>Create<ept id=\"p4\">**</ept> blade.",
+      "pos": [
+        4601,
+        4688
+      ]
+    },
+    {
+      "content": "Wait until the status of <bpt id=\"p1\">**</bpt>MyGateway<ept id=\"p1\">**</ept> in the <bpt id=\"p2\">**</bpt>Linked Services<ept id=\"p2\">**</ept> blade changes to <bpt id=\"p3\">**</bpt>GOOD<ept id=\"p3\">**</ept>.",
+      "pos": [
+        4689,
+        4781
+      ]
+    },
+    {
+      "content": "You can also launch <bpt id=\"p1\">**</bpt>Data Management Gateway Configuration Manager (Preview)<ept id=\"p1\">**</ept> tool to confirm that the name of the gateway matches the name in the portal and the <bpt id=\"p2\">**</bpt>status<ept id=\"p2\">**</ept> is <bpt id=\"p3\">**</bpt>Registered<ept id=\"p3\">**</ept>.",
+      "pos": [
+        4782,
+        4975
+      ]
+    },
+    {
+      "content": "You may have to close and reopen the Linked Services blade to see the latest status.",
+      "pos": [
+        4976,
+        5060
+      ]
+    },
+    {
+      "content": "It may take a few minutes before the screen is refreshed with the latest status.",
+      "pos": [
+        5061,
+        5141
+      ]
+    },
+    {
+      "pos": [
+        5147,
+        5236
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"OnPremStep2\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph> Step 2: Create a linked service for the on-premises SQL Server"
+    },
+    {
+      "content": "In this step, you first create the required database and table on your on-premises SQL Server computer and then create the linked service.",
+      "pos": [
+        5238,
+        5376
+      ]
+    },
+    {
+      "content": "Prepare On-Premises database and table",
+      "pos": [
+        5382,
+        5420
+      ]
+    },
+    {
+      "content": "To start with, you need to create the SQL Server database, table, user defined types and stored procedures.",
+      "pos": [
+        5422,
+        5529
+      ]
+    },
+    {
+      "content": "These will be used for moving the <bpt id=\"p1\">**</bpt>MarketingCampaignEffectiveness<ept id=\"p1\">**</ept> results from Azure blob to SQL Server database.",
+      "pos": [
+        5530,
+        5646
+      ]
+    },
+    {
+      "pos": [
+        5652,
+        5799
+      ],
+      "content": "In <bpt id=\"p1\">**</bpt>Windows Explorer<ept id=\"p1\">**</ept>, navigate to the <bpt id=\"p2\">**</bpt>OnPremises<ept id=\"p2\">**</ept> sub folder in <bpt id=\"p3\">**</bpt>C:\\ADFWalkthrough<ept id=\"p3\">**</ept> (or the location where you have extracted the samples)."
+    },
+    {
+      "content": "Open <bpt id=\"p1\">**</bpt>prepareOnPremDatabase&amp;Table.ps1<ept id=\"p1\">**</ept> in your favorite editor, replace the highlighted with your SQL Server information and save the file (please provide <bpt id=\"p2\">**</bpt>SQL authentication<ept id=\"p2\">**</ept> details).",
+      "pos": [
+        5804,
+        5993
+      ]
+    },
+    {
+      "content": "For the purpose of the tutorial, enable SQL Authentication for your database.",
+      "pos": [
+        5994,
+        6071
+      ]
+    },
+    {
+      "pos": [
+        6199,
+        6276
+      ],
+      "content": "In <bpt id=\"p1\">**</bpt>Azure PowerShell<ept id=\"p1\">**</ept>, navigate to <bpt id=\"p2\">**</bpt>C:\\ADFWalkthrough\\OnPremises<ept id=\"p2\">**</ept> folder."
+    },
+    {
+      "pos": [
+        6281,
+        6371
+      ],
+      "content": "Run <bpt id=\"p1\">**</bpt>prepareOnPremDatabase&amp;Table.ps1<ept id=\"p1\">**</ept> <bpt id=\"p2\">**</bpt>(either &amp; in double quotes or as shown below)<ept id=\"p2\">**</ept>."
+    },
+    {
+      "content": "Once the script executes successfully, you will see the following:",
+      "pos": [
+        6435,
+        6501
+      ]
+    },
+    {
+      "content": "Create the linked service",
+      "pos": [
+        7073,
+        7098
+      ]
+    },
+    {
+      "pos": [
+        7104,
+        7227
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Azure Preview Portal<ept id=\"p1\">**</ept>, click <bpt id=\"p2\">**</bpt>Author &amp; Deploy<ept id=\"p2\">**</ept> tile on the <bpt id=\"p3\">**</bpt>DATA FACTORY<ept id=\"p3\">**</ept> blade for <bpt id=\"p4\">**</bpt>LogProcessingFactory<ept id=\"p4\">**</ept>."
+    },
+    {
+      "pos": [
+        7232,
+        7352
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Data Factory Editor<ept id=\"p1\">**</ept>, click <bpt id=\"p2\">**</bpt>New data store<ept id=\"p2\">**</ept> on the toolbar, and select <bpt id=\"p3\">**</bpt>On-premises SQL Server database<ept id=\"p3\">**</ept>."
+    },
+    {
+      "content": "In the JSON script, do the following:",
+      "pos": [
+        7357,
+        7394
+      ]
+    },
+    {
+      "pos": [
+        7404,
+        7493
+      ],
+      "content": "Replace <bpt id=\"p1\">**</bpt><ph id=\"ph1\">&lt;servername&gt;</ph><ept id=\"p1\">**</ept> with the name of the server that hosts your SQL Server database."
+    },
+    {
+      "pos": [
+        7502,
+        7557
+      ],
+      "content": "Replace <bpt id=\"p1\">**</bpt><ph id=\"ph1\">&lt;databasename&gt;</ph><ept id=\"p1\">**</ept> with <bpt id=\"p2\">**</bpt>MarketingCampaigns<ept id=\"p2\">**</ept>."
+    },
+    {
+      "pos": [
+        7566,
+        7605
+      ],
+      "content": "If you are using <bpt id=\"p1\">**</bpt>SQL Authentication<ept id=\"p1\">**</ept>"
+    },
+    {
+      "pos": [
+        7618,
+        7688
+      ],
+      "content": "Specify <bpt id=\"p1\">**</bpt><ph id=\"ph1\">&lt;username&gt;</ph><ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt><ph id=\"ph2\">&lt;password&gt;</ph><ept id=\"p2\">**</ept> in the <bpt id=\"p3\">**</bpt>connectionString<ept id=\"p3\">**</ept>."
+    },
+    {
+      "pos": [
+        7701,
+        7826
+      ],
+      "content": "Remove last two rows (<bpt id=\"p1\">**</bpt>username<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>password<ept id=\"p2\">**</ept> JSON properties are needed only if you are using Windows Authentication)."
+    },
+    {
+      "pos": [
+        7840,
+        7895
+      ],
+      "content": "Remove **, (comma) **at the end of <bpt id=\"p1\">**</bpt>gatewayName<ept id=\"p1\">**</ept> row."
+    },
+    {
+      "content": "If you are using Windows Authentication:",
+      "pos": [
+        7915,
+        7955
+      ]
+    },
+    {
+      "content": "Set the value of <bpt id=\"p1\">**</bpt>Integrated Security<ept id=\"p1\">**</ept> to <bpt id=\"p2\">**</bpt>True<ept id=\"p2\">**</ept> in the <bpt id=\"p3\">**</bpt>connectionString<ept id=\"p3\">**</ept>.",
+      "pos": [
+        7969,
+        8050
+      ]
+    },
+    {
+      "content": "Remove \"<bpt id=\"p1\">**</bpt>User ID=<ph id=\"ph1\">&lt;username&gt;</ph>;Password=<ph id=\"ph2\">&lt;password&gt;</ph>;<ept id=\"p1\">**</ept>\" from the connectionString.",
+      "pos": [
+        8051,
+        8130
+      ]
+    },
+    {
+      "pos": [
+        8143,
+        8234
+      ],
+      "content": "Specify the name of the user that has access to the database for the <bpt id=\"p1\">**</bpt>username<ept id=\"p1\">**</ept> property."
+    },
+    {
+      "pos": [
+        8247,
+        8289
+      ],
+      "content": "Specify <bpt id=\"p1\">**</bpt>password<ept id=\"p1\">**</ept> for the user account."
+    },
+    {
+      "pos": [
+        8300,
+        8377
+      ],
+      "content": "Specify the name of the gateway (<bpt id=\"p1\">**</bpt>MyGateway<ept id=\"p1\">**</ept>) for the gatewayName property."
+    },
+    {
+      "pos": [
+        8395,
+        8456
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>Deploy<ept id=\"p1\">**</ept> on the toolbar to deploy the linked service."
+    },
+    {
+      "pos": [
+        8462,
+        8522
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"OnPremStep3\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph> Step 3: Create table and pipeline"
+    },
+    {
+      "content": "Create the on-premises logical Table",
+      "pos": [
+        8528,
+        8564
+      ]
+    },
+    {
+      "pos": [
+        8570,
+        8674
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Data Factory Editor<ept id=\"p1\">**</ept>, click <bpt id=\"p2\">**</bpt>New data set<ept id=\"p2\">**</ept> from the toolbar, and select <bpt id=\"p3\">**</bpt>On-premises SQL<ept id=\"p3\">**</ept>."
+    },
+    {
+      "pos": [
+        8679,
+        8848
+      ],
+      "content": "Replace JSON in the right pane with the JSON script from the <bpt id=\"p1\">**</bpt>MarketingCampaignEffectivenessOnPremSQLTable.json<ept id=\"p1\">**</ept> file from the <bpt id=\"p2\">**</bpt>C:\\ADFWalkthrough\\OnPremises<ept id=\"p2\">**</ept> folder."
+    },
+    {
+      "pos": [
+        8852,
+        8988
+      ],
+      "content": "Change the name of linked service (<bpt id=\"p1\">**</bpt>linkedServiceName<ept id=\"p1\">**</ept> property) from <bpt id=\"p2\">**</bpt>OnPremSqlServerLinkedService<ept id=\"p2\">**</ept> to  <bpt id=\"p3\">**</bpt>SqlServerLinkedService<ept id=\"p3\">**</ept>."
+    },
+    {
+      "pos": [
+        8992,
+        9044
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>Deploy<ept id=\"p1\">**</ept> on the toolbar to deploy the table."
+    },
+    {
+      "content": "Create the pipeline to copy the data from Azure Blob to SQL Server",
+      "pos": [
+        9057,
+        9123
+      ]
+    },
+    {
+      "content": "In the <bpt id=\"p1\">**</bpt>Data Factory Editor<ept id=\"p1\">**</ept>, click <bpt id=\"p2\">**</bpt>New pipeline<ept id=\"p2\">**</ept> button on the toolbar.",
+      "pos": [
+        9132,
+        9209
+      ]
+    },
+    {
+      "content": "Click <bpt id=\"p1\">**</bpt>... (Ellipsis)<ept id=\"p1\">**</ept> on the toolbar if you do not see the button.",
+      "pos": [
+        9210,
+        9279
+      ]
+    },
+    {
+      "content": "Alternatively, you can right-click <bpt id=\"p1\">**</bpt>Pipelines<ept id=\"p1\">**</ept> in the tree view and click <bpt id=\"p2\">**</bpt>New pipeline<ept id=\"p2\">**</ept>.",
+      "pos": [
+        9280,
+        9373
+      ]
+    },
+    {
+      "pos": [
+        9377,
+        9528
+      ],
+      "content": "Replace JSON in the right pane with the JSON script from the <bpt id=\"p1\">**</bpt>EgressDataToOnPremPipeline.json<ept id=\"p1\">**</ept> file from the <bpt id=\"p2\">**</bpt>C:\\ADFWalkthrough\\OnPremises<ept id=\"p2\">**</ept> folder."
+    },
+    {
+      "pos": [
+        9532,
+        9685
+      ],
+      "content": "Add a <bpt id=\"p1\">**</bpt>comma (',')<ept id=\"p1\">**</ept> at the end of <bpt id=\"p2\">**</bpt>closing square bracket (']')<ept id=\"p2\">**</ept> in the JSON and then add the following three lines after the closing square bracket."
+    },
+    {
+      "pos": [
+        9799,
+        9955
+      ],
+      "content": "Note that the <bpt id=\"p1\">**</bpt>start<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>end<ept id=\"p2\">**</ept> times are set to 05/01/2014 and 05/05/2014 because the sample data in this walkthrough is from 05/01/2014 to 05/05/2014."
+    },
+    {
+      "content": "Click <bpt id=\"p1\">**</bpt>Deploy<ept id=\"p1\">**</ept> on the toolbar to create and deploy the pipeline.",
+      "pos": [
+        9962,
+        10028
+      ]
+    },
+    {
+      "content": "Confirm that you see the <bpt id=\"p1\">**</bpt>PIPELINE CREATED SUCCESSFULLY<ept id=\"p1\">**</ept> message on the title bar of the Editor.",
+      "pos": [
+        10029,
+        10127
+      ]
+    },
+    {
+      "pos": [
+        10136,
+        10207
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"OnPremStep4\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph> Step 4: Monitor pipeline and view the result"
+    },
+    {
+      "pos": [
+        10209,
+        10430
+      ],
+      "content": "You can now use the same steps introduced in the <bpt id=\"p1\">**</bpt>Monitor pipelines and data slices<ept id=\"p1\">**</ept> section of the <bpt id=\"p2\">[</bpt>Main tutorial<ept id=\"p2\">][datafactorytutorial]</ept> to monitor the new pipeline and the data slices for the new on-premises ADF table."
+    },
+    {
+      "content": "When you see the status of a slice of the table <bpt id=\"p1\">**</bpt>MarketingCampaignEffectivenessOnPremSQLTable<ept id=\"p1\">**</ept> turns into Ready, it means that the pipeline have completed the execution for the slice.",
+      "pos": [
+        10433,
+        10618
+      ]
+    },
+    {
+      "content": "To view the results, query the <bpt id=\"p1\">**</bpt>MarketingCampaignEffectiveness<ept id=\"p1\">**</ept> table in <bpt id=\"p2\">**</bpt>MarketingCampaigns<ept id=\"p2\">**</ept> database in your SQL Server.",
+      "pos": [
+        10619,
+        10745
+      ]
+    },
+    {
+      "content": "Congratulations!",
+      "pos": [
+        10748,
+        10764
+      ]
+    },
+    {
+      "content": "You have successfully gone through the walkthrough to use your on-premises data source.",
+      "pos": [
+        10765,
+        10852
+      ]
+    },
+    {
+      "content": "test",
+      "pos": [
+        12169,
+        12173
+      ]
+    }
+  ],
+  "content": "<properties \n    pageTitle=\"Copy output data to an on-premises SQL Server database (Azure Portal)\" \n    description=\"This walkthrough extends the tutorial using Data Factory Editor in the Azure Portal such that the pipeline copies output data to a SQL Server database.\"\n    services=\"data-factory\" \n    documentationCenter=\"\" \n    authors=\"spelluru\" \n    manager=\"jhubbard\" \n    editor=\"monicar\"/>\n\n<tags \n    ms.service=\"data-factory\" \n    ms.workload=\"data-services\" \n    ms.tgt_pltfrm=\"na\" \n    ms.devlang=\"na\" \n    ms.topic=\"article\" \n    ms.date=\"08/25/2015\" \n    ms.author=\"spelluru\"/>\n\n\n# Walkthrough: Copy campaign effectiveness data to an on-premises SQL Server database \nIn this walkthrough, you will learn how to set up the environment to enable the pipeline to work with your on-premises data.\n \nIn the last step of log processing scenario from the first walkthrough with Partition -> Enrich -> Analyze workflow, the marketing campaign effectiveness output was copied to an Azure SQL database. You could also move this data to on-premises SQL Server for analytics within your organization.\n \nIn order to copy the marketing campaign effectiveness data from Azure Blob to on-premises SQL Server, you need to create additional on-premises Linked Service, Table and Pipeline using the same set of cmdlets introduced in the first walkthrough.\n\n## Pr-requisites\n\nYou **must** perform the walkthrough in the [Tutorial: Move and process log files using Data Factory][datafactorytutorial] before performing the walkthrough in this article. \n\n**(recommended)** Review and practice the walkthrough in the [Enable your pipeline to work with on-premises data][useonpremisesdatasources] article for a walkthrough on creating a pipeline to move data from on-premises SQL Server to an Azure blob store.\n\n\nIn this walkthrough, you will perform the following steps: \n\n1. [Step 1: Create a data management gateway](#OnPremStep1). The Data Management Gateway  is a client agent that provides access to on-premises data sources in your organization from the cloud. The gateway enables transfer of data between an on premise SQL Server and Azure data stores.  \n\n    You must have at least one gateway installed in your corporate environment as well as register it with the Azure Data Factory before adding on-premises SQL Server database as a linked service to an Azure data factory.\n\n2. [Step 2: Create a linked service for the on-premises SQL Server](#OnPremStep2). In this step, you first create a database and a table on your on-premises SQL Server computer and then create the linked service: **OnPremSqlLinkedService**.  \n3. [Step 3: Create table and pipeline](#OnPremStep3). In this step, you will create a table **MarketingCampaignEffectivenessOnPremSQLTable** and pipeline **EgressDataToOnPremPipeline**. \n\n4. [Step 4: Monitor pipeline and view the result](#OnPremStep4). In this step, you will monitor the pipelines, tables, and data slices by using the Azure Portal.\n\n\n## <a name=\"OnPremStep1\"></a> Step 1: Create a Data Management Gateway\n\nThe Data Management Gateway is a client agent that provides access to on-premises data sources in your organization from the cloud. The gateway enables transfer of data between an on premise SQL Server and Azure data stores.\n  \nYou must have at least one gateway installed in your corporate environment as well as register it with the Azure Data Factory before adding on-premises SQL Server database as a linked service to an Azure data factory.\n\nIf you have an existing data gateway that you can use, skip this step.\n\n1.  Create a logical data gateway. In the **Azure Preview Portal**, click **Linked Services** on the **DATA FACTORY** blade for your data factory.\n2.  Click **Add (+) Data Gateway** on the command bar.  \n3.  In the **New data gateway** blade, click **CREATE**.\n4.  In the **Create** blade, enter **MyGateway** for the Data gateway **name**.\n5.  Click **PICK A REGION** and change it if needed. \n6.  Click **OK** in the **Create** blade. \n7.  You should see the **Configure** blade. \n8.  In the **Configure** blade, click **Install directly on this computer**. This will download, install, and configure the gateway on your computer and registers the gateway with the service. If you have an existing gateway installed on your computer that you want to link to this logical gateway on the portal, use the key on this blade to re-register your gateway using Data Management Gateway Configuration Manager (Preview) tool.\n\n    ![Data Management Gateway Configuration Manager][image-data-factory-datamanagementgateway-configuration-manager]\n\n9. Click **OK** to close the **Configure** blade and **OK** to close the **Create** blade. Wait until the status of **MyGateway** in the **Linked Services** blade changes to **GOOD**. You can also launch **Data Management Gateway Configuration Manager (Preview)** tool to confirm that the name of the gateway matches the name in the portal and the **status** is **Registered**. You may have to close and reopen the Linked Services blade to see the latest status. It may take a few minutes before the screen is refreshed with the latest status. \n\n## <a name=\"OnPremStep2\"></a> Step 2: Create a linked service for the on-premises SQL Server\n\nIn this step, you first create the required database and table on your on-premises SQL Server computer and then create the linked service.\n\n### Prepare On-Premises database and table\n\nTo start with, you need to create the SQL Server database, table, user defined types and stored procedures. These will be used for moving the **MarketingCampaignEffectiveness** results from Azure blob to SQL Server database.\n\n1.  In **Windows Explorer**, navigate to the **OnPremises** sub folder in **C:\\ADFWalkthrough** (or the location where you have extracted the samples).\n2.  Open **prepareOnPremDatabase&Table.ps1** in your favorite editor, replace the highlighted with your SQL Server information and save the file (please provide **SQL authentication** details). For the purpose of the tutorial, enable SQL Authentication for your database. \n            \n        $dbServerName = \"<servername>\"\n        $dbUserName = \"<username>\"\n        $dbPassword = \"<password>\"\n\n3. In **Azure PowerShell**, navigate to **C:\\ADFWalkthrough\\OnPremises** folder.\n4.  Run **prepareOnPremDatabase&Table.ps1** **(either & in double quotes or as shown below)**.\n            \n        & '.\\prepareOnPremDatabase&Table.ps1'\n\n5. Once the script executes successfully, you will see the following:   \n            \n        PS E:\\ADF\\ADFWalkthrough\\OnPremises> & '.\\prepareOnPremDatabase&Table.ps1'\n        6/10/2014 10:12:33 PM Script to create sample on-premises SQL Server Database and Table\n        6/10/2014 10:12:33 PM Creating the database [MarketingCampaigns], table and stored procedure on [.]...\n        6/10/2014 10:12:33 PM Connecting as user [sa]\n        6/10/2014 10:12:33 PM Summary:\n        6/10/2014 10:12:33 PM 1. Database 'MarketingCampaigns' created.\n        6/10/2014 10:12:33 PM 2. 'MarketingCampaignEffectiveness' table and stored procedure \n\n\n### Create the linked service\n\n1.  In the **Azure Preview Portal**, click **Author & Deploy** tile on the **DATA FACTORY** blade for **LogProcessingFactory**.\n2.  In the **Data Factory Editor**, click **New data store** on the toolbar, and select **On-premises SQL Server database**.\n3.  In the JSON script, do the following: \n    1.  Replace **<servername>** with the name of the server that hosts your SQL Server database.\n    2.  Replace **<databasename>** with **MarketingCampaigns**.\n    3.  If you are using **SQL Authentication**\n        1.  Specify **<username>** and **<password>** in the **connectionString**.\n        2.  Remove last two rows (**username** and **password** JSON properties are needed only if you are using Windows Authentication). \n        3.  Remove **, (comma) **at the end of **gatewayName** row.\n        \n        **If you are using Windows Authentication:**\n        1. Set the value of **Integrated Security** to **True** in the **connectionString**. Remove \"**User ID=<username>;Password=<password>;**\" from the connectionString. \n        2. Specify the name of the user that has access to the database for the **username** property. \n        3. Specify **password** for the user account.   \n    4. Specify the name of the gateway (**MyGateway**) for the gatewayName property.             \n3.  Click **Deploy** on the toolbar to deploy the linked service. \n\n## <a name=\"OnPremStep3\"></a> Step 3: Create table and pipeline\n\n### Create the on-premises logical Table\n\n1.  In the **Data Factory Editor**, click **New data set** from the toolbar, and select **On-premises SQL**. \n2. Replace JSON in the right pane with the JSON script from the **MarketingCampaignEffectivenessOnPremSQLTable.json** file from the **C:\\ADFWalkthrough\\OnPremises** folder.\n3. Change the name of linked service (**linkedServiceName** property) from **OnPremSqlServerLinkedService** to  **SqlServerLinkedService**.\n4. Click **Deploy** on the toolbar to deploy the table. \n     \n#### Create the pipeline to copy the data from Azure Blob to SQL Server\n\n1.  1. In the **Data Factory Editor**, click **New pipeline** button on the toolbar. Click **... (Ellipsis)** on the toolbar if you do not see the button. Alternatively, you can right-click **Pipelines** in the tree view and click **New pipeline**.\n2. Replace JSON in the right pane with the JSON script from the **EgressDataToOnPremPipeline.json** file from the **C:\\ADFWalkthrough\\OnPremises** folder.\n3. Add a **comma (',')** at the end of **closing square bracket (']')** in the JSON and then add the following three lines after the closing square bracket. \n\n        \"start\": \"2014-05-01T00:00:00Z\",\n        \"end\": \"2014-05-05T00:00:00Z\",\n        \"isPaused\": false\n\n    Note that the **start** and **end** times are set to 05/01/2014 and 05/05/2014 because the sample data in this walkthrough is from 05/01/2014 to 05/05/2014. \n \n3. Click **Deploy** on the toolbar to create and deploy the pipeline. Confirm that you see the **PIPELINE CREATED SUCCESSFULLY** message on the title bar of the Editor.\n    \n## <a name=\"OnPremStep4\"></a> Step 4: Monitor pipeline and view the result\n\nYou can now use the same steps introduced in the **Monitor pipelines and data slices** section of the [Main tutorial][datafactorytutorial] to monitor the new pipeline and the data slices for the new on-premises ADF table.\n \nWhen you see the status of a slice of the table **MarketingCampaignEffectivenessOnPremSQLTable** turns into Ready, it means that the pipeline have completed the execution for the slice. To view the results, query the **MarketingCampaignEffectiveness** table in **MarketingCampaigns** database in your SQL Server.\n \nCongratulations! You have successfully gone through the walkthrough to use your on-premises data source. \n \n\n[monitor-manage-using-powershell]: data-factory-monitor-manage-using-powershell.md\n[use-custom-activities]: data-factory-use-custom-activities.md\n[troubleshoot]: data-factory-troubleshoot.md\n[cmdlet-reference]: http://go.microsoft.com/fwlink/?LinkId=517456\n\n[datafactorytutorial]: data-factory-tutorial.md\n[adfgetstarted]: data-factory-get-started.md\n[adfintroduction]: data-factory-introduction.md\n[useonpremisesdatasources]: data-factory-move-data-between-onprem-and-cloud.md\n\n[azure-preview-portal]: http://portal.azure.com\n[azure-purchase-options]: http://azure.microsoft.com/pricing/purchase-options/\n[azure-member-offers]: http://azure.microsoft.com/pricing/member-offers/\n[azure-free-trial]: http://azure.microsoft.com/pricing/free-trial/\n\n[sqlcmd-install]: http://www.microsoft.com/download/details.aspx?id=35580\n[azure-sql-firewall]: http://msdn.microsoft.com/library/azure/jj553530.aspx\n\n[download-azure-powershell]: http://azure.microsoft.com/documentation/articles/install-configure-powershell\n[adfwalkthrough-download]: http://go.microsoft.com/fwlink/?LinkId=517495\n[developer-reference]: http://go.microsoft.com/fwlink/?LinkId=516908\n\n[image-data-factory-datamanagementgateway-configuration-manager]: ./media/data-factory-tutorial-extend-onpremises/DataManagementGatewayConfigurationManager.png\n\n \ntest\n"
+}

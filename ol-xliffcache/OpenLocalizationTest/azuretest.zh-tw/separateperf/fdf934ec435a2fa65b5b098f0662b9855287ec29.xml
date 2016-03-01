@@ -1,0 +1,215 @@
+{
+  "nodes": [
+    {
+      "content": "Views in SQL Data Warehouse | Microsoft Azure",
+      "pos": [
+        26,
+        71
+      ]
+    },
+    {
+      "content": "Tips for using Transact-SQL views in Azure SQL Data Warehouse for developing solutions.",
+      "pos": [
+        89,
+        176
+      ]
+    },
+    {
+      "content": "Views in SQL Data Warehouse",
+      "pos": [
+        516,
+        543
+      ]
+    },
+    {
+      "content": "Views are particularly useful in SQL Data Warehouse.",
+      "pos": [
+        545,
+        597
+      ]
+    },
+    {
+      "content": "They can be used in a number of different ways to improve the quality of your solution.",
+      "pos": [
+        598,
+        685
+      ]
+    },
+    {
+      "content": "This article highlights a few examples of how to enrich your solution by implementing with views.",
+      "pos": [
+        687,
+        784
+      ]
+    },
+    {
+      "content": "There are some limitations that also need to be considered.",
+      "pos": [
+        785,
+        844
+      ]
+    },
+    {
+      "content": "Architectural abstraction",
+      "pos": [
+        849,
+        874
+      ]
+    },
+    {
+      "content": "A very common application pattern is to re-create tables using CREATE TABLE AS SELECT (CTAS) followed by an object renaming pattern whilst loading data.",
+      "pos": [
+        875,
+        1027
+      ]
+    },
+    {
+      "content": "The example below adds new date records to a date dimension.",
+      "pos": [
+        1030,
+        1090
+      ]
+    },
+    {
+      "content": "Note how a new object, DimDate_New, is first created and then renamed to replace the original version of the object.",
+      "pos": [
+        1091,
+        1207
+      ]
+    },
+    {
+      "content": "However, this can result in table objects appearing and disappearing from a user's view in the SSDT SQL Server Object Explorer.",
+      "pos": [
+        1483,
+        1610
+      ]
+    },
+    {
+      "content": "Views can be used to provide warehouse data consumers with a consistent presentation layer whilst the underlying objects are renamed.",
+      "pos": [
+        1611,
+        1744
+      ]
+    },
+    {
+      "content": "Providing access to the data through a view means users don't need to have visibility of the underlying tables.",
+      "pos": [
+        1745,
+        1856
+      ]
+    },
+    {
+      "content": "This provides a consistent user experience whilst ensuring that the data warehouse designers can evolve the data model and also maximise performance by using CTAS during the data loading process.",
+      "pos": [
+        1857,
+        2052
+      ]
+    },
+    {
+      "content": "Performance optimization",
+      "pos": [
+        2061,
+        2085
+      ]
+    },
+    {
+      "content": "Views are a smart way to enforce performance optimized joins between tables.",
+      "pos": [
+        2086,
+        2162
+      ]
+    },
+    {
+      "content": "For example the view can incorporate a redundant distribution key as part of the joining criteria to minimize data movement.",
+      "pos": [
+        2163,
+        2287
+      ]
+    },
+    {
+      "content": "Another reason might be to force a specific query or joining hint.",
+      "pos": [
+        2289,
+        2355
+      ]
+    },
+    {
+      "content": "This guarantees that the join is always performed in an optimal fashion and is not dependent on the user remembering to construct the join correctly.",
+      "pos": [
+        2356,
+        2505
+      ]
+    },
+    {
+      "content": "Limitations",
+      "pos": [
+        2510,
+        2521
+      ]
+    },
+    {
+      "content": "Views in SQL Data Warehouse are metadata only.",
+      "pos": [
+        2522,
+        2568
+      ]
+    },
+    {
+      "content": "Consequently the following options aren't available:",
+      "pos": [
+        2571,
+        2623
+      ]
+    },
+    {
+      "content": "There is no schema binding option",
+      "pos": [
+        2628,
+        2661
+      ]
+    },
+    {
+      "content": "Base tables cannot be updated through the view",
+      "pos": [
+        2666,
+        2712
+      ]
+    },
+    {
+      "content": "Views cannot be created over temporary tables",
+      "pos": [
+        2717,
+        2762
+      ]
+    },
+    {
+      "content": "There is no support for the EXPAND / NOEXPAND Hints",
+      "pos": [
+        2767,
+        2818
+      ]
+    },
+    {
+      "content": "There are no indexed views in SQL Data Warehouse",
+      "pos": [
+        2823,
+        2871
+      ]
+    },
+    {
+      "content": "Next steps",
+      "pos": [
+        2877,
+        2887
+      ]
+    },
+    {
+      "pos": [
+        2888,
+        2963
+      ],
+      "content": "For more development tips, see <bpt id=\"p1\">[</bpt>SQL Data Warehouse development overview<ept id=\"p1\">][]</ept>."
+    }
+  ],
+  "content": "<properties\n   pageTitle=\"Views in SQL Data Warehouse | Microsoft Azure\"\n   description=\"Tips for using Transact-SQL views in Azure SQL Data Warehouse for developing solutions.\"\n   services=\"sql-data-warehouse\"\n   documentationCenter=\"NA\"\n   authors=\"jrowlandjones\"\n   manager=\"barbkess\"\n   editor=\"\"/>\n\n<tags\n   ms.service=\"sql-data-warehouse\"\n   ms.devlang=\"NA\"\n   ms.topic=\"article\"\n   ms.tgt_pltfrm=\"NA\"\n   ms.workload=\"data-services\"\n   ms.date=\"06/22/2015\"\n   ms.author=\"JRJ@BigBangData.co.uk;barbkess\"/>\n\n \n# Views in SQL Data Warehouse\n\nViews are particularly useful in SQL Data Warehouse. They can be used in a number of different ways to improve the quality of your solution.\n\nThis article highlights a few examples of how to enrich your solution by implementing with views. There are some limitations that also need to be considered.\n\n## Architectural abstraction\nA very common application pattern is to re-create tables using CREATE TABLE AS SELECT (CTAS) followed by an object renaming pattern whilst loading data. \n\nThe example below adds new date records to a date dimension. Note how a new object, DimDate_New, is first created and then renamed to replace the original version of the object. \n\n```\nCREATE TABLE dbo.DimDate_New\nWITH (DISTRIBUTION = REPLICATE\n, CLUSTERED INDEX (DateKey ASC)\n)\nAS \nSELECT *\nFROM   dbo.DimDate  AS prod\nUNION ALL\nSELECT *\nFROM   dbo.DimDate_stg AS stg\n;\n\nRENAME OBJECT DimDate TO DimDate_Old;\nRENAME OBJECT DimDate_New TO DimDate;\n\n```\n\nHowever, this can result in table objects appearing and disappearing from a user's view in the SSDT SQL Server Object Explorer. Views can be used to provide warehouse data consumers with a consistent presentation layer whilst the underlying objects are renamed. Providing access to the data through a view means users don't need to have visibility of the underlying tables. This provides a consistent user experience whilst ensuring that the data warehouse designers can evolve the data model and also maximise performance by using CTAS during the data loading process.    \n\n## Performance optimization\nViews are a smart way to enforce performance optimized joins between tables. For example the view can incorporate a redundant distribution key as part of the joining criteria to minimize data movement.  Another reason might be to force a specific query or joining hint. This guarantees that the join is always performed in an optimal fashion and is not dependent on the user remembering to construct the join correctly.\n\n## Limitations\nViews in SQL Data Warehouse are metadata only. \n\nConsequently the following options aren't available:\n-   There is no schema binding option\n-   Base tables cannot be updated through the view\n-   Views cannot be created over temporary tables\n-   There is no support for the EXPAND / NOEXPAND Hints\n-   There are no indexed views in SQL Data Warehouse\n\n\n## Next steps\nFor more development tips, see [SQL Data Warehouse development overview][].\n\n<!--Image references-->\n\n<!--Article references-->\n[SQL Data Warehouse development overview]: sql-data-warehouse-overview-develop.md\n\n<!--MSDN references-->\n\n<!--Other Web references-->\n\n\n"
+}

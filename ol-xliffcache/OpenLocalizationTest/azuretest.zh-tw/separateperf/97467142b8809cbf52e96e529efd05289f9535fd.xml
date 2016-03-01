@@ -1,0 +1,572 @@
+{
+  "nodes": [
+    {
+      "content": "Deploy and manage backup for Azure VMs using PowerShell | Microsoft Azure",
+      "pos": [
+        27,
+        100
+      ]
+    },
+    {
+      "content": "Learn how to deploy and manage Azure Backup using PowerShell",
+      "pos": [
+        119,
+        179
+      ]
+    },
+    {
+      "content": "Deploy and manage backup for Azure VMs using PowerShell",
+      "pos": [
+        487,
+        542
+      ]
+    },
+    {
+      "content": "This article shows you how to use Azure PowerShell for backup and recovery of Azure IaaS VMs.",
+      "pos": [
+        543,
+        636
+      ]
+    },
+    {
+      "content": "Concepts",
+      "pos": [
+        641,
+        649
+      ]
+    },
+    {
+      "content": "Get <bpt id=\"p1\">[</bpt>introduced to Azure IaaS VM backup<ept id=\"p1\">](backup-azure-vms-introduction.md)</ept> in the Azure Backup documentation.",
+      "pos": [
+        650,
+        759
+      ]
+    },
+    {
+      "content": "It covers the essentials about why you should backup your VM, prerequisites, and limitations.",
+      "pos": [
+        760,
+        853
+      ]
+    },
+    {
+      "content": "In order to use PowerShell effectively, it is necessary to understand the hierarchy of objects and from where to start.",
+      "pos": [
+        855,
+        974
+      ]
+    },
+    {
+      "content": "Object hierarchy",
+      "pos": [
+        978,
+        994
+      ]
+    },
+    {
+      "content": "The 2 most important flows are enabling protection for a VM, and restoring data from a recovery point.",
+      "pos": [
+        1055,
+        1157
+      ]
+    },
+    {
+      "content": "The focus of this article is to help you become adept at working with the PowerShell commandlets to enable these two scenarios.",
+      "pos": [
+        1158,
+        1285
+      ]
+    },
+    {
+      "content": "Setup and Registration",
+      "pos": [
+        1291,
+        1313
+      ]
+    },
+    {
+      "pos": [
+        1314,
+        1449
+      ],
+      "content": "To begin, enable the Azure Backup commandlets by switching to <bpt id=\"p1\">*</bpt>AzureResourceManager<ept id=\"p1\">*</ept> mode by using the <bpt id=\"p2\">**</bpt>Switch-AzureMode<ept id=\"p2\">**</ept> commandlet:"
+    },
+    {
+      "content": "The following setup and registration tasks can be automated with PowerShell:",
+      "pos": [
+        1506,
+        1582
+      ]
+    },
+    {
+      "content": "Create a backup vault",
+      "pos": [
+        1586,
+        1607
+      ]
+    },
+    {
+      "content": "Registering the VMs with the Azure Backup service",
+      "pos": [
+        1610,
+        1659
+      ]
+    },
+    {
+      "content": "Create a backup vault",
+      "pos": [
+        1665,
+        1686
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.WARNING]</ph> For customers using Azure Backup for the first time, you need to register the Azure Backup provider to be used with your subscription.",
+      "pos": [
+        1690,
+        1840
+      ]
+    },
+    {
+      "content": "This can be done by running the following command: Register-AzureProvider -ProviderNamespace \"Microsoft.Backup\"",
+      "pos": [
+        1841,
+        1952
+      ]
+    },
+    {
+      "content": "You can create a new backup vault using the <bpt id=\"p1\">**</bpt>New-AzureRMBackupVault<ept id=\"p1\">**</ept> commandlet.",
+      "pos": [
+        1954,
+        2036
+      ]
+    },
+    {
+      "content": "The backup vault is an ARM resource, so you need to place it within a Resource Group.",
+      "pos": [
+        2037,
+        2122
+      ]
+    },
+    {
+      "content": "In an elevated Azure PowerShell console, run the following commands:",
+      "pos": [
+        2123,
+        2191
+      ]
+    },
+    {
+      "pos": [
+        2394,
+        2510
+      ],
+      "content": "You can get a list of all the backup vaults in a given subscription using the <bpt id=\"p1\">**</bpt>Get-AzureRMBackupVault<ept id=\"p1\">**</ept> commandlet."
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> It is convenient to store the backup vault object into a variable.",
+      "pos": [
+        2514,
+        2593
+      ]
+    },
+    {
+      "content": "The vault object is needed as an input for many Azure Backup commandlets.",
+      "pos": [
+        2594,
+        2667
+      ]
+    },
+    {
+      "content": "Registering the VMs",
+      "pos": [
+        2674,
+        2693
+      ]
+    },
+    {
+      "content": "The first step towards configuring backup with Azure Backup is to register your machine or VM with an Azure Backup vault.",
+      "pos": [
+        2694,
+        2815
+      ]
+    },
+    {
+      "content": "The <bpt id=\"p1\">**</bpt>Register-AzureRMBackupContainer<ept id=\"p1\">**</ept> commandlet takes the input information of an Azure IaaS virtual machine and registers it with the specified vault.",
+      "pos": [
+        2816,
+        2970
+      ]
+    },
+    {
+      "content": "The register operation associates the Azure virtual machine with the backup vault and tracks the VM through the backup lifecycle.",
+      "pos": [
+        2971,
+        3100
+      ]
+    },
+    {
+      "content": "Registering your VM with the Azure Backup service creates a top-level container object.",
+      "pos": [
+        3102,
+        3189
+      ]
+    },
+    {
+      "content": "A container typically contains multiple items that can be backed up, but in the case of VMs there will be only one backup item for the container.",
+      "pos": [
+        3190,
+        3335
+      ]
+    },
+    {
+      "content": "Backup Azure VMs",
+      "pos": [
+        3461,
+        3477
+      ]
+    },
+    {
+      "content": "Create a protection policy",
+      "pos": [
+        3483,
+        3509
+      ]
+    },
+    {
+      "content": "It is not mandatory to create a new protection policy to start backup of your VMs.",
+      "pos": [
+        3510,
+        3592
+      ]
+    },
+    {
+      "content": "The vault comes with a 'Default Policy' that can be used to quickly enable protection, and then edited later with the right details.",
+      "pos": [
+        3593,
+        3725
+      ]
+    },
+    {
+      "content": "You can get a list of the policies available in the vault by using the <bpt id=\"p1\">**</bpt>Get-AzureRMBackupProtectionPolicy<ept id=\"p1\">**</ept> commandlet:",
+      "pos": [
+        3726,
+        3846
+      ]
+    },
+    {
+      "content": "A backup policy is associated with at least one retention policy.",
+      "pos": [
+        4156,
+        4221
+      ]
+    },
+    {
+      "content": "The retention policy defines how long a recovery point is kept with Azure Backup.",
+      "pos": [
+        4222,
+        4303
+      ]
+    },
+    {
+      "content": "The <bpt id=\"p1\">**</bpt>New-AzureRMBackupRetentionPolicy<ept id=\"p1\">**</ept> commandlet creates PowerShell objects that hold retention policy information.",
+      "pos": [
+        4304,
+        4422
+      ]
+    },
+    {
+      "content": "These retention policy objects are used as inputs to the <bpt id=\"p1\">*</bpt>New-AzureRMBackupProtectionPolicy<ept id=\"p1\">*</ept> commandlet, or directly with the <bpt id=\"p2\">*</bpt>Enable-AzureRMBackupProtection<ept id=\"p2\">*</ept> commandlet.",
+      "pos": [
+        4423,
+        4593
+      ]
+    },
+    {
+      "content": "A backup policy defines when and how often the backup of an item is done.",
+      "pos": [
+        4595,
+        4668
+      ]
+    },
+    {
+      "content": "The <bpt id=\"p1\">**</bpt>New-AzureRMBackupProtectionPolicy<ept id=\"p1\">**</ept> commandlet creates a PowerShell object that holds backup policy information.",
+      "pos": [
+        4669,
+        4787
+      ]
+    },
+    {
+      "content": "The backup policy is used as an input to the <bpt id=\"p1\">*</bpt>Enable-AzureRMBackupProtection<ept id=\"p1\">*</ept> commandlet.",
+      "pos": [
+        4788,
+        4877
+      ]
+    },
+    {
+      "content": "Enable protection",
+      "pos": [
+        5390,
+        5407
+      ]
+    },
+    {
+      "content": "Enabling protection involves two objects - the Item and the Policy, and both need to belong to the same vault.",
+      "pos": [
+        5408,
+        5518
+      ]
+    },
+    {
+      "content": "Once the policy has been associated with the item, the backup workflow will kick in at the defined schedule.",
+      "pos": [
+        5519,
+        5627
+      ]
+    },
+    {
+      "content": "Initial backup",
+      "pos": [
+        5806,
+        5820
+      ]
+    },
+    {
+      "content": "The backup schedule will take care of doing the full initial copy for the item and the incremental copy for the subsequent backups.",
+      "pos": [
+        5821,
+        5952
+      ]
+    },
+    {
+      "content": "However, if you want to force the initial backup to happen at a certain time or even immediately then use the <bpt id=\"p1\">**</bpt>Backup-AzureRMBackupItem<ept id=\"p1\">**</ept> commandlet:",
+      "pos": [
+        5953,
+        6103
+      ]
+    },
+    {
+      "content": "Monitoring a backup job",
+      "pos": [
+        6578,
+        6601
+      ]
+    },
+    {
+      "content": "Most long running operations in Azure Backup are modelled as a job.",
+      "pos": [
+        6602,
+        6669
+      ]
+    },
+    {
+      "content": "This makes it easy to track progress without having to keep the Azure portal open at all times.",
+      "pos": [
+        6670,
+        6765
+      ]
+    },
+    {
+      "pos": [
+        6767,
+        6859
+      ],
+      "content": "To get the latest status of an in-progress job, use the <bpt id=\"p1\">**</bpt>Get-AzureRMBackupJob<ept id=\"p1\">**</ept> commandlet."
+    },
+    {
+      "content": "Instead of polling these jobs for completion - which is unnecessary, additional code - it is simpler to use the <bpt id=\"p1\">**</bpt>Wait-AzureRMBackupJob<ept id=\"p1\">**</ept> commandlet.",
+      "pos": [
+        7221,
+        7370
+      ]
+    },
+    {
+      "content": "When used in a script, the commandlet will pause the execution until either the job completes or the specified timeout value is reached.",
+      "pos": [
+        7371,
+        7507
+      ]
+    },
+    {
+      "content": "Restore an Azure VM",
+      "pos": [
+        7584,
+        7603
+      ]
+    },
+    {
+      "content": "In order to restore backup data, you need to identify the backed-up Item and the Recovery Point that holds the point-in-time data.",
+      "pos": [
+        7605,
+        7735
+      ]
+    },
+    {
+      "content": "This information is supplied to the Restore-AzureRMBackupItem commandlet to initiate a restore of data from the vault to the customer's account.",
+      "pos": [
+        7736,
+        7880
+      ]
+    },
+    {
+      "content": "Select the VM",
+      "pos": [
+        7886,
+        7899
+      ]
+    },
+    {
+      "content": "To get the PowerShell object that identifies the right backup Item, you need to start from the Container in the vault, and work your way down object hierarchy.",
+      "pos": [
+        7901,
+        8060
+      ]
+    },
+    {
+      "content": "To select the container that represents the VM, use the <bpt id=\"p1\">**</bpt>Get-AzureRMBackupContainer<ept id=\"p1\">**</ept> commandlet and pipe that to the <bpt id=\"p2\">**</bpt>Get-AzureRMBackupItem<ept id=\"p2\">**</ept> commandlet.",
+      "pos": [
+        8061,
+        8217
+      ]
+    },
+    {
+      "content": "Choose a recovery point",
+      "pos": [
+        8352,
+        8375
+      ]
+    },
+    {
+      "content": "You can now list all the recovery points for the backup item using the <bpt id=\"p1\">**</bpt>Get-AzureRMBackupRecoveryPoint<ept id=\"p1\">**</ept> commandlet, and choose the recovery point to restore.",
+      "pos": [
+        8377,
+        8536
+      ]
+    },
+    {
+      "content": "Typically users pick the most recent <bpt id=\"p1\">*</bpt>AppConsistent<ept id=\"p1\">*</ept> point in the list.",
+      "pos": [
+        8537,
+        8608
+      ]
+    },
+    {
+      "content": "Restoring disks",
+      "pos": [
+        8943,
+        8958
+      ]
+    },
+    {
+      "content": "There is a key difference between the restore operations done through the Azure portal and through Azure PowerShell.",
+      "pos": [
+        8960,
+        9076
+      ]
+    },
+    {
+      "content": "With PowerShell, the restore operation stops at restoring the disks and config information from the recovery point.",
+      "pos": [
+        9077,
+        9192
+      ]
+    },
+    {
+      "content": "It does not create a virtual machine.",
+      "pos": [
+        9193,
+        9230
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.WARNING]</ph> The Restore-AzureRMBackupItem does not create a VM.",
+      "pos": [
+        9234,
+        9301
+      ]
+    },
+    {
+      "content": "It only restores the disks to the specified storage account.",
+      "pos": [
+        9302,
+        9362
+      ]
+    },
+    {
+      "content": "This is not the same behaviour you will experience in the Azure portal.",
+      "pos": [
+        9363,
+        9434
+      ]
+    },
+    {
+      "content": "You can get the details of the restore operation using the <bpt id=\"p1\">**</bpt>Get-AzureRMBackupJobDetails<ept id=\"p1\">**</ept> commandlet once the Restore job has completed.",
+      "pos": [
+        9818,
+        9955
+      ]
+    },
+    {
+      "content": "The <bpt id=\"p1\">*</bpt>ErrorDetails<ept id=\"p1\">*</ept> property will have the information needed to rebuild the VM.",
+      "pos": [
+        9956,
+        10035
+      ]
+    },
+    {
+      "content": "Build the VM",
+      "pos": [
+        10174,
+        10186
+      ]
+    },
+    {
+      "content": "Building the VM out of the restored disks can be done using the older Azure ServiceManager PowerShell commandlets, the new Azure ResourceManager templates, or even using the Azure portal.",
+      "pos": [
+        10188,
+        10375
+      ]
+    },
+    {
+      "content": "In a quick example, we will show how to get there using the Azure ServiceManager commandlets.",
+      "pos": [
+        10376,
+        10469
+      ]
+    },
+    {
+      "content": "For more information on how to build a VM from the restored disks, read about the following commandlets:",
+      "pos": [
+        11896,
+        12000
+      ]
+    },
+    {
+      "content": "Add-AzureDisk",
+      "pos": [
+        12005,
+        12018
+      ]
+    },
+    {
+      "content": "New-AzureVMConfig",
+      "pos": [
+        12079,
+        12096
+      ]
+    },
+    {
+      "content": "New-AzureVM",
+      "pos": [
+        12157,
+        12168
+      ]
+    },
+    {
+      "content": "test",
+      "pos": [
+        12227,
+        12231
+      ]
+    }
+  ],
+  "content": "<properties\n    pageTitle=\"Deploy and manage backup for Azure VMs using PowerShell | Microsoft Azure\"\n    description=\"Learn how to deploy and manage Azure Backup using PowerShell\"\n    services=\"backup\"\n    documentationCenter=\"\"\n    authors=\"aashishr\"\n    manager=\"shreeshd\"\n    editor=\"\"/>\n\n<tags\n    ms.service=\"backup\"\n    ms.workload=\"storage-backup-recovery\"\n    ms.tgt_pltfrm=\"na\"\n    ms.devlang=\"na\"\n    ms.topic=\"article\"\n    ms.date=\"09/01/2015\"\n    ms.author=\"aashishr\"/>\n\n\n# Deploy and manage backup for Azure VMs using PowerShell\nThis article shows you how to use Azure PowerShell for backup and recovery of Azure IaaS VMs.\n\n## Concepts\nGet [introduced to Azure IaaS VM backup](backup-azure-vms-introduction.md) in the Azure Backup documentation. It covers the essentials about why you should backup your VM, prerequisites, and limitations.\n\nIn order to use PowerShell effectively, it is necessary to understand the hierarchy of objects and from where to start.\n\n![Object hierarchy](./media/backup-azure-vms-automation/object-hierarchy.png)\n\nThe 2 most important flows are enabling protection for a VM, and restoring data from a recovery point. The focus of this article is to help you become adept at working with the PowerShell commandlets to enable these two scenarios.\n\n\n## Setup and Registration\nTo begin, enable the Azure Backup commandlets by switching to *AzureResourceManager* mode by using the **Switch-AzureMode** commandlet:\n\n```\nPS C:\\> Switch-AzureMode AzureResourceManager\n```\n\nThe following setup and registration tasks can be automated with PowerShell:\n\n- Create a backup vault\n- Registering the VMs with the Azure Backup service\n\n### Create a backup vault\n\n> [AZURE.WARNING] For customers using Azure Backup for the first time, you need to register the Azure Backup provider to be used with your subscription. This can be done by running the following command: Register-AzureProvider -ProviderNamespace \"Microsoft.Backup\"\n\nYou can create a new backup vault using the **New-AzureRMBackupVault** commandlet. The backup vault is an ARM resource, so you need to place it within a Resource Group. In an elevated Azure PowerShell console, run the following commands:\n\n```\nPS C:\\> New-AzureRMResourceGroup –Name “test-rg” –Region “West US”\nPS C:\\> $backupvault = New-AzureRMBackupVault –ResourceGroupName “test-rg” –Name “test-vault” –Region “West US” –Storage GRS\n```\n\nYou can get a list of all the backup vaults in a given subscription using the **Get-AzureRMBackupVault** commandlet.\n\n> [AZURE.NOTE] It is convenient to store the backup vault object into a variable. The vault object is needed as an input for many Azure Backup commandlets.\n\n\n### Registering the VMs\nThe first step towards configuring backup with Azure Backup is to register your machine or VM with an Azure Backup vault. The **Register-AzureRMBackupContainer** commandlet takes the input information of an Azure IaaS virtual machine and registers it with the specified vault. The register operation associates the Azure virtual machine with the backup vault and tracks the VM through the backup lifecycle.\n\nRegistering your VM with the Azure Backup service creates a top-level container object. A container typically contains multiple items that can be backed up, but in the case of VMs there will be only one backup item for the container.\n\n```\nPS C:\\> $registerjob = Register-AzureRMBackupContainer -Vault $backupvault -Name \"testvm\" -ServiceName \"testvm\"\n```\n\n## Backup Azure VMs\n\n### Create a protection policy\nIt is not mandatory to create a new protection policy to start backup of your VMs. The vault comes with a 'Default Policy' that can be used to quickly enable protection, and then edited later with the right details. You can get a list of the policies available in the vault by using the **Get-AzureRMBackupProtectionPolicy** commandlet:\n\n```\nPS C:\\> Get-AzureRMBackupProtectionPolicy -Vault $backupvault\n\nName                      Type               ScheduleType       BackupTime\n----                      ----               ------------       ----------\nDefaultPolicy             AzureVM            Daily              26-Aug-15 12:30:00 AM\n```\n\nA backup policy is associated with at least one retention policy. The retention policy defines how long a recovery point is kept with Azure Backup. The **New-AzureRMBackupRetentionPolicy** commandlet creates PowerShell objects that hold retention policy information. These retention policy objects are used as inputs to the *New-AzureRMBackupProtectionPolicy* commandlet, or directly with the *Enable-AzureRMBackupProtection* commandlet.\n\nA backup policy defines when and how often the backup of an item is done. The **New-AzureRMBackupProtectionPolicy** commandlet creates a PowerShell object that holds backup policy information. The backup policy is used as an input to the *Enable-AzureRMBackupProtection* commandlet.\n\n```\nPS C:\\> $Daily = New-AzureRMBackupRetentionPolicyObject -DailyRetention -Retention 30\nPS C:\\> $newpolicy = New-AzureRMBackupProtectionPolicy -Name DailyBackup01 -Type AzureVM -Daily -BackupTime ([datetime]\"3:30 PM\") -RetentionPolicy ($Daily) -Vault $backupvault\n\nName                      Type               ScheduleType       BackupTime\n----                      ----               ------------       ----------\nDailyBackup01             AzureVM            Daily              01-Sep-15 3:30:00 PM\n```\n\n### Enable protection\nEnabling protection involves two objects - the Item and the Policy, and both need to belong to the same vault. Once the policy has been associated with the item, the backup workflow will kick in at the defined schedule.\n\n```\nPS C:\\> Get-AzureRMBackupContainer -Type AzureVM -Status Registered -Vault $backupvault | Get-AzureRMBackupItem | Enable-AzureRMBackupProtection -Policy $newpolicy\n```\n\n### Initial backup\nThe backup schedule will take care of doing the full initial copy for the item and the incremental copy for the subsequent backups. However, if you want to force the initial backup to happen at a certain time or even immediately then use the **Backup-AzureRMBackupItem** commandlet:\n\n```\nPS C:\\> $container = Get-AzureRMBackupContainer -Vault $backupvault -type AzureVM -name \"testvm\"\nPS C:\\> $backupjob = Get-AzureRMBackupItem -Container $container | Backup-AzureRMBackupItem\nPS C:\\> $backupjob\n\nWorkloadName    Operation       Status          StartTime              EndTime\n------------    ---------       ------          ---------              -------\ntestvm          Backup          InProgress      01-Sep-15 12:24:01 PM  01-Jan-01 12:00:00 AM\n```\n\n### Monitoring a backup job\nMost long running operations in Azure Backup are modelled as a job. This makes it easy to track progress without having to keep the Azure portal open at all times.\n\nTo get the latest status of an in-progress job, use the **Get-AzureRMBackupJob** commandlet.\n\n```\nPS C:\\> $joblist = Get-AzureRMBackupJob -Vault $backupvault -Status InProgress\nPS C:\\> $joblist[0]\n\nWorkloadName    Operation       Status          StartTime              EndTime\n------------    ---------       ------          ---------              -------\ntestvm          Backup          InProgress      01-Sep-15 12:24:01 PM  01-Jan-01 12:00:00 AM\n```\n\nInstead of polling these jobs for completion - which is unnecessary, additional code - it is simpler to use the **Wait-AzureRMBackupJob** commandlet. When used in a script, the commandlet will pause the execution until either the job completes or the specified timeout value is reached.\n\n```\nPS C:\\> Wait-AzureRMBackupJob -Job $joblist[0] -Timeout 43200\n```\n\n\n## Restore an Azure VM\n\nIn order to restore backup data, you need to identify the backed-up Item and the Recovery Point that holds the point-in-time data. This information is supplied to the Restore-AzureRMBackupItem commandlet to initiate a restore of data from the vault to the customer's account.\n\n### Select the VM\n\nTo get the PowerShell object that identifies the right backup Item, you need to start from the Container in the vault, and work your way down object hierarchy. To select the container that represents the VM, use the **Get-AzureRMBackupContainer** commandlet and pipe that to the **Get-AzureRMBackupItem** commandlet.\n\n```\nPS C:\\> $backupitem = Get-AzureBackupContainer -Vault $backupvault -Type AzureVM -name \"testvm\" | Get-AzureRMBackupItem\n```\n\n### Choose a recovery point\n\nYou can now list all the recovery points for the backup item using the **Get-AzureRMBackupRecoveryPoint** commandlet, and choose the recovery point to restore. Typically users pick the most recent *AppConsistent* point in the list.\n\n```\nPS C:\\> $rp =  Get-AzureRMBackupRecoveryPoint -Item $backupitem\nPS C:\\> $rp\n\nRecoveryPointId    RecoveryPointType  RecoveryPointTime      ContainerName\n---------------    -----------------  -----------------      -------------\n15273496567119     AppConsistent      01-Sep-15 12:27:38 PM  iaasvmcontainer;testvm;testv...\n```\n\n### Restoring disks\n\nThere is a key difference between the restore operations done through the Azure portal and through Azure PowerShell. With PowerShell, the restore operation stops at restoring the disks and config information from the recovery point. It does not create a virtual machine.\n\n> [AZURE.WARNING] The Restore-AzureRMBackupItem does not create a VM. It only restores the disks to the specified storage account. This is not the same behaviour you will experience in the Azure portal.\n\n```\nPS C:\\> $restorejob = Restore-AzureRMBackupItem -StorageAccountName \"DestAccount\" -RecoveryPoint $rp\nPS C:\\> $restorejob\n\nWorkloadName    Operation       Status          StartTime              EndTime\n------------    ---------       ------          ---------              -------\ntestvm          Restore         InProgress      01-Sep-15 1:14:01 PM   01-Jan-01 12:00:00 AM\n```\n\nYou can get the details of the restore operation using the **Get-AzureRMBackupJobDetails** commandlet once the Restore job has completed. The *ErrorDetails* property will have the information needed to rebuild the VM.\n\n```\nPS C:\\> $restorejob = Get-AzureRMBackupJob -Job $restorejob\nPS C:\\> $details = Get-AzureRMBackupJobDetails -Job $restorejob\n```\n\n### Build the VM\n\nBuilding the VM out of the restored disks can be done using the older Azure ServiceManager PowerShell commandlets, the new Azure ResourceManager templates, or even using the Azure portal. In a quick example, we will show how to get there using the Azure ServiceManager commandlets.\n\n```\n $properties  = $details.Properties\n\n $storageAccountName = $properties[\"TargetStorageAccountName\"]\n $containerName = $properties[\"TargetContainerName\"]\n $blobName = $properties[\"TargetBlobName\"]\n\n Switch-AzureMode AzureServiceManagement\n\n $keys = Get-AzureStorageKey -StorageAccountName $storageAccountName\n $storageAccountKey = $keys.Primary\n $storageContext = New-AzureStorageContext -StorageAccountName $storageAccountName -StorageAccountKey $storageAccountKey\n\n\n $destination_path = \"C:\\Users\\admin\\Desktop\\vmconfig.xml\"\n Get-AzureStorageBlobContent -Container $containerName -Blob $blobName -Destination $destination_path -Context $storageContext\n\n\n $obj = [xml](Get-Content $destination_path)\n $pvr = $obj.PersistentVMRole\n $os = $pvr.OSVirtualHardDisk\n $dds = $pvr.DataVirtualHardDisks\n $osDisk = Add-AzureDisk -MediaLocation $os.MediaLink -OS $os.OS -DiskName \"panbhaosdisk\"\n $vm = New-AzureVMConfig -Name $pvr.RoleName -InstanceSize $pvr.RoleSize -DiskName $osDisk.DiskName\n\n if (!($dds -eq $null))\n {\n     foreach($d in $dds.DataVirtualHardDisk)\n     {\n         $lun = 0;\n         if(!($d.Lun -eq $null))\n         {\n             $lun = $d.Lun\n         }\n         $name = \"panbhadataDisk\" + $lun\n     Add-AzureDisk -DiskName $name -MediaLocation $d.MediaLink\n     $vm | Add-AzureDataDisk -Import -DiskName $name -LUN $lun\n    }\n}\n\nNew-AzureVM -ServiceName \"panbhasample\" -Location \"SouthEast Asia\" -VM $vm\n```\n\nFor more information on how to build a VM from the restored disks, read about the following commandlets:\n\n- [Add-AzureDisk](https://msdn.microsoft.com/library/azure/dn495252.aspx)\n- [New-AzureVMConfig](https://msdn.microsoft.com/library/azure/dn495159.aspx)\n- [New-AzureVM](https://msdn.microsoft.com/library/azure/dn495254.aspx)\n\ntest\n"
+}

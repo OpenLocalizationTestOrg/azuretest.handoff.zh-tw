@@ -1,0 +1,3148 @@
+{
+  "nodes": [
+    {
+      "content": "Configure AlwaysOn Availability Groups in Azure (GUI)",
+      "pos": [
+        28,
+        81
+      ]
+    },
+    {
+      "content": "Create an AlwaysOn Availability Group in Azure Virtual Machines.",
+      "pos": [
+        100,
+        164
+      ]
+    },
+    {
+      "content": "This tutorial primarily uses the user interface and tools rather than scripting.",
+      "pos": [
+        165,
+        245
+      ]
+    },
+    {
+      "content": "Configure AlwaysOn Availability Groups in Azure (GUI)",
+      "pos": [
+        597,
+        650
+      ]
+    },
+    {
+      "content": "This end-to-end tutorial shows you how to implement Availability Groups using SQL Server AlwaysOn running on Azure virtual machines.",
+      "pos": [
+        652,
+        784
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> In the Azure Management Portal, there is a new gallery setup for AlwaysOn Availability Groups with a Listener.",
+      "pos": [
+        787,
+        910
+      ]
+    },
+    {
+      "content": "This configures everything you need for AlwaysOn Availability Groups automatically.",
+      "pos": [
+        911,
+        994
+      ]
+    },
+    {
+      "content": "For more information, see <bpt id=\"p1\">[</bpt>SQL Server AlwaysOn Offering in Microsoft Azure Portal Gallery<ept id=\"p1\">](http://blogs.technet.com/b/dataplatforminsider/archive/2014/08/25/sql-server-alwayson-offering-in-microsoft-azure-portal-gallery.aspx)</ept>.",
+      "pos": [
+        995,
+        1221
+      ]
+    },
+    {
+      "content": "To use PowerShell, see the tutorial of the same scenario at <bpt id=\"p1\">[</bpt>Configure AlwaysOn Availability Groups in Azure with PowerShell<ept id=\"p1\">](virtual-machines-sql-server-alwayson-availability-groups-powershell.md)</ept>.",
+      "pos": [
+        1222,
+        1420
+      ]
+    },
+    {
+      "content": "At the end of the tutorial, your SQL Server AlwaysOn solution in Azure will consist of the following elements:",
+      "pos": [
+        1422,
+        1532
+      ]
+    },
+    {
+      "content": "A virtual network containing multiple subnets, including a front-end and a back-end subnet",
+      "pos": [
+        1536,
+        1626
+      ]
+    },
+    {
+      "content": "A domain controller with an Active Directory (AD) domain",
+      "pos": [
+        1630,
+        1686
+      ]
+    },
+    {
+      "content": "Two SQL Server VMs deployed to the back-end subnet and joined to the AD domain",
+      "pos": [
+        1690,
+        1768
+      ]
+    },
+    {
+      "content": "A 3-node WSFC cluster with the Node Majority quorum model",
+      "pos": [
+        1772,
+        1829
+      ]
+    },
+    {
+      "content": "An availability group with two synchronous-commit replicas of an availability database",
+      "pos": [
+        1833,
+        1919
+      ]
+    },
+    {
+      "content": "The figure below is a graphical representation of the solution.",
+      "pos": [
+        1921,
+        1984
+      ]
+    },
+    {
+      "content": "Test Lab Architecture for AG in Azure",
+      "pos": [
+        1988,
+        2025
+      ]
+    },
+    {
+      "content": "Note that this is one possible configuration.",
+      "pos": [
+        2111,
+        2156
+      ]
+    },
+    {
+      "content": "For example, you can minimize the number of VMs for a two-replica availability group in order to save on compute hours in Azure by using the domain controller as the quorum file share witness in a 2-node WSFC cluster.",
+      "pos": [
+        2157,
+        2374
+      ]
+    },
+    {
+      "content": "This method reduces the VM count by one from the above configuration.",
+      "pos": [
+        2375,
+        2444
+      ]
+    },
+    {
+      "content": "This tutorial assumes the following:",
+      "pos": [
+        2446,
+        2482
+      ]
+    },
+    {
+      "content": "You already have an Azure account.",
+      "pos": [
+        2486,
+        2520
+      ]
+    },
+    {
+      "content": "You already know how to provision a SQL Server VM from the virtual machine gallery using the GUI.",
+      "pos": [
+        2524,
+        2621
+      ]
+    },
+    {
+      "content": "For more information, see <bpt id=\"p1\">[</bpt>Provisioning a SQL Server Virtual Machine on Azure<ept id=\"p1\">](virtual-machines-provision-sql-server.md)</ept>",
+      "pos": [
+        2622,
+        2742
+      ]
+    },
+    {
+      "content": "You already have a solid understanding of AlwaysOn Availability Groups.",
+      "pos": [
+        2746,
+        2817
+      ]
+    },
+    {
+      "content": "For more information, see <bpt id=\"p1\">[</bpt>AlwaysOn Availability Groups (SQL Server)<ept id=\"p1\">](https://msdn.microsoft.com/library/hh510230.aspx)</ept>.",
+      "pos": [
+        2818,
+        2938
+      ]
+    },
+    {
+      "pos": [
+        2941,
+        3170
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> If you are interested in using AlwaysOn Availability Groups with SharePoint, also see <bpt id=\"p1\">[</bpt>Configure SQL Server 2012 AlwaysOn Availability Groups for SharePoint 2013<ept id=\"p1\">](https://technet.microsoft.com/library/jj715261.aspx)</ept>."
+    },
+    {
+      "content": "Create the Virtual Network and Domain Controller Server",
+      "pos": [
+        3175,
+        3230
+      ]
+    },
+    {
+      "content": "You begin with a new Azure trial account.",
+      "pos": [
+        3232,
+        3273
+      ]
+    },
+    {
+      "content": "Once you have finished your account setup, you should be in the home screen of the Azure portal.",
+      "pos": [
+        3274,
+        3370
+      ]
+    },
+    {
+      "pos": [
+        3375,
+        3453
+      ],
+      "content": "Click the <bpt id=\"p1\">**</bpt>New<ept id=\"p1\">**</ept> button at the lower-left corner of the page, as shown below."
+    },
+    {
+      "content": "Click New in the Portal",
+      "pos": [
+        3461,
+        3484
+      ]
+    },
+    {
+      "pos": [
+        3573,
+        3682
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>Network Services<ept id=\"p1\">**</ept>, then click <bpt id=\"p2\">**</bpt>Virtual Network,<ept id=\"p2\">**</ept> and then click <bpt id=\"p3\">**</bpt>Custom Create<ept id=\"p3\">**</ept>, as shown below."
+    },
+    {
+      "content": "Create Virtual Network",
+      "pos": [
+        3690,
+        3712
+      ]
+    },
+    {
+      "pos": [
+        3801,
+        3928
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>CREATE A VIRTUAL NETWORK<ept id=\"p1\">**</ept> dialog, create a new virtual network by stepping through the pages with the settings below."
+    },
+    {
+      "content": "|Page|Settings|",
+      "pos": [
+        3935,
+        3950
+      ]
+    },
+    {
+      "content": "|---|---|",
+      "pos": [
+        3951,
+        3960
+      ]
+    },
+    {
+      "content": "|Virtual Network Details|<bpt id=\"p1\">**</bpt>NAME = ContosoNET<ept id=\"p1\">**</ept>",
+      "pos": [
+        3961,
+        4007
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>REGION = West US<ept id=\"p1\">**</ept>|",
+      "pos": [
+        4012,
+        4033
+      ]
+    },
+    {
+      "content": "|DNS Servers and VPN Connectivity|None|",
+      "pos": [
+        4034,
+        4073
+      ]
+    },
+    {
+      "content": "|Virtual Network Address Spaces|Settings are shown in the screenshot below: <ph id=\"ph1\">![</ph>Create Virtual Network<ph id=\"ph2\">](./media/virtual-machines-sql-server-alwayson-availability-groups-gui/IC784620.png)</ph>|",
+      "pos": [
+        4074,
+        4259
+      ]
+    },
+    {
+      "content": "Next, you create the VM you will use as the domain controller (DC).",
+      "pos": [
+        4264,
+        4331
+      ]
+    },
+    {
+      "content": "Click <bpt id=\"p1\">**</bpt>New<ept id=\"p1\">**</ept> again, then <bpt id=\"p2\">**</bpt>Compute<ept id=\"p2\">**</ept>, then <bpt id=\"p3\">**</bpt>Virtual Machine<ept id=\"p3\">**</ept>, and then <bpt id=\"p4\">**</bpt>From Gallery<ept id=\"p4\">**</ept>, as shown below.",
+      "pos": [
+        4332,
+        4439
+      ]
+    },
+    {
+      "content": "Create a VM",
+      "pos": [
+        4447,
+        4458
+      ]
+    },
+    {
+      "pos": [
+        4547,
+        4664
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>CREATE A VIRTUAL MACHINE<ept id=\"p1\">**</ept> dialog, configure a new VM by stepping through the pages with the settings below."
+    },
+    {
+      "content": "|Page|Settings|",
+      "pos": [
+        4671,
+        4686
+      ]
+    },
+    {
+      "content": "|---|---|",
+      "pos": [
+        4687,
+        4696
+      ]
+    },
+    {
+      "content": "|Select the virtual machine operating system|Windows Server 2012 R2 Datacenter|",
+      "pos": [
+        4697,
+        4776
+      ]
+    },
+    {
+      "content": "|Virtual machine configuration|<bpt id=\"p1\">**</bpt>VERSION RELEASE DATE<ept id=\"p1\">**</ept> = (latest)",
+      "pos": [
+        4777,
+        4843
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>VIRTUAL MACHINE NAME<ept id=\"p1\">**</ept> = ContosoDC",
+      "pos": [
+        4848,
+        4884
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>TIER<ept id=\"p1\">**</ept> = BASIC",
+      "pos": [
+        4889,
+        4905
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>SIZE<ept id=\"p1\">**</ept> = A2 (2 cores)",
+      "pos": [
+        4910,
+        4933
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>NEW USER NAME<ept id=\"p1\">**</ept> = AzureAdmin",
+      "pos": [
+        4938,
+        4968
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>NEW PASSWORD<ept id=\"p1\">**</ept> = Contoso!000",
+      "pos": [
+        4973,
+        5003
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>CONFIRM<ept id=\"p1\">**</ept> = Contoso!000|",
+      "pos": [
+        5008,
+        5034
+      ]
+    },
+    {
+      "content": "|Virtual machine configuration|<bpt id=\"p1\">**</bpt>CLOUD SERVICE<ept id=\"p1\">**</ept> = Create a new cloud service",
+      "pos": [
+        5035,
+        5112
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>CLOUD SERVICE DNS NAME<ept id=\"p1\">**</ept> = A unique cloud service name",
+      "pos": [
+        5117,
+        5173
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>DNS NAME<ept id=\"p1\">**</ept> = A unique name (ex: ContosoDC123)",
+      "pos": [
+        5178,
+        5225
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>REGION/AFFINITY GROUP/VIRTUAL NETWORK<ept id=\"p1\">**</ept> = ContosoNET",
+      "pos": [
+        5230,
+        5284
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>VIRTUAL NETWORK SUBNETS<ept id=\"p1\">**</ept> = Back(10.10.2.0/24)",
+      "pos": [
+        5289,
+        5337
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>STORAGE ACCOUNT<ept id=\"p1\">**</ept> = Use an automatically generated storage account",
+      "pos": [
+        5342,
+        5410
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>AVAILABILITY SET<ept id=\"p1\">**</ept> = (None)|",
+      "pos": [
+        5415,
+        5445
+      ]
+    },
+    {
+      "content": "|Virtual machine options|Use defaults|",
+      "pos": [
+        5446,
+        5484
+      ]
+    },
+    {
+      "content": "Once you finish configuring the new VM, wait for the VM to be provsioned.",
+      "pos": [
+        5486,
+        5559
+      ]
+    },
+    {
+      "content": "This process takes some time to complete, and if you click to the <bpt id=\"p1\">**</bpt>Virtual Machine<ept id=\"p1\">**</ept> tab in the Azure portal, you can see ContosoDC cycling states from <bpt id=\"p2\">**</bpt>Starting (Provisioning)<ept id=\"p2\">**</ept> to <bpt id=\"p3\">**</bpt>Stopped<ept id=\"p3\">**</ept>, <bpt id=\"p4\">**</bpt>Starting<ept id=\"p4\">**</ept>, <bpt id=\"p5\">**</bpt>Running (Provisioning)<ept id=\"p5\">**</ept>, and finally <bpt id=\"p6\">**</bpt>Running<ept id=\"p6\">**</ept>.",
+      "pos": [
+        5560,
+        5823
+      ]
+    },
+    {
+      "content": "The DC server is now successfully provisioned.",
+      "pos": [
+        5825,
+        5871
+      ]
+    },
+    {
+      "content": "Next, you will configure the Active Directory domain on this DC server.",
+      "pos": [
+        5872,
+        5943
+      ]
+    },
+    {
+      "content": "Configure the Domain Controller",
+      "pos": [
+        5948,
+        5979
+      ]
+    },
+    {
+      "content": "In the following steps, you configure the ContosoDC machine as a domain controller for corp.contoso.com.",
+      "pos": [
+        5981,
+        6085
+      ]
+    },
+    {
+      "content": "In the portal, select the <bpt id=\"p1\">**</bpt>ContosoDC<ept id=\"p1\">**</ept> machine.",
+      "pos": [
+        6090,
+        6138
+      ]
+    },
+    {
+      "content": "On the <bpt id=\"p1\">**</bpt>Dashboard<ept id=\"p1\">**</ept> tab, click <bpt id=\"p2\">**</bpt>Connect<ept id=\"p2\">**</ept> to open an RDP file for remote desktop access.",
+      "pos": [
+        6139,
+        6229
+      ]
+    },
+    {
+      "content": "Connect to Vritual Machine",
+      "pos": [
+        6237,
+        6263
+      ]
+    },
+    {
+      "pos": [
+        6352,
+        6451
+      ],
+      "content": "Log in with your configured administrator account (<bpt id=\"p1\">**</bpt>\\AzureAdmin<ept id=\"p1\">**</ept>) and password (<bpt id=\"p2\">**</bpt>Contoso!000<ept id=\"p2\">**</ept>)."
+    },
+    {
+      "pos": [
+        6456,
+        6521
+      ],
+      "content": "By default, the <bpt id=\"p1\">**</bpt>Server Manager<ept id=\"p1\">**</ept> dashboard should be displayed."
+    },
+    {
+      "pos": [
+        6526,
+        6585
+      ],
+      "content": "Click the <bpt id=\"p1\">**</bpt>Add roles and features<ept id=\"p1\">**</ept> link on the dashboard."
+    },
+    {
+      "content": "Server Explorer Add Roles",
+      "pos": [
+        6593,
+        6618
+      ]
+    },
+    {
+      "pos": [
+        6707,
+        6769
+      ],
+      "content": "Select <bpt id=\"p1\">**</bpt>Next<ept id=\"p1\">**</ept> until you get to the <bpt id=\"p2\">**</bpt>Server Roles<ept id=\"p2\">**</ept> section."
+    },
+    {
+      "content": "Select the <bpt id=\"p1\">**</bpt>Active Directory Domain Services<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>DNS Server<ept id=\"p2\">**</ept> roles.",
+      "pos": [
+        6774,
+        6847
+      ]
+    },
+    {
+      "content": "When prompted, add any additional features required by these roles.",
+      "pos": [
+        6848,
+        6915
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> You will get a validation warning that there is no static IP address.",
+      "pos": [
+        6922,
+        7004
+      ]
+    },
+    {
+      "content": "If you are testing the configuration, click continue.",
+      "pos": [
+        7005,
+        7058
+      ]
+    },
+    {
+      "content": "For production scenarios <bpt id=\"p1\">[</bpt>use PowerShell to set the static IP address of the domain controller machine<ept id=\"p1\">](./virtual-network/virtual-networks-reserved-private-ip.md)</ept>.",
+      "pos": [
+        7059,
+        7222
+      ]
+    },
+    {
+      "content": "Add Roles Dialog",
+      "pos": [
+        7230,
+        7246
+      ]
+    },
+    {
+      "content": "Click <bpt id=\"p1\">**</bpt>Next<ept id=\"p1\">**</ept> until you reach the <bpt id=\"p2\">**</bpt>Confirmation<ept id=\"p2\">**</ept> section.",
+      "pos": [
+        7335,
+        7395
+      ]
+    },
+    {
+      "content": "Select the <bpt id=\"p1\">**</bpt>Restart the destination server automatically if required<ept id=\"p1\">**</ept> checkbox.",
+      "pos": [
+        7396,
+        7477
+      ]
+    },
+    {
+      "pos": [
+        7482,
+        7500
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>Install<ept id=\"p1\">**</ept>."
+    },
+    {
+      "pos": [
+        7505,
+        7586
+      ],
+      "content": "After the features finish installing, return to the <bpt id=\"p1\">**</bpt>Server Manager<ept id=\"p1\">**</ept> dashboard."
+    },
+    {
+      "pos": [
+        7591,
+        7645
+      ],
+      "content": "Select the new <bpt id=\"p1\">**</bpt>AD DS<ept id=\"p1\">**</ept> option on the left-hand pane."
+    },
+    {
+      "pos": [
+        7650,
+        7700
+      ],
+      "content": "Click the <bpt id=\"p1\">**</bpt>More<ept id=\"p1\">**</ept> link on the yellow warning bar."
+    },
+    {
+      "content": "AD DS dialog on DNS Server VM",
+      "pos": [
+        7708,
+        7737
+      ]
+    },
+    {
+      "pos": [
+        7826,
+        7947
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Action<ept id=\"p1\">**</ept> column of the <bpt id=\"p2\">**</bpt>All Server Task Details<ept id=\"p2\">**</ept> dialog, click <bpt id=\"p3\">**</bpt>Promote this server to a domain controller<ept id=\"p3\">**</ept>."
+    },
+    {
+      "pos": [
+        7952,
+        8043
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Active Directory Domain Services Configuration Wizard<ept id=\"p1\">**</ept>, use the following values:"
+    },
+    {
+      "content": "|Page|Setting|",
+      "pos": [
+        8049,
+        8063
+      ]
+    },
+    {
+      "content": "|---|---|",
+      "pos": [
+        8064,
+        8073
+      ]
+    },
+    {
+      "content": "|Deployment Configuration|<bpt id=\"p1\">**</bpt>Add a new forest<ept id=\"p1\">**</ept> = Selected",
+      "pos": [
+        8074,
+        8131
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Root domain name<ept id=\"p1\">**</ept> = corp.contoso.com|",
+      "pos": [
+        8136,
+        8176
+      ]
+    },
+    {
+      "content": "|Domain Controller Options|<bpt id=\"p1\">**</bpt>Password<ept id=\"p1\">**</ept> = Contoso!000",
+      "pos": [
+        8177,
+        8230
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Confirm Password<ept id=\"p1\">**</ept> = Contoso!000|",
+      "pos": [
+        8235,
+        8270
+      ]
+    },
+    {
+      "content": "Click <bpt id=\"p1\">**</bpt>Next<ept id=\"p1\">**</ept> to go through the other pages in the wizard.",
+      "pos": [
+        8275,
+        8334
+      ]
+    },
+    {
+      "content": "On the <bpt id=\"p1\">**</bpt>Prerequisites Check<ept id=\"p1\">**</ept> page, verify that you see the following message: <bpt id=\"p2\">**</bpt>All prerequisite checks passed successfully<ept id=\"p2\">**</ept>.",
+      "pos": [
+        8335,
+        8463
+      ]
+    },
+    {
+      "content": "Note that you should review any applicable warning messages, but it is possible to continue with the install.",
+      "pos": [
+        8464,
+        8573
+      ]
+    },
+    {
+      "content": "Click <bpt id=\"p1\">**</bpt>Install<ept id=\"p1\">**</ept>.",
+      "pos": [
+        8578,
+        8596
+      ]
+    },
+    {
+      "content": "The <bpt id=\"p1\">**</bpt>ContosoDC<ept id=\"p1\">**</ept> virtual machine will automatically reboot.",
+      "pos": [
+        8597,
+        8657
+      ]
+    },
+    {
+      "content": "Configure Domain Accounts",
+      "pos": [
+        8662,
+        8687
+      ]
+    },
+    {
+      "content": "The next steps configure the Active Directory (AD) accounts for later use.",
+      "pos": [
+        8689,
+        8763
+      ]
+    },
+    {
+      "pos": [
+        8768,
+        8808
+      ],
+      "content": "Log back into the <bpt id=\"p1\">**</bpt>ContosoDC<ept id=\"p1\">**</ept> machine."
+    },
+    {
+      "pos": [
+        8813,
+        8910
+      ],
+      "content": "In <bpt id=\"p1\">**</bpt>Server Manager<ept id=\"p1\">**</ept> select <bpt id=\"p2\">**</bpt>Tools<ept id=\"p2\">**</ept> and then click <bpt id=\"p3\">**</bpt>Active Directory Administrative Center<ept id=\"p3\">**</ept>."
+    },
+    {
+      "content": "Active Directory Administrative Center",
+      "pos": [
+        8918,
+        8956
+      ]
+    },
+    {
+      "pos": [
+        9045,
+        9138
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Active Directory Administrative Center<ept id=\"p1\">**</ept> select <bpt id=\"p2\">**</bpt>corp (local)<ept id=\"p2\">**</ept> from the left pane."
+    },
+    {
+      "content": "On the right <bpt id=\"p1\">**</bpt>Tasks<ept id=\"p1\">**</ept> pane, select <bpt id=\"p2\">**</bpt>New<ept id=\"p2\">**</ept> and then click <bpt id=\"p3\">**</bpt>User<ept id=\"p3\">**</ept>.",
+      "pos": [
+        9143,
+        9211
+      ]
+    },
+    {
+      "content": "Use the following settings:",
+      "pos": [
+        9212,
+        9239
+      ]
+    },
+    {
+      "content": "|Setting|Value|",
+      "pos": [
+        9245,
+        9260
+      ]
+    },
+    {
+      "content": "|---|---|",
+      "pos": [
+        9261,
+        9270
+      ]
+    },
+    {
+      "content": "|<bpt id=\"p1\">**</bpt>First Name<ept id=\"p1\">**</ept>|Install|",
+      "pos": [
+        9271,
+        9295
+      ]
+    },
+    {
+      "content": "|<bpt id=\"p1\">**</bpt>User SamAccountName<ept id=\"p1\">**</ept>|Install|",
+      "pos": [
+        9296,
+        9329
+      ]
+    },
+    {
+      "content": "|<bpt id=\"p1\">**</bpt>Password<ept id=\"p1\">**</ept>|Contoso!000|",
+      "pos": [
+        9330,
+        9356
+      ]
+    },
+    {
+      "content": "|<bpt id=\"p1\">**</bpt>Confirm password<ept id=\"p1\">**</ept>|Contoso!000|",
+      "pos": [
+        9357,
+        9391
+      ]
+    },
+    {
+      "content": "|<bpt id=\"p1\">**</bpt>Other password options<ept id=\"p1\">**</ept>|Selected|",
+      "pos": [
+        9392,
+        9429
+      ]
+    },
+    {
+      "content": "|<bpt id=\"p1\">**</bpt>Password never expires<ept id=\"p1\">**</ept>|Checked|",
+      "pos": [
+        9430,
+        9466
+      ]
+    },
+    {
+      "content": "Click <bpt id=\"p1\">**</bpt>OK<ept id=\"p1\">**</ept> to create the <bpt id=\"p2\">**</bpt>Install<ept id=\"p2\">**</ept> user.",
+      "pos": [
+        9471,
+        9515
+      ]
+    },
+    {
+      "content": "This account will be used to configure the failover cluster and the availability group.",
+      "pos": [
+        9516,
+        9603
+      ]
+    },
+    {
+      "content": "Create two additional users with the same steps: <bpt id=\"p1\">**</bpt>CORP\\SQLSvc1<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>CORP\\SQLSvc2<ept id=\"p2\">**</ept>.",
+      "pos": [
+        9608,
+        9695
+      ]
+    },
+    {
+      "content": "These accounts will be used for the SQL Server instances.Next, you need to give <bpt id=\"p1\">**</bpt>CORP\\Install<ept id=\"p1\">**</ept> the necessary permissions for configuring Windows Service Failover Clustering (WSFC).",
+      "pos": [
+        9696,
+        9878
+      ]
+    },
+    {
+      "content": "In the <bpt id=\"p1\">**</bpt>Active Directory Administrative Center<ept id=\"p1\">**</ept>, select <bpt id=\"p2\">**</bpt>corp (local)<ept id=\"p2\">**</ept> in the left pane.",
+      "pos": [
+        9883,
+        9975
+      ]
+    },
+    {
+      "content": "Then in the right-hand <bpt id=\"p1\">**</bpt>Tasks<ept id=\"p1\">**</ept> pane, click <bpt id=\"p2\">**</bpt>Properties<ept id=\"p2\">**</ept>.",
+      "pos": [
+        9976,
+        10036
+      ]
+    },
+    {
+      "content": "CORP User Properties",
+      "pos": [
+        10044,
+        10064
+      ]
+    },
+    {
+      "pos": [
+        10153,
+        10239
+      ],
+      "content": "Select <bpt id=\"p1\">**</bpt>Extensions<ept id=\"p1\">**</ept>, and then click the <bpt id=\"p2\">**</bpt>Advanced<ept id=\"p2\">**</ept> button on the <bpt id=\"p3\">**</bpt>Security<ept id=\"p3\">**</ept> tab."
+    },
+    {
+      "content": "On the <bpt id=\"p1\">**</bpt>Advanced Security Settings for corp<ept id=\"p1\">**</ept> dialog.",
+      "pos": [
+        10244,
+        10298
+      ]
+    },
+    {
+      "content": "Click <bpt id=\"p1\">**</bpt>Add<ept id=\"p1\">**</ept>.",
+      "pos": [
+        10299,
+        10313
+      ]
+    },
+    {
+      "content": "Click <bpt id=\"p1\">**</bpt>Select a principal<ept id=\"p1\">**</ept>.",
+      "pos": [
+        10318,
+        10347
+      ]
+    },
+    {
+      "content": "Then search for <bpt id=\"p1\">**</bpt>CORP\\Install<ept id=\"p1\">**</ept>.",
+      "pos": [
+        10348,
+        10381
+      ]
+    },
+    {
+      "content": "Click <bpt id=\"p1\">**</bpt>OK<ept id=\"p1\">**</ept>.",
+      "pos": [
+        10382,
+        10395
+      ]
+    },
+    {
+      "pos": [
+        10400,
+        10479
+      ],
+      "content": "Select the <bpt id=\"p1\">**</bpt>Read all properties<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>Create Computer objects<ept id=\"p2\">**</ept> permissions."
+    },
+    {
+      "content": "Corp User Permissions",
+      "pos": [
+        10487,
+        10508
+      ]
+    },
+    {
+      "content": "Click <bpt id=\"p1\">**</bpt>OK<ept id=\"p1\">**</ept>, and then click <bpt id=\"p2\">**</bpt>OK<ept id=\"p2\">**</ept> again.",
+      "pos": [
+        10597,
+        10639
+      ]
+    },
+    {
+      "content": "Close the corp properties window.",
+      "pos": [
+        10640,
+        10673
+      ]
+    },
+    {
+      "content": "Now that you have finished configuring Active Directory and the user objects, you will create three SQL Server VMs and join them to this domain.",
+      "pos": [
+        10675,
+        10819
+      ]
+    },
+    {
+      "content": "Create the SQL Server VMs",
+      "pos": [
+        10824,
+        10849
+      ]
+    },
+    {
+      "content": "Next, create three VMs, including a WSFC cluster node and two SQL Server VMs.",
+      "pos": [
+        10851,
+        10928
+      ]
+    },
+    {
+      "content": "To create each of the VMs, go back to the Azure Portal, click <bpt id=\"p1\">**</bpt>New<ept id=\"p1\">**</ept>, <bpt id=\"p2\">**</bpt>Compute<ept id=\"p2\">**</ept>, <bpt id=\"p3\">**</bpt>Virtual Machine<ept id=\"p3\">**</ept>, and then <bpt id=\"p4\">**</bpt>From Gallery<ept id=\"p4\">**</ept>.",
+      "pos": [
+        10929,
+        11060
+      ]
+    },
+    {
+      "content": "Then use the templates in the following table to help you create the VMs.",
+      "pos": [
+        11061,
+        11134
+      ]
+    },
+    {
+      "content": "Page",
+      "pos": [
+        11137,
+        11141
+      ]
+    },
+    {
+      "content": "VM1",
+      "pos": [
+        11142,
+        11145
+      ]
+    },
+    {
+      "content": "VM2",
+      "pos": [
+        11146,
+        11149
+      ]
+    },
+    {
+      "content": "VM3",
+      "pos": [
+        11150,
+        11153
+      ]
+    },
+    {
+      "content": "Select the virtual machine operating system",
+      "pos": [
+        11174,
+        11217
+      ]
+    },
+    {
+      "content": "Windows Server 2012 R2 Datacenter",
+      "pos": [
+        11220,
+        11253
+      ]
+    },
+    {
+      "content": "SQL Server 2014 RTM Enterprise",
+      "pos": [
+        11258,
+        11288
+      ]
+    },
+    {
+      "content": "SQL Server 2014 RTM Enterprise",
+      "pos": [
+        11293,
+        11323
+      ]
+    },
+    {
+      "content": "Virtual machine configuration",
+      "pos": [
+        11328,
+        11357
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>VERSION RELEASE DATE<ept id=\"p1\">**</ept> = (latest)",
+      "pos": [
+        11358,
+        11393
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>VIRTUAL MACHINE NAME<ept id=\"p1\">**</ept> = ContosoWSFCNode",
+      "pos": [
+        11398,
+        11440
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>TIER<ept id=\"p1\">**</ept> = BASIC",
+      "pos": [
+        11445,
+        11461
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>SIZE<ept id=\"p1\">**</ept> = A2 (2 cores)",
+      "pos": [
+        11466,
+        11489
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>NEW USER NAME<ept id=\"p1\">**</ept> = AzureAdmin",
+      "pos": [
+        11494,
+        11524
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>NEW PASSWORD<ept id=\"p1\">**</ept> = Contoso!000",
+      "pos": [
+        11529,
+        11559
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>CONFIRM<ept id=\"p1\">**</ept> = Contoso!000",
+      "pos": [
+        11564,
+        11589
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>VERSION RELEASE DATE<ept id=\"p1\">**</ept> = (latest)",
+      "pos": [
+        11590,
+        11625
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>VIRTUAL MACHINE NAME<ept id=\"p1\">**</ept> = ContosoSQL1",
+      "pos": [
+        11630,
+        11668
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>TIER<ept id=\"p1\">**</ept> = BASIC",
+      "pos": [
+        11673,
+        11689
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>SIZE<ept id=\"p1\">**</ept> = A3 (4 cores)",
+      "pos": [
+        11694,
+        11717
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>NEW USER NAME<ept id=\"p1\">**</ept> = AzureAdmin",
+      "pos": [
+        11722,
+        11752
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>NEW PASSWORD<ept id=\"p1\">**</ept> = Contoso!000",
+      "pos": [
+        11757,
+        11787
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>CONFIRM<ept id=\"p1\">**</ept> = Contoso!000",
+      "pos": [
+        11792,
+        11817
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>VERSION RELEASE DATE<ept id=\"p1\">**</ept> = (latest)",
+      "pos": [
+        11818,
+        11853
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>VIRTUAL MACHINE NAME<ept id=\"p1\">**</ept> = ContosoSQL2",
+      "pos": [
+        11858,
+        11896
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>TIER<ept id=\"p1\">**</ept> = BASIC",
+      "pos": [
+        11901,
+        11917
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>SIZE<ept id=\"p1\">**</ept> = A3 (4 cores)",
+      "pos": [
+        11922,
+        11945
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>NEW USER NAME<ept id=\"p1\">**</ept> = AzureAdmin",
+      "pos": [
+        11950,
+        11980
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>NEW PASSWORD<ept id=\"p1\">**</ept> = Contoso!000",
+      "pos": [
+        11985,
+        12015
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>CONFIRM<ept id=\"p1\">**</ept> = Contoso!000",
+      "pos": [
+        12020,
+        12045
+      ]
+    },
+    {
+      "content": "Virtual machine configuration",
+      "pos": [
+        12048,
+        12077
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>CLOUD SERVICE<ept id=\"p1\">**</ept> = Previously Created Unique Cloud Service DNS Name (ex: ContosoDC123)",
+      "pos": [
+        12078,
+        12165
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>REGION/AFFINITY GROUP/VIRTUAL NETWORK<ept id=\"p1\">**</ept> = ContosoNET",
+      "pos": [
+        12170,
+        12224
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>VIRTUAL NETWORK SUBNETS<ept id=\"p1\">**</ept> = Back(10.10.2.0/24)",
+      "pos": [
+        12229,
+        12277
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>STORAGE ACCOUNT<ept id=\"p1\">**</ept> = Use an automatically generated storage account",
+      "pos": [
+        12282,
+        12350
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>AVAILABILITY SET<ept id=\"p1\">**</ept> = Create an availability set",
+      "pos": [
+        12355,
+        12404
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>AVAILABILITY SET NAME<ept id=\"p1\">**</ept> = SQLHADR",
+      "pos": [
+        12409,
+        12444
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>CLOUD SERVICE<ept id=\"p1\">**</ept> = Previously Created Unique Cloud Service DNS Name (ex: ContosoDC123)",
+      "pos": [
+        12445,
+        12532
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>REGION/AFFINITY GROUP/VIRTUAL NETWORK<ept id=\"p1\">**</ept> = ContosoNET",
+      "pos": [
+        12537,
+        12591
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>VIRTUAL NETWORK SUBNETS<ept id=\"p1\">**</ept> = Back(10.10.2.0/24)",
+      "pos": [
+        12596,
+        12644
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>STORAGE ACCOUNT<ept id=\"p1\">**</ept> = Use an automatically generated storage account",
+      "pos": [
+        12649,
+        12717
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>AVAILABILITY SET<ept id=\"p1\">**</ept> = SQLHADR (You can also configure the availability set after the machine has been created.",
+      "pos": [
+        12722,
+        12833
+      ]
+    },
+    {
+      "content": "All three machines should be assigned to the SQLHADR availability set.)",
+      "pos": [
+        12834,
+        12905
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>CLOUD SERVICE<ept id=\"p1\">**</ept> = Previously Created Unique Cloud Service DNS Name (ex: ContosoDC123)",
+      "pos": [
+        12906,
+        12993
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>REGION/AFFINITY GROUP/VIRTUAL NETWORK<ept id=\"p1\">**</ept> = ContosoNET",
+      "pos": [
+        12998,
+        13052
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>VIRTUAL NETWORK SUBNETS<ept id=\"p1\">**</ept> = Back(10.10.2.0/24)",
+      "pos": [
+        13057,
+        13105
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>STORAGE ACCOUNT<ept id=\"p1\">**</ept> = Use an automatically generated storage account",
+      "pos": [
+        13110,
+        13178
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>AVAILABILITY SET<ept id=\"p1\">**</ept> = SQLHADR (You can also configure the availability set after the machine has been created.",
+      "pos": [
+        13183,
+        13294
+      ]
+    },
+    {
+      "content": "All three machines should be assigned to the SQLHADR availability set.)",
+      "pos": [
+        13295,
+        13366
+      ]
+    },
+    {
+      "content": "Virtual machine options",
+      "pos": [
+        13369,
+        13392
+      ]
+    },
+    {
+      "content": "Use defaults",
+      "pos": [
+        13393,
+        13405
+      ]
+    },
+    {
+      "content": "Use defaults",
+      "pos": [
+        13406,
+        13418
+      ]
+    },
+    {
+      "content": "Use defaults",
+      "pos": [
+        13419,
+        13431
+      ]
+    },
+    {
+      "content": "Once the three VMs are fully provisioned, you need to join them to the <bpt id=\"p1\">**</bpt>corp.contoso.com<ept id=\"p1\">**</ept> domain and grant CORP\\Install administrative rights to the machines.",
+      "pos": [
+        13434,
+        13594
+      ]
+    },
+    {
+      "content": "To do this, use the following steps for each of the three VMs.",
+      "pos": [
+        13595,
+        13657
+      ]
+    },
+    {
+      "content": "First, change the preferred DNS server address.",
+      "pos": [
+        13662,
+        13709
+      ]
+    },
+    {
+      "content": "Start by downloading each VM's remote desktop (RDP) file to your local directory by selecting the VM in the list and clicking the <bpt id=\"p1\">**</bpt>Connect<ept id=\"p1\">**</ept> button.",
+      "pos": [
+        13710,
+        13859
+      ]
+    },
+    {
+      "content": "To select a VM, click anywhere but the first cell in the row, as shown below.",
+      "pos": [
+        13860,
+        13937
+      ]
+    },
+    {
+      "content": "Download the RDP File",
+      "pos": [
+        13945,
+        13966
+      ]
+    },
+    {
+      "pos": [
+        14055,
+        14210
+      ],
+      "content": "Launch the RDP file you downloaded and log into the VM using your configured administrator account (<bpt id=\"p1\">**</bpt>BUILTIN\\AzureAdmin<ept id=\"p1\">**</ept>) and password (<bpt id=\"p2\">**</bpt>Contoso!000<ept id=\"p2\">**</ept>)."
+    },
+    {
+      "content": "Once you are logged in, you should see the <bpt id=\"p1\">**</bpt>Server Manager<ept id=\"p1\">**</ept> dashboard.",
+      "pos": [
+        14215,
+        14287
+      ]
+    },
+    {
+      "content": "Click <bpt id=\"p1\">**</bpt>Local Server<ept id=\"p1\">**</ept> in the left pane.",
+      "pos": [
+        14288,
+        14328
+      ]
+    },
+    {
+      "pos": [
+        14333,
+        14397
+      ],
+      "content": "Select the <bpt id=\"p1\">**</bpt>IPv4 address assigned by DHCP, IPv6 enabled<ept id=\"p1\">**</ept> link."
+    },
+    {
+      "pos": [
+        14402,
+        14465
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Network Connections<ept id=\"p1\">**</ept> window, select the network icon."
+    },
+    {
+      "content": "Change the VM Preferred DNS Server",
+      "pos": [
+        14473,
+        14507
+      ]
+    },
+    {
+      "pos": [
+        14596,
+        14772
+      ],
+      "content": "On the command bar, click <bpt id=\"p1\">**</bpt>Change the settings of this connection<ept id=\"p1\">**</ept> (depending on the size of your window, you might have to click the double right arrow to see this command)."
+    },
+    {
+      "pos": [
+        14777,
+        14848
+      ],
+      "content": "Select <bpt id=\"p1\">**</bpt>Internet Protocol Version 4 (TCP/IPv4)<ept id=\"p1\">**</ept> and click Properties."
+    },
+    {
+      "pos": [
+        14853,
+        14953
+      ],
+      "content": "Select Use the following DNS server addresses and specify <bpt id=\"p1\">**</bpt>10.10.2.4<ept id=\"p1\">**</ept> in <bpt id=\"p2\">**</bpt>Preferred DNS server<ept id=\"p2\">**</ept>."
+    },
+    {
+      "content": "The address <bpt id=\"p1\">**</bpt>10.10.2.4<ept id=\"p1\">**</ept> is the address assigned to a VM in the 10.10.2.0/24 subnet in an Azure virtual network, and that VM is <bpt id=\"p2\">**</bpt>ContosoDC<ept id=\"p2\">**</ept>.",
+      "pos": [
+        14958,
+        15101
+      ]
+    },
+    {
+      "content": "To verify <bpt id=\"p1\">**</bpt>ContosoDC<ept id=\"p1\">**</ept>'s IP address, use the <bpt id=\"p2\">**</bpt>nslookup contosodc<ept id=\"p2\">**</ept> in the command prompt, as shown below.",
+      "pos": [
+        15102,
+        15209
+      ]
+    },
+    {
+      "content": "Use NSLOOKUP to find IP address for DC",
+      "pos": [
+        15217,
+        15255
+      ]
+    },
+    {
+      "content": "Click O<bpt id=\"p1\">**</bpt>K<ept id=\"p1\">**</ept> and then <bpt id=\"p2\">**</bpt>Close<ept id=\"p2\">**</ept> to commit the changes.",
+      "pos": [
+        15344,
+        15398
+      ]
+    },
+    {
+      "content": "You are now able to join the VM to <bpt id=\"p1\">**</bpt>corp.contoso.com<ept id=\"p1\">**</ept>.",
+      "pos": [
+        15399,
+        15455
+      ]
+    },
+    {
+      "pos": [
+        15460,
+        15526
+      ],
+      "content": "Back in the <bpt id=\"p1\">**</bpt>Local Server<ept id=\"p1\">**</ept> window, click the <bpt id=\"p2\">**</bpt>WORKGROUP<ept id=\"p2\">**</ept> link."
+    },
+    {
+      "pos": [
+        15531,
+        15582
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Computer Name<ept id=\"p1\">**</ept> section, click <bpt id=\"p2\">**</bpt>Change<ept id=\"p2\">**</ept>."
+    },
+    {
+      "content": "Select the <bpt id=\"p1\">**</bpt>Domain<ept id=\"p1\">**</ept> check box and type <bpt id=\"p2\">**</bpt>corp.contoso.com<ept id=\"p2\">**</ept> in the text box.",
+      "pos": [
+        15587,
+        15665
+      ]
+    },
+    {
+      "content": "Click <bpt id=\"p1\">**</bpt>OK<ept id=\"p1\">**</ept>.",
+      "pos": [
+        15666,
+        15679
+      ]
+    },
+    {
+      "pos": [
+        15684,
+        15852
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Windows Security<ept id=\"p1\">**</ept> popup dialog, specify the credentials for the default domain administrator account (<bpt id=\"p2\">**</bpt>CORP\\AzureAdmin<ept id=\"p2\">**</ept>) and the password (<bpt id=\"p3\">**</bpt>Contoso!000<ept id=\"p3\">**</ept>)."
+    },
+    {
+      "pos": [
+        15857,
+        15937
+      ],
+      "content": "When you see the \"Welcome to the corp.contoso.com domain\" message, click <bpt id=\"p1\">**</bpt>OK<ept id=\"p1\">**</ept>."
+    },
+    {
+      "pos": [
+        15942,
+        16010
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>Close<ept id=\"p1\">**</ept>, and then click <bpt id=\"p2\">**</bpt>Restart Now<ept id=\"p2\">**</ept> in the popup dialog."
+    },
+    {
+      "content": "Add the Corp\\Install user as an administrator on each VM:",
+      "pos": [
+        16016,
+        16073
+      ]
+    },
+    {
+      "pos": [
+        16078,
+        16201
+      ],
+      "content": "Wait until the VM is restarted, then launch the RDP file again to log into the VM using the <bpt id=\"p1\">**</bpt>BUILTIN\\AzureAdmin<ept id=\"p1\">**</ept> account."
+    },
+    {
+      "pos": [
+        16206,
+        16285
+      ],
+      "content": "In <bpt id=\"p1\">**</bpt>Server Manager<ept id=\"p1\">**</ept> select <bpt id=\"p2\">**</bpt>Tools<ept id=\"p2\">**</ept>, and then click <bpt id=\"p3\">**</bpt>Computer Management<ept id=\"p3\">**</ept>."
+    },
+    {
+      "content": "Computer Management",
+      "pos": [
+        16293,
+        16312
+      ]
+    },
+    {
+      "pos": [
+        16401,
+        16502
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Computer Management<ept id=\"p1\">**</ept> window, expand <bpt id=\"p2\">**</bpt>Local Users and Groups<ept id=\"p2\">**</ept>, and then select <bpt id=\"p3\">**</bpt>Groups<ept id=\"p3\">**</ept>."
+    },
+    {
+      "pos": [
+        16507,
+        16549
+      ],
+      "content": "Double-click the <bpt id=\"p1\">**</bpt>Administrators<ept id=\"p1\">**</ept> group."
+    },
+    {
+      "pos": [
+        16554,
+        16624
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Administrators Properties<ept id=\"p1\">**</ept> dialog, click the <bpt id=\"p2\">**</bpt>Add<ept id=\"p2\">**</ept> button."
+    },
+    {
+      "content": "Enter the user <bpt id=\"p1\">**</bpt>CORP\\Install<ept id=\"p1\">**</ept>, and then click <bpt id=\"p2\">**</bpt>OK<ept id=\"p2\">**</ept>.",
+      "pos": [
+        16629,
+        16684
+      ]
+    },
+    {
+      "content": "When prompted for credentials, use the <bpt id=\"p1\">**</bpt>AzureAdmin<ept id=\"p1\">**</ept> account with the <bpt id=\"p2\">**</bpt>Contoso!000<ept id=\"p2\">**</ept> password.",
+      "pos": [
+        16685,
+        16781
+      ]
+    },
+    {
+      "pos": [
+        16786,
+        16848
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>OK<ept id=\"p1\">**</ept> to close the <bpt id=\"p2\">**</bpt>Administrator Properties<ept id=\"p2\">**</ept> dialog."
+    },
+    {
+      "pos": [
+        16854,
+        16905
+      ],
+      "content": "Add the <bpt id=\"p1\">**</bpt>Failover Clustering<ept id=\"p1\">**</ept> feature to each VM."
+    },
+    {
+      "pos": [
+        16910,
+        16980
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Server Manager<ept id=\"p1\">**</ept> dashboard, click <bpt id=\"p2\">**</bpt>Add roles and features<ept id=\"p2\">**</ept>."
+    },
+    {
+      "pos": [
+        16985,
+        17081
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Add Roles and Features Wizard<ept id=\"p1\">**</ept>, click <bpt id=\"p2\">**</bpt>Next<ept id=\"p2\">**</ept> until you get to the <bpt id=\"p3\">**</bpt>Features<ept id=\"p3\">**</ept> page."
+    },
+    {
+      "content": "Select <bpt id=\"p1\">**</bpt>Failover Clustering<ept id=\"p1\">**</ept>.",
+      "pos": [
+        17086,
+        17117
+      ]
+    },
+    {
+      "content": "When prompted, add any other dependent features.",
+      "pos": [
+        17118,
+        17166
+      ]
+    },
+    {
+      "content": "Add Failover Clustering Feature to VM",
+      "pos": [
+        17174,
+        17211
+      ]
+    },
+    {
+      "pos": [
+        17300,
+        17372
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>Next<ept id=\"p1\">**</ept>, and then click <bpt id=\"p2\">**</bpt>Install<ept id=\"p2\">**</ept> on the <bpt id=\"p3\">**</bpt>Confirmation<ept id=\"p3\">**</ept> page."
+    },
+    {
+      "pos": [
+        17377,
+        17461
+      ],
+      "content": "When the <bpt id=\"p1\">**</bpt>Failover Clustering<ept id=\"p1\">**</ept> feature installation is completed, click <bpt id=\"p2\">**</bpt>Close<ept id=\"p2\">**</ept>."
+    },
+    {
+      "content": "Log out of the VM.",
+      "pos": [
+        17466,
+        17484
+      ]
+    },
+    {
+      "pos": [
+        17489,
+        17605
+      ],
+      "content": "Repeat the steps in this section for all three servers -- <bpt id=\"p1\">**</bpt>ContosoWSFCNode<ept id=\"p1\">**</ept>, <bpt id=\"p2\">**</bpt>ContosoSQL1<ept id=\"p2\">**</ept>, and <bpt id=\"p3\">**</bpt>ContosoSQL2<ept id=\"p3\">**</ept>."
+    },
+    {
+      "content": "The SQL Server VMs are now provisioned and running, but they are installed with SQL Server with default options.",
+      "pos": [
+        17607,
+        17719
+      ]
+    },
+    {
+      "content": "Create the WSFC Cluster",
+      "pos": [
+        17724,
+        17747
+      ]
+    },
+    {
+      "content": "In this section, you create the WSFC cluster that will host the availability group you will create later.",
+      "pos": [
+        17749,
+        17854
+      ]
+    },
+    {
+      "content": "By now, you should have done the following to each of the three VMs you will use in the WSFC cluster:",
+      "pos": [
+        17855,
+        17956
+      ]
+    },
+    {
+      "content": "Fully provisioned in Azure",
+      "pos": [
+        17960,
+        17986
+      ]
+    },
+    {
+      "content": "Joined VM to the domain",
+      "pos": [
+        17990,
+        18013
+      ]
+    },
+    {
+      "pos": [
+        18017,
+        18073
+      ],
+      "content": "Added <bpt id=\"p1\">**</bpt>CORP\\Install<ept id=\"p1\">**</ept> to the local Administrators group"
+    },
+    {
+      "content": "Added the Failover Clustering feature",
+      "pos": [
+        18077,
+        18114
+      ]
+    },
+    {
+      "content": "All these are prerequisites on each VM before you can join it to the WSFC cluster.",
+      "pos": [
+        18116,
+        18198
+      ]
+    },
+    {
+      "content": "Also, note that the Azure virtual network does not behave in the same way as an on-premises network.",
+      "pos": [
+        18200,
+        18300
+      ]
+    },
+    {
+      "content": "You need to create the cluster in the following order:",
+      "pos": [
+        18301,
+        18355
+      ]
+    },
+    {
+      "pos": [
+        18360,
+        18427
+      ],
+      "content": "Create a single-node cluster on one of the nodes (<bpt id=\"p1\">**</bpt>ContosoSQL1<ept id=\"p1\">**</ept>)."
+    },
+    {
+      "pos": [
+        18432,
+        18504
+      ],
+      "content": "Modify the cluster IP address to an unused IP address (<bpt id=\"p1\">**</bpt>10.10.2.101<ept id=\"p1\">**</ept>)."
+    },
+    {
+      "content": "Bring the cluster name online.",
+      "pos": [
+        18509,
+        18539
+      ]
+    },
+    {
+      "pos": [
+        18544,
+        18606
+      ],
+      "content": "Add the other nodes (<bpt id=\"p1\">**</bpt>ContosoSQL2<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>ContosoWSFCNode<ept id=\"p2\">**</ept>)."
+    },
+    {
+      "content": "Follow the steps below to accomplish these tasks that fully configures the cluster.",
+      "pos": [
+        18608,
+        18691
+      ]
+    },
+    {
+      "pos": [
+        18696,
+        18789
+      ],
+      "content": "Launch the RDP file for <bpt id=\"p1\">**</bpt>ContosoSQL1<ept id=\"p1\">**</ept> and log in using the domain account <bpt id=\"p2\">**</bpt>CORP\\Install<ept id=\"p2\">**</ept>."
+    },
+    {
+      "pos": [
+        18794,
+        18893
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Server Manager<ept id=\"p1\">**</ept> dashboard, select <bpt id=\"p2\">**</bpt>Tools<ept id=\"p2\">**</ept>, and then click <bpt id=\"p3\">**</bpt>Failover Cluster Manager<ept id=\"p3\">**</ept>."
+    },
+    {
+      "pos": [
+        18898,
+        19010
+      ],
+      "content": "In the left pane, right-click <bpt id=\"p1\">**</bpt>Failover Cluster Manager<ept id=\"p1\">**</ept>, and then click <bpt id=\"p2\">**</bpt>Create a Cluster<ept id=\"p2\">**</ept>, as shown below."
+    },
+    {
+      "content": "Create Cluster",
+      "pos": [
+        19018,
+        19032
+      ]
+    },
+    {
+      "content": "In the Create Cluster Wizard, create a one-node cluster by stepping through the pages with the settings below:",
+      "pos": [
+        19121,
+        19231
+      ]
+    },
+    {
+      "content": "|Page|Settings|",
+      "pos": [
+        19237,
+        19252
+      ]
+    },
+    {
+      "content": "|---|---|",
+      "pos": [
+        19253,
+        19262
+      ]
+    },
+    {
+      "content": "|Before You Begin|Use defaults|",
+      "pos": [
+        19263,
+        19294
+      ]
+    },
+    {
+      "content": "|Select Servers|Type <bpt id=\"p1\">**</bpt>ContosoSQL1<ept id=\"p1\">**</ept> in <bpt id=\"p2\">**</bpt>Enter server name<ept id=\"p2\">**</ept> and click <bpt id=\"p3\">**</bpt>Add<ept id=\"p3\">**</ept>|",
+      "pos": [
+        19295,
+        19375
+      ]
+    },
+    {
+      "content": "|Validation Warning|Select <bpt id=\"p1\">**</bpt>No. I do not require support from Microsoft for this cluster, and therefore do not want to run the validation tests. When I click Next, continue creating the cluster<ept id=\"p1\">**</ept>.|",
+      "pos": [
+        19376,
+        19574
+      ]
+    },
+    {
+      "content": "|Access Point for Administering the Cluster|Type <bpt id=\"p1\">**</bpt>Cluster1<ept id=\"p1\">**</ept> in <bpt id=\"p2\">**</bpt>Cluster Name<ept id=\"p2\">**</ept>|",
+      "pos": [
+        19575,
+        19657
+      ]
+    },
+    {
+      "content": "|Confirmation|Use defaults unless you are using Storage Spaces.",
+      "pos": [
+        19658,
+        19721
+      ]
+    },
+    {
+      "content": "See the note following this table.|",
+      "pos": [
+        19722,
+        19757
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.WARNING]</ph> If you are using <bpt id=\"p1\">[</bpt>Storage Spaces<ept id=\"p1\">](https://technet.microsoft.com/library/hh831739)</ept>, which groups multiple disks into storage pools, you must uncheck the <bpt id=\"p2\">**</bpt>Add all eligible storage to the cluster<ept id=\"p2\">**</ept> checkbox on the <bpt id=\"p3\">**</bpt>Confirmation<ept id=\"p3\">**</ept> page.",
+      "pos": [
+        19764,
+        20014
+      ]
+    },
+    {
+      "content": "If you do not uncheck this option, the virtual disks will be detached during the clustering process.",
+      "pos": [
+        20015,
+        20115
+      ]
+    },
+    {
+      "content": "As a result, they will also not appear in Disk Manager or Explorer until the storage spaces are removed from cluster and reattached using PowerShell.",
+      "pos": [
+        20116,
+        20265
+      ]
+    },
+    {
+      "pos": [
+        20270,
+        20370
+      ],
+      "content": "In the left-pane, expand <bpt id=\"p1\">**</bpt>Failover Cluster Manager<ept id=\"p1\">**</ept>, and then click <bpt id=\"p2\">**</bpt>Cluster1.corp.contoso.com<ept id=\"p2\">**</ept>."
+    },
+    {
+      "content": "In the center pane, scroll down to <bpt id=\"p1\">**</bpt>Cluster Core Resources<ept id=\"p1\">**</ept> section and expand the <bpt id=\"p2\">**</bpt>Name: Clutser1<ept id=\"p2\">**</ept> details.",
+      "pos": [
+        20375,
+        20487
+      ]
+    },
+    {
+      "content": "You should see both the <bpt id=\"p1\">**</bpt>Name<ept id=\"p1\">**</ept> and the <bpt id=\"p2\">**</bpt>IP Address<ept id=\"p2\">**</ept> resources in the <bpt id=\"p3\">**</bpt>Failed<ept id=\"p3\">**</ept> state.",
+      "pos": [
+        20488,
+        20578
+      ]
+    },
+    {
+      "content": "The IP address resource cannot be brought online because the cluster is assigned the same IP address as that of the machine itself, which is a duplicate address.",
+      "pos": [
+        20579,
+        20740
+      ]
+    },
+    {
+      "pos": [
+        20745,
+        20823
+      ],
+      "content": "Right-click the failed <bpt id=\"p1\">**</bpt>IP Address<ept id=\"p1\">**</ept> resource, and then click <bpt id=\"p2\">**</bpt>Properties<ept id=\"p2\">**</ept>."
+    },
+    {
+      "content": "Cluster Properties",
+      "pos": [
+        20831,
+        20849
+      ]
+    },
+    {
+      "content": "Select <bpt id=\"p1\">**</bpt>Static IP Address<ept id=\"p1\">**</ept> and specify <bpt id=\"p2\">**</bpt>10.10.2.101<ept id=\"p2\">**</ept> in the Address text box.",
+      "pos": [
+        20938,
+        21019
+      ]
+    },
+    {
+      "content": "Then, click <bpt id=\"p1\">**</bpt>OK<ept id=\"p1\">**</ept>.",
+      "pos": [
+        21020,
+        21039
+      ]
+    },
+    {
+      "content": "In the <bpt id=\"p1\">**</bpt>Cluster Core Resources<ept id=\"p1\">**</ept> section, right-click <bpt id=\"p2\">**</bpt>Name: Cluster1<ept id=\"p2\">**</ept> and click <bpt id=\"p3\">**</bpt>Bring Online<ept id=\"p3\">**</ept>.",
+      "pos": [
+        21044,
+        21145
+      ]
+    },
+    {
+      "content": "Then, wait until both resources are online.",
+      "pos": [
+        21146,
+        21189
+      ]
+    },
+    {
+      "content": "When the cluster name resource comes online, it updates the DC server with a new AD computer account.",
+      "pos": [
+        21190,
+        21291
+      ]
+    },
+    {
+      "content": "This AD account will be used to run the availability group clustered service later.",
+      "pos": [
+        21292,
+        21375
+      ]
+    },
+    {
+      "content": "Finally, you add the remaining nodes to the cluster.",
+      "pos": [
+        21380,
+        21432
+      ]
+    },
+    {
+      "content": "In the browser tree, right-click <bpt id=\"p1\">**</bpt>Cluster1.corp.contoso.com<ept id=\"p1\">**</ept> and click <bpt id=\"p2\">**</bpt>Add Node<ept id=\"p2\">**</ept>, as shown below.",
+      "pos": [
+        21433,
+        21535
+      ]
+    },
+    {
+      "content": "Add Node to the Cluster",
+      "pos": [
+        21543,
+        21566
+      ]
+    },
+    {
+      "content": "In the <bpt id=\"p1\">**</bpt>Add Node Wizard<ept id=\"p1\">**</ept>, click <bpt id=\"p2\">**</bpt>Next<ept id=\"p2\">**</ept>.",
+      "pos": [
+        21655,
+        21698
+      ]
+    },
+    {
+      "content": "In the <bpt id=\"p1\">**</bpt>Select Servers<ept id=\"p1\">**</ept> page, add <bpt id=\"p2\">**</bpt>ContosoSQL2<ept id=\"p2\">**</ept> and <bpt id=\"p3\">**</bpt>ContosoWSFCNode<ept id=\"p3\">**</ept> to the list by typing the server name in <bpt id=\"p4\">**</bpt>Enter server name<ept id=\"p4\">**</ept> and then clicking <bpt id=\"p5\">**</bpt>Add<ept id=\"p5\">**</ept>.",
+      "pos": [
+        21699,
+        21864
+      ]
+    },
+    {
+      "content": "When you are done, click <bpt id=\"p1\">**</bpt>Next<ept id=\"p1\">**</ept>.",
+      "pos": [
+        21865,
+        21899
+      ]
+    },
+    {
+      "content": "In the <bpt id=\"p1\">**</bpt>Validation Warning<ept id=\"p1\">**</ept> page, click <bpt id=\"p2\">**</bpt>No<ept id=\"p2\">**</ept> (in a production scenario you should perform the validation tests).",
+      "pos": [
+        21904,
+        22020
+      ]
+    },
+    {
+      "content": "Then, click <bpt id=\"p1\">**</bpt>Next<ept id=\"p1\">**</ept>.",
+      "pos": [
+        22021,
+        22042
+      ]
+    },
+    {
+      "pos": [
+        22047,
+        22109
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Confirmation<ept id=\"p1\">**</ept> page, click <bpt id=\"p2\">**</bpt>Next<ept id=\"p2\">**</ept> to add the nodes."
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.WARNING]</ph> If you are using <bpt id=\"p1\">[</bpt>Storage Spaces<ept id=\"p1\">](https://technet.microsoft.com/library/hh831739)</ept>, which groups multiple disks into storage pools, you must uncheck the <bpt id=\"p2\">**</bpt>Add all eligible storage to the cluster<ept id=\"p2\">**</ept> checkbox.",
+      "pos": [
+        22116,
+        22337
+      ]
+    },
+    {
+      "content": "If you do not uncheck this option, the virtual disks will be detached during the clustering process.",
+      "pos": [
+        22338,
+        22438
+      ]
+    },
+    {
+      "content": "As a result, they will also not appear in Disk Manager or Explorer until the storage spaces are removed from cluster and reattached using PowerShell.",
+      "pos": [
+        22439,
+        22588
+      ]
+    },
+    {
+      "content": "Once the nodes are added to the cluster, click <bpt id=\"p1\">**</bpt>Finish<ept id=\"p1\">**</ept>.",
+      "pos": [
+        22593,
+        22651
+      ]
+    },
+    {
+      "content": "Failover Cluster Manager should now show that your cluster has three nodes and list them in the <bpt id=\"p1\">**</bpt>Nodes<ept id=\"p1\">**</ept> container.",
+      "pos": [
+        22652,
+        22768
+      ]
+    },
+    {
+      "content": "Log out of the remote desktop session.",
+      "pos": [
+        22773,
+        22811
+      ]
+    },
+    {
+      "content": "Prepare the SQL Server Instances for Availability Group",
+      "pos": [
+        22816,
+        22871
+      ]
+    },
+    {
+      "pos": [
+        22873,
+        22960
+      ],
+      "content": "In this section, you will do the following on both <bpt id=\"p1\">**</bpt>ContosoSQL1<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>contosoSQL2<ept id=\"p2\">**</ept>:"
+    },
+    {
+      "pos": [
+        22964,
+        23071
+      ],
+      "content": "Add a login for <bpt id=\"p1\">**</bpt>NT AUTHORITY\\System<ept id=\"p1\">**</ept> with a necessary permissions set to the default SQL Server instance"
+    },
+    {
+      "pos": [
+        23075,
+        23149
+      ],
+      "content": "Add <bpt id=\"p1\">**</bpt>CORP\\Install<ept id=\"p1\">**</ept> as a sysadmin role to the default SQL Server instance"
+    },
+    {
+      "content": "Open the firewall for remote access of SQL Server",
+      "pos": [
+        23153,
+        23202
+      ]
+    },
+    {
+      "content": "Enable the AlwaysOn Availability Groups feature",
+      "pos": [
+        23206,
+        23253
+      ]
+    },
+    {
+      "pos": [
+        23257,
+        23349
+      ],
+      "content": "Change the SQL Server service account to <bpt id=\"p1\">**</bpt>CORP\\SQLSvc1<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>CORP\\SQLSvc2<ept id=\"p2\">**</ept>, respectively"
+    },
+    {
+      "content": "These actions can be performed in any order.",
+      "pos": [
+        23351,
+        23395
+      ]
+    },
+    {
+      "content": "Nevertheless, the steps below will walk through them in order.",
+      "pos": [
+        23396,
+        23458
+      ]
+    },
+    {
+      "content": "Follow the steps for both <bpt id=\"p1\">**</bpt>ContosoSQL1<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>ContosoSQL2<ept id=\"p2\">**</ept>:",
+      "pos": [
+        23459,
+        23521
+      ]
+    },
+    {
+      "content": "If you have not logged out of the remote desktop session for the VM, do so now.",
+      "pos": [
+        23526,
+        23605
+      ]
+    },
+    {
+      "pos": [
+        23610,
+        23708
+      ],
+      "content": "Launch the RDP files for <bpt id=\"p1\">**</bpt>ContosoSQL1<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>ContosoSQL2<ept id=\"p2\">**</ept> and log in as <bpt id=\"p3\">**</bpt>BUILTIN\\AzureAdmin<ept id=\"p3\">**</ept>."
+    },
+    {
+      "content": "First, add <bpt id=\"p1\">**</bpt>NT AUTHORITY\\System<ept id=\"p1\">**</ept> to the SQL Server logins and with necessary permissions.",
+      "pos": [
+        23713,
+        23804
+      ]
+    },
+    {
+      "content": "Launch <bpt id=\"p1\">**</bpt>SQL Server Management Studio<ept id=\"p1\">**</ept>.",
+      "pos": [
+        23805,
+        23845
+      ]
+    },
+    {
+      "pos": [
+        23850,
+        23914
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>Connect<ept id=\"p1\">**</ept> to connect to the default SQL Server instance."
+    },
+    {
+      "pos": [
+        23919,
+        23991
+      ],
+      "content": "In <bpt id=\"p1\">**</bpt>Object Explorer<ept id=\"p1\">**</ept>, expand <bpt id=\"p2\">**</bpt>Security<ept id=\"p2\">**</ept>, and then expand <bpt id=\"p3\">**</bpt>Logins<ept id=\"p3\">**</ept>."
+    },
+    {
+      "pos": [
+        23996,
+        24068
+      ],
+      "content": "Right-click the <bpt id=\"p1\">**</bpt>NT AUTHORITY\\System<ept id=\"p1\">**</ept> login, and click <bpt id=\"p2\">**</bpt>Properties<ept id=\"p2\">**</ept>."
+    },
+    {
+      "pos": [
+        24073,
+        24187
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Securables<ept id=\"p1\">**</ept> page, for the local server, select <bpt id=\"p2\">**</bpt>Grant<ept id=\"p2\">**</ept> for the following permissions and click <bpt id=\"p3\">**</bpt>OK<ept id=\"p3\">**</ept>."
+    },
+    {
+      "content": "Alter any availability group",
+      "pos": [
+        24199,
+        24227
+      ]
+    },
+    {
+      "content": "Connect SQL",
+      "pos": [
+        24239,
+        24250
+      ]
+    },
+    {
+      "content": "View server state",
+      "pos": [
+        24262,
+        24279
+      ]
+    },
+    {
+      "content": "Next, add <bpt id=\"p1\">**</bpt>CORP\\Install<ept id=\"p1\">**</ept> as a <bpt id=\"p2\">**</bpt>sysadmin<ept id=\"p2\">**</ept> role to the default SQL Server instance.",
+      "pos": [
+        24284,
+        24369
+      ]
+    },
+    {
+      "content": "In <bpt id=\"p1\">**</bpt>Object Explorer<ept id=\"p1\">**</ept>, right-click <bpt id=\"p2\">**</bpt>Logins<ept id=\"p2\">**</ept> and click <bpt id=\"p3\">**</bpt>New Login<ept id=\"p3\">**</ept>.",
+      "pos": [
+        24370,
+        24441
+      ]
+    },
+    {
+      "pos": [
+        24446,
+        24486
+      ],
+      "content": "Type <bpt id=\"p1\">**</bpt>CORP\\Install<ept id=\"p1\">**</ept> in <bpt id=\"p2\">**</bpt>Login name<ept id=\"p2\">**</ept>."
+    },
+    {
+      "content": "In the <bpt id=\"p1\">**</bpt>Server Roles<ept id=\"p1\">**</ept> page, select <bpt id=\"p2\">**</bpt>sysadmin<ept id=\"p2\">**</ept>.",
+      "pos": [
+        24491,
+        24541
+      ]
+    },
+    {
+      "content": "Then, click <bpt id=\"p1\">**</bpt>OK<ept id=\"p1\">**</ept>.",
+      "pos": [
+        24542,
+        24561
+      ]
+    },
+    {
+      "content": "Once the login is created, you can see it by expanding <bpt id=\"p1\">**</bpt>Logins<ept id=\"p1\">**</ept> in <bpt id=\"p2\">**</bpt>Object Explorer<ept id=\"p2\">**</ept>.",
+      "pos": [
+        24562,
+        24651
+      ]
+    },
+    {
+      "content": "Next, you create a firewall rule for SQL Server.",
+      "pos": [
+        24656,
+        24704
+      ]
+    },
+    {
+      "content": "From the <bpt id=\"p1\">**</bpt>Start<ept id=\"p1\">**</ept> screen, launch <bpt id=\"p2\">**</bpt>Windows Firewall with Advanced Security<ept id=\"p2\">**</ept>.",
+      "pos": [
+        24705,
+        24783
+      ]
+    },
+    {
+      "content": "In the left pane, select <bpt id=\"p1\">**</bpt>Inbound Rules<ept id=\"p1\">**</ept>.",
+      "pos": [
+        24788,
+        24831
+      ]
+    },
+    {
+      "content": "On the right pane, click <bpt id=\"p1\">**</bpt>New Rule<ept id=\"p1\">**</ept>.",
+      "pos": [
+        24832,
+        24870
+      ]
+    },
+    {
+      "pos": [
+        24875,
+        24942
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Rule Type<ept id=\"p1\">**</ept> page, select <bpt id=\"p2\">**</bpt>Program<ept id=\"p2\">**</ept>, then click <bpt id=\"p3\">**</bpt>Next<ept id=\"p3\">**</ept>."
+    },
+    {
+      "content": "In the <bpt id=\"p1\">**</bpt>Program<ept id=\"p1\">**</ept> page, select <bpt id=\"p2\">**</bpt>This program path<ept id=\"p2\">**</ept> and type <bpt id=\"p3\">**</bpt>%ProgramFiles%\\Microsoft SQL Server\\MSSQL12.MSSQLSERVER\\MSSQL\\Binn\\sqlservr.exe<ept id=\"p3\">**</ept> in the text box (if you are following these directions but using SQL Server 2012, the SQL Server directory is <bpt id=\"p4\">**</bpt>MSSQL11.MSSQLSERVER<ept id=\"p4\">**</ept>).",
+      "pos": [
+        24947,
+        25229
+      ]
+    },
+    {
+      "content": "Then click <bpt id=\"p1\">**</bpt>Next<ept id=\"p1\">**</ept>.",
+      "pos": [
+        25230,
+        25250
+      ]
+    },
+    {
+      "pos": [
+        25255,
+        25337
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Action<ept id=\"p1\">**</ept> page, keep <bpt id=\"p2\">**</bpt>Allow the connection<ept id=\"p2\">**</ept> selected and click <bpt id=\"p3\">**</bpt>Next<ept id=\"p3\">**</ept>."
+    },
+    {
+      "pos": [
+        25342,
+        25414
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Profile<ept id=\"p1\">**</ept> page, accept the default settings and click <bpt id=\"p2\">**</bpt>Next<ept id=\"p2\">**</ept>."
+    },
+    {
+      "pos": [
+        25419,
+        25548
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Name<ept id=\"p1\">**</ept> page, specify a rule name, such as <bpt id=\"p2\">**</bpt>SQL Server (Program Rule)<ept id=\"p2\">**</ept> in the <bpt id=\"p3\">**</bpt>Name<ept id=\"p3\">**</ept> text box, then click <bpt id=\"p4\">**</bpt>Finish<ept id=\"p4\">**</ept>."
+    },
+    {
+      "content": "Next, you enable the <bpt id=\"p1\">**</bpt>AlwaysOn Availability Groups<ept id=\"p1\">**</ept> feature.",
+      "pos": [
+        25553,
+        25615
+      ]
+    },
+    {
+      "content": "From the <bpt id=\"p1\">**</bpt>Start<ept id=\"p1\">**</ept> screen, launch <bpt id=\"p2\">**</bpt>SQL Server Configuration Manager<ept id=\"p2\">**</ept>.",
+      "pos": [
+        25616,
+        25687
+      ]
+    },
+    {
+      "pos": [
+        25692,
+        25827
+      ],
+      "content": "In the browser tree, click <bpt id=\"p1\">**</bpt>SQL Server Services<ept id=\"p1\">**</ept>, then right-click the <bpt id=\"p2\">**</bpt>SQL Server (MSSQLSERVER)<ept id=\"p2\">**</ept> service and click <bpt id=\"p3\">**</bpt>Properties<ept id=\"p3\">**</ept>."
+    },
+    {
+      "content": "Click the <bpt id=\"p1\">**</bpt>AlwaysOn High Availability<ept id=\"p1\">**</ept> tab, then select <bpt id=\"p2\">**</bpt>Enable AlwaysOn Availability Groups<ept id=\"p2\">**</ept>, as shown below, and then click <bpt id=\"p3\">**</bpt>Apply<ept id=\"p3\">**</ept>.",
+      "pos": [
+        25832,
+        25972
+      ]
+    },
+    {
+      "content": "Click <bpt id=\"p1\">**</bpt>OK<ept id=\"p1\">**</ept> in the pop-up dialog, and do not close the properties window yet.",
+      "pos": [
+        25973,
+        26051
+      ]
+    },
+    {
+      "content": "You will restart the SQL Server service after you change the service account.",
+      "pos": [
+        26052,
+        26129
+      ]
+    },
+    {
+      "content": "Enable AlwaysOn Availability Groups",
+      "pos": [
+        26137,
+        26172
+      ]
+    },
+    {
+      "content": "Next, you change the SQL Server service account.",
+      "pos": [
+        26261,
+        26309
+      ]
+    },
+    {
+      "content": "Click the <bpt id=\"p1\">**</bpt>Log On<ept id=\"p1\">**</ept> tab, then type <bpt id=\"p2\">**</bpt>CORP\\SQLSvc1<ept id=\"p2\">**</ept> (for <bpt id=\"p3\">**</bpt>ContosoSQL1<ept id=\"p3\">**</ept>) or <bpt id=\"p4\">**</bpt>CORP\\SQLSvc2<ept id=\"p4\">**</ept> (for <bpt id=\"p5\">**</bpt>ContosoSQL2<ept id=\"p5\">**</ept>) in <bpt id=\"p6\">**</bpt>Account Name<ept id=\"p6\">**</ept>, then fill in and confirm the password, and then click <bpt id=\"p7\">**</bpt>OK<ept id=\"p7\">**</ept>.",
+      "pos": [
+        26310,
+        26509
+      ]
+    },
+    {
+      "content": "In the pop-up window, click <bpt id=\"p1\">**</bpt>Yes<ept id=\"p1\">**</ept> to restart the SQL Server service.",
+      "pos": [
+        26514,
+        26584
+      ]
+    },
+    {
+      "content": "After the SQL Server service is restarted, the changes you made in the properties window are effective.",
+      "pos": [
+        26585,
+        26688
+      ]
+    },
+    {
+      "content": "Log out of the VMs.",
+      "pos": [
+        26693,
+        26712
+      ]
+    },
+    {
+      "content": "Create the Availability Group",
+      "pos": [
+        26717,
+        26746
+      ]
+    },
+    {
+      "content": "You are now ready to configure an availability group.",
+      "pos": [
+        26748,
+        26801
+      ]
+    },
+    {
+      "content": "Below is an outline of what you will do:",
+      "pos": [
+        26802,
+        26842
+      ]
+    },
+    {
+      "pos": [
+        26846,
+        26898
+      ],
+      "content": "Create a new database (<bpt id=\"p1\">**</bpt>MyDB1<ept id=\"p1\">**</ept>) on <bpt id=\"p2\">**</bpt>ContosoSQL1<ept id=\"p2\">**</ept>"
+    },
+    {
+      "content": "Take both a full backup and a transaction log backup of the database",
+      "pos": [
+        26902,
+        26970
+      ]
+    },
+    {
+      "pos": [
+        26974,
+        27056
+      ],
+      "content": "Restore the full and log backups to <bpt id=\"p1\">**</bpt>ContosoSQL2<ept id=\"p1\">**</ept> with the <bpt id=\"p2\">**</bpt>NORECOVERY<ept id=\"p2\">**</ept> option"
+    },
+    {
+      "pos": [
+        27060,
+        27176
+      ],
+      "content": "Create the availability group (<bpt id=\"p1\">**</bpt>AG1<ept id=\"p1\">**</ept>) with synchronous commit, automatic failover, and readable secondary replicas"
+    },
+    {
+      "content": "Create the MyDB1 database on ContosoSQL1:",
+      "pos": [
+        27182,
+        27223
+      ]
+    },
+    {
+      "pos": [
+        27228,
+        27345
+      ],
+      "content": "If you have not already logged out of the remote desktop sessions for <bpt id=\"p1\">**</bpt>ContosoSQL1<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>ContosoSQL2<ept id=\"p2\">**</ept>, do so now."
+    },
+    {
+      "pos": [
+        27350,
+        27421
+      ],
+      "content": "Launch the RDP file for <bpt id=\"p1\">**</bpt>ContosoSQL1<ept id=\"p1\">**</ept> and log in as <bpt id=\"p2\">**</bpt>CORP\\Install<ept id=\"p2\">**</ept>."
+    },
+    {
+      "content": "In <bpt id=\"p1\">**</bpt>File Explorer<ept id=\"p1\">**</ept>, under *<bpt id=\"p2\">*</bpt>C:\\*<ept id=\"p2\">*</ept>, create a directory called <bpt id=\"p3\">**</bpt>backup<ept id=\"p3\">**</ept>.",
+      "pos": [
+        27426,
+        27500
+      ]
+    },
+    {
+      "content": "You will use this directory use to back up and restore your database.",
+      "pos": [
+        27501,
+        27570
+      ]
+    },
+    {
+      "pos": [
+        27575,
+        27682
+      ],
+      "content": "Right-click the new directory, point to <bpt id=\"p1\">**</bpt>Share with<ept id=\"p1\">**</ept>, and then click <bpt id=\"p2\">**</bpt>Specific people<ept id=\"p2\">**</ept>, as shown below."
+    },
+    {
+      "content": "Create a Backup Folder",
+      "pos": [
+        27690,
+        27712
+      ]
+    },
+    {
+      "content": "Add <bpt id=\"p1\">**</bpt>CORP\\SQLSvc1<ept id=\"p1\">**</ept> and give it the <bpt id=\"p2\">**</bpt>Read/Write<ept id=\"p2\">**</ept> permission, then add <bpt id=\"p3\">**</bpt>CORP\\SQLSvc2<ept id=\"p3\">**</ept> and give it the <bpt id=\"p4\">**</bpt>Read<ept id=\"p4\">**</ept> permission, as shown below, and then click <bpt id=\"p5\">**</bpt>Share<ept id=\"p5\">**</ept>.",
+      "pos": [
+        27801,
+        27969
+      ]
+    },
+    {
+      "content": "Once the file sharing process is complete, click <bpt id=\"p1\">**</bpt>Done<ept id=\"p1\">**</ept>.",
+      "pos": [
+        27970,
+        28028
+      ]
+    },
+    {
+      "content": "Grant Permissions For Backup Folder",
+      "pos": [
+        28036,
+        28071
+      ]
+    },
+    {
+      "content": "Next, you create the database.",
+      "pos": [
+        28160,
+        28190
+      ]
+    },
+    {
+      "content": "From the <bpt id=\"p1\">**</bpt>Start<ept id=\"p1\">**</ept> menu, launch <bpt id=\"p2\">**</bpt>SQL Server Management Studio<ept id=\"p2\">**</ept>, then click <bpt id=\"p3\">**</bpt>Connect<ept id=\"p3\">**</ept> to connect to the default SQL Server instance.",
+      "pos": [
+        28191,
+        28326
+      ]
+    },
+    {
+      "pos": [
+        28331,
+        28412
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Object Explorer<ept id=\"p1\">**</ept>, right-click <bpt id=\"p2\">**</bpt>Databases<ept id=\"p2\">**</ept> and click <bpt id=\"p3\">**</bpt>New Database<ept id=\"p3\">**</ept>."
+    },
+    {
+      "pos": [
+        28417,
+        28473
+      ],
+      "content": "In <bpt id=\"p1\">**</bpt>Database name<ept id=\"p1\">**</ept>, type <bpt id=\"p2\">**</bpt>MyDB1<ept id=\"p2\">**</ept>, then click <bpt id=\"p3\">**</bpt>OK<ept id=\"p3\">**</ept>."
+    },
+    {
+      "content": "Take a full backup of MyDB1 and restore it on ContosoSQL2:",
+      "pos": [
+        28479,
+        28537
+      ]
+    },
+    {
+      "content": "Next, you take a full backup of the database.",
+      "pos": [
+        28542,
+        28587
+      ]
+    },
+    {
+      "content": "In the <bpt id=\"p1\">**</bpt>Object Explorer<ept id=\"p1\">**</ept>, expand <bpt id=\"p2\">**</bpt>Databases<ept id=\"p2\">**</ept>, then right-click <bpt id=\"p3\">**</bpt>MyDB1<ept id=\"p3\">**</ept>, then point to <bpt id=\"p4\">**</bpt>Tasks<ept id=\"p4\">**</ept>, and then click <bpt id=\"p5\">**</bpt>Back Up<ept id=\"p5\">**</ept>.",
+      "pos": [
+        28588,
+        28718
+      ]
+    },
+    {
+      "content": "In the <bpt id=\"p1\">**</bpt>Source<ept id=\"p1\">**</ept> section, keep <bpt id=\"p2\">**</bpt>Backup type<ept id=\"p2\">**</ept> set to <bpt id=\"p3\">**</bpt>Full<ept id=\"p3\">**</ept>.",
+      "pos": [
+        28723,
+        28787
+      ]
+    },
+    {
+      "content": "In the <bpt id=\"p1\">**</bpt>Destination<ept id=\"p1\">**</ept> section, click <bpt id=\"p2\">**</bpt>Remove<ept id=\"p2\">**</ept> to remove the default file path for the backup file.",
+      "pos": [
+        28788,
+        28889
+      ]
+    },
+    {
+      "pos": [
+        28894,
+        28940
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Destination<ept id=\"p1\">**</ept> section, click <bpt id=\"p2\">**</bpt>Add<ept id=\"p2\">**</ept>."
+    },
+    {
+      "content": "In the <bpt id=\"p1\">**</bpt>File name<ept id=\"p1\">**</ept> text box, type <bpt id=\"p2\">**</bpt>\\\\ContosoSQL1\\backup\\MyDB1.bak<ept id=\"p2\">**</ept>.",
+      "pos": [
+        28945,
+        29016
+      ]
+    },
+    {
+      "content": "Then, click <bpt id=\"p1\">**</bpt>OK<ept id=\"p1\">**</ept>, and then click <bpt id=\"p2\">**</bpt>OK<ept id=\"p2\">**</ept> again to backup the database.",
+      "pos": [
+        29017,
+        29088
+      ]
+    },
+    {
+      "content": "When the backup operation completes, click <bpt id=\"p1\">**</bpt>OK<ept id=\"p1\">**</ept> again to close the dialog.",
+      "pos": [
+        29089,
+        29165
+      ]
+    },
+    {
+      "content": "Next, you take a transaction log backup of the database.",
+      "pos": [
+        29170,
+        29226
+      ]
+    },
+    {
+      "content": "In the <bpt id=\"p1\">**</bpt>Object Explorer<ept id=\"p1\">**</ept>, expand <bpt id=\"p2\">**</bpt>Databases<ept id=\"p2\">**</ept>, then right-click <bpt id=\"p3\">**</bpt>MyDB1<ept id=\"p3\">**</ept>, then point to <bpt id=\"p4\">**</bpt>Tasks<ept id=\"p4\">**</ept>, and then click <bpt id=\"p5\">**</bpt>Back Up<ept id=\"p5\">**</ept>.",
+      "pos": [
+        29227,
+        29357
+      ]
+    },
+    {
+      "content": "In <bpt id=\"p1\">**</bpt>Backup<ept id=\"p1\">**</ept> type, select <bpt id=\"p2\">**</bpt>Transaction Log<ept id=\"p2\">**</ept>.",
+      "pos": [
+        29362,
+        29409
+      ]
+    },
+    {
+      "content": "Keep the <bpt id=\"p1\">**</bpt>Destination<ept id=\"p1\">**</ept> file path set to the one you specified earlier and click <bpt id=\"p2\">**</bpt>OK<ept id=\"p2\">**</ept>.",
+      "pos": [
+        29410,
+        29499
+      ]
+    },
+    {
+      "content": "Once the backup operation completes, click <bpt id=\"p1\">**</bpt>OK<ept id=\"p1\">**</ept> again.",
+      "pos": [
+        29500,
+        29556
+      ]
+    },
+    {
+      "content": "Next, you restore the full and transaction log backups on <bpt id=\"p1\">**</bpt>ContosoSQL2<ept id=\"p1\">**</ept>.",
+      "pos": [
+        29561,
+        29635
+      ]
+    },
+    {
+      "content": "Launch the RDP file for <bpt id=\"p1\">**</bpt>ContosoSQL2<ept id=\"p1\">**</ept> and log in as <bpt id=\"p2\">**</bpt>CORP\\Install<ept id=\"p2\">**</ept>.",
+      "pos": [
+        29636,
+        29707
+      ]
+    },
+    {
+      "content": "Leave the remote desktop session for <bpt id=\"p1\">**</bpt>ContosoSQL1<ept id=\"p1\">**</ept> open.",
+      "pos": [
+        29708,
+        29766
+      ]
+    },
+    {
+      "pos": [
+        29771,
+        29906
+      ],
+      "content": "From the <bpt id=\"p1\">**</bpt>Start<ept id=\"p1\">**</ept> menu, launch <bpt id=\"p2\">**</bpt>SQL Server Management Studio<ept id=\"p2\">**</ept>, then click <bpt id=\"p3\">**</bpt>Connect<ept id=\"p3\">**</ept> to connect to the default SQL Server instance."
+    },
+    {
+      "pos": [
+        29911,
+        29996
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Object Explorer<ept id=\"p1\">**</ept>, right-click <bpt id=\"p2\">**</bpt>Databases<ept id=\"p2\">**</ept> and click <bpt id=\"p3\">**</bpt>Restore Database<ept id=\"p3\">**</ept>."
+    },
+    {
+      "pos": [
+        30001,
+        30074
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Source<ept id=\"p1\">**</ept> section, select <bpt id=\"p2\">**</bpt>Device<ept id=\"p2\">**</ept>, and click the <bpt id=\"p3\">**</bpt>…<ept id=\"p3\">**</ept> button."
+    },
+    {
+      "pos": [
+        30079,
+        30123
+      ],
+      "content": "In <bpt id=\"p1\">**</bpt>Select backup devices<ept id=\"p1\">**</ept>, click <bpt id=\"p2\">**</bpt>Add<ept id=\"p2\">**</ept>."
+    },
+    {
+      "content": "In Backup file location, type \\\\ContosoSQL1\\backup, then click Refresh, then select MyDB1.bak, then click OK, and then click OK again.",
+      "pos": [
+        30128,
+        30262
+      ]
+    },
+    {
+      "content": "You should now see the full backup and the log backup in the Backup sets to restore pane.",
+      "pos": [
+        30263,
+        30352
+      ]
+    },
+    {
+      "content": "Go to the Options page, then select RESTORE WITH NORECOVERY in Recovery state, and then click OK to restore the database.",
+      "pos": [
+        30357,
+        30478
+      ]
+    },
+    {
+      "content": "Once the restore operation completes, click OK.",
+      "pos": [
+        30479,
+        30526
+      ]
+    },
+    {
+      "content": "Create the availability group:",
+      "pos": [
+        30532,
+        30562
+      ]
+    },
+    {
+      "content": "Go back to the remote desktop session for <bpt id=\"p1\">**</bpt>ContosoSQL1<ept id=\"p1\">**</ept>.",
+      "pos": [
+        30567,
+        30625
+      ]
+    },
+    {
+      "content": "In the <bpt id=\"p1\">**</bpt>Object Explorer<ept id=\"p1\">**</ept> in SSMS, right-click <bpt id=\"p2\">**</bpt>AlwaysOn High Availability<ept id=\"p2\">**</ept> and click <bpt id=\"p3\">**</bpt>New Availability Group Wizard<ept id=\"p3\">**</ept>, as shown below.",
+      "pos": [
+        30626,
+        30765
+      ]
+    },
+    {
+      "content": "Launch New Availability Group Wizard",
+      "pos": [
+        30773,
+        30809
+      ]
+    },
+    {
+      "content": "In the <bpt id=\"p1\">**</bpt>Introduction<ept id=\"p1\">**</ept> page, click <bpt id=\"p2\">**</bpt>Next<ept id=\"p2\">**</ept>.",
+      "pos": [
+        30898,
+        30943
+      ]
+    },
+    {
+      "content": "In the <bpt id=\"p1\">**</bpt>Specify Availability Group Name<ept id=\"p1\">**</ept> page, type <bpt id=\"p2\">**</bpt>AG1<ept id=\"p2\">**</ept> in <bpt id=\"p3\">**</bpt>Availability group name<ept id=\"p3\">**</ept>, then click <bpt id=\"p4\">**</bpt>Next<ept id=\"p4\">**</ept> again.",
+      "pos": [
+        30944,
+        31064
+      ]
+    },
+    {
+      "content": "New AG Wizard, Specify AG Name",
+      "pos": [
+        31072,
+        31102
+      ]
+    },
+    {
+      "content": "In the <bpt id=\"p1\">**</bpt>Select Databases<ept id=\"p1\">**</ept> page, select <bpt id=\"p2\">**</bpt>MyDB1<ept id=\"p2\">**</ept> and click <bpt id=\"p3\">**</bpt>Next<ept id=\"p3\">**</ept>.",
+      "pos": [
+        31191,
+        31261
+      ]
+    },
+    {
+      "content": "The database meets the prerequisites for an availability group because you have taken at least one full backup on the intended primary replica.",
+      "pos": [
+        31262,
+        31405
+      ]
+    },
+    {
+      "content": "New AG Wizard, Select Databases",
+      "pos": [
+        31413,
+        31444
+      ]
+    },
+    {
+      "pos": [
+        31533,
+        31589
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Specify Replicas<ept id=\"p1\">**</ept> page, click <bpt id=\"p2\">**</bpt>Add Replica<ept id=\"p2\">**</ept>."
+    },
+    {
+      "content": "New AG Wizard, Specify Replicas",
+      "pos": [
+        31597,
+        31628
+      ]
+    },
+    {
+      "content": "The <bpt id=\"p1\">**</bpt>Connect to Server<ept id=\"p1\">**</ept> dialog pops up.",
+      "pos": [
+        31717,
+        31758
+      ]
+    },
+    {
+      "content": "Type <bpt id=\"p1\">**</bpt>ContosoSQL2<ept id=\"p1\">**</ept> in <bpt id=\"p2\">**</bpt>Server name<ept id=\"p2\">**</ept>, then click <bpt id=\"p3\">**</bpt>Connect<ept id=\"p3\">**</ept>.",
+      "pos": [
+        31759,
+        31823
+      ]
+    },
+    {
+      "content": "New AG Wizard, Connect to Server",
+      "pos": [
+        31831,
+        31863
+      ]
+    },
+    {
+      "content": "Back in the <bpt id=\"p1\">**</bpt>Specify Replicas<ept id=\"p1\">**</ept> page, you should now see <bpt id=\"p2\">**</bpt>ContosoSQL2<ept id=\"p2\">**</ept> listed in <bpt id=\"p3\">**</bpt>Available Replicas<ept id=\"p3\">**</ept>.",
+      "pos": [
+        31952,
+        32059
+      ]
+    },
+    {
+      "content": "Configure the replicas as shown below.",
+      "pos": [
+        32060,
+        32098
+      ]
+    },
+    {
+      "content": "When you are finished, click <bpt id=\"p1\">**</bpt>Next<ept id=\"p1\">**</ept>.",
+      "pos": [
+        32099,
+        32137
+      ]
+    },
+    {
+      "content": "New AG Wizard, Specify Replicas (Complete)",
+      "pos": [
+        32145,
+        32187
+      ]
+    },
+    {
+      "content": "In the <bpt id=\"p1\">**</bpt>Select Initial Data Synchronization<ept id=\"p1\">**</ept> page, select <bpt id=\"p2\">**</bpt>Join only<ept id=\"p2\">**</ept> and click <bpt id=\"p3\">**</bpt>Next<ept id=\"p3\">**</ept>.",
+      "pos": [
+        32276,
+        32369
+      ]
+    },
+    {
+      "content": "You have already performed data synchronization manually when you took the full and transaction backups on <bpt id=\"p1\">**</bpt>ContosoSQL1<ept id=\"p1\">**</ept> and restored them on <bpt id=\"p2\">**</bpt>ContosoSQL2<ept id=\"p2\">**</ept>.",
+      "pos": [
+        32370,
+        32530
+      ]
+    },
+    {
+      "content": "You can instead choose not to perform the backup and restore operations on your database and select <bpt id=\"p1\">**</bpt>Full<ept id=\"p1\">**</ept> to let the New Availability Group Wizard perform data synchronization for you.",
+      "pos": [
+        32531,
+        32718
+      ]
+    },
+    {
+      "content": "However, this is not recommended for very large databases that are found in some enterprises.",
+      "pos": [
+        32719,
+        32812
+      ]
+    },
+    {
+      "content": "New AG Wizard, Select Initial Data Synchronization",
+      "pos": [
+        32820,
+        32870
+      ]
+    },
+    {
+      "content": "In the <bpt id=\"p1\">**</bpt>Validation<ept id=\"p1\">**</ept> page, click <bpt id=\"p2\">**</bpt>Next<ept id=\"p2\">**</ept>.",
+      "pos": [
+        32959,
+        33002
+      ]
+    },
+    {
+      "content": "This page should look similar to below.",
+      "pos": [
+        33003,
+        33042
+      ]
+    },
+    {
+      "content": "There is a warning for the listener configuration because you have not configured an availability group listener.",
+      "pos": [
+        33043,
+        33156
+      ]
+    },
+    {
+      "content": "You can ignore this warning, because this tutorial does not configure a listener.",
+      "pos": [
+        33157,
+        33238
+      ]
+    },
+    {
+      "content": "To configure the listener after completing this tutorial, see <bpt id=\"p1\">[</bpt>Configure an ILB listener for AlwaysOn Availability Groups in Azure<ept id=\"p1\">](virtual-machines-sql-server-configure-ilb-alwayson-availability-group-listener.md)</ept>.",
+      "pos": [
+        33239,
+        33454
+      ]
+    },
+    {
+      "content": "New AG Wizard, Validation",
+      "pos": [
+        33462,
+        33487
+      ]
+    },
+    {
+      "content": "In the <bpt id=\"p1\">**</bpt>Summary<ept id=\"p1\">**</ept> page, click <bpt id=\"p2\">**</bpt>Finish<ept id=\"p2\">**</ept>, then wait while the wizard configures the new availability group.",
+      "pos": [
+        33576,
+        33684
+      ]
+    },
+    {
+      "content": "In the <bpt id=\"p1\">**</bpt>Progress<ept id=\"p1\">**</ept> page, you can click <bpt id=\"p2\">**</bpt>More details<ept id=\"p2\">**</ept> to view the detailed progress.",
+      "pos": [
+        33685,
+        33772
+      ]
+    },
+    {
+      "content": "Once the wizard is finished, inspect the <bpt id=\"p1\">**</bpt>Results<ept id=\"p1\">**</ept> page to verify that the availability group is successfully created, as shown below, then click <bpt id=\"p2\">**</bpt>Close<ept id=\"p2\">**</ept> to exit the wizard.",
+      "pos": [
+        33773,
+        33950
+      ]
+    },
+    {
+      "content": "New AG Wizard, Results",
+      "pos": [
+        33958,
+        33980
+      ]
+    },
+    {
+      "content": "In the <bpt id=\"p1\">**</bpt>Object Explorer<ept id=\"p1\">**</ept>, expand <bpt id=\"p2\">**</bpt>AlwaysOn High Availability<ept id=\"p2\">**</ept>, then expand <bpt id=\"p3\">**</bpt>Availability Groups<ept id=\"p3\">**</ept>.",
+      "pos": [
+        34069,
+        34172
+      ]
+    },
+    {
+      "content": "You should now see the new availability group in this container.",
+      "pos": [
+        34173,
+        34237
+      ]
+    },
+    {
+      "content": "Right-click <bpt id=\"p1\">**</bpt>AG1 (Primary)<ept id=\"p1\">**</ept> and click <bpt id=\"p2\">**</bpt>Show Dashboard<ept id=\"p2\">**</ept>.",
+      "pos": [
+        34238,
+        34297
+      ]
+    },
+    {
+      "content": "Show AG Dashboard",
+      "pos": [
+        34305,
+        34322
+      ]
+    },
+    {
+      "content": "Your <bpt id=\"p1\">**</bpt>AlwaysOn Dashboard<ept id=\"p1\">**</ept> should look similar to the one shown below.",
+      "pos": [
+        34411,
+        34482
+      ]
+    },
+    {
+      "content": "You can see the replicas, the failover mode of each replica and the synchronization state.",
+      "pos": [
+        34483,
+        34573
+      ]
+    },
+    {
+      "content": "AG Dashboard",
+      "pos": [
+        34581,
+        34593
+      ]
+    },
+    {
+      "pos": [
+        34682,
+        34775
+      ],
+      "content": "Return to <bpt id=\"p1\">**</bpt>Server Manager<ept id=\"p1\">**</ept>, select <bpt id=\"p2\">**</bpt>Tools<ept id=\"p2\">**</ept>, and then launch <bpt id=\"p3\">**</bpt>Failover Cluster Manager<ept id=\"p3\">**</ept>."
+    },
+    {
+      "content": "Expand <bpt id=\"p1\">**</bpt>Cluster1.corp.contoso.com<ept id=\"p1\">**</ept>, and then expand <bpt id=\"p2\">**</bpt>Services and applications<ept id=\"p2\">**</ept>.",
+      "pos": [
+        34780,
+        34864
+      ]
+    },
+    {
+      "content": "Select <bpt id=\"p1\">**</bpt>Roles<ept id=\"p1\">**</ept> and note that the <bpt id=\"p2\">**</bpt>AG1<ept id=\"p2\">**</ept> availability group role has been created.",
+      "pos": [
+        34865,
+        34949
+      ]
+    },
+    {
+      "content": "Note that AG1 does not have any IP address by which database clients can connect to the availability group, because you did not configure a listener.",
+      "pos": [
+        34950,
+        35099
+      ]
+    },
+    {
+      "content": "You can connect directly to the primary node for read-write operations and the secondary node for read-only queries.",
+      "pos": [
+        35100,
+        35216
+      ]
+    },
+    {
+      "content": "AG in Failover Cluster Manager",
+      "pos": [
+        35224,
+        35254
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.WARNING]</ph> Do not try to fail over the availability group from the Failover Cluster Manager.",
+      "pos": [
+        35341,
+        35438
+      ]
+    },
+    {
+      "content": "All failover operations should be performed from within <bpt id=\"p1\">**</bpt>AlwaysOn Dashboard<ept id=\"p1\">**</ept> in SSMS.",
+      "pos": [
+        35439,
+        35526
+      ]
+    },
+    {
+      "content": "For more information, see <bpt id=\"p1\">[</bpt>Restrictions on Using The WSFC Failover Cluster Manager with Availability Groups<ept id=\"p1\">](https://msdn.microsoft.com/library/ff929171.aspx)</ept>.",
+      "pos": [
+        35527,
+        35686
+      ]
+    },
+    {
+      "content": "Next Steps",
+      "pos": [
+        35691,
+        35701
+      ]
+    },
+    {
+      "content": "You have now successfully implemented SQL Server AlwaysOn by creating an availability group in Azure.",
+      "pos": [
+        35702,
+        35803
+      ]
+    },
+    {
+      "content": "To configure a listener for this availability group, see <bpt id=\"p1\">[</bpt>Configure an ILB listener for AlwaysOn Availability Groups in Azure<ept id=\"p1\">](virtual-machines-sql-server-configure-ilb-alwayson-availability-group-listener.md)</ept>.",
+      "pos": [
+        35804,
+        36014
+      ]
+    },
+    {
+      "pos": [
+        36016,
+        36199
+      ],
+      "content": "For other information about using SQL Server in Azure, see <bpt id=\"p1\">[</bpt>SQL Server on Azure Virtual Machines<ept id=\"p1\">](../articles/virtual-machines/virtual-machines-sql-server-infrastructure-services.md)</ept>."
+    }
+  ],
+  "content": "<properties \n    pageTitle=\"Configure AlwaysOn Availability Groups in Azure (GUI)\"\n    description=\"Create an AlwaysOn Availability Group in Azure Virtual Machines. This tutorial primarily uses the user interface and tools rather than scripting.\"\n    services=\"virtual-machines\"\n    documentationCenter=\"na\"\n    authors=\"rothja\"\n    manager=\"jeffreyg\"\n    editor=\"monicar\" />\n<tags \n    ms.service=\"virtual-machines\"\n    ms.devlang=\"na\"\n    ms.topic=\"article\"\n    ms.tgt_pltfrm=\"vm-windows-sql-server\"\n    ms.workload=\"infrastructure-services\"\n    ms.date=\"08/12/2015\"\n    ms.author=\"jroth\" />\n\n# Configure AlwaysOn Availability Groups in Azure (GUI)\n\nThis end-to-end tutorial shows you how to implement Availability Groups using SQL Server AlwaysOn running on Azure virtual machines.\n\n>[AZURE.NOTE] In the Azure Management Portal, there is a new gallery setup for AlwaysOn Availability Groups with a Listener. This configures everything you need for AlwaysOn Availability Groups automatically. For more information, see [SQL Server AlwaysOn Offering in Microsoft Azure Portal Gallery](http://blogs.technet.com/b/dataplatforminsider/archive/2014/08/25/sql-server-alwayson-offering-in-microsoft-azure-portal-gallery.aspx). To use PowerShell, see the tutorial of the same scenario at [Configure AlwaysOn Availability Groups in Azure with PowerShell](virtual-machines-sql-server-alwayson-availability-groups-powershell.md).\n\nAt the end of the tutorial, your SQL Server AlwaysOn solution in Azure will consist of the following elements:\n\n- A virtual network containing multiple subnets, including a front-end and a back-end subnet\n\n- A domain controller with an Active Directory (AD) domain\n\n- Two SQL Server VMs deployed to the back-end subnet and joined to the AD domain\n\n- A 3-node WSFC cluster with the Node Majority quorum model\n\n- An availability group with two synchronous-commit replicas of an availability database\n\nThe figure below is a graphical representation of the solution.\n\n![Test Lab Architecture for AG in Azure](./media/virtual-machines-sql-server-alwayson-availability-groups-gui/IC791912.png)\n\nNote that this is one possible configuration. For example, you can minimize the number of VMs for a two-replica availability group in order to save on compute hours in Azure by using the domain controller as the quorum file share witness in a 2-node WSFC cluster. This method reduces the VM count by one from the above configuration.\n\nThis tutorial assumes the following:\n\n- You already have an Azure account.\n\n- You already know how to provision a SQL Server VM from the virtual machine gallery using the GUI. For more information, see [Provisioning a SQL Server Virtual Machine on Azure](virtual-machines-provision-sql-server.md)\n\n- You already have a solid understanding of AlwaysOn Availability Groups. For more information, see [AlwaysOn Availability Groups (SQL Server)](https://msdn.microsoft.com/library/hh510230.aspx).\n\n>[AZURE.NOTE] If you are interested in using AlwaysOn Availability Groups with SharePoint, also see [Configure SQL Server 2012 AlwaysOn Availability Groups for SharePoint 2013](https://technet.microsoft.com/library/jj715261.aspx).\n\n## Create the Virtual Network and Domain Controller Server\n\nYou begin with a new Azure trial account. Once you have finished your account setup, you should be in the home screen of the Azure portal.\n\n1. Click the **New** button at the lower-left corner of the page, as shown below.\n\n    ![Click New in the Portal](./media/virtual-machines-sql-server-alwayson-availability-groups-gui/IC665511.gif)\n\n1. Click **Network Services**, then click **Virtual Network,** and then click **Custom Create**, as shown below.\n\n    ![Create Virtual Network](./media/virtual-machines-sql-server-alwayson-availability-groups-gui/IC665512.gif)\n\n1. In the **CREATE A VIRTUAL NETWORK** dialog, create a new virtual network by stepping through the pages with the settings below. \n\n    |Page|Settings|\n|---|---|\n|Virtual Network Details|**NAME = ContosoNET**<br/>**REGION = West US**|\n|DNS Servers and VPN Connectivity|None|\n|Virtual Network Address Spaces|Settings are shown in the screenshot below: ![Create Virtual Network](./media/virtual-machines-sql-server-alwayson-availability-groups-gui/IC784620.png)|\n\n1. Next, you create the VM you will use as the domain controller (DC). Click **New** again, then **Compute**, then **Virtual Machine**, and then **From Gallery**, as shown below.\n\n    ![Create a VM](./media/virtual-machines-sql-server-alwayson-availability-groups-gui/IC784621.png)\n\n1. In the **CREATE A VIRTUAL MACHINE** dialog, configure a new VM by stepping through the pages with the settings below. \n\n    |Page|Settings|\n|---|---|\n|Select the virtual machine operating system|Windows Server 2012 R2 Datacenter|\n|Virtual machine configuration|**VERSION RELEASE DATE** = (latest)<br/>**VIRTUAL MACHINE NAME** = ContosoDC<br/>**TIER** = BASIC<br/>**SIZE** = A2 (2 cores)<br/>**NEW USER NAME** = AzureAdmin<br/>**NEW PASSWORD** = Contoso!000<br/>**CONFIRM** = Contoso!000|\n|Virtual machine configuration|**CLOUD SERVICE** = Create a new cloud service<br/>**CLOUD SERVICE DNS NAME** = A unique cloud service name<br/>**DNS NAME** = A unique name (ex: ContosoDC123)<br/>**REGION/AFFINITY GROUP/VIRTUAL NETWORK** = ContosoNET<br/>**VIRTUAL NETWORK SUBNETS** = Back(10.10.2.0/24)<br/>**STORAGE ACCOUNT** = Use an automatically generated storage account<br/>**AVAILABILITY SET** = (None)|\n|Virtual machine options|Use defaults|\n\nOnce you finish configuring the new VM, wait for the VM to be provsioned. This process takes some time to complete, and if you click to the **Virtual Machine** tab in the Azure portal, you can see ContosoDC cycling states from **Starting (Provisioning)** to **Stopped**, **Starting**, **Running (Provisioning)**, and finally **Running**.\n\nThe DC server is now successfully provisioned. Next, you will configure the Active Directory domain on this DC server.\n\n## Configure the Domain Controller\n\nIn the following steps, you configure the ContosoDC machine as a domain controller for corp.contoso.com.\n\n1. In the portal, select the **ContosoDC** machine. On the **Dashboard** tab, click **Connect** to open an RDP file for remote desktop access.\n\n    ![Connect to Vritual Machine](./media/virtual-machines-sql-server-alwayson-availability-groups-gui/IC784622.png)\n\n1. Log in with your configured administrator account (**\\AzureAdmin**) and password (**Contoso!000**).\n\n1. By default, the **Server Manager** dashboard should be displayed.\n\n1. Click the **Add roles and features** link on the dashboard.\n\n    ![Server Explorer Add Roles](./media/virtual-machines-sql-server-alwayson-availability-groups-gui/IC784623.png)\n\n1. Select **Next** until you get to the **Server Roles** section.\n\n1. Select the **Active Directory Domain Services** and **DNS Server** roles. When prompted, add any additional features required by these roles.\n\n    >[AZURE.NOTE] You will get a validation warning that there is no static IP address. If you are testing the configuration, click continue. For production scenarios [use PowerShell to set the static IP address of the domain controller machine](./virtual-network/virtual-networks-reserved-private-ip.md).\n\n    ![Add Roles Dialog](./media/virtual-machines-sql-server-alwayson-availability-groups-gui/IC784624.png)\n\n1. Click **Next** until you reach the **Confirmation** section. Select the **Restart the destination server automatically if required** checkbox.\n\n1. Click **Install**.\n\n1. After the features finish installing, return to the **Server Manager** dashboard.\n\n1. Select the new **AD DS** option on the left-hand pane.\n\n1. Click the **More** link on the yellow warning bar.\n\n    ![AD DS dialog on DNS Server VM](./media/virtual-machines-sql-server-alwayson-availability-groups-gui/IC784625.png)\n\n1. In the **Action** column of the **All Server Task Details** dialog, click **Promote this server to a domain controller**.\n\n1. In the **Active Directory Domain Services Configuration Wizard**, use the following values:\n\n    |Page|Setting|\n|---|---|\n|Deployment Configuration|**Add a new forest** = Selected<br/>**Root domain name** = corp.contoso.com|\n|Domain Controller Options|**Password** = Contoso!000<br/>**Confirm Password** = Contoso!000|\n\n1. Click **Next** to go through the other pages in the wizard. On the **Prerequisites Check** page, verify that you see the following message: **All prerequisite checks passed successfully**. Note that you should review any applicable warning messages, but it is possible to continue with the install.\n\n1. Click **Install**. The **ContosoDC** virtual machine will automatically reboot.\n\n## Configure Domain Accounts\n\nThe next steps configure the Active Directory (AD) accounts for later use.\n\n1. Log back into the **ContosoDC** machine.\n\n1. In **Server Manager** select **Tools** and then click **Active Directory Administrative Center**.\n\n    ![Active Directory Administrative Center](./media/virtual-machines-sql-server-alwayson-availability-groups-gui/IC784626.png)\n\n1. In the **Active Directory Administrative Center** select **corp (local)** from the left pane.\n\n1. On the right **Tasks** pane, select **New** and then click **User**. Use the following settings:\n\n    |Setting|Value|\n|---|---|\n|**First Name**|Install|\n|**User SamAccountName**|Install|\n|**Password**|Contoso!000|\n|**Confirm password**|Contoso!000|\n|**Other password options**|Selected|\n|**Password never expires**|Checked|\n\n1. Click **OK** to create the **Install** user. This account will be used to configure the failover cluster and the availability group.\n\n1. Create two additional users with the same steps: **CORP\\SQLSvc1** and **CORP\\SQLSvc2**. These accounts will be used for the SQL Server instances.Next, you need to give **CORP\\Install** the necessary permissions for configuring Windows Service Failover Clustering (WSFC).\n\n1. In the **Active Directory Administrative Center**, select **corp (local)** in the left pane. Then in the right-hand **Tasks** pane, click **Properties**.\n\n    ![CORP User Properties](./media/virtual-machines-sql-server-alwayson-availability-groups-gui/IC784627.png)\n\n1. Select **Extensions**, and then click the **Advanced** button on the **Security** tab.\n\n1. On the **Advanced Security Settings for corp** dialog. Click **Add**.\n\n1. Click **Select a principal**. Then search for **CORP\\Install**. Click **OK**.\n\n1. Select the **Read all properties** and **Create Computer objects** permissions.\n\n    ![Corp User Permissions](./media/virtual-machines-sql-server-alwayson-availability-groups-gui/IC784628.png)\n\n1. Click **OK**, and then click **OK** again. Close the corp properties window.\n\nNow that you have finished configuring Active Directory and the user objects, you will create three SQL Server VMs and join them to this domain.\n\n## Create the SQL Server VMs\n\nNext, create three VMs, including a WSFC cluster node and two SQL Server VMs. To create each of the VMs, go back to the Azure Portal, click **New**, **Compute**, **Virtual Machine**, and then **From Gallery**. Then use the templates in the following table to help you create the VMs.\n\n|Page|VM1|VM2|VM3|\n|---|---|---|---|\n|Select the virtual machine operating system|**Windows Server 2012 R2 Datacenter**|**SQL Server 2014 RTM Enterprise**|**SQL Server 2014 RTM Enterprise**|\n|Virtual machine configuration|**VERSION RELEASE DATE** = (latest)<br/>**VIRTUAL MACHINE NAME** = ContosoWSFCNode<br/>**TIER** = BASIC<br/>**SIZE** = A2 (2 cores)<br/>**NEW USER NAME** = AzureAdmin<br/>**NEW PASSWORD** = Contoso!000<br/>**CONFIRM** = Contoso!000|**VERSION RELEASE DATE** = (latest)<br/>**VIRTUAL MACHINE NAME** = ContosoSQL1<br/>**TIER** = BASIC<br/>**SIZE** = A3 (4 cores)<br/>**NEW USER NAME** = AzureAdmin<br/>**NEW PASSWORD** = Contoso!000<br/>**CONFIRM** = Contoso!000|**VERSION RELEASE DATE** = (latest)<br/>**VIRTUAL MACHINE NAME** = ContosoSQL2<br/>**TIER** = BASIC<br/>**SIZE** = A3 (4 cores)<br/>**NEW USER NAME** = AzureAdmin<br/>**NEW PASSWORD** = Contoso!000<br/>**CONFIRM** = Contoso!000|\n|Virtual machine configuration|**CLOUD SERVICE** = Previously Created Unique Cloud Service DNS Name (ex: ContosoDC123)<br/>**REGION/AFFINITY GROUP/VIRTUAL NETWORK** = ContosoNET<br/>**VIRTUAL NETWORK SUBNETS** = Back(10.10.2.0/24)<br/>**STORAGE ACCOUNT** = Use an automatically generated storage account<br/>**AVAILABILITY SET** = Create an availability set<br/>**AVAILABILITY SET NAME** = SQLHADR|**CLOUD SERVICE** = Previously Created Unique Cloud Service DNS Name (ex: ContosoDC123)<br/>**REGION/AFFINITY GROUP/VIRTUAL NETWORK** = ContosoNET<br/>**VIRTUAL NETWORK SUBNETS** = Back(10.10.2.0/24)<br/>**STORAGE ACCOUNT** = Use an automatically generated storage account<br/>**AVAILABILITY SET** = SQLHADR (You can also configure the availability set after the machine has been created. All three machines should be assigned to the SQLHADR availability set.)|**CLOUD SERVICE** = Previously Created Unique Cloud Service DNS Name (ex: ContosoDC123)<br/>**REGION/AFFINITY GROUP/VIRTUAL NETWORK** = ContosoNET<br/>**VIRTUAL NETWORK SUBNETS** = Back(10.10.2.0/24)<br/>**STORAGE ACCOUNT** = Use an automatically generated storage account<br/>**AVAILABILITY SET** = SQLHADR (You can also configure the availability set after the machine has been created. All three machines should be assigned to the SQLHADR availability set.)|\n|Virtual machine options|Use defaults|Use defaults|Use defaults|\n\nOnce the three VMs are fully provisioned, you need to join them to the **corp.contoso.com** domain and grant CORP\\Install administrative rights to the machines. To do this, use the following steps for each of the three VMs.\n\n1. First, change the preferred DNS server address. Start by downloading each VM's remote desktop (RDP) file to your local directory by selecting the VM in the list and clicking the **Connect** button. To select a VM, click anywhere but the first cell in the row, as shown below.\n\n    ![Download the RDP File](./media/virtual-machines-sql-server-alwayson-availability-groups-gui/IC664953.jpg)\n\n1. Launch the RDP file you downloaded and log into the VM using your configured administrator account (**BUILTIN\\AzureAdmin**) and password (**Contoso!000**).\n\n1. Once you are logged in, you should see the **Server Manager** dashboard. Click **Local Server** in the left pane.\n\n1. Select the **IPv4 address assigned by DHCP, IPv6 enabled** link.\n\n1. In the **Network Connections** window, select the network icon.\n\n    ![Change the VM Preferred DNS Server](./media/virtual-machines-sql-server-alwayson-availability-groups-gui/IC784629.png)\n\n1. On the command bar, click **Change the settings of this connection** (depending on the size of your window, you might have to click the double right arrow to see this command).\n\n1. Select **Internet Protocol Version 4 (TCP/IPv4)** and click Properties.\n\n1. Select Use the following DNS server addresses and specify **10.10.2.4** in **Preferred DNS server**.\n\n1. The address **10.10.2.4** is the address assigned to a VM in the 10.10.2.0/24 subnet in an Azure virtual network, and that VM is **ContosoDC**. To verify **ContosoDC**'s IP address, use the **nslookup contosodc** in the command prompt, as shown below.\n\n    ![Use NSLOOKUP to find IP address for DC](./media/virtual-machines-sql-server-alwayson-availability-groups-gui/IC664954.jpg)\n\n1. Click O**K** and then **Close** to commit the changes. You are now able to join the VM to **corp.contoso.com**.\n\n1. Back in the **Local Server** window, click the **WORKGROUP** link.\n\n1. In the **Computer Name** section, click **Change**.\n\n1. Select the **Domain** check box and type **corp.contoso.com** in the text box. Click **OK**.\n\n1. In the **Windows Security** popup dialog, specify the credentials for the default domain administrator account (**CORP\\AzureAdmin**) and the password (**Contoso!000**).\n\n1. When you see the \"Welcome to the corp.contoso.com domain\" message, click **OK**.\n\n1. Click **Close**, and then click **Restart Now** in the popup dialog.\n\n### Add the Corp\\Install user as an administrator on each VM:\n\n1. Wait until the VM is restarted, then launch the RDP file again to log into the VM using the **BUILTIN\\AzureAdmin** account.\n\n1. In **Server Manager** select **Tools**, and then click **Computer Management**.\n\n    ![Computer Management](./media/virtual-machines-sql-server-alwayson-availability-groups-gui/IC784630.png)\n\n1. In the **Computer Management** window, expand **Local Users and Groups**, and then select **Groups**.\n\n1. Double-click the **Administrators** group.\n\n1. In the **Administrators Properties** dialog, click the **Add** button.\n\n1. Enter the user **CORP\\Install**, and then click **OK**. When prompted for credentials, use the **AzureAdmin** account with the **Contoso!000** password.\n\n1. Click **OK** to close the **Administrator Properties** dialog.\n\n### Add the **Failover Clustering** feature to each VM.\n\n1. In the **Server Manager** dashboard, click **Add roles and features**.\n\n1. In the **Add Roles and Features Wizard**, click **Next** until you get to the **Features** page.\n\n1. Select **Failover Clustering**. When prompted, add any other dependent features.\n\n    ![Add Failover Clustering Feature to VM](./media/virtual-machines-sql-server-alwayson-availability-groups-gui/IC784631.png)\n\n1. Click **Next**, and then click **Install** on the **Confirmation** page.\n\n1. When the **Failover Clustering** feature installation is completed, click **Close**.\n\n1. Log out of the VM.\n\n1. Repeat the steps in this section for all three servers -- **ContosoWSFCNode**, **ContosoSQL1**, and **ContosoSQL2**.\n\nThe SQL Server VMs are now provisioned and running, but they are installed with SQL Server with default options.\n\n## Create the WSFC Cluster\n\nIn this section, you create the WSFC cluster that will host the availability group you will create later. By now, you should have done the following to each of the three VMs you will use in the WSFC cluster:\n\n- Fully provisioned in Azure\n\n- Joined VM to the domain\n\n- Added **CORP\\Install** to the local Administrators group\n\n- Added the Failover Clustering feature\n\nAll these are prerequisites on each VM before you can join it to the WSFC cluster.\n\nAlso, note that the Azure virtual network does not behave in the same way as an on-premises network. You need to create the cluster in the following order:\n\n1. Create a single-node cluster on one of the nodes (**ContosoSQL1**).\n\n1. Modify the cluster IP address to an unused IP address (**10.10.2.101**).\n\n1. Bring the cluster name online.\n\n1. Add the other nodes (**ContosoSQL2** and **ContosoWSFCNode**).\n\nFollow the steps below to accomplish these tasks that fully configures the cluster.\n\n1. Launch the RDP file for **ContosoSQL1** and log in using the domain account **CORP\\Install**.\n\n1. In the **Server Manager** dashboard, select **Tools**, and then click **Failover Cluster Manager**.\n\n1. In the left pane, right-click **Failover Cluster Manager**, and then click **Create a Cluster**, as shown below.\n\n    ![Create Cluster](./media/virtual-machines-sql-server-alwayson-availability-groups-gui/IC784632.png)\n\n1. In the Create Cluster Wizard, create a one-node cluster by stepping through the pages with the settings below:\n\n    |Page|Settings|\n|---|---|\n|Before You Begin|Use defaults|\n|Select Servers|Type **ContosoSQL1** in **Enter server name** and click **Add**|\n|Validation Warning|Select **No. I do not require support from Microsoft for this cluster, and therefore do not want to run the validation tests. When I click Next, continue creating the cluster**.|\n|Access Point for Administering the Cluster|Type **Cluster1** in **Cluster Name**|\n|Confirmation|Use defaults unless you are using Storage Spaces. See the note following this table.|\n\n    >[AZURE.WARNING] If you are using [Storage Spaces](https://technet.microsoft.com/library/hh831739), which groups multiple disks into storage pools, you must uncheck the **Add all eligible storage to the cluster** checkbox on the **Confirmation** page. If you do not uncheck this option, the virtual disks will be detached during the clustering process. As a result, they will also not appear in Disk Manager or Explorer until the storage spaces are removed from cluster and reattached using PowerShell.\n\n1. In the left-pane, expand **Failover Cluster Manager**, and then click **Cluster1.corp.contoso.com**.\n\n1. In the center pane, scroll down to **Cluster Core Resources** section and expand the **Name: Clutser1** details. You should see both the **Name** and the **IP Address** resources in the **Failed** state. The IP address resource cannot be brought online because the cluster is assigned the same IP address as that of the machine itself, which is a duplicate address.\n\n1. Right-click the failed **IP Address** resource, and then click **Properties**.\n\n    ![Cluster Properties](./media/virtual-machines-sql-server-alwayson-availability-groups-gui/IC784633.png)\n\n1. Select **Static IP Address** and specify **10.10.2.101** in the Address text box. Then, click **OK**.\n\n1. In the **Cluster Core Resources** section, right-click **Name: Cluster1** and click **Bring Online**. Then, wait until both resources are online. When the cluster name resource comes online, it updates the DC server with a new AD computer account. This AD account will be used to run the availability group clustered service later.\n\n1. Finally, you add the remaining nodes to the cluster. In the browser tree, right-click **Cluster1.corp.contoso.com** and click **Add Node**, as shown below.\n\n    ![Add Node to the Cluster](./media/virtual-machines-sql-server-alwayson-availability-groups-gui/IC784634.png)\n\n1. In the **Add Node Wizard**, click **Next**. In the **Select Servers** page, add **ContosoSQL2** and **ContosoWSFCNode** to the list by typing the server name in **Enter server name** and then clicking **Add**. When you are done, click **Next**.\n\n1. In the **Validation Warning** page, click **No** (in a production scenario you should perform the validation tests). Then, click **Next**.\n\n1. In the **Confirmation** page, click **Next** to add the nodes.\n\n    >[AZURE.WARNING] If you are using [Storage Spaces](https://technet.microsoft.com/library/hh831739), which groups multiple disks into storage pools, you must uncheck the **Add all eligible storage to the cluster** checkbox. If you do not uncheck this option, the virtual disks will be detached during the clustering process. As a result, they will also not appear in Disk Manager or Explorer until the storage spaces are removed from cluster and reattached using PowerShell.\n\n1. Once the nodes are added to the cluster, click **Finish**. Failover Cluster Manager should now show that your cluster has three nodes and list them in the **Nodes** container.\n\n1. Log out of the remote desktop session.\n\n## Prepare the SQL Server Instances for Availability Group\n\nIn this section, you will do the following on both **ContosoSQL1** and **contosoSQL2**:\n\n- Add a login for **NT AUTHORITY\\System** with a necessary permissions set to the default SQL Server instance\n\n- Add **CORP\\Install** as a sysadmin role to the default SQL Server instance\n\n- Open the firewall for remote access of SQL Server\n\n- Enable the AlwaysOn Availability Groups feature\n\n- Change the SQL Server service account to **CORP\\SQLSvc1** and **CORP\\SQLSvc2**, respectively\n\nThese actions can be performed in any order. Nevertheless, the steps below will walk through them in order. Follow the steps for both **ContosoSQL1** and **ContosoSQL2**:\n\n1. If you have not logged out of the remote desktop session for the VM, do so now.\n\n1. Launch the RDP files for **ContosoSQL1** and **ContosoSQL2** and log in as **BUILTIN\\AzureAdmin**.\n\n1. First, add **NT AUTHORITY\\System** to the SQL Server logins and with necessary permissions. Launch **SQL Server Management Studio**.\n\n1. Click **Connect** to connect to the default SQL Server instance.\n\n1. In **Object Explorer**, expand **Security**, and then expand **Logins**.\n\n1. Right-click the **NT AUTHORITY\\System** login, and click **Properties**.\n\n1. In the **Securables** page, for the local server, select **Grant** for the following permissions and click **OK**.\n    \n    - Alter any availability group\n    \n    - Connect SQL\n    \n    - View server state\n\n1. Next, add **CORP\\Install** as a **sysadmin** role to the default SQL Server instance. In **Object Explorer**, right-click **Logins** and click **New Login**.\n\n1. Type **CORP\\Install** in **Login name**.\n\n1. In the **Server Roles** page, select **sysadmin**. Then, click **OK**. Once the login is created, you can see it by expanding **Logins** in **Object Explorer**.\n\n1. Next, you create a firewall rule for SQL Server. From the **Start** screen, launch **Windows Firewall with Advanced Security**.\n\n1. In the left pane, select **Inbound Rules**. On the right pane, click **New Rule**.\n\n1. In the **Rule Type** page, select **Program**, then click **Next**.\n\n1. In the **Program** page, select **This program path** and type **%ProgramFiles%\\Microsoft SQL Server\\MSSQL12.MSSQLSERVER\\MSSQL\\Binn\\sqlservr.exe** in the text box (if you are following these directions but using SQL Server 2012, the SQL Server directory is **MSSQL11.MSSQLSERVER**). Then click **Next**.\n\n1. In the **Action** page, keep **Allow the connection** selected and click **Next**.\n\n1. In the **Profile** page, accept the default settings and click **Next**.\n\n1. In the **Name** page, specify a rule name, such as **SQL Server (Program Rule)** in the **Name** text box, then click **Finish**.\n\n1. Next, you enable the **AlwaysOn Availability Groups** feature. From the **Start** screen, launch **SQL Server Configuration Manager**.\n\n1. In the browser tree, click **SQL Server Services**, then right-click the **SQL Server (MSSQLSERVER)** service and click **Properties**.\n\n1. Click the **AlwaysOn High Availability** tab, then select **Enable AlwaysOn Availability Groups**, as shown below, and then click **Apply**. Click **OK** in the pop-up dialog, and do not close the properties window yet. You will restart the SQL Server service after you change the service account.\n\n    ![Enable AlwaysOn Availability Groups](./media/virtual-machines-sql-server-alwayson-availability-groups-gui/IC665520.gif)\n\n1. Next, you change the SQL Server service account. Click the **Log On** tab, then type **CORP\\SQLSvc1** (for **ContosoSQL1**) or **CORP\\SQLSvc2** (for **ContosoSQL2**) in **Account Name**, then fill in and confirm the password, and then click **OK**.\n\n1. In the pop-up window, click **Yes** to restart the SQL Server service. After the SQL Server service is restarted, the changes you made in the properties window are effective.\n\n1. Log out of the VMs.\n\n## Create the Availability Group\n\nYou are now ready to configure an availability group. Below is an outline of what you will do:\n\n- Create a new database (**MyDB1**) on **ContosoSQL1**\n\n- Take both a full backup and a transaction log backup of the database\n\n- Restore the full and log backups to **ContosoSQL2** with the **NORECOVERY** option\n\n- Create the availability group (**AG1**) with synchronous commit, automatic failover, and readable secondary replicas\n\n### Create the MyDB1 database on ContosoSQL1:\n\n1. If you have not already logged out of the remote desktop sessions for **ContosoSQL1** and **ContosoSQL2**, do so now.\n\n1. Launch the RDP file for **ContosoSQL1** and log in as **CORP\\Install**.\n\n1. In **File Explorer**, under **C:\\**, create a directory called **backup**. You will use this directory use to back up and restore your database.\n\n1. Right-click the new directory, point to **Share with**, and then click **Specific people**, as shown below.\n\n    ![Create a Backup Folder](./media/virtual-machines-sql-server-alwayson-availability-groups-gui/IC665521.gif)\n\n1. Add **CORP\\SQLSvc1** and give it the **Read/Write** permission, then add **CORP\\SQLSvc2** and give it the **Read** permission, as shown below, and then click **Share**. Once the file sharing process is complete, click **Done**.\n\n    ![Grant Permissions For Backup Folder](./media/virtual-machines-sql-server-alwayson-availability-groups-gui/IC665522.gif)\n\n1. Next, you create the database. From the **Start** menu, launch **SQL Server Management Studio**, then click **Connect** to connect to the default SQL Server instance.\n\n1. In the **Object Explorer**, right-click **Databases** and click **New Database**.\n\n1. In **Database name**, type **MyDB1**, then click **OK**.\n\n### Take a full backup of MyDB1 and restore it on ContosoSQL2:\n\n1. Next, you take a full backup of the database. In the **Object Explorer**, expand **Databases**, then right-click **MyDB1**, then point to **Tasks**, and then click **Back Up**.\n\n1. In the **Source** section, keep **Backup type** set to **Full**. In the **Destination** section, click **Remove** to remove the default file path for the backup file.\n\n1. In the **Destination** section, click **Add**.\n\n1. In the **File name** text box, type **\\\\ContosoSQL1\\backup\\MyDB1.bak**. Then, click **OK**, and then click **OK** again to backup the database. When the backup operation completes, click **OK** again to close the dialog.\n\n1. Next, you take a transaction log backup of the database. In the **Object Explorer**, expand **Databases**, then right-click **MyDB1**, then point to **Tasks**, and then click **Back Up**.\n\n1. In **Backup** type, select **Transaction Log**. Keep the **Destination** file path set to the one you specified earlier and click **OK**. Once the backup operation completes, click **OK** again.\n\n1. Next, you restore the full and transaction log backups on **ContosoSQL2**. Launch the RDP file for **ContosoSQL2** and log in as **CORP\\Install**. Leave the remote desktop session for **ContosoSQL1** open.\n\n1. From the **Start** menu, launch **SQL Server Management Studio**, then click **Connect** to connect to the default SQL Server instance.\n\n1. In the **Object Explorer**, right-click **Databases** and click **Restore Database**.\n\n1. In the **Source** section, select **Device**, and click the **…** button.\n\n1. In **Select backup devices**, click **Add**.\n\n1. In Backup file location, type \\\\ContosoSQL1\\backup, then click Refresh, then select MyDB1.bak, then click OK, and then click OK again. You should now see the full backup and the log backup in the Backup sets to restore pane.\n\n1. Go to the Options page, then select RESTORE WITH NORECOVERY in Recovery state, and then click OK to restore the database. Once the restore operation completes, click OK.\n\n### Create the availability group:\n\n1. Go back to the remote desktop session for **ContosoSQL1**. In the **Object Explorer** in SSMS, right-click **AlwaysOn High Availability** and click **New Availability Group Wizard**, as shown below.\n\n    ![Launch New Availability Group Wizard](./media/virtual-machines-sql-server-alwayson-availability-groups-gui/IC665523.gif)\n\n1. In the **Introduction** page, click **Next**. In the **Specify Availability Group Name** page, type **AG1** in **Availability group name**, then click **Next** again.\n\n    ![New AG Wizard, Specify AG Name](./media/virtual-machines-sql-server-alwayson-availability-groups-gui/IC665524.gif)\n\n1. In the **Select Databases** page, select **MyDB1** and click **Next**. The database meets the prerequisites for an availability group because you have taken at least one full backup on the intended primary replica.\n\n    ![New AG Wizard, Select Databases](./media/virtual-machines-sql-server-alwayson-availability-groups-gui/IC665525.gif)\n\n1. In the **Specify Replicas** page, click **Add Replica**.\n\n    ![New AG Wizard, Specify Replicas](./media/virtual-machines-sql-server-alwayson-availability-groups-gui/IC665526.gif)\n\n1. The **Connect to Server** dialog pops up. Type **ContosoSQL2** in **Server name**, then click **Connect**.\n\n    ![New AG Wizard, Connect to Server](./media/virtual-machines-sql-server-alwayson-availability-groups-gui/IC665527.gif)\n\n1. Back in the **Specify Replicas** page, you should now see **ContosoSQL2** listed in **Available Replicas**. Configure the replicas as shown below. When you are finished, click **Next**.\n\n    ![New AG Wizard, Specify Replicas (Complete)](./media/virtual-machines-sql-server-alwayson-availability-groups-gui/IC665528.gif)\n\n1. In the **Select Initial Data Synchronization** page, select **Join only** and click **Next**. You have already performed data synchronization manually when you took the full and transaction backups on **ContosoSQL1** and restored them on **ContosoSQL2**. You can instead choose not to perform the backup and restore operations on your database and select **Full** to let the New Availability Group Wizard perform data synchronization for you. However, this is not recommended for very large databases that are found in some enterprises.\n\n    ![New AG Wizard, Select Initial Data Synchronization](./media/virtual-machines-sql-server-alwayson-availability-groups-gui/IC665529.gif)\n\n1. In the **Validation** page, click **Next**. This page should look similar to below. There is a warning for the listener configuration because you have not configured an availability group listener. You can ignore this warning, because this tutorial does not configure a listener. To configure the listener after completing this tutorial, see [Configure an ILB listener for AlwaysOn Availability Groups in Azure](virtual-machines-sql-server-configure-ilb-alwayson-availability-group-listener.md).\n\n    ![New AG Wizard, Validation](./media/virtual-machines-sql-server-alwayson-availability-groups-gui/IC665530.gif)\n\n1. In the **Summary** page, click **Finish**, then wait while the wizard configures the new availability group. In the **Progress** page, you can click **More details** to view the detailed progress. Once the wizard is finished, inspect the **Results** page to verify that the availability group is successfully created, as shown below, then click **Close** to exit the wizard.\n\n    ![New AG Wizard, Results](./media/virtual-machines-sql-server-alwayson-availability-groups-gui/IC665531.gif)\n\n1. In the **Object Explorer**, expand **AlwaysOn High Availability**, then expand **Availability Groups**. You should now see the new availability group in this container. Right-click **AG1 (Primary)** and click **Show Dashboard**.\n\n    ![Show AG Dashboard](./media/virtual-machines-sql-server-alwayson-availability-groups-gui/IC665532.gif)\n\n1. Your **AlwaysOn Dashboard** should look similar to the one shown below. You can see the replicas, the failover mode of each replica and the synchronization state.\n\n    ![AG Dashboard](./media/virtual-machines-sql-server-alwayson-availability-groups-gui/IC665533.gif)\n\n1. Return to **Server Manager**, select **Tools**, and then launch **Failover Cluster Manager**.\n\n1. Expand **Cluster1.corp.contoso.com**, and then expand **Services and applications**. Select **Roles** and note that the **AG1** availability group role has been created. Note that AG1 does not have any IP address by which database clients can connect to the availability group, because you did not configure a listener. You can connect directly to the primary node for read-write operations and the secondary node for read-only queries.\n\n    ![AG in Failover Cluster Manager](./media/virtual-machines-sql-server-alwayson-availability-groups-gui/IC665534.gif)\n\n>[AZURE.WARNING] Do not try to fail over the availability group from the Failover Cluster Manager. All failover operations should be performed from within **AlwaysOn Dashboard** in SSMS. For more information, see [Restrictions on Using The WSFC Failover Cluster Manager with Availability Groups](https://msdn.microsoft.com/library/ff929171.aspx).\n\n## Next Steps\nYou have now successfully implemented SQL Server AlwaysOn by creating an availability group in Azure. To configure a listener for this availability group, see [Configure an ILB listener for AlwaysOn Availability Groups in Azure](virtual-machines-sql-server-configure-ilb-alwayson-availability-group-listener.md).\n\nFor other information about using SQL Server in Azure, see [SQL Server on Azure Virtual Machines](../articles/virtual-machines/virtual-machines-sql-server-infrastructure-services.md).\n"
+}

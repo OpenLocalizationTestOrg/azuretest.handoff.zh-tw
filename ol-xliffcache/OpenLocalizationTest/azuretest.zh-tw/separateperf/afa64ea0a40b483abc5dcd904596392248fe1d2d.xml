@@ -1,0 +1,1398 @@
+{
+  "nodes": [
+    {
+      "content": "Price and performance considerations for Azure SQL Database elastic database pools",
+      "pos": [
+        28,
+        110
+      ]
+    },
+    {
+      "content": "An elastic database pool is a collection of available resources that are shared by a group of elastic databases.",
+      "pos": [
+        130,
+        242
+      ]
+    },
+    {
+      "content": "This document provides guidance to help assess the suitability of using an elastic database pool for a group of databases.",
+      "pos": [
+        243,
+        365
+      ]
+    },
+    {
+      "content": "Price and performance considerations for an elastic database pool",
+      "pos": [
+        687,
+        752
+      ]
+    },
+    {
+      "content": "This document provides guidance to help assess if using an elastic database pool for a group of databases is cost efficient based on database usage patterns and pricing differences between an elastic database pool and single databases.",
+      "pos": [
+        755,
+        990
+      ]
+    },
+    {
+      "content": "Additional guidance is also provided to assist in determining the current pool size required for an existing set of SQL databases.",
+      "pos": [
+        991,
+        1121
+      ]
+    },
+    {
+      "pos": [
+        1127,
+        1242
+      ],
+      "content": "For an overview of elastic database pools, see <bpt id=\"p1\">[</bpt>SQL Database elastic database pools<ept id=\"p1\">](sql-database-elastic-pool.md)</ept>."
+    },
+    {
+      "pos": [
+        1245,
+        1391
+      ],
+      "content": "For detailed information about elastic database pools, see <bpt id=\"p1\">[</bpt>SQL Database elastic database pool reference<ept id=\"p1\">](sql-database-elastic-pool-reference.md)</ept>."
+    },
+    {
+      "pos": [
+        1396,
+        1507
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> Elastic database pools are currently in preview, and only available with SQL Database V12 servers."
+    },
+    {
+      "content": "Elastic database pools",
+      "pos": [
+        1512,
+        1534
+      ]
+    },
+    {
+      "content": "SaaS ISVs develop applications built on top of large scale data-tiers consisting of multiple databases.",
+      "pos": [
+        1536,
+        1639
+      ]
+    },
+    {
+      "content": "A common application pattern is for each of these databases to have different customers with uniquely varying and unpredictable usage patterns.",
+      "pos": [
+        1640,
+        1783
+      ]
+    },
+    {
+      "content": "It can be difficult for the ISV to predict the resource requirements of each database individually.",
+      "pos": [
+        1784,
+        1883
+      ]
+    },
+    {
+      "content": "Under these circumstances, the ISV can overprovision resources at considerable expense to ensure favorable throughput and response times for all databases.",
+      "pos": [
+        1884,
+        2039
+      ]
+    },
+    {
+      "content": "Or, the ISV can spend less and risk a poor performance experience for their customers.",
+      "pos": [
+        2040,
+        2126
+      ]
+    },
+    {
+      "content": "Elastic database pools in Azure SQL Database enable SaaS ISVs to optimize the price performance for a group of databases within a prescribed budget while delivering performance elasticity for each database.",
+      "pos": [
+        2130,
+        2336
+      ]
+    },
+    {
+      "content": "Elastic database pools enable the ISV to purchase elastic database throughput units (eDTUs) for a pool shared by multiple databases to accommodate unpredictable periods of usage by individual databases.",
+      "pos": [
+        2337,
+        2539
+      ]
+    },
+    {
+      "content": "The eDTU requirement for a pool is determined by the aggregate utilization of its databases.",
+      "pos": [
+        2540,
+        2632
+      ]
+    },
+    {
+      "content": "The amount of eDTUs available to the pool is controlled by the ISV budget.",
+      "pos": [
+        2633,
+        2707
+      ]
+    },
+    {
+      "content": "Elastic database pools makes it easy for the ISV to reason over the impact of budget on performance and vice versa for their pool.",
+      "pos": [
+        2708,
+        2838
+      ]
+    },
+    {
+      "content": "The ISV simply adds databases to the pool, sets any required eDTU guarantees or caps for the databases, and then sets the eDTU of the pool based on their budget.",
+      "pos": [
+        2839,
+        3000
+      ]
+    },
+    {
+      "content": "By using elastic database pools ISVs can seamlessly grow their service from a lean startup to a mature business at ever increasing scale.",
+      "pos": [
+        3001,
+        3138
+      ]
+    },
+    {
+      "content": "When to consider an elastic database pool",
+      "pos": [
+        3149,
+        3190
+      ]
+    },
+    {
+      "content": "Elastic database pools are well suited for a large number of databases with specific utilization patterns.",
+      "pos": [
+        3192,
+        3298
+      ]
+    },
+    {
+      "content": "For a given database, this pattern is characterized by low average utilization with relatively infrequent utilization spikes.",
+      "pos": [
+        3299,
+        3424
+      ]
+    },
+    {
+      "content": "The more databases you can add to a pool the greater your savings become, but depending on your application utilization pattern, it is possible to see savings with as few as 4 S3 databases.",
+      "pos": [
+        3426,
+        3615
+      ]
+    },
+    {
+      "content": "The following sections will help you understand how to assess if your specific collection of databases will benefit from using an elastic database pool.",
+      "pos": [
+        3619,
+        3771
+      ]
+    },
+    {
+      "content": "The examples use Standard elastic database pools but the same principles also apply to Basic and Premium pools.",
+      "pos": [
+        3772,
+        3883
+      ]
+    },
+    {
+      "content": "Assessing database utilization patterns",
+      "pos": [
+        3889,
+        3928
+      ]
+    },
+    {
+      "content": "The following figure shows an example of a database that spends much time idle, but also periodically spikes with activity.",
+      "pos": [
+        3930,
+        4053
+      ]
+    },
+    {
+      "content": "This is a utilization pattern that is well suited for an elastic database pool:",
+      "pos": [
+        4054,
+        4133
+      ]
+    },
+    {
+      "content": "![one database][1]",
+      "pos": [
+        4140,
+        4158
+      ]
+    },
+    {
+      "content": "For the one hour period illustrated above, DB1 peaks up to 90 DTUs, but its overall average usage is &lt;5 DTUs.",
+      "pos": [
+        4160,
+        4269
+      ]
+    },
+    {
+      "content": "An S3 performance level is required to run this workload in a single database.",
+      "pos": [
+        4270,
+        4348
+      ]
+    },
+    {
+      "content": "This however leaves most of the resources unused during periods of low activity.",
+      "pos": [
+        4349,
+        4429
+      ]
+    },
+    {
+      "content": "An elastic database pool allows these unused DTUs to be shared across multiple databases, and so reduces the total amount of DTUs needed and overall cost.",
+      "pos": [
+        4432,
+        4586
+      ]
+    },
+    {
+      "content": "Building on the previous example, suppose there are additional databases with similar utilization patterns as DB1.",
+      "pos": [
+        4588,
+        4702
+      ]
+    },
+    {
+      "content": "In the next two figures below, the utilization of 4 databases and 20 databases are layered onto the same graph to illustrate the non-overlapping nature of their utilization over time:",
+      "pos": [
+        4703,
+        4886
+      ]
+    },
+    {
+      "content": "![four database][2]",
+      "pos": [
+        4892,
+        4911
+      ]
+    },
+    {
+      "content": "![twenty databases][3]",
+      "pos": [
+        4916,
+        4938
+      ]
+    },
+    {
+      "content": "The aggregate DTU utilization across all 20 databases is illustrated by the black line in the above figure.",
+      "pos": [
+        4940,
+        5047
+      ]
+    },
+    {
+      "content": "This shows that the aggregate DTU utilization never exceeds 100 DTUs, and indicates that the 20 databases can share 100 eDTUs over this time period.",
+      "pos": [
+        5048,
+        5196
+      ]
+    },
+    {
+      "content": "This results in a 20x reduction in DTUs and a 6x price reduction compared to placing each of the databases in S3 performance levels for single databases.",
+      "pos": [
+        5197,
+        5350
+      ]
+    },
+    {
+      "content": "This example is ideal for the following reasons:",
+      "pos": [
+        5354,
+        5402
+      ]
+    },
+    {
+      "content": "There are large differences between peak utilization and average utilization per database.",
+      "pos": [
+        5407,
+        5497
+      ]
+    },
+    {
+      "content": "The peak utilization for each database occurs at different points in time.",
+      "pos": [
+        5502,
+        5576
+      ]
+    },
+    {
+      "content": "eDTUs are shared between a large number of databases.",
+      "pos": [
+        5580,
+        5633
+      ]
+    },
+    {
+      "content": "The price for an elastic database pool is a function of the pool eDTUs and the number of databases within it.",
+      "pos": [
+        5636,
+        5745
+      ]
+    },
+    {
+      "content": "While the eDTU unit price for a pool at GA pricing is 3x greater than the DTU unit price for a single database, <bpt id=\"p1\">**</bpt>pool eDTUs can be shared by many databases and so in many cases fewer total eDTUs are needed<ept id=\"p1\">**</ept>.",
+      "pos": [
+        5746,
+        5955
+      ]
+    },
+    {
+      "content": "These distinctions in pricing and eDTU sharing are the basis of the price savings potential that pools can provide.",
+      "pos": [
+        5956,
+        6071
+      ]
+    },
+    {
+      "content": "The following rules of thumb related to database count and database utilization help to ensure that an elastic database pool delivers reduced cost compared to using performance levels for single databases.",
+      "pos": [
+        6081,
+        6286
+      ]
+    },
+    {
+      "content": "The guidance is based on general availability (GA) prices.",
+      "pos": [
+        6287,
+        6345
+      ]
+    },
+    {
+      "content": "Note that GA prices are discounted by 50% during the preview, and so these rules of thumb should be considered relatively conservative.",
+      "pos": [
+        6346,
+        6481
+      ]
+    },
+    {
+      "content": "Minimum number of databases",
+      "pos": [
+        6489,
+        6516
+      ]
+    },
+    {
+      "content": "With GA pricing, an elastic database pool becomes more of a cost effective performance choice if 1 eDTU can be shared by more than 3 databases.",
+      "pos": [
+        6518,
+        6661
+      ]
+    },
+    {
+      "content": "This means that the sum of the DTUs of performance levels for single databases is more than 3x the eDTUs of the pool.",
+      "pos": [
+        6662,
+        6779
+      ]
+    },
+    {
+      "content": "For available sizes, see <bpt id=\"p1\">[</bpt>eDTU and storage limits for elastic database pools and elastic databases<ept id=\"p1\">](sql-database-elastic-pool-reference.md#edtu-and-storage-limits-for-elastic-pools-and-elastic-databases)</ept>.",
+      "pos": [
+        6780,
+        6984
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">***</bpt>Example<ept id=\"p1\">***</ept>",
+      "pos": [
+        6987,
+        7000
+      ]
+    },
+    {
+      "content": "At least 4 S3 databases or at least 36 S0 databases are needed for a 100 eDTU elastic database pool to be more cost efficient than using performance levels for single databases.",
+      "pos": [
+        7005,
+        7182
+      ]
+    },
+    {
+      "content": "(Note that with preview prices, the pricing breakeven point based on database count lowers to 2 S3 databases or 17 S0 databases.)",
+      "pos": [
+        7183,
+        7312
+      ]
+    },
+    {
+      "content": "Maximum number of concurrently peaking databases",
+      "pos": [
+        7320,
+        7368
+      ]
+    },
+    {
+      "content": "By sharing eDTUs, not all databases in a pool can simultaneously use eDTUs up to the limit available when using performance levels for single databases.",
+      "pos": [
+        7370,
+        7522
+      ]
+    },
+    {
+      "content": "The fewer databases that concurrently peak, the lower the pool eDTU can be set and the more cost efficient it becomes.",
+      "pos": [
+        7523,
+        7641
+      ]
+    },
+    {
+      "content": "In general, not more than 1/3 of the databases in the pool should simultaneously peak to their eDTU limit.",
+      "pos": [
+        7642,
+        7748
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">***</bpt>Example<ept id=\"p1\">***</ept>",
+      "pos": [
+        7751,
+        7764
+      ]
+    },
+    {
+      "content": "To reduce costs for 4 S3 databases in a 200 eDTU pool, at most 2 of these databases can simultaneously peak in their utilization.",
+      "pos": [
+        7769,
+        7898
+      ]
+    },
+    {
+      "content": "Otherwise, if more than 2 of these 4 S3 databases simultaneously peak, the pool would have to be sized to more than 200 eDTUs.",
+      "pos": [
+        7900,
+        8026
+      ]
+    },
+    {
+      "content": "And if the pool is resized to more than 200 eDTUs, more S3 databases would need to be added to the pool to keep costs lower than performance levels for single databases.",
+      "pos": [
+        8028,
+        8197
+      ]
+    },
+    {
+      "content": "Note this example does not consider utilization of other databases in the pool.",
+      "pos": [
+        8202,
+        8281
+      ]
+    },
+    {
+      "content": "If all databases have some utilization at any given point in time, then less than 1/3 of the databases can peak simultaneously.",
+      "pos": [
+        8282,
+        8409
+      ]
+    },
+    {
+      "content": "DTU utilization per database",
+      "pos": [
+        8417,
+        8445
+      ]
+    },
+    {
+      "content": "A large difference between the peak and average utilization of a database indicates prolonged periods of low utilization and short periods of high utilization.",
+      "pos": [
+        8447,
+        8606
+      ]
+    },
+    {
+      "content": "This utilization pattern is ideal for sharing resources across databases.",
+      "pos": [
+        8607,
+        8680
+      ]
+    },
+    {
+      "content": "A database should be considered for a pool when its peak utilization is about 3 times greater than its average utilization.",
+      "pos": [
+        8681,
+        8804
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">***</bpt>Example<ept id=\"p1\">***</ept>",
+      "pos": [
+        8812,
+        8825
+      ]
+    },
+    {
+      "content": "An S3 database that peaks to 100 DTUs and on average uses 30 DTUs or less is a good candidate for sharing eDTUs in an elastic database pool.",
+      "pos": [
+        8830,
+        8970
+      ]
+    },
+    {
+      "content": "Alternatively, an S1 database that peaks to 20 DTUs and on average uses 7 DTUs or less is a good candidate for an elastic database pool.",
+      "pos": [
+        8972,
+        9108
+      ]
+    },
+    {
+      "content": "Heuristic to compare the pricing difference between an elastic database pool and single databases",
+      "pos": [
+        9119,
+        9216
+      ]
+    },
+    {
+      "content": "The following heuristic can help estimate whether an elastic database pool is more cost effective than using individual single databases.",
+      "pos": [
+        9219,
+        9356
+      ]
+    },
+    {
+      "content": "Estimate the eDTUs needed for the pool by the following:",
+      "pos": [
+        9361,
+        9417
+      ]
+    },
+    {
+      "pos": [
+        9427,
+        9558
+      ],
+      "content": "MAX(<bpt id=\"p1\">*</bpt>Total number of DBs<ept id=\"p1\">*</ept> * <bpt id=\"p2\">*</bpt>average DTU utilization per DB<ept id=\"p2\">*</ept>, <bpt id=\"p3\">*</bpt>number of concurrently peaking DBs<ept id=\"p3\">*</ept> * <bpt id=\"p4\">*</bpt>Peak DTU utilization per DB<ept id=\"p4\">*</ept>)"
+    },
+    {
+      "content": "Select the smallest available eDTU value for the pool that is greater than the estimate from Step 1.",
+      "pos": [
+        9563,
+        9663
+      ]
+    },
+    {
+      "content": "For available eDTU choices, see the valid values for eDTUs listed here: <bpt id=\"p1\">[</bpt>eDTU and storage limits for elastic database pools and elastic databases<ept id=\"p1\">](sql-database-elastic-pool-reference.md#edtu-and-storage-limits-for-elastic-pools-and-elastic-databases)</ept>.",
+      "pos": [
+        9664,
+        9915
+      ]
+    },
+    {
+      "content": "Calculate the price for the pool as follows:",
+      "pos": [
+        9921,
+        9965
+      ]
+    },
+    {
+      "pos": [
+        9971,
+        10069
+      ],
+      "content": "pool price = (<bpt id=\"p1\">*</bpt>pool eDTUs<ept id=\"p1\">*</ept> * <bpt id=\"p2\">*</bpt>pool eDTU unit price<ept id=\"p2\">*</ept>) + (<bpt id=\"p3\">*</bpt>total number DBs<ept id=\"p3\">*</ept> * <bpt id=\"p4\">*</bpt>pool DB unit price<ept id=\"p4\">*</ept>)"
+    },
+    {
+      "pos": [
+        10075,
+        10184
+      ],
+      "content": "See <bpt id=\"p1\">[</bpt>SQL Database Pricing<ept id=\"p1\">](http://azure.microsoft.com/pricing/details/sql-database/)</ept> for pricing information."
+    },
+    {
+      "content": "Compare the pool price from Step 3 to the price of using the appropriate performance levels for single databases.",
+      "pos": [
+        10193,
+        10306
+      ]
+    },
+    {
+      "content": "Determining the best pool eDTU size for existing SQL databases",
+      "pos": [
+        10314,
+        10376
+      ]
+    },
+    {
+      "content": "The best size for an elastic database pool depends on the aggregate eDTUs and storage resources needed for all databases in the pool.",
+      "pos": [
+        10379,
+        10512
+      ]
+    },
+    {
+      "content": "This involves determining the larger of the following two quantities:",
+      "pos": [
+        10513,
+        10582
+      ]
+    },
+    {
+      "content": "Maximum DTUs utilized by all databases in the pool.",
+      "pos": [
+        10587,
+        10638
+      ]
+    },
+    {
+      "content": "Maximum storage bytes utilized by all databases in the pool.",
+      "pos": [
+        10641,
+        10701
+      ]
+    },
+    {
+      "content": "Note that for the Standard service tier, 1 GB of storage is allowed for every 1 eDTU configured for the pool.",
+      "pos": [
+        10704,
+        10813
+      ]
+    },
+    {
+      "content": "For example, if a pool is configured with 200 DTUs, then its storage limit is 200 GB.",
+      "pos": [
+        10814,
+        10899
+      ]
+    },
+    {
+      "content": "The following table shows the amount of storage per eDTU for each pricing tier:",
+      "pos": [
+        10901,
+        10980
+      ]
+    },
+    {
+      "content": "Tier",
+      "pos": [
+        10984,
+        10988
+      ]
+    },
+    {
+      "content": "eDTU",
+      "pos": [
+        10991,
+        10995
+      ]
+    },
+    {
+      "content": "Storage",
+      "pos": [
+        10998,
+        11005
+      ]
+    },
+    {
+      "content": "Basic",
+      "pos": [
+        11033,
+        11038
+      ]
+    },
+    {
+      "content": "1",
+      "pos": [
+        11041,
+        11042
+      ]
+    },
+    {
+      "content": "100 MB",
+      "pos": [
+        11045,
+        11051
+      ]
+    },
+    {
+      "content": "Standard",
+      "pos": [
+        11056,
+        11064
+      ]
+    },
+    {
+      "content": "1",
+      "pos": [
+        11067,
+        11068
+      ]
+    },
+    {
+      "content": "1 GB",
+      "pos": [
+        11071,
+        11075
+      ]
+    },
+    {
+      "content": "Premium",
+      "pos": [
+        11080,
+        11087
+      ]
+    },
+    {
+      "content": "1",
+      "pos": [
+        11090,
+        11091
+      ]
+    },
+    {
+      "content": ".5 GB",
+      "pos": [
+        11094,
+        11099
+      ]
+    },
+    {
+      "content": "Use Service Tier Advisor (STA) and Dynamic Management Views (DMVs) for sizing recommendations",
+      "pos": [
+        11108,
+        11201
+      ]
+    },
+    {
+      "content": "STA and DMVs provide different tooling options and capabilities for sizing an elastic database pool.",
+      "pos": [
+        11206,
+        11306
+      ]
+    },
+    {
+      "content": "Regardless of the tooling option used, the sizing estimate should only be used for initial assessment and creation of elastic database pools.",
+      "pos": [
+        11307,
+        11448
+      ]
+    },
+    {
+      "content": "Once a pool is created, its resource usage should be accurately monitored and the performance settings of the pool adjusted up and down as needed.",
+      "pos": [
+        11449,
+        11595
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>STA<ept id=\"p1\">**</ept>",
+      "pos": [
+        11598,
+        11605
+      ]
+    },
+    {
+      "content": "STA is a built-in tool in <bpt id=\"p1\">[</bpt>the preview portal<ept id=\"p1\">](https://portal.azure.com)</ept> that automatically evaluates historical resource utilization of databases in an existing SQL Database server and recommends an appropriate elastic database pool configuration.",
+      "pos": [
+        11609,
+        11857
+      ]
+    },
+    {
+      "content": "For details, see <bpt id=\"p1\">[</bpt>Elastic database pool pricing tier recommendations<ept id=\"p1\">](sql-database-elastic-pool-portal.md#elastic-database-pool-pricing-tier-recommendations)</ept>.",
+      "pos": [
+        11858,
+        12016
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>DMV sizing tool<ept id=\"p1\">**</ept>",
+      "pos": [
+        12018,
+        12037
+      ]
+    },
+    {
+      "content": "DMV sizing tool is provided as a PowerShell script and enables customizing the sizing estimates of an elastic database pool for existing databases in a server.",
+      "pos": [
+        12041,
+        12200
+      ]
+    },
+    {
+      "content": "Choosing between STA and DMV tooling",
+      "pos": [
+        12207,
+        12243
+      ]
+    },
+    {
+      "content": "Select the tool that is appropriate for analyzing your specific application.",
+      "pos": [
+        12246,
+        12322
+      ]
+    },
+    {
+      "content": "The following table summarizes the differences between these 2 sizing tools:",
+      "pos": [
+        12323,
+        12399
+      ]
+    },
+    {
+      "content": "Capability",
+      "pos": [
+        12403,
+        12413
+      ]
+    },
+    {
+      "content": "STA",
+      "pos": [
+        12416,
+        12419
+      ]
+    },
+    {
+      "content": "DMVs",
+      "pos": [
+        12422,
+        12426
+      ]
+    },
+    {
+      "content": "Granularity of data samples used in the analysis.",
+      "pos": [
+        12454,
+        12503
+      ]
+    },
+    {
+      "content": "15 seconds",
+      "pos": [
+        12507,
+        12517
+      ]
+    },
+    {
+      "content": "15 seconds",
+      "pos": [
+        12520,
+        12530
+      ]
+    },
+    {
+      "content": "Considers pricing differences between a pool and performance levels for single databases.",
+      "pos": [
+        12535,
+        12624
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        12627,
+        12630
+      ]
+    },
+    {
+      "content": "No",
+      "pos": [
+        12633,
+        12635
+      ]
+    },
+    {
+      "content": "Allows customizing the list of the databases analyzed within a server.",
+      "pos": [
+        12640,
+        12710
+      ]
+    },
+    {
+      "content": "No",
+      "pos": [
+        12713,
+        12715
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        12718,
+        12721
+      ]
+    },
+    {
+      "content": "Allows customizing the period of time used in the analysis.",
+      "pos": [
+        12726,
+        12785
+      ]
+    },
+    {
+      "content": "No",
+      "pos": [
+        12788,
+        12790
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        12793,
+        12796
+      ]
+    },
+    {
+      "content": "Estimating elastic pool size using STA",
+      "pos": [
+        12805,
+        12843
+      ]
+    },
+    {
+      "content": "STA evaluates the utilization history of databases and recommends an elastic database pool when it is more cost effective than using performance levels for single databases.",
+      "pos": [
+        12847,
+        13020
+      ]
+    },
+    {
+      "content": "If a pool is recommended, the tool provides a list of recommended databases, and also the recommended amount of pool eDTUs and min/max eDTU settings for each elastic database.",
+      "pos": [
+        13021,
+        13196
+      ]
+    },
+    {
+      "content": "In order for a database to be considered as a candidate for a pool, it must exist for at least 7 days.",
+      "pos": [
+        13197,
+        13299
+      ]
+    },
+    {
+      "content": "STA is available in the preview portal when adding an elastic database pool to an existing server.",
+      "pos": [
+        13301,
+        13399
+      ]
+    },
+    {
+      "content": "If recommendations for an elastic database pool are available for that server, they are displayed in the “Elastic Database Pool’ creation page.",
+      "pos": [
+        13400,
+        13543
+      ]
+    },
+    {
+      "content": "Customers can always change the recommended configurations to create their own elastic database pool grouping.",
+      "pos": [
+        13544,
+        13654
+      ]
+    },
+    {
+      "pos": [
+        13657,
+        13814
+      ],
+      "content": "For details, see <bpt id=\"p1\">[</bpt>Elastic database pool pricing tier recommendations<ept id=\"p1\">](sql-database-elastic-pool-portal.md#elastic-database-pool-pricing-tier-recommendations)</ept>"
+    },
+    {
+      "content": "Estimating elastic pool size using Dynamic Management Views (DMVs)",
+      "pos": [
+        13820,
+        13886
+      ]
+    },
+    {
+      "content": "The <bpt id=\"p1\">[</bpt>sys.dm_db_resource_stats<ept id=\"p1\">](https://msdn.microsoft.com/library/dn800981.aspx)</ept> DMV measures resource utilization of an individual database.",
+      "pos": [
+        13889,
+        14030
+      ]
+    },
+    {
+      "content": "This DMV provides CPU, IO, log, and log utilization of a database as a percentage of the database's performance level limit.",
+      "pos": [
+        14031,
+        14155
+      ]
+    },
+    {
+      "content": "This data can be used to calculate the DTU utilization of a database in any given 15 second interval.",
+      "pos": [
+        14156,
+        14257
+      ]
+    },
+    {
+      "content": "The aggregate eDTU utilization for an elastic database pool in a 15 second interval can be estimated by aggregating the eDTU utilization for all candidate databases during that time.",
+      "pos": [
+        14260,
+        14442
+      ]
+    },
+    {
+      "content": "Depending on the specific performance goals, it may make sense to discard a small percentage of the sample data.",
+      "pos": [
+        14443,
+        14555
+      ]
+    },
+    {
+      "content": "For example, a 99th percentile value of aggregate eDTUs across all time intervals can be applied to exclude outliers and provide an elastic database pool eDTU to fit 99% of the sampled time intervals.",
+      "pos": [
+        14556,
+        14756
+      ]
+    },
+    {
+      "content": "PowerShell script for estimating your databases aggregate eDTU usage",
+      "pos": [
+        14762,
+        14830
+      ]
+    },
+    {
+      "content": "A sample PowerShell script is provided here to estimate the aggregate eDTU values for user databases in a SQL Database server.",
+      "pos": [
+        14832,
+        14958
+      ]
+    },
+    {
+      "content": "The script only collects data while it is running.",
+      "pos": [
+        14960,
+        15010
+      ]
+    },
+    {
+      "content": "For a typical production workload you should run the script for at least a day, although a week or even longer will likely give a more accurate estimate.",
+      "pos": [
+        15011,
+        15164
+      ]
+    },
+    {
+      "content": "Run the script for a duration of time that represents your databases typical workload.",
+      "pos": [
+        15165,
+        15251
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.IMPORTANT]</ph> You must keep the PowerShell window open while running the script.",
+      "pos": [
+        15255,
+        15339
+      ]
+    },
+    {
+      "content": "Do not close the PowerShell window until you have run the script for a sufficient amount of time and captured enough data to represent your typical workload spanning both normal and peak usage times.",
+      "pos": [
+        15340,
+        15539
+      ]
+    },
+    {
+      "content": "Script prerequisites",
+      "pos": [
+        15546,
+        15566
+      ]
+    },
+    {
+      "content": "Install the following prior to running the script.:",
+      "pos": [
+        15569,
+        15620
+      ]
+    },
+    {
+      "pos": [
+        15624,
+        15720
+      ],
+      "content": "The latest <bpt id=\"p1\">[</bpt>Powershell command-line tools<ept id=\"p1\">](http://go.microsoft.com/?linkid=9811175&amp;clcid=0x409)</ept>."
+    },
+    {
+      "pos": [
+        15723,
+        15816
+      ],
+      "content": "The <bpt id=\"p1\">[</bpt>SQL Server 2014 feature pack<ept id=\"p1\">](https://www.microsoft.com/download/details.aspx?id=42295)</ept>."
+    },
+    {
+      "content": "Script details",
+      "pos": [
+        15823,
+        15837
+      ]
+    },
+    {
+      "content": "You can run the script from your local machine or a VM on the cloud.",
+      "pos": [
+        15840,
+        15908
+      ]
+    },
+    {
+      "content": "When running it from your local machine, you may incur data egress charges because the script needs to download data from your target databases.",
+      "pos": [
+        15909,
+        16053
+      ]
+    },
+    {
+      "content": "Below shows data volume estimation based on number of target databases and duration of running the script.",
+      "pos": [
+        16054,
+        16160
+      ]
+    },
+    {
+      "content": "For Azure data transfer costs refer to <bpt id=\"p1\">[</bpt>Data Transfer Pricing Details<ept id=\"p1\">](http://azure.microsoft.com/pricing/details/data-transfers/)</ept>.",
+      "pos": [
+        16161,
+        16292
+      ]
+    },
+    {
+      "content": "1 database per hour = 38KB",
+      "pos": [
+        16308,
+        16334
+      ]
+    },
+    {
+      "content": "1 database per day = 900KB",
+      "pos": [
+        16342,
+        16368
+      ]
+    },
+    {
+      "content": "1 database per week = 6MB",
+      "pos": [
+        16376,
+        16401
+      ]
+    },
+    {
+      "content": "100 databases per day = 90MB",
+      "pos": [
+        16409,
+        16437
+      ]
+    },
+    {
+      "content": "500 databases per week = 3GB",
+      "pos": [
+        16445,
+        16473
+      ]
+    },
+    {
+      "content": "The script excludes certain databases that are not good candidates for the current public preview offering of the Standard Elastic Pool tier.",
+      "pos": [
+        16475,
+        16616
+      ]
+    },
+    {
+      "content": "If you need to exclude additional databases from the target server, you may change the script to meet your criteria.",
+      "pos": [
+        16618,
+        16734
+      ]
+    },
+    {
+      "content": "By default, the script does not compile information for the following:",
+      "pos": [
+        16735,
+        16805
+      ]
+    },
+    {
+      "content": "Elastic databases (databases already in an elastic pool).",
+      "pos": [
+        16809,
+        16866
+      ]
+    },
+    {
+      "content": "The server's master database.",
+      "pos": [
+        16869,
+        16898
+      ]
+    },
+    {
+      "content": "The script needs an output database to store intermediate data for analysis.",
+      "pos": [
+        16900,
+        16976
+      ]
+    },
+    {
+      "content": "You can use a new or existing database.",
+      "pos": [
+        16977,
+        17016
+      ]
+    },
+    {
+      "content": "Although not technically required for the tool to run, the output database should be in a different server to avoid impacting the analysis outcome.",
+      "pos": [
+        17017,
+        17164
+      ]
+    },
+    {
+      "content": "Suggest the performance level of the output database to be at least S0 or higher.",
+      "pos": [
+        17165,
+        17246
+      ]
+    },
+    {
+      "content": "When collecting a long duration of data for a large number of databases, you may consider upgrading your output database to a higher performance level.",
+      "pos": [
+        17247,
+        17398
+      ]
+    },
+    {
+      "content": "The script needs you to provide the credentials to connect to the target server (the elastic database pool candidate) with full server name like “abcdef.database.windows.net”.",
+      "pos": [
+        17400,
+        17575
+      ]
+    },
+    {
+      "content": "Currently the script doesn’t support analyzing more than one server at a time.",
+      "pos": [
+        17576,
+        17654
+      ]
+    },
+    {
+      "content": "After submitting values for the initial set of parameters, you are prompted to log on to your azure account.",
+      "pos": [
+        17657,
+        17765
+      ]
+    },
+    {
+      "content": "This is for logging on to your target server, not the output database server.",
+      "pos": [
+        17766,
+        17843
+      ]
+    },
+    {
+      "content": "If you run into the following warnings while running the script you can ignore them:",
+      "pos": [
+        17849,
+        17933
+      ]
+    },
+    {
+      "content": "WARNING: The Switch-AzureMode cmdlet is deprecated.",
+      "pos": [
+        17937,
+        17988
+      ]
+    },
+    {
+      "content": "WARNING: Could not obtain SQL Server Service information.",
+      "pos": [
+        17991,
+        18048
+      ]
+    },
+    {
+      "content": "An attempt to connect to WMI on 'Microsoft.Azure.Commands.Sql.dll' failed with the following error: The RPC server is unavailable.",
+      "pos": [
+        18049,
+        18179
+      ]
+    },
+    {
+      "content": "When the script completes it will output the estimated number of eDTUs required for an elastic pool to contain all candidate databases in the target server.",
+      "pos": [
+        18181,
+        18337
+      ]
+    },
+    {
+      "content": "This estimated eDTU can be used for creating and configuring an elastic  database pool to hold these databases.",
+      "pos": [
+        18338,
+        18449
+      ]
+    },
+    {
+      "content": "Once the pool is created and databases moved into the pool, it should be monitored closely for a few days and any adjustments to the pool eDTU configuration should be made as needed.",
+      "pos": [
+        18450,
+        18632
+      ]
+    },
+    {
+      "content": "To select the entire script for copying, click any text in the script 3 times (triple-click).",
+      "pos": [
+        18635,
+        18728
+      ]
+    },
+    {
+      "content": "Summary",
+      "pos": [
+        29789,
+        29796
+      ]
+    },
+    {
+      "content": "Not all single databases are optimum candidates for elastic database pools.",
+      "pos": [
+        29798,
+        29873
+      ]
+    },
+    {
+      "content": "Databases with usage patterns that are characterized by low average utilization and relatively infrequent utilization spikes are excellent candidates for elastic database pools.",
+      "pos": [
+        29874,
+        30051
+      ]
+    },
+    {
+      "content": "Application usage patterns are dynamic, so use the information and tools described in this article to make an initial assessment to see if an elastic database pool is a good choice for some or all of your databases.",
+      "pos": [
+        30052,
+        30267
+      ]
+    },
+    {
+      "content": "This article is just a starting point to help with your decision as to whether or not an elastic database pool is a good fit.",
+      "pos": [
+        30268,
+        30393
+      ]
+    },
+    {
+      "content": "Remember that you should continually monitor historical resource usage (using STA or DMVs) and constantly reassess the performance levels of all of your databases.",
+      "pos": [
+        30394,
+        30557
+      ]
+    },
+    {
+      "content": "Keep in mind that you can easily move databases in and out of elastic database pools, and if you have a very large number of databases you can have multiple pools of varying sizes that you can divide your databases into.",
+      "pos": [
+        30558,
+        30778
+      ]
+    }
+  ],
+  "content": "<properties \n    pageTitle=\"Price and performance considerations for Azure SQL Database elastic database pools\" \n    description=\"An elastic database pool is a collection of available resources that are shared by a group of elastic databases. This document provides guidance to help assess the suitability of using an elastic database pool for a group of databases.\" \n    services=\"sql-database\" \n    documentationCenter=\"\" \n    authors=\"stevestein\" \n    manager=\"jeffreyg\" \n    editor=\"\"/>\n\n<tags \n    ms.service=\"sql-database\"\n    ms.devlang=\"NA\"\n    ms.date=\"08/12/2015\" \n    ms.author=\"sstein\" \n    ms.workload=\"data-management\" \n    ms.topic=\"article\" \n    ms.tgt_pltfrm=\"NA\"/>\n\n\n# Price and performance considerations for an elastic database pool\n\n\nThis document provides guidance to help assess if using an elastic database pool for a group of databases is cost efficient based on database usage patterns and pricing differences between an elastic database pool and single databases. Additional guidance is also provided to assist in determining the current pool size required for an existing set of SQL databases.  \n\n- For an overview of elastic database pools, see [SQL Database elastic database pools](sql-database-elastic-pool.md).\n- For detailed information about elastic database pools, see [SQL Database elastic database pool reference](sql-database-elastic-pool-reference.md).\n\n\n> [AZURE.NOTE] Elastic database pools are currently in preview, and only available with SQL Database V12 servers.\n\n## Elastic database pools\n\nSaaS ISVs develop applications built on top of large scale data-tiers consisting of multiple databases. A common application pattern is for each of these databases to have different customers with uniquely varying and unpredictable usage patterns. It can be difficult for the ISV to predict the resource requirements of each database individually. Under these circumstances, the ISV can overprovision resources at considerable expense to ensure favorable throughput and response times for all databases. Or, the ISV can spend less and risk a poor performance experience for their customers.  \n\nElastic database pools in Azure SQL Database enable SaaS ISVs to optimize the price performance for a group of databases within a prescribed budget while delivering performance elasticity for each database. Elastic database pools enable the ISV to purchase elastic database throughput units (eDTUs) for a pool shared by multiple databases to accommodate unpredictable periods of usage by individual databases. The eDTU requirement for a pool is determined by the aggregate utilization of its databases. The amount of eDTUs available to the pool is controlled by the ISV budget. Elastic database pools makes it easy for the ISV to reason over the impact of budget on performance and vice versa for their pool. The ISV simply adds databases to the pool, sets any required eDTU guarantees or caps for the databases, and then sets the eDTU of the pool based on their budget. By using elastic database pools ISVs can seamlessly grow their service from a lean startup to a mature business at ever increasing scale.  \n  \n\n\n## When to consider an elastic database pool\n\nElastic database pools are well suited for a large number of databases with specific utilization patterns. For a given database, this pattern is characterized by low average utilization with relatively infrequent utilization spikes.\n\nThe more databases you can add to a pool the greater your savings become, but depending on your application utilization pattern, it is possible to see savings with as few as 4 S3 databases.  \n\nThe following sections will help you understand how to assess if your specific collection of databases will benefit from using an elastic database pool. The examples use Standard elastic database pools but the same principles also apply to Basic and Premium pools.\n\n### Assessing database utilization patterns\n\nThe following figure shows an example of a database that spends much time idle, but also periodically spikes with activity. This is a utilization pattern that is well suited for an elastic database pool: \n \n   ![one database][1]\n\nFor the one hour period illustrated above, DB1 peaks up to 90 DTUs, but its overall average usage is <5 DTUs. An S3 performance level is required to run this workload in a single database. This however leaves most of the resources unused during periods of low activity. \n\nAn elastic database pool allows these unused DTUs to be shared across multiple databases, and so reduces the total amount of DTUs needed and overall cost.\n\nBuilding on the previous example, suppose there are additional databases with similar utilization patterns as DB1. In the next two figures below, the utilization of 4 databases and 20 databases are layered onto the same graph to illustrate the non-overlapping nature of their utilization over time: \n\n   ![four database][2]\n\n   ![twenty databases][3]\n\nThe aggregate DTU utilization across all 20 databases is illustrated by the black line in the above figure. This shows that the aggregate DTU utilization never exceeds 100 DTUs, and indicates that the 20 databases can share 100 eDTUs over this time period. This results in a 20x reduction in DTUs and a 6x price reduction compared to placing each of the databases in S3 performance levels for single databases. \n\n\nThis example is ideal for the following reasons: \n\n- There are large differences between peak utilization and average utilization per database.  \n- The peak utilization for each database occurs at different points in time. \n- eDTUs are shared between a large number of databases.\n\n\nThe price for an elastic database pool is a function of the pool eDTUs and the number of databases within it. While the eDTU unit price for a pool at GA pricing is 3x greater than the DTU unit price for a single database, **pool eDTUs can be shared by many databases and so in many cases fewer total eDTUs are needed**. These distinctions in pricing and eDTU sharing are the basis of the price savings potential that pools can provide.  \n\n<br>\n\nThe following rules of thumb related to database count and database utilization help to ensure that an elastic database pool delivers reduced cost compared to using performance levels for single databases. The guidance is based on general availability (GA) prices. Note that GA prices are discounted by 50% during the preview, and so these rules of thumb should be considered relatively conservative. \n\n\n### Minimum number of databases\n\nWith GA pricing, an elastic database pool becomes more of a cost effective performance choice if 1 eDTU can be shared by more than 3 databases. This means that the sum of the DTUs of performance levels for single databases is more than 3x the eDTUs of the pool. For available sizes, see [eDTU and storage limits for elastic database pools and elastic databases](sql-database-elastic-pool-reference.md#edtu-and-storage-limits-for-elastic-pools-and-elastic-databases).\n\n\n***Example***<br>\nAt least 4 S3 databases or at least 36 S0 databases are needed for a 100 eDTU elastic database pool to be more cost efficient than using performance levels for single databases. (Note that with preview prices, the pricing breakeven point based on database count lowers to 2 S3 databases or 17 S0 databases.)\n\n\n\n### Maximum number of concurrently peaking databases\n\nBy sharing eDTUs, not all databases in a pool can simultaneously use eDTUs up to the limit available when using performance levels for single databases. The fewer databases that concurrently peak, the lower the pool eDTU can be set and the more cost efficient it becomes. In general, not more than 1/3 of the databases in the pool should simultaneously peak to their eDTU limit. \n\n***Example***<br>\nTo reduce costs for 4 S3 databases in a 200 eDTU pool, at most 2 of these databases can simultaneously peak in their utilization.  Otherwise, if more than 2 of these 4 S3 databases simultaneously peak, the pool would have to be sized to more than 200 eDTUs.  And if the pool is resized to more than 200 eDTUs, more S3 databases would need to be added to the pool to keep costs lower than performance levels for single databases.  \n\n\nNote this example does not consider utilization of other databases in the pool. If all databases have some utilization at any given point in time, then less than 1/3 of the databases can peak simultaneously. \n\n\n### DTU utilization per database\n\nA large difference between the peak and average utilization of a database indicates prolonged periods of low utilization and short periods of high utilization. This utilization pattern is ideal for sharing resources across databases. A database should be considered for a pool when its peak utilization is about 3 times greater than its average utilization. \n\n    \n***Example***<br>\nAn S3 database that peaks to 100 DTUs and on average uses 30 DTUs or less is a good candidate for sharing eDTUs in an elastic database pool.  Alternatively, an S1 database that peaks to 20 DTUs and on average uses 7 DTUs or less is a good candidate for an elastic database pool. \n    \n\n## Heuristic to compare the pricing difference between an elastic database pool and single databases \n\nThe following heuristic can help estimate whether an elastic database pool is more cost effective than using individual single databases.\n\n1. Estimate the eDTUs needed for the pool by the following:\n    \n    MAX(*Total number of DBs* * *average DTU utilization per DB*, *number of concurrently peaking DBs* * *Peak DTU utilization per DB*)\n\n2. Select the smallest available eDTU value for the pool that is greater than the estimate from Step 1. For available eDTU choices, see the valid values for eDTUs listed here: [eDTU and storage limits for elastic database pools and elastic databases](sql-database-elastic-pool-reference.md#edtu-and-storage-limits-for-elastic-pools-and-elastic-databases).\n\n\n3. Calculate the price for the pool as follows:\n\n    pool price = (*pool eDTUs* * *pool eDTU unit price*) + (*total number DBs* * *pool DB unit price*)\n\n    See [SQL Database Pricing](http://azure.microsoft.com/pricing/details/sql-database/) for pricing information.   \n\n\n4. Compare the pool price from Step 3 to the price of using the appropriate performance levels for single databases. \n\n\n\n## Determining the best pool eDTU size for existing SQL databases \n\nThe best size for an elastic database pool depends on the aggregate eDTUs and storage resources needed for all databases in the pool. This involves determining the larger of the following two quantities: \n\n* Maximum DTUs utilized by all databases in the pool.\n* Maximum storage bytes utilized by all databases in the pool. \n\nNote that for the Standard service tier, 1 GB of storage is allowed for every 1 eDTU configured for the pool. For example, if a pool is configured with 200 DTUs, then its storage limit is 200 GB.\n\nThe following table shows the amount of storage per eDTU for each pricing tier:\n\n| Tier | eDTU | Storage |\n| :--- | :--- | :--- |\n| Basic | 1 | 100 MB |\n| Standard | 1 | 1 GB |\n| Premium | 1 | .5 GB |\n\n\n### Use Service Tier Advisor (STA) and Dynamic Management Views (DMVs) for sizing recommendations   \n\nSTA and DMVs provide different tooling options and capabilities for sizing an elastic database pool. Regardless of the tooling option used, the sizing estimate should only be used for initial assessment and creation of elastic database pools. Once a pool is created, its resource usage should be accurately monitored and the performance settings of the pool adjusted up and down as needed. \n\n**STA**<br>STA is a built-in tool in [the preview portal](https://portal.azure.com) that automatically evaluates historical resource utilization of databases in an existing SQL Database server and recommends an appropriate elastic database pool configuration. For details, see [Elastic database pool pricing tier recommendations](sql-database-elastic-pool-portal.md#elastic-database-pool-pricing-tier-recommendations).\n\n**DMV sizing tool**<br>DMV sizing tool is provided as a PowerShell script and enables customizing the sizing estimates of an elastic database pool for existing databases in a server. \n\n### Choosing between STA and DMV tooling \n\nSelect the tool that is appropriate for analyzing your specific application. The following table summarizes the differences between these 2 sizing tools:\n\n| Capability | STA | DMVs |\n| :--- | :--- | :--- |\n| Granularity of data samples used in the analysis.  | 15 seconds | 15 seconds |\n| Considers pricing differences between a pool and performance levels for single databases. | Yes | No |\n| Allows customizing the list of the databases analyzed within a server. | No | Yes |\n| Allows customizing the period of time used in the analysis. | No | Yes |\n\n\n### Estimating elastic pool size using STA  \n\nSTA evaluates the utilization history of databases and recommends an elastic database pool when it is more cost effective than using performance levels for single databases. If a pool is recommended, the tool provides a list of recommended databases, and also the recommended amount of pool eDTUs and min/max eDTU settings for each elastic database. In order for a database to be considered as a candidate for a pool, it must exist for at least 7 days.\n\nSTA is available in the preview portal when adding an elastic database pool to an existing server. If recommendations for an elastic database pool are available for that server, they are displayed in the “Elastic Database Pool’ creation page. Customers can always change the recommended configurations to create their own elastic database pool grouping. \n\nFor details, see [Elastic database pool pricing tier recommendations](sql-database-elastic-pool-portal.md#elastic-database-pool-pricing-tier-recommendations)\n\n### Estimating elastic pool size using Dynamic Management Views (DMVs) \n\nThe [sys.dm_db_resource_stats](https://msdn.microsoft.com/library/dn800981.aspx) DMV measures resource utilization of an individual database. This DMV provides CPU, IO, log, and log utilization of a database as a percentage of the database's performance level limit. This data can be used to calculate the DTU utilization of a database in any given 15 second interval. \n\nThe aggregate eDTU utilization for an elastic database pool in a 15 second interval can be estimated by aggregating the eDTU utilization for all candidate databases during that time. Depending on the specific performance goals, it may make sense to discard a small percentage of the sample data. For example, a 99th percentile value of aggregate eDTUs across all time intervals can be applied to exclude outliers and provide an elastic database pool eDTU to fit 99% of the sampled time intervals. \n\n## PowerShell script for estimating your databases aggregate eDTU usage\n\nA sample PowerShell script is provided here to estimate the aggregate eDTU values for user databases in a SQL Database server.\n\nThe script only collects data while it is running. For a typical production workload you should run the script for at least a day, although a week or even longer will likely give a more accurate estimate. Run the script for a duration of time that represents your databases typical workload.\n\n> [AZURE.IMPORTANT] You must keep the PowerShell window open while running the script. Do not close the PowerShell window until you have run the script for a sufficient amount of time and captured enough data to represent your typical workload spanning both normal and peak usage times. \n\n### Script prerequisites \n\nInstall the following prior to running the script.:\n\n- The latest [Powershell command-line tools](http://go.microsoft.com/?linkid=9811175&clcid=0x409).\n- The [SQL Server 2014 feature pack](https://www.microsoft.com/download/details.aspx?id=42295).\n\n\n### Script details\n\n\nYou can run the script from your local machine or a VM on the cloud. When running it from your local machine, you may incur data egress charges because the script needs to download data from your target databases. Below shows data volume estimation based on number of target databases and duration of running the script. For Azure data transfer costs refer to [Data Transfer Pricing Details](http://azure.microsoft.com/pricing/details/data-transfers/).\n       \n -     1 database per hour = 38KB\n -     1 database per day = 900KB\n -     1 database per week = 6MB\n -     100 databases per day = 90MB\n -     500 databases per week = 3GB\n\nThe script excludes certain databases that are not good candidates for the current public preview offering of the Standard Elastic Pool tier. \nIf you need to exclude additional databases from the target server, you may change the script to meet your criteria. By default, the script does not compile information for the following:\n\n* Elastic databases (databases already in an elastic pool).\n* The server's master database.\n\nThe script needs an output database to store intermediate data for analysis. You can use a new or existing database. Although not technically required for the tool to run, the output database should be in a different server to avoid impacting the analysis outcome. Suggest the performance level of the output database to be at least S0 or higher. When collecting a long duration of data for a large number of databases, you may consider upgrading your output database to a higher performance level.\n\nThe script needs you to provide the credentials to connect to the target server (the elastic database pool candidate) with full server name like “abcdef.database.windows.net”. Currently the script doesn’t support analyzing more than one server at a time.\n\n\nAfter submitting values for the initial set of parameters, you are prompted to log on to your azure account. This is for logging on to your target server, not the output database server.\n    \nIf you run into the following warnings while running the script you can ignore them:\n\n- WARNING: The Switch-AzureMode cmdlet is deprecated.\n- WARNING: Could not obtain SQL Server Service information. An attempt to connect to WMI on 'Microsoft.Azure.Commands.Sql.dll' failed with the following error: The RPC server is unavailable.\n\nWhen the script completes it will output the estimated number of eDTUs required for an elastic pool to contain all candidate databases in the target server. This estimated eDTU can be used for creating and configuring an elastic  database pool to hold these databases. Once the pool is created and databases moved into the pool, it should be monitored closely for a few days and any adjustments to the pool eDTU configuration should be made as needed.\n\n\nTo select the entire script for copying, click any text in the script 3 times (triple-click).\n\n    \n    param (\n    [Parameter(Mandatory=$true)][string]$AzureSubscriptionName, # Azure Subscription name - can be found on the Azure portal: https://portal.azure.com/\n    [Parameter(Mandatory=$true)][string]$ResourceGroupName, # Resource Group name - can be found on the Azure portal: https://portal.azure.com/\n    [Parameter(Mandatory=$true)][string]$servername, # full server name like \"abcdefg.database.windows.net\"\n    [Parameter(Mandatory=$true)][string]$username, # user name\n    [Parameter(Mandatory=$true)][string]$serverPassword, # password\n    [Parameter(Mandatory=$true)][string]$outputServerName, # metrics collection database for analysis. full server name like \"zyxwvu.database.windows.net\"\n    [Parameter(Mandatory=$true)][string]$outputdatabaseName,\n    [Parameter(Mandatory=$true)][string]$outputDBUsername,\n    [Parameter(Mandatory=$true)][string]$outputDBpassword,\n    [Parameter(Mandatory=$true)][int]$duration_minutes # How long to run. Recommend to run for the period of time when your typical workload is running. At least 10 mins.\n    )\n    \n    Add-AzureAccount \n    Select-AzureSubscription $AzureSubscriptionName\n    Switch-AzureMode AzureResourceManager\n    \n    $server = Get-AzureSqlServer -ServerName $servername.Split('.')[0] -ResourceGroupName $ResourceGroupName\n    \n    # Check version/upgrade status of the server\n    $upgradestatus = Get-AzureSqlServerUpgrade -ServerName $servername.Split('.')[0] -ResourceGroupName $ResourceGroupName\n    $version = \"\"\n    if ([string]::IsNullOrWhiteSpace($server.ServerVersion)) \n    {\n    $version = $upgradestatus.Status\n    }\n    else\n    {\n    $version = $server.ServerVersion\n    }\n    \n    # For Elastic database pool candidates, we exclude master, and any databases that are already in a pool. You may add more databases to the excluded list below as needed\n    $ListOfDBs = Get-AzureSqlDatabase -ServerName $servername.Split('.')[0] -ResourceGroupName $ResourceGroupName | Where-Object {$_.DatabaseName -notin (\"master\") -and $_.CurrentServiceLevelObjectiveName -notin (\"ElasticPool\") -and $_.CurrentServiceObjectiveName -notin (\"ElasticPool\")}\n    \n    $outputConnectionString = \"Data Source=$outputServerName;Integrated Security=false;Initial Catalog=$outputdatabaseName;User Id=$outputDBUsername;Password=$outputDBpassword\"\n    $destinationTableName = \"resource_stats_output\"\n    \n    # Create a table in output database for metrics collection\n    $sql = \"\n    IF  NOT EXISTS (SELECT * FROM sys.objects \n    WHERE object_id = OBJECT_ID(N'$($destinationTableName)') AND type in (N'U'))\n    \n    BEGIN\n    Create Table $($destinationTableName) (database_name varchar(128), slo varchar(20), end_time datetime, avg_cpu float, avg_io float, avg_log float, db_size float);\n    Create Clustered Index ci_endtime ON $($destinationTableName) (end_time);\n    END\n    TRUNCATE TABLE $($destinationTableName);\n    \"\n    Invoke-Sqlcmd -ServerInstance $outputServerName -Database $outputdatabaseName -Username $outputDBUsername -Password $outputDBpassword -Query $sql -ConnectionTimeout 120 -QueryTimeout 120 \n    \n    # waittime (minutes) is interval between data collection queries in the loop below.\n    $Waittime = 10\n    $end_Time = [DateTime]::UtcNow\n    $start_time = $end_time.AddMinutes(-$Waittime)\n    $finish_time = $end_Time.AddMinutes($duration_minutes)\n    \n    While ($end_time -lt $finish_time)\n    {\n    Write-Host \"Collecting metrics...\" \n    foreach ($db in $ListOfDBs)\n    {\n    if ($version -in (\"12.0\", \"Completed\")) # for V12 databases \n    {\n    $sql = \"Declare @dbname varchar(128) = '$($db.DatabaseName)';\"\n    $sql += \"Declare @SLO varchar(20) = '$($db.CurrentServiceLevelObjectiveName)';\"\n    $sql+= \"\n    Declare @DTU_cap int, @db_size float;\n    Select @DTU_cap = CASE @SLO \n    WHEN 'Basic' THEN 5\n    WHEN 'S0' THEN 10\n    WHEN 'S1' THEN 20\n    WHEN 'S2' THEN 50\n    WHEN 'S3' THEN 100\n    WHEN 'P1' THEN 125\n    WHEN 'P2' THEN 250\n    WHEN 'P3' THEN 1000\n    ELSE 50 -- assume Web/Business DBs\n    END\n    SELECT @db_size = SUM(reserved_page_count) * 8.0/1024/1024 FROM sys.dm_db_partition_stats\n    SELECT @dbname as database_name, @SLO, dateadd(second, round(datediff(second, '2015-01-01', end_time) / 15.0, 0) * 15,'2015-01-01')\n    as end_time, avg_cpu_percent * (@DTU_cap/100.0) AS avg_cpu, avg_data_io_percent * (@DTU_cap/100.0) AS avg_io, avg_log_write_percent * (@DTU_cap/100.0) AS avg_log, @db_size as db_size FROM sys.dm_db_resource_stats\n    WHERE end_time > '$($start_time)' and end_time <= '$($end_time)';\n    \" \n    }\n    else\n    {\n    $sql = \"Declare @dbname varchar(128) = '$($db.DatabaseName)';\"\n    $sql += \"Declare @SLO varchar(20) = '$($db.CurrentServiceLevelObjectiveName)';\"\n    $sql+= \"\n    Declare @DTU_cap int, @db_size float;\n    Select @DTU_cap = CASE @SLO \n    WHEN 'Basic' THEN 5\n    WHEN 'S0' THEN 10\n    WHEN 'S1' THEN 20\n    WHEN 'S2' THEN 50\n    WHEN 'P1' THEN 100\n    WHEN 'P2' THEN 200\n    WHEN 'P3' THEN 800\n    ELSE 50 -- assume Web/Business DBs\n    END\n    SELECT @db_size = SUM(reserved_page_count) * 8.0/1024/1024 from sys.dm_db_partition_stats\n    SELECT @dbname as database_name, @SLO, dateadd(second, round(datediff(second, '2015-01-01', end_time) / 15.0, 0) * 15,'2015-01-01')\n    as end_time, avg_cpu_percent * (@DTU_cap/100.0) AS avg_cpu, avg_data_io_percent * (@DTU_cap/100.0) AS avg_io, avg_log_write_percent * (@DTU_cap/100.0) AS avg_log, @db_size as db_size FROM sys.dm_db_resource_stats\n    WHERE end_time > '$($start_time)' and end_time <= '$($end_time)';\n    \" \n    }\n    \n    $result = Invoke-Sqlcmd -ServerInstance $servername -Database $db.DatabaseName -Username $username -Password $serverPassword -Query $sql -ConnectionTimeout 120 -QueryTimeout 3600 \n    #bulk copy the metrics to output database\n    $bulkCopy = new-object (\"Data.SqlClient.SqlBulkCopy\") $outputConnectionString \n    $bulkCopy.BulkCopyTimeout = 600\n    $bulkCopy.DestinationTableName = \"$destinationTableName\";\n    $bulkCopy.WriteToServer($result);\n    \n    }\n    \n    $start_time = $start_time.AddMinutes($Waittime)\n    $end_time = $end_time.AddMinutes($Waittime)\n    Write-Host $start_time\n    Write-Host $end_time\n    do {\n    Start-Sleep 1\n       }\n    until (([DateTime]::UtcNow) -ge $end_time)\n    }\n    \n    Write-Host \"Analyzing the collected metrics....\"\n    # Analysis query that does aggregation of the resource metrics to calculate pool size.\n    $sql1 = 'Declare @DTU_Perf_99 as float, @DTU_Storage as float;\n    WITH group_stats AS\n    (\n    SELECT end_time, SUM(db_size) AS avg_group_Storage, SUM(avg_cpu) AS avg_group_cpu, SUM(avg_io) AS avg_group_io,SUM(avg_log) AS avg_group_log\n    FROM resource_stats_output \n    WHERE slo LIKE '\n    \n    $sql2 = '\n    GROUP BY end_time\n    )\n    -- calculate aggregate storage and DTUs for all DBs in the group\n    , group_DTU AS\n    (\n    SELECT end_time, avg_group_Storage, \n    (SELECT Max(v)\n       FROM (VALUES (avg_group_cpu), (avg_group_log), (avg_group_io)) AS value(v)) AS avg_group_DTU\n    FROM group_stats\n    )\n    -- Get top 1 percent of the storage and DTU utilization samples.\n    , top1_percent AS (\n    SELECT TOP 1 PERCENT avg_group_Storage, avg_group_dtu FROM group_dtu ORDER BY [avg_group_DTU] DESC\n    )\n    \n    -- Max and 99th percentile DTU for the given list of databases if converted into an elastic pool. Storage is increased by factor of 1.25 to accommodate for future growth. Currently storage limit of the pool is determined by the amount of DTUs based on 1GB/DTU.\n    --SELECT MAX(avg_group_Storage)*1.25/1024.0 AS Group_Storage_DTU, MAX(avg_group_dtu) AS Group_Performance_DTU, MIN(avg_group_dtu) AS Group_Performance_DTU_99th_percentile FROM top1_percent;\n    SELECT @DTU_Storage = MAX(avg_group_Storage)*1.25/1024.0, @DTU_Perf_99 = MIN(avg_group_dtu) FROM top1_percent;\n    IF @DTU_Storage > @DTU_Perf_99 \n    SELECT ''Total number of DTUs dominated by storage: '' + convert(varchar(100), @DTU_Storage)\n    ELSE \n    SELECT ''Total number of DTUs dominated by resource consumption: '' + convert(varchar(100), @DTU_Perf_99)'\n    \n    #check if there are any web/biz edition dbs in the collected metrics\n    $checkslo = \"SELECT TOP 1 slo FROM resource_stats_output WHERE slo LIKE 'shared%'\"\n    $output = Invoke-Sqlcmd -ServerInstance $outputServerName -Database $outputdatabaseName -Username $outputDBUsername -Password $outputDBpassword -Query $checkslo -QueryTimeout 3600 | select -expand slo\n    if ($output -like \"Shared*\")\n    {\n    write-host \"`nWeb/Business edition:\" -BackgroundColor Green -ForegroundColor Black\n    $sql = $sql1 + \"'Shared%'\"  + $sql2\n    $data = Invoke-Sqlcmd -ServerInstance $outputServerName -Database $outputdatabaseName -Username $outputDBUsername -Password $outputDBpassword -Query $sql -QueryTimeout 3600\n    $data | %{'{0}' -f $_[0]}\n    }\n    \n    #check if there are any basic edition dbs in the collected metrics\n    $checkslo = \"SELECT TOP 1 slo FROM resource_stats_output WHERE slo LIKE 'Basic%'\"\n    $output = Invoke-Sqlcmd -ServerInstance $outputServerName -Database $outputdatabaseName -Username $outputDBUsername -Password $outputDBpassword -Query $checkslo -QueryTimeout 3600 | select -expand slo\n    if ($output -like \"Basic*\")\n    {\n    write-host \"`nBasic edition:\" -BackgroundColor Green -ForegroundColor Black\n    $sql = $sql1 + \"'Basic%'\"  + $sql2\n    $data = Invoke-Sqlcmd -ServerInstance $outputServerName -Database $outputdatabaseName -Username $outputDBUsername -Password $outputDBpassword -Query $sql -QueryTimeout 3600\n    $data | %{'{0}' -f $_[0]} \n    }\n    \n    #check if there are any standard edition dbs in the collected metrics\n    $checkslo = \"SELECT TOP 1 slo FROM resource_stats_output WHERE slo LIKE 'S%' AND slo NOT LIKE 'Shared%'\"\n    $output = Invoke-Sqlcmd -ServerInstance $outputServerName -Database $outputdatabaseName -Username $outputDBUsername -Password $outputDBpassword -Query $checkslo -QueryTimeout 3600 | select -expand slo\n    if ($output -like \"S*\")\n    {\n    write-host \"`nStandard edition:\" -BackgroundColor Green -ForegroundColor Black\n    $sql = $sql1 + \"'S%' AND slo NOT LIKE 'Shared%'\"  + $sql2\n    $data = Invoke-Sqlcmd -ServerInstance $outputServerName -Database $outputdatabaseName -Username $outputDBUsername -Password $outputDBpassword -Query $sql -QueryTimeout 3600\n    $data | %{'{0}' -f $_[0]}\n    }\n    \n    #check if there are any premium edition dbs in the collected metrics\n    $checkslo = \"SELECT TOP 1 slo FROM resource_stats_output WHERE slo LIKE 'P%'\"\n    $output = Invoke-Sqlcmd -ServerInstance $outputServerName -Database $outputdatabaseName -Username $outputDBUsername -Password $outputDBpassword -Query $checkslo -QueryTimeout 3600 | select -expand slo\n    if ($output -like \"P*\")\n    {\n    write-host \"`nPremium edition:\" -BackgroundColor Green -ForegroundColor Black\n    $sql = $sql1 + \"'P%'\"  + $sql2\n    $data = Invoke-Sqlcmd -ServerInstance $outputServerName -Database $outputdatabaseName -Username $outputDBUsername -Password $outputDBpassword -Query $sql -QueryTimeout 3600\n    $data | %{'{0}' -f $_[0]}\n    }\n        \n\n## Summary\n\nNot all single databases are optimum candidates for elastic database pools. Databases with usage patterns that are characterized by low average utilization and relatively infrequent utilization spikes are excellent candidates for elastic database pools. Application usage patterns are dynamic, so use the information and tools described in this article to make an initial assessment to see if an elastic database pool is a good choice for some or all of your databases. This article is just a starting point to help with your decision as to whether or not an elastic database pool is a good fit. Remember that you should continually monitor historical resource usage (using STA or DMVs) and constantly reassess the performance levels of all of your databases. Keep in mind that you can easily move databases in and out of elastic database pools, and if you have a very large number of databases you can have multiple pools of varying sizes that you can divide your databases into.  \n\n\n\n<!--Image references-->\n[1]: ./media/sql-database-elastic-pool-guidance/one-database.png\n[2]: ./media/sql-database-elastic-pool-guidance/four-databases.png\n[3]: ./media/sql-database-elastic-pool-guidance/twenty-databases.png\n"
+}

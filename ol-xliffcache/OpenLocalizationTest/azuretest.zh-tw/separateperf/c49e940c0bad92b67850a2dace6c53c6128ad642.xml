@@ -1,0 +1,831 @@
+{
+  "nodes": [
+    {
+      "content": "Create and Configure an Application Gateway with Internal Load Balancer (ILB) using Azure Resource Manager | Microsoft Azure",
+      "pos": [
+        27,
+        151
+      ]
+    },
+    {
+      "content": "This page provides instructions to create, configure, start, and delete an Azure Application Gateway with Internal Load balancer (ILB) for Azure resource manager",
+      "pos": [
+        169,
+        330
+      ]
+    },
+    {
+      "content": "Create an Application Gateway with an Internal Load Balancer (ILB) using Azure Resource Manager",
+      "pos": [
+        660,
+        755
+      ]
+    },
+    {
+      "content": "[AZURE.SELECTOR]",
+      "pos": [
+        759,
+        775
+      ]
+    },
+    {
+      "content": "Azure classic steps",
+      "pos": [
+        779,
+        798
+      ]
+    },
+    {
+      "content": "Resource Manager Powershell steps",
+      "pos": [
+        831,
+        864
+      ]
+    },
+    {
+      "content": "Application Gateway can be configured with an internet facing VIP or with an internal end-point not exposed to the internet, also known as Internal Load Balancer (ILB) endpoint.",
+      "pos": [
+        899,
+        1076
+      ]
+    },
+    {
+      "content": "Configuring the gateway with an ILB is useful for internal line of business applications not exposed to internet.",
+      "pos": [
+        1077,
+        1190
+      ]
+    },
+    {
+      "content": "It's also useful for services/tiers within a multi-tier application which sit in a security boundary not exposed to internet, but still require round robin load distribution, session stickiness, or SSL termination.",
+      "pos": [
+        1191,
+        1405
+      ]
+    },
+    {
+      "content": "This article will walk you through the steps to configure an application gateway with an ILB.",
+      "pos": [
+        1406,
+        1499
+      ]
+    },
+    {
+      "content": "Before you begin",
+      "pos": [
+        1504,
+        1520
+      ]
+    },
+    {
+      "content": "Install latest version of the Azure PowerShell cmdlets using the Web Platform Installer.",
+      "pos": [
+        1525,
+        1613
+      ]
+    },
+    {
+      "content": "You can download and install the latest version from the <bpt id=\"p1\">**</bpt>Windows PowerShell<ept id=\"p1\">**</ept> section of the <bpt id=\"p2\">[</bpt>Download page<ept id=\"p2\">](http://azure.microsoft.com/downloads/)</ept>.",
+      "pos": [
+        1614,
+        1764
+      ]
+    },
+    {
+      "content": "You will create a virtual network and subnet for Application Gateway.",
+      "pos": [
+        1768,
+        1837
+      ]
+    },
+    {
+      "content": "Make sure no Virtual machines or cloud deployments are using the subnet.",
+      "pos": [
+        1838,
+        1910
+      ]
+    },
+    {
+      "content": "Application gateway must be by itself in a virtual network subnet.",
+      "pos": [
+        1911,
+        1977
+      ]
+    },
+    {
+      "content": "The servers which you will configure to use the Application gateway must exist or have their endpoints created either in the virtual network, or with a public IP/VIP assigned.",
+      "pos": [
+        1981,
+        2156
+      ]
+    },
+    {
+      "content": "What is required to create an Application Gateway?",
+      "pos": [
+        2161,
+        2211
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Back end server pool:<ept id=\"p1\">**</ept> The list of IP addresses of the back end servers.",
+      "pos": [
+        2217,
+        2292
+      ]
+    },
+    {
+      "content": "The IP addresses listed should either belong to the virtual network subnet, or should be a public IP/VIP.",
+      "pos": [
+        2293,
+        2398
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Back end server pool settings:<ept id=\"p1\">**</ept> Every pool has settings like port, protocol, and cookie based affinity.",
+      "pos": [
+        2402,
+        2508
+      ]
+    },
+    {
+      "content": "These settings are tied to a pool and are applied to all servers within the pool.",
+      "pos": [
+        2509,
+        2590
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Front end Port:<ept id=\"p1\">**</ept> This port is the public port opened on the application gateway.",
+      "pos": [
+        2593,
+        2676
+      ]
+    },
+    {
+      "content": "Traffic hits this port, and then gets redirected to one of the back end servers.",
+      "pos": [
+        2677,
+        2757
+      ]
+    },
+    {
+      "pos": [
+        2760,
+        2920
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Listener:<ept id=\"p1\">**</ept> The listener has a frontend port, a protocol (Http or Https, these are case-sensitive), and the SSL certificate name (if configuring SSL offload)."
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Rule:<ept id=\"p1\">**</ept> The rule binds the listener and the back end server pool and defines which back end server pool the traffic should be directed to when it hits a particular listener.",
+      "pos": [
+        2924,
+        3099
+      ]
+    },
+    {
+      "content": "Currently, only the <bpt id=\"p1\">*</bpt>basic<ept id=\"p1\">*</ept> rule is supported.",
+      "pos": [
+        3100,
+        3146
+      ]
+    },
+    {
+      "content": "The <bpt id=\"p1\">*</bpt>basic<ept id=\"p1\">*</ept> rule is round-robin load distribution.",
+      "pos": [
+        3147,
+        3197
+      ]
+    },
+    {
+      "content": "Create a new Application Gateway",
+      "pos": [
+        3205,
+        3237
+      ]
+    },
+    {
+      "content": "The difference between using Azure Classic and Azure Resource Manager will be the order you will create the application gateway and items needed to be configured.",
+      "pos": [
+        3239,
+        3401
+      ]
+    },
+    {
+      "content": "With Resource manager, all items which will make an Application Gateway will be configured individually and then put together to create the Application Gateway resource.",
+      "pos": [
+        3402,
+        3571
+      ]
+    },
+    {
+      "content": "Here follows the steps needed to create an Application Gateway:",
+      "pos": [
+        3574,
+        3637
+      ]
+    },
+    {
+      "content": "Create a resource group for Resource Manager",
+      "pos": [
+        3642,
+        3686
+      ]
+    },
+    {
+      "content": "Create virtual network, subnet for Application Gateway",
+      "pos": [
+        3690,
+        3744
+      ]
+    },
+    {
+      "content": "Create an Application Gateway configuration object",
+      "pos": [
+        3748,
+        3798
+      ]
+    },
+    {
+      "content": "Create Application Gateway resource",
+      "pos": [
+        3802,
+        3837
+      ]
+    },
+    {
+      "content": "Create a resource group for Resource Manager",
+      "pos": [
+        3843,
+        3887
+      ]
+    },
+    {
+      "content": "Make sure you switch PowerShell mode to use the ARM cmdlets.",
+      "pos": [
+        3889,
+        3949
+      ]
+    },
+    {
+      "content": "More info is available at Using <bpt id=\"p1\">[</bpt>Windows Powershell with Resource Manager<ept id=\"p1\">](powershell-azure-resource-manager.md)</ept>.",
+      "pos": [
+        3950,
+        4063
+      ]
+    },
+    {
+      "content": "Step 1",
+      "pos": [
+        4069,
+        4075
+      ]
+    },
+    {
+      "content": "Step 2",
+      "pos": [
+        4130,
+        4136
+      ]
+    },
+    {
+      "content": "Log in to your Azure account.",
+      "pos": [
+        4138,
+        4167
+      ]
+    },
+    {
+      "content": "You will be prompted to Authenticate with your credentials.",
+      "pos": [
+        4192,
+        4251
+      ]
+    },
+    {
+      "content": "Step 3",
+      "pos": [
+        4258,
+        4264
+      ]
+    },
+    {
+      "content": "Choose which of your Azure subscriptions to use.",
+      "pos": [
+        4266,
+        4314
+      ]
+    },
+    {
+      "content": "To see a list of available subscriptions, use the ‘Get-AzureSubscription’ cmdlet.",
+      "pos": [
+        4382,
+        4463
+      ]
+    },
+    {
+      "content": "Step 4",
+      "pos": [
+        4470,
+        4476
+      ]
+    },
+    {
+      "content": "Create a new resource group (skip this step if using an existing resource group)",
+      "pos": [
+        4478,
+        4558
+      ]
+    },
+    {
+      "content": "Azure Resource Manager requires that all resource groups specify a location.",
+      "pos": [
+        4623,
+        4699
+      ]
+    },
+    {
+      "content": "This is used as the default location for resources in that resource group.",
+      "pos": [
+        4700,
+        4774
+      ]
+    },
+    {
+      "content": "Make sure all commands to create an Application Gateway will use the same resource group.",
+      "pos": [
+        4775,
+        4864
+      ]
+    },
+    {
+      "content": "In the example above we created a resource group called \"appgw-rg\" and location \"West US\".",
+      "pos": [
+        4866,
+        4956
+      ]
+    },
+    {
+      "content": "Create virtual network, subnet for Application Gateway",
+      "pos": [
+        4962,
+        5016
+      ]
+    },
+    {
+      "content": "The following example shows how to create a virtual network using Resource manager:",
+      "pos": [
+        5018,
+        5101
+      ]
+    },
+    {
+      "content": "Step 1",
+      "pos": [
+        5108,
+        5114
+      ]
+    },
+    {
+      "content": "Assigns the Address range 10.0.0.0/24 to subnet variable to be used to create a virtual network",
+      "pos": [
+        5215,
+        5310
+      ]
+    },
+    {
+      "content": "Step 2",
+      "pos": [
+        5316,
+        5322
+      ]
+    },
+    {
+      "content": "Creates a virtual network named \"appgwvnet\" in resource group \"appw-rg\" for the West US region using the prefix 10.0.0.0/16 with subnet 10.0.0.0/24",
+      "pos": [
+        5472,
+        5619
+      ]
+    },
+    {
+      "content": "Create an Application Gateway configuration object",
+      "pos": [
+        5630,
+        5680
+      ]
+    },
+    {
+      "content": "Step 1",
+      "pos": [
+        5686,
+        5692
+      ]
+    },
+    {
+      "content": "Creates a Application Gateway IP configuration named \"gatewayIP01\".",
+      "pos": [
+        5789,
+        5856
+      ]
+    },
+    {
+      "content": "When Application Gateway starts, it will pick up an IP address from the subnet configured and route network traffic to the IP addresses in the backend IP pool.",
+      "pos": [
+        5857,
+        6016
+      ]
+    },
+    {
+      "content": "Keep in mind each instance will take one IP address.",
+      "pos": [
+        6017,
+        6069
+      ]
+    },
+    {
+      "content": "Step 2",
+      "pos": [
+        6076,
+        6082
+      ]
+    },
+    {
+      "content": "This step will configure the back end IP address pool named \"pool01\" with IP addresses \"10.0.0.10,10.0.0.11, 10.0.0.12\".",
+      "pos": [
+        6206,
+        6326
+      ]
+    },
+    {
+      "content": "Those will be the IP addresses receiving the network traffic coming from the front end IP endpoint.You will replace the IP addresses above to add your own application IP address endpoints.",
+      "pos": [
+        6327,
+        6515
+      ]
+    },
+    {
+      "content": "Step 3",
+      "pos": [
+        6521,
+        6527
+      ]
+    },
+    {
+      "content": "Configures Application Gateway settings \"poolsetting01\" for the load balanced network traffic in the backend pool.",
+      "pos": [
+        6670,
+        6784
+      ]
+    },
+    {
+      "content": "Step 4",
+      "pos": [
+        6790,
+        6796
+      ]
+    },
+    {
+      "content": "Configures the front end IP port named \"frontendport01\" for the ILB.",
+      "pos": [
+        6880,
+        6948
+      ]
+    },
+    {
+      "content": "Step 5",
+      "pos": [
+        6954,
+        6960
+      ]
+    },
+    {
+      "content": "Creates the front end IP configuration called \"fipconfig01\" and associates with a private IP from the current virtual network subnet.",
+      "pos": [
+        7058,
+        7191
+      ]
+    },
+    {
+      "content": "Step 6",
+      "pos": [
+        7197,
+        7203
+      ]
+    },
+    {
+      "content": "Creates the listener called \"listener01\" and associates the front end port to the frontend IP configuration.",
+      "pos": [
+        7349,
+        7457
+      ]
+    },
+    {
+      "content": "Step 7",
+      "pos": [
+        7463,
+        7469
+      ]
+    },
+    {
+      "content": "Creates the load balancer routing rule called \"rule01\", configuring the load balancer behavior.",
+      "pos": [
+        7644,
+        7739
+      ]
+    },
+    {
+      "content": "Step 8",
+      "pos": [
+        7745,
+        7751
+      ]
+    },
+    {
+      "content": "Configures the instance size of the Application Gateway",
+      "pos": [
+        7844,
+        7899
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph>  The default value for <bpt id=\"p1\">*</bpt>InstanceCount<ept id=\"p1\">*</ept> is 2, with a maximum value of 10.",
+      "pos": [
+        7902,
+        7987
+      ]
+    },
+    {
+      "content": "The default value for <bpt id=\"p1\">*</bpt>GatewaySize<ept id=\"p1\">*</ept> is Medium.",
+      "pos": [
+        7988,
+        8034
+      ]
+    },
+    {
+      "content": "You can choose between Standard_Small, Standard_Medium and Standard_Large.",
+      "pos": [
+        8035,
+        8109
+      ]
+    },
+    {
+      "content": "Create Application Gateway using New-AzureApplicationGateway",
+      "pos": [
+        8114,
+        8174
+      ]
+    },
+    {
+      "content": "Creates an Application Gateway will all configuration items from the steps above.",
+      "pos": [
+        8508,
+        8589
+      ]
+    },
+    {
+      "content": "In the example the Application Gateway is called \"appgwtest\".",
+      "pos": [
+        8590,
+        8651
+      ]
+    },
+    {
+      "content": "Start the gateway",
+      "pos": [
+        8660,
+        8677
+      ]
+    },
+    {
+      "content": "Once the gateway has been configured, use the <ph id=\"ph1\">`Start-AzureApplicationGateway`</ph> cmdlet to start the gateway.",
+      "pos": [
+        8679,
+        8785
+      ]
+    },
+    {
+      "content": "Billing for an application gateway begins after the gateway has been successfully started.",
+      "pos": [
+        8786,
+        8876
+      ]
+    },
+    {
+      "pos": [
+        8880,
+        8976
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Note:<ept id=\"p1\">**</ept> The <ph id=\"ph1\">`Start-AzureApplicationGateway`</ph> cmdlet might take up to 15-20 minutes to complete."
+    },
+    {
+      "content": "For the example below, the Application Gateway is called \"appgwtest\" and the resource group is \"appgw-rg\":",
+      "pos": [
+        8979,
+        9085
+      ]
+    },
+    {
+      "content": "Step 1",
+      "pos": [
+        9092,
+        9098
+      ]
+    },
+    {
+      "content": "Get the Application Gateway object and associate to a variable \"$getgw\":",
+      "pos": [
+        9100,
+        9172
+      ]
+    },
+    {
+      "content": "Step 2",
+      "pos": [
+        9266,
+        9272
+      ]
+    },
+    {
+      "pos": [
+        9279,
+        9348
+      ],
+      "content": "Use <ph id=\"ph1\">`Start-AzureApplicationGateway`</ph> to start the Application Gateway:"
+    },
+    {
+      "content": "Verify the Application Gateway status",
+      "pos": [
+        9870,
+        9907
+      ]
+    },
+    {
+      "content": "Use the <ph id=\"ph1\">`Get-AzureApplicationGateway`</ph> cmdlet to check the status of gateway.",
+      "pos": [
+        9909,
+        9985
+      ]
+    },
+    {
+      "content": "If <bpt id=\"p1\">*</bpt>Start-AzureApplicationGateway<ept id=\"p1\">*</ept> succeeded in the previous step, the State should be <bpt id=\"p2\">*</bpt>Running<ept id=\"p2\">*</ept>, and the Vip and DnsName should have valid entries.",
+      "pos": [
+        9986,
+        10134
+      ]
+    },
+    {
+      "pos": [
+        10137,
+        10283
+      ],
+      "content": "This sample shows an application gateway that is up, running, and is ready to take traffic destined to <ph id=\"ph1\">`http://&lt;generated-dns-name&gt;.cloudapp.net`</ph>."
+    },
+    {
+      "content": "Delete an Application Gateway",
+      "pos": [
+        10827,
+        10856
+      ]
+    },
+    {
+      "content": "To delete an application gateway, you'll need to do the following in order:",
+      "pos": [
+        10858,
+        10933
+      ]
+    },
+    {
+      "pos": [
+        10938,
+        11004
+      ],
+      "content": "Use the <ph id=\"ph1\">`Stop-AzureApplicationGateway`</ph> cmdlet to stop the gateway."
+    },
+    {
+      "pos": [
+        11009,
+        11079
+      ],
+      "content": "Use the <ph id=\"ph1\">`Remove-AzureApplicationGateway`</ph> cmdlet to remove the gateway."
+    },
+    {
+      "pos": [
+        11083,
+        11169
+      ],
+      "content": "Verify the gateway has been removed by using the <ph id=\"ph1\">`Get-AzureApplicationGateway`</ph> cmdlet."
+    },
+    {
+      "pos": [
+        11171,
+        11273
+      ],
+      "content": "This sample shows the <ph id=\"ph1\">`Stop-AzureApplicationGateway`</ph> cmdlet on the first line, followed by the output."
+    },
+    {
+      "content": "Step 1",
+      "pos": [
+        11280,
+        11286
+      ]
+    },
+    {
+      "content": "Get the Application Gateway object and associate to a variable \"$getgw\":",
+      "pos": [
+        11288,
+        11360
+      ]
+    },
+    {
+      "content": "Step 2",
+      "pos": [
+        11452,
+        11458
+      ]
+    },
+    {
+      "pos": [
+        11465,
+        11532
+      ],
+      "content": "Use <ph id=\"ph1\">`Stop-AzureApplicationGateway`</ph> to stop the Application Gateway:"
+    },
+    {
+      "pos": [
+        11995,
+        12117
+      ],
+      "content": "Once the application gateway is in a Stopped state, use the <ph id=\"ph1\">`Remove-AzureApplicationGateway`</ph> cmdlet to remove the service."
+    },
+    {
+      "pos": [
+        12611,
+        12699
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> The \"-force\" switch can be used to suppress the remove confirmation message"
+    },
+    {
+      "content": "To verify that the service has been removed, you can use the <ph id=\"ph1\">`Get-AzureApplicationGateway`</ph> cmdlet.",
+      "pos": [
+        12703,
+        12801
+      ]
+    },
+    {
+      "content": "This step is not required.",
+      "pos": [
+        12802,
+        12828
+      ]
+    },
+    {
+      "content": "Next Steps",
+      "pos": [
+        13081,
+        13091
+      ]
+    },
+    {
+      "pos": [
+        13093,
+        13211
+      ],
+      "content": "If you want to configure SSL offload, see <bpt id=\"p1\">[</bpt>Configure Application Gateway for SSL offload<ept id=\"p1\">](application-gateway-ssl.md)</ept>."
+    },
+    {
+      "pos": [
+        13213,
+        13379
+      ],
+      "content": "If you want to configure an application gateway to use with ILB, see <bpt id=\"p1\">[</bpt>Create an Application Gateway with an Internal Load Balancer (ILB)<ept id=\"p1\">](application-gateway-ilb.md)</ept>."
+    },
+    {
+      "content": "If you want more information about load balancing options in general, see:",
+      "pos": [
+        13381,
+        13455
+      ]
+    },
+    {
+      "content": "Azure Load Balancer",
+      "pos": [
+        13460,
+        13479
+      ]
+    },
+    {
+      "content": "Azure Traffic Manager",
+      "pos": [
+        13551,
+        13572
+      ]
+    },
+    {
+      "content": "test",
+      "pos": [
+        13645,
+        13649
+      ]
+    }
+  ],
+  "content": "<properties \n   pageTitle=\"Create and Configure an Application Gateway with Internal Load Balancer (ILB) using Azure Resource Manager | Microsoft Azure\"\n   description=\"This page provides instructions to create, configure, start, and delete an Azure Application Gateway with Internal Load balancer (ILB) for Azure resource manager\"\n   documentationCenter=\"na\"\n   services=\"application-gateway\"\n   authors=\"joaoma\"\n   manager=\"jdial\"\n   editor=\"tysonn\"/>\n<tags \n   ms.service=\"application-gateway\"\n   ms.devlang=\"na\"\n   ms.topic=\"hero-article\" \n   ms.tgt_pltfrm=\"na\"\n   ms.workload=\"infrastructure-services\" \n   ms.date=\"08/07/2015\"\n   ms.author=\"joaoma\"/>\n\n\n# Create an Application Gateway with an Internal Load Balancer (ILB) using Azure Resource Manager\n\n> [AZURE.SELECTOR]\n- [Azure classic steps](application-gateway-ilb.md)\n- [Resource Manager Powershell steps](application-gateway-ilb-arm.md)\n\nApplication Gateway can be configured with an internet facing VIP or with an internal end-point not exposed to the internet, also known as Internal Load Balancer (ILB) endpoint. Configuring the gateway with an ILB is useful for internal line of business applications not exposed to internet. It's also useful for services/tiers within a multi-tier application which sit in a security boundary not exposed to internet, but still require round robin load distribution, session stickiness, or SSL termination. This article will walk you through the steps to configure an application gateway with an ILB.\n\n## Before you begin\n\n1. Install latest version of the Azure PowerShell cmdlets using the Web Platform Installer. You can download and install the latest version from the **Windows PowerShell** section of the [Download page](http://azure.microsoft.com/downloads/).\n2. You will create a virtual network and subnet for Application Gateway. Make sure no Virtual machines or cloud deployments are using the subnet. Application gateway must be by itself in a virtual network subnet.\n3. The servers which you will configure to use the Application gateway must exist or have their endpoints created either in the virtual network, or with a public IP/VIP assigned.\n\n## What is required to create an Application Gateway?\n \n\n- **Back end server pool:** The list of IP addresses of the back end servers. The IP addresses listed should either belong to the virtual network subnet, or should be a public IP/VIP. \n- **Back end server pool settings:** Every pool has settings like port, protocol, and cookie based affinity. These settings are tied to a pool and are applied to all servers within the pool.\n- **Front end Port:** This port is the public port opened on the application gateway. Traffic hits this port, and then gets redirected to one of the back end servers.\n- **Listener:** The listener has a frontend port, a protocol (Http or Https, these are case-sensitive), and the SSL certificate name (if configuring SSL offload). \n- **Rule:** The rule binds the listener and the back end server pool and defines which back end server pool the traffic should be directed to when it hits a particular listener. Currently, only the *basic* rule is supported. The *basic* rule is round-robin load distribution.\n\n\n \n## Create a new Application Gateway\n\nThe difference between using Azure Classic and Azure Resource Manager will be the order you will create the application gateway and items needed to be configured.\nWith Resource manager, all items which will make an Application Gateway will be configured individually and then put together to create the Application Gateway resource.\n\n\nHere follows the steps needed to create an Application Gateway:\n\n1. Create a resource group for Resource Manager\n2. Create virtual network, subnet for Application Gateway\n3. Create an Application Gateway configuration object\n4. Create Application Gateway resource\n\n\n## Create a resource group for Resource Manager\n\nMake sure you switch PowerShell mode to use the ARM cmdlets. More info is available at Using [Windows Powershell with Resource Manager](powershell-azure-resource-manager.md).\n\n### Step 1\n\n    Switch-AzureMode -Name AzureResourceManager\n\n### Step 2\n\nLog in to your Azure account.\n\n\n    Add-AzureAccount\n\nYou will be prompted to Authenticate with your credentials.\n\n\n### Step 3\n\nChoose which of your Azure subscriptions to use. \n\n    Select-AzureSubscription -SubscriptionName \"MySubscription\"\n\nTo see a list of available subscriptions, use the ‘Get-AzureSubscription’ cmdlet.\n\n\n### Step 4\n\nCreate a new resource group (skip this step if using an existing resource group)\n\n    New-AzureResourceGroup -Name appgw-rg -location \"West US\"\n\nAzure Resource Manager requires that all resource groups specify a location. This is used as the default location for resources in that resource group. Make sure all commands to create an Application Gateway will use the same resource group.\n\nIn the example above we created a resource group called \"appgw-rg\" and location \"West US\". \n\n## Create virtual network, subnet for Application Gateway\n\nThe following example shows how to create a virtual network using Resource manager: \n\n### Step 1  \n    \n    $subnet = New-AzureVirtualNetworkSubnetConfig -Name subnet01 -AddressPrefix 10.0.0.0/24\n\nAssigns the Address range 10.0.0.0/24 to subnet variable to be used to create a virtual network\n\n### Step 2\n    \n    $vnet = New-AzurevirtualNetwork -Name appgwvnet -ResourceGroupName appgw-rg -Location \"West US\" -AddressPrefix 10.0.0.0/16 -Subnet $subnet\n\nCreates a virtual network named \"appgwvnet\" in resource group \"appw-rg\" for the West US region using the prefix 10.0.0.0/16 with subnet 10.0.0.0/24 \n    \n\n## Create an Application Gateway configuration object\n\n### Step 1\n\n    $gipconfig = New-AzureApplicationGatewayIPConfiguration -Name gatewayIP01 -Subnet $subnet\n\nCreates a Application Gateway IP configuration named \"gatewayIP01\". When Application Gateway starts, it will pick up an IP address from the subnet configured and route network traffic to the IP addresses in the backend IP pool. Keep in mind each instance will take one IP address.\n \n### Step 2\n\n    $pool = New-AzureApplicationGatewayBackendAddressPool -Name pool01 -BackendIPAddresses 10.0.0.10,10.0.0.11,10.0.0.12\n\nThis step will configure the back end IP address pool named \"pool01\" with IP addresses \"10.0.0.10,10.0.0.11, 10.0.0.12\". Those will be the IP addresses receiving the network traffic coming from the front end IP endpoint.You will replace the IP addresses above to add your own application IP address endpoints.\n\n### Step 3\n\n    $poolSetting = New-AzureApplicationGatewayBackendHttpSettings -Name poolsetting01 -Port 80 -Protocol Http -CookieBasedAffinity Disabled\n\nConfigures Application Gateway settings \"poolsetting01\" for the load balanced network traffic in the backend pool.\n\n### Step 4\n\n    $fp = New-AzureApplicationGatewayFrontendPort -Name frontendport01  -Port 80\n\nConfigures the front end IP port named \"frontendport01\" for the ILB.\n\n### Step 5\n\n    $fipconfig = New-AzureApplicationGatewayFrontendIPConfig -Name fipconfig01 -Subnet $subnet\n\nCreates the front end IP configuration called \"fipconfig01\" and associates with a private IP from the current virtual network subnet.\n\n### Step 6\n\n    $listener = New-AzureApplicationGatewayHttpListener -Name listener01  -Protocol Http -FrontendIPConfiguration $fipconfig -FrontendPort $fp\n\nCreates the listener called \"listener01\" and associates the front end port to the frontend IP configuration.\n\n### Step 7 \n\n    $rule = New-AzureApplicationGatewayRequestRoutingRule -Name rule01 -RuleType Basic -BackendHttpSettings $poolSetting -HttpListener $listener -BackendAddressPool $pool\n\nCreates the load balancer routing rule called \"rule01\", configuring the load balancer behavior.\n\n### Step 8\n\n    $sku = New-AzureApplicationGatewaySku -Name Standard_Small -Tier Standard -Capacity 2\n\nConfigures the instance size of the Application Gateway\n\n>[AZURE.NOTE]  The default value for *InstanceCount* is 2, with a maximum value of 10. The default value for *GatewaySize* is Medium. You can choose between Standard_Small, Standard_Medium and Standard_Large.\n\n## Create Application Gateway using New-AzureApplicationGateway\n\n    $appgw = New-AzureApplicationGateway -Name appgwtest -ResourceGroupName appgw-rg -Location \"West US\" -BackendAddressPools $pool -BackendHttpSettingsCollection $poolSetting -FrontendIpConfigurations $fipconfig  -GatewayIpConfigurations $gipconfig -FrontendPorts $fp -HttpListeners $listener -RequestRoutingRules $rule -Sku $sku\n\nCreates an Application Gateway will all configuration items from the steps above. In the example the Application Gateway is called \"appgwtest\". \n\n\n\n\n## Start the gateway\n\nOnce the gateway has been configured, use the `Start-AzureApplicationGateway` cmdlet to start the gateway. Billing for an application gateway begins after the gateway has been successfully started. \n\n\n**Note:** The `Start-AzureApplicationGateway` cmdlet might take up to 15-20 minutes to complete. \n\nFor the example below, the Application Gateway is called \"appgwtest\" and the resource group is \"appgw-rg\":\n\n\n### Step 1\n\nGet the Application Gateway object and associate to a variable \"$getgw\":\n \n    $getgw =  Get-AzureApplicationGateway -Name appgwtest -ResourceGroupName appgw-rg\n\n### Step 2\n     \nUse `Start-AzureApplicationGateway` to start the Application Gateway:\n\n    PS C:\\> Start-AzureApplicationGateway -ApplicationGateway $getgw  \n\n    PS C:\\> Start-AzureApplicationGateway AppGwTest \n\n    VERBOSE: 7:59:16 PM - Begin Operation: Start-AzureApplicationGateway \n    VERBOSE: 8:05:52 PM - Completed Operation: Start-AzureApplicationGateway\n    Name       HTTP Status Code     Operation ID                             Error \n    ----       ----------------     ------------                             ----\n    Successful OK                   fc592db8-4c58-2c8e-9a1d-1c97880f0b9b\n\n## Verify the Application Gateway status\n\nUse the `Get-AzureApplicationGateway` cmdlet to check the status of gateway. If *Start-AzureApplicationGateway* succeeded in the previous step, the State should be *Running*, and the Vip and DnsName should have valid entries. \n\nThis sample shows an application gateway that is up, running, and is ready to take traffic destined to `http://<generated-dns-name>.cloudapp.net`. \n\n    PS C:\\> Get-AzureApplicationGateway -Name appgwtest -ResourceGroupName app-rg\n\n    VERBOSE: 8:09:28 PM - Begin Operation: Get-AzureApplicationGateway \n    VERBOSE: 8:09:30 PM - Completed Operation: Get-AzureApplicationGateway\n    Name          : AppGwTest \n    Description   : \n    VnetName      : appgwvnet \n    Subnets       : {Subnet01} \n    InstanceCount : 2 \n    GatewaySize   : Medium \n    State         : Running \n    Vip           : 138.91.170.26 \n    DnsName       : appgw-1b8402e8-3e0d-428d-b661-289c16c82101.cloudapp.net\n\n\n## Delete an Application Gateway\n\nTo delete an application gateway, you'll need to do the following in order:\n\n1. Use the `Stop-AzureApplicationGateway` cmdlet to stop the gateway. \n2. Use the `Remove-AzureApplicationGateway` cmdlet to remove the gateway.\n3. Verify the gateway has been removed by using the `Get-AzureApplicationGateway` cmdlet.\n\nThis sample shows the `Stop-AzureApplicationGateway` cmdlet on the first line, followed by the output. \n\n### Step 1\n\nGet the Application Gateway object and associate to a variable \"$getgw\":\n \n    $getgw =  Get-AzureApplicationGateway -Name appgwtest -ResourceGroupName app-rg\n\n### Step 2\n     \nUse `Stop-AzureApplicationGateway` to stop the Application Gateway:\n\n    PS C:\\> Stop-AzureApplicationGateway -ApplicationGateway $getgw  \n\n    VERBOSE: 9:49:34 PM - Begin Operation: Stop-AzureApplicationGateway \n    VERBOSE: 10:10:06 PM - Completed Operation: Stop-AzureApplicationGateway\n    Name       HTTP Status Code     Operation ID                             Error \n    ----       ----------------     ------------                             ----\n    Successful OK                   ce6c6c95-77b4-2118-9d65-e29defadffb8\n\nOnce the application gateway is in a Stopped state, use the `Remove-AzureApplicationGateway` cmdlet to remove the service.\n\n\n    PS C:\\> Remove-AzureApplicationGateway -Name $appgwName -ResourceGroupName $rgname -Force\n\n    VERBOSE: 10:49:34 PM - Begin Operation: Remove-AzureApplicationGateway \n    VERBOSE: 10:50:36 PM - Completed Operation: Remove-AzureApplicationGateway\n    Name       HTTP Status Code     Operation ID                             Error \n    ----       ----------------     ------------                             ----\n    Successful OK                   055f3a96-8681-2094-a304-8d9a11ad8301\n\n>[AZURE.NOTE] The \"-force\" switch can be used to suppress the remove confirmation message\n>\n\nTo verify that the service has been removed, you can use the `Get-AzureApplicationGateway` cmdlet. This step is not required.\n\n\n    PS C:\\>Get-AzureApplicationGateway -Name appgwtest-ResourceGroupName app-rg\n\n    VERBOSE: 10:52:46 PM - Begin Operation: Get-AzureApplicationGateway \n\n    Get-AzureApplicationGateway : ResourceNotFound: The gateway does not exist. \n    .....\n\n## Next Steps\n\nIf you want to configure SSL offload, see [Configure Application Gateway for SSL offload](application-gateway-ssl.md).\n\nIf you want to configure an application gateway to use with ILB, see [Create an Application Gateway with an Internal Load Balancer (ILB)](application-gateway-ilb.md).\n\nIf you want more information about load balancing options in general, see:\n\n- [Azure Load Balancer](https://azure.microsoft.com/documentation/services/load-balancer/)\n- [Azure Traffic Manager](https://azure.microsoft.com/documentation/services/traffic-manager/)\n\n\ntest\n"
+}

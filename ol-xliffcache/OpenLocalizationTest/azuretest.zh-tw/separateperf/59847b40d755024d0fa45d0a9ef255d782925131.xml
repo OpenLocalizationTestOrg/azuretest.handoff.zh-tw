@@ -1,0 +1,551 @@
+{
+  "nodes": [
+    {
+      "content": "Reliable Actors stateful service composition design pattern",
+      "pos": [
+        27,
+        86
+      ]
+    },
+    {
+      "content": "Service Fabric Reliable Actors design pattern that uses Stateful actors to maintain state between service calls as well as cache previous service results.",
+      "pos": [
+        104,
+        258
+      ]
+    },
+    {
+      "content": "State can be persisted or transient.",
+      "pos": [
+        259,
+        295
+      ]
+    },
+    {
+      "content": "Reliable Actors design pattern: stateful service composition",
+      "pos": [
+        593,
+        653
+      ]
+    },
+    {
+      "content": "Developers spent the last decade and a half building N-Tier stateless services in the enterprise.",
+      "pos": [
+        654,
+        751
+      ]
+    },
+    {
+      "content": "They built services on top of databases, they built high order services on top of other services, and they built orchestration engines and message oriented middleware to coordinate these services.",
+      "pos": [
+        752,
+        948
+      ]
+    },
+    {
+      "content": "As the user workloads evolve, whether demanding more interactivity or scale, stateless service-oriented architecture began to show its weaknesses.",
+      "pos": [
+        949,
+        1095
+      ]
+    },
+    {
+      "content": "The old way: SOA Services",
+      "pos": [
+        1100,
+        1125
+      ]
+    },
+    {
+      "content": "While SOA services scaled horizontally seamlessly due to their stateless nature, they created a bottleneck in the storage tier—concurrency and throughput.",
+      "pos": [
+        1126,
+        1280
+      ]
+    },
+    {
+      "content": "Accessing storage became more and more expensive.",
+      "pos": [
+        1281,
+        1330
+      ]
+    },
+    {
+      "content": "As a common practice most developers introduced caching to their solution to reduce the demand on storage but that solution was not without its drawbacks—another tier to manage, concurrent access to cache, semantic limitations and changes, and finally consistency.",
+      "pos": [
+        1331,
+        1595
+      ]
+    },
+    {
+      "content": "As detailed earlier in the Smart Cache pattern, the virtual actor model provides a perfect solution for this.",
+      "pos": [
+        1596,
+        1705
+      ]
+    },
+    {
+      "content": "Some developers tried to solve the problem by replicating their storage tier.",
+      "pos": [
+        1707,
+        1784
+      ]
+    },
+    {
+      "content": "However, this approach didn’t scale well and quickly hits CAP boundaries.",
+      "pos": [
+        1785,
+        1858
+      ]
+    },
+    {
+      "content": "The second challenge has evolved around changing requirements; both end-users and businesses are demanding interactive services—responding to requests in milliseconds rather than seconds as the norm.",
+      "pos": [
+        1859,
+        2058
+      ]
+    },
+    {
+      "content": "To respond, developers started building façade services on top of other services, in some cases 10s of services to create user-centric services.",
+      "pos": [
+        2059,
+        2203
+      ]
+    },
+    {
+      "content": "However composing multiple downstream services quickly showed latency issues.",
+      "pos": [
+        2204,
+        2281
+      ]
+    },
+    {
+      "content": "Once again developers turned to caches and in-memory object stores, in some cases different implementations to meet performance requirements.",
+      "pos": [
+        2283,
+        2424
+      ]
+    },
+    {
+      "content": "They started building backend worker processes to build the cache periodically to minimize expensive on-demand cache population.",
+      "pos": [
+        2425,
+        2553
+      ]
+    },
+    {
+      "content": "Finally, they started deconstructing their workloads to isolate asynchronous operations from synchronous ones to gain more room for interactive operations to react to changes in state, which is particularly hard in SOA.",
+      "pos": [
+        2554,
+        2773
+      ]
+    },
+    {
+      "content": "They introduced further tiers such as queues and workers adding more complexity to their solutions.",
+      "pos": [
+        2775,
+        2874
+      ]
+    },
+    {
+      "content": "Essentially, developers started looking for solutions to build “stateful services,” in other words, collocate “state” and “service behaviour” to address user centric and interactive experiences.",
+      "pos": [
+        2875,
+        3069
+      ]
+    },
+    {
+      "content": "And this is where Azure Service Fabric Actors as a service composition tier comes in, not as a replacement for these services.",
+      "pos": [
+        3070,
+        3196
+      ]
+    },
+    {
+      "content": "The diagram below illustrates the point:",
+      "pos": [
+        3198,
+        3238
+      ]
+    },
+    {
+      "content": "![][1]",
+      "pos": [
+        3240,
+        3246
+      ]
+    },
+    {
+      "content": "Better solution with Actors",
+      "pos": [
+        3251,
+        3278
+      ]
+    },
+    {
+      "content": "In the case of composing services, actors can be either stateless or stateful.",
+      "pos": [
+        3279,
+        3357
+      ]
+    },
+    {
+      "content": "Stateless Actors can used as proxies to the underlying services.",
+      "pos": [
+        3361,
+        3425
+      ]
+    },
+    {
+      "content": "These actors can dynamically scale across the Azure Service Fabric cluster and can cache certain information related to the service, such as its endpoint once it is discovered.",
+      "pos": [
+        3426,
+        3602
+      ]
+    },
+    {
+      "content": "Stateful actor can maintain state between service calls as well as cache previous service results.",
+      "pos": [
+        3605,
+        3703
+      ]
+    },
+    {
+      "content": "State can be persisted or transient.",
+      "pos": [
+        3704,
+        3740
+      ]
+    },
+    {
+      "content": "This pattern is also applicable across many scenarios; in most cases, actors need to make external calls to invoke an operation on a particular service.",
+      "pos": [
+        3742,
+        3894
+      ]
+    },
+    {
+      "content": "Let’s illustrate with an example using modern ecommerce applications.",
+      "pos": [
+        3895,
+        3964
+      ]
+    },
+    {
+      "content": "These applications are built on services that provides various functionality such as User Profile Management, Recommendations, Basket Management, Wish List Management, Purchasing, and many more.",
+      "pos": [
+        3965,
+        4159
+      ]
+    },
+    {
+      "content": "Most developers wish to take a user-centric approach to their architecture, very similar to those developing social experiences since ecommerce experiences primarily revolve around users and products.",
+      "pos": [
+        4161,
+        4361
+      ]
+    },
+    {
+      "content": "This is usually achieved by shipping a façade of services most likely supported by a cache for performance reasons.",
+      "pos": [
+        4362,
+        4477
+      ]
+    },
+    {
+      "content": "Now let’s talk about an actor based approach.",
+      "pos": [
+        4479,
+        4524
+      ]
+    },
+    {
+      "content": "A user actor can represent both the behaviour of the user (browsing the catalogue, liking a product, adding an item to basket, recommending a product to a friend) as well as the its composed state—their profile, items in the basket, list of items recommended by their friends, their purchase history, current geo-location, and so on.",
+      "pos": [
+        4525,
+        4858
+      ]
+    },
+    {
+      "content": "Using stateful Actors",
+      "pos": [
+        4863,
+        4884
+      ]
+    },
+    {
+      "content": "First let’s look at an example where the user actor needs to populate its state from multiple services.",
+      "pos": [
+        4885,
+        4988
+      ]
+    },
+    {
+      "content": "We are not going to provide a code sample for this one because everything we have discussed in the Smart Cache pattern is also applicable here.",
+      "pos": [
+        4989,
+        5132
+      ]
+    },
+    {
+      "content": "We can activate the user actor at login time, populating it with sufficient data from back-end services.",
+      "pos": [
+        5133,
+        5237
+      ]
+    },
+    {
+      "content": "Of course, as we have seen on many occasions earlier in this paper, whole and partial state can be prepopulated on demand, on a timer, or a bit of both and cached in the actor.",
+      "pos": [
+        5238,
+        5414
+      ]
+    },
+    {
+      "content": "For this example, Profile and Wish List is illustrated below:",
+      "pos": [
+        5415,
+        5476
+      ]
+    },
+    {
+      "content": "![][2]",
+      "pos": [
+        5478,
+        5484
+      ]
+    },
+    {
+      "content": "For instance we can prepopulate frequent users’ state and make it ready when they login or populate it at login time for users who visit the service every month.",
+      "pos": [
+        5486,
+        5647
+      ]
+    },
+    {
+      "content": "We saw these patterns in the Smart Cache section.",
+      "pos": [
+        5648,
+        5697
+      ]
+    },
+    {
+      "content": "When User 23 logs in, if not already activated, the user actor (23) is activated and fetches the relevant user profile information and wish list from back-end services.",
+      "pos": [
+        5699,
+        5867
+      ]
+    },
+    {
+      "content": "The user actor likely caches the information for subsequent calls.",
+      "pos": [
+        5868,
+        5934
+      ]
+    },
+    {
+      "content": "And if, for example, we need to add an item to the wish list we can write-behind or write-through as discussed earlier.",
+      "pos": [
+        5935,
+        6054
+      ]
+    },
+    {
+      "content": "Secondly, let’s have a look at an example where the user clicks on the “like” button and likes a product.",
+      "pos": [
+        6055,
+        6160
+      ]
+    },
+    {
+      "content": "This action may require multiple invocations to multiple services as illustrated below: Send a “like” to catalogue service, trigger the next set of recommendations, and perhaps post an update to a social network.",
+      "pos": [
+        6161,
+        6373
+      ]
+    },
+    {
+      "content": "This is illustrated below:",
+      "pos": [
+        6375,
+        6401
+      ]
+    },
+    {
+      "content": "![][3]",
+      "pos": [
+        6403,
+        6409
+      ]
+    },
+    {
+      "content": "How Actors composition &amp; Async communication can help",
+      "pos": [
+        6414,
+        6467
+      ]
+    },
+    {
+      "content": "In fact, Azure Service Fabric Actors shines when we want to compose request/response style operations together with asynchronous operations.",
+      "pos": [
+        6468,
+        6608
+      ]
+    },
+    {
+      "content": "For instance, while “Like Product” immediately puts the liked item into the user’s wish list, posting to social networks and triggering the next set of recommendations can be asynchronous operations using buffers and timers.",
+      "pos": [
+        6609,
+        6833
+      ]
+    },
+    {
+      "content": "One other key benefit of using a user actor with services is actors provide a natural place for cached state and most importantly react to changes in its state asynchronously.",
+      "pos": [
+        6835,
+        7010
+      ]
+    },
+    {
+      "content": "This is a particularly challenging scenario with stateless services.",
+      "pos": [
+        7011,
+        7079
+      ]
+    },
+    {
+      "content": "For example, a user carries out a series of actions, perhaps part of a \"user journey.\"",
+      "pos": [
+        7080,
+        7166
+      ]
+    },
+    {
+      "content": "These events can be captured in real time in the actor and we can assemble a stream, which we can query at event time or asynchronously on a timer to change the behaviour of the actor.",
+      "pos": [
+        7167,
+        7351
+      ]
+    },
+    {
+      "content": "At this point SOA purists will no doubt have noticed that these are not services in the sense of actors as endpoints exposed over a language independent protocol.",
+      "pos": [
+        7353,
+        7515
+      ]
+    },
+    {
+      "content": "Azure Service Fabric Actors is neither an interoperation component nor a platform for service interoperation.",
+      "pos": [
+        7516,
+        7625
+      ]
+    },
+    {
+      "content": "Nevertheless, there really is nothing preventing us from thinking in terms of the granularity of SOA-style services when we model our actors or in modelling separation of concerns in the same way.",
+      "pos": [
+        7626,
+        7822
+      ]
+    },
+    {
+      "content": "Such services are known as “microservices.”",
+      "pos": [
+        7823,
+        7866
+      ]
+    },
+    {
+      "content": "Likewise, there is absolutely nothing preventing us from putting a REST endpoint or a SOAP endpoint as an interop layer in front of Azure Service Fabric Actors.",
+      "pos": [
+        7867,
+        8027
+      ]
+    },
+    {
+      "content": "Stateful service composition also applies to workflows and not just transactional scenarios such as ecommerce.",
+      "pos": [
+        8029,
+        8139
+      ]
+    },
+    {
+      "content": "Azure Service Fabric is designed as a workflow/orchestration engine so it can be used to model workflows involving service interactions and maintain the state of these interactions.",
+      "pos": [
+        8140,
+        8321
+      ]
+    },
+    {
+      "content": "We see drawbacks of “stateless service” in building scalable services to provide dynamic experiences.",
+      "pos": [
+        8323,
+        8424
+      ]
+    },
+    {
+      "content": "Azure Service Fabric Actors, essentially by bringing state and behaviour together, helps developers build scalable and interactive experiences on top of their existing investments.",
+      "pos": [
+        8425,
+        8605
+      ]
+    },
+    {
+      "content": "Next Steps",
+      "pos": [
+        8611,
+        8621
+      ]
+    },
+    {
+      "content": "Pattern: Smart Cache",
+      "pos": [
+        8623,
+        8643
+      ]
+    },
+    {
+      "content": "Pattern: Distributed Networks and Graphs",
+      "pos": [
+        8702,
+        8742
+      ]
+    },
+    {
+      "content": "Pattern: Resource Governance",
+      "pos": [
+        8821,
+        8849
+      ]
+    },
+    {
+      "content": "Pattern: Internet of Things",
+      "pos": [
+        8916,
+        8943
+      ]
+    },
+    {
+      "content": "Pattern: Distributed Computation",
+      "pos": [
+        9009,
+        9041
+      ]
+    },
+    {
+      "content": "Some Anti-patterns",
+      "pos": [
+        9112,
+        9130
+      ]
+    },
+    {
+      "content": "Introduction to Service Fabric Actors",
+      "pos": [
+        9183,
+        9220
+      ]
+    }
+  ],
+  "content": "\n<properties\n   pageTitle=\"Reliable Actors stateful service composition design pattern\"\n   description=\"Service Fabric Reliable Actors design pattern that uses Stateful actors to maintain state between service calls as well as cache previous service results. State can be persisted or transient.\"\n   services=\"service-fabric\"\n   documentationCenter=\".net\"\n   authors=\"jessebenson\"\n   manager=\"timlt\"\n   editor=\"\"/>\n\n<tags\n   ms.service=\"service-fabric\"\n   ms.devlang=\"dotnet\"\n   ms.topic=\"article\"\n   ms.tgt_pltfrm=\"NA\"\n   ms.workload=\"NA\"\n   ms.date=\"08/05/2015\"\n   ms.author=\"claudioc\"/>\n\n# Reliable Actors design pattern: stateful service composition\nDevelopers spent the last decade and a half building N-Tier stateless services in the enterprise. They built services on top of databases, they built high order services on top of other services, and they built orchestration engines and message oriented middleware to coordinate these services. As the user workloads evolve, whether demanding more interactivity or scale, stateless service-oriented architecture began to show its weaknesses.\n\n## The old way: SOA Services\nWhile SOA services scaled horizontally seamlessly due to their stateless nature, they created a bottleneck in the storage tier—concurrency and throughput. Accessing storage became more and more expensive. As a common practice most developers introduced caching to their solution to reduce the demand on storage but that solution was not without its drawbacks—another tier to manage, concurrent access to cache, semantic limitations and changes, and finally consistency. As detailed earlier in the Smart Cache pattern, the virtual actor model provides a perfect solution for this.\n\nSome developers tried to solve the problem by replicating their storage tier. However, this approach didn’t scale well and quickly hits CAP boundaries.\nThe second challenge has evolved around changing requirements; both end-users and businesses are demanding interactive services—responding to requests in milliseconds rather than seconds as the norm. To respond, developers started building façade services on top of other services, in some cases 10s of services to create user-centric services. However composing multiple downstream services quickly showed latency issues.\n\nOnce again developers turned to caches and in-memory object stores, in some cases different implementations to meet performance requirements. They started building backend worker processes to build the cache periodically to minimize expensive on-demand cache population. Finally, they started deconstructing their workloads to isolate asynchronous operations from synchronous ones to gain more room for interactive operations to react to changes in state, which is particularly hard in SOA.\n\nThey introduced further tiers such as queues and workers adding more complexity to their solutions.\nEssentially, developers started looking for solutions to build “stateful services,” in other words, collocate “state” and “service behaviour” to address user centric and interactive experiences. And this is where Azure Service Fabric Actors as a service composition tier comes in, not as a replacement for these services.\n\nThe diagram below illustrates the point:\n\n![][1]\n\n## Better solution with Actors\nIn the case of composing services, actors can be either stateless or stateful.\n\n* Stateless Actors can used as proxies to the underlying services. These actors can dynamically scale across the Azure Service Fabric cluster and can cache certain information related to the service, such as its endpoint once it is discovered.\n* Stateful actor can maintain state between service calls as well as cache previous service results. State can be persisted or transient.\n\nThis pattern is also applicable across many scenarios; in most cases, actors need to make external calls to invoke an operation on a particular service.\nLet’s illustrate with an example using modern ecommerce applications. These applications are built on services that provides various functionality such as User Profile Management, Recommendations, Basket Management, Wish List Management, Purchasing, and many more.\n\nMost developers wish to take a user-centric approach to their architecture, very similar to those developing social experiences since ecommerce experiences primarily revolve around users and products. This is usually achieved by shipping a façade of services most likely supported by a cache for performance reasons.\n\nNow let’s talk about an actor based approach. A user actor can represent both the behaviour of the user (browsing the catalogue, liking a product, adding an item to basket, recommending a product to a friend) as well as the its composed state—their profile, items in the basket, list of items recommended by their friends, their purchase history, current geo-location, and so on.\n\n## Using stateful Actors\nFirst let’s look at an example where the user actor needs to populate its state from multiple services. We are not going to provide a code sample for this one because everything we have discussed in the Smart Cache pattern is also applicable here.\nWe can activate the user actor at login time, populating it with sufficient data from back-end services. Of course, as we have seen on many occasions earlier in this paper, whole and partial state can be prepopulated on demand, on a timer, or a bit of both and cached in the actor.\nFor this example, Profile and Wish List is illustrated below:\n\n![][2]\n\nFor instance we can prepopulate frequent users’ state and make it ready when they login or populate it at login time for users who visit the service every month. We saw these patterns in the Smart Cache section.\n\nWhen User 23 logs in, if not already activated, the user actor (23) is activated and fetches the relevant user profile information and wish list from back-end services. The user actor likely caches the information for subsequent calls. And if, for example, we need to add an item to the wish list we can write-behind or write-through as discussed earlier.\nSecondly, let’s have a look at an example where the user clicks on the “like” button and likes a product. This action may require multiple invocations to multiple services as illustrated below: Send a “like” to catalogue service, trigger the next set of recommendations, and perhaps post an update to a social network.\n\nThis is illustrated below:\n\n![][3]\n\n## How Actors composition & Async communication can help\nIn fact, Azure Service Fabric Actors shines when we want to compose request/response style operations together with asynchronous operations. For instance, while “Like Product” immediately puts the liked item into the user’s wish list, posting to social networks and triggering the next set of recommendations can be asynchronous operations using buffers and timers.\n\nOne other key benefit of using a user actor with services is actors provide a natural place for cached state and most importantly react to changes in its state asynchronously. This is a particularly challenging scenario with stateless services.\nFor example, a user carries out a series of actions, perhaps part of a \"user journey.\" These events can be captured in real time in the actor and we can assemble a stream, which we can query at event time or asynchronously on a timer to change the behaviour of the actor.\n\nAt this point SOA purists will no doubt have noticed that these are not services in the sense of actors as endpoints exposed over a language independent protocol. Azure Service Fabric Actors is neither an interoperation component nor a platform for service interoperation. Nevertheless, there really is nothing preventing us from thinking in terms of the granularity of SOA-style services when we model our actors or in modelling separation of concerns in the same way. Such services are known as “microservices.”\nLikewise, there is absolutely nothing preventing us from putting a REST endpoint or a SOAP endpoint as an interop layer in front of Azure Service Fabric Actors.\n\nStateful service composition also applies to workflows and not just transactional scenarios such as ecommerce. Azure Service Fabric is designed as a workflow/orchestration engine so it can be used to model workflows involving service interactions and maintain the state of these interactions.\n\nWe see drawbacks of “stateless service” in building scalable services to provide dynamic experiences. Azure Service Fabric Actors, essentially by bringing state and behaviour together, helps developers build scalable and interactive experiences on top of their existing investments.\n\n\n## Next Steps\n[Pattern: Smart Cache](service-fabric-reliable-actors-pattern-smart-cache.md)\n\n[Pattern: Distributed Networks and Graphs](service-fabric-reliable-actors-pattern-distributed-networks-and-graphs.md)\n\n[Pattern: Resource Governance](service-fabric-reliable-actors-pattern-resource-governance.md)\n\n[Pattern: Internet of Things](service-fabric-reliable-actors-pattern-internet-of-things.md)\n\n[Pattern: Distributed Computation](service-fabric-reliable-actors-pattern-distributed-computation.md)\n\n[Some Anti-patterns](service-fabric-reliable-actors-anti-patterns.md)\n\n[Introduction to Service Fabric Actors](service-fabric-reliable-actors-introduction.md)\n\n\n<!--Image references-->\n[1]: ./media/service-fabric-reliable-actors-pattern-stateful-service-composition/stateful-service-composition-1.png\n[2]: ./media/service-fabric-reliable-actors-pattern-stateful-service-composition/stateful-service-composition-2.png\n[3]: ./media/service-fabric-reliable-actors-pattern-stateful-service-composition/stateful-service-composition-3.png\n"
+}

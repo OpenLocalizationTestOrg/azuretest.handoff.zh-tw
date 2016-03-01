@@ -1,0 +1,1265 @@
+{
+  "nodes": [
+    {
+      "content": "Evaluate model performance in Machine Learning | Microsoft Azure",
+      "pos": [
+        28,
+        92
+      ]
+    },
+    {
+      "content": "Explains how to evaluate model performance in Azure Machine Learning.",
+      "pos": [
+        112,
+        181
+      ]
+    },
+    {
+      "content": "How to evaluate model performance in Azure Machine Learning",
+      "pos": [
+        527,
+        586
+      ]
+    },
+    {
+      "content": "This topic demonstrates how to evaluate the performance of a model in Azure Machine Learning Studio and provides a brief explanation of the metrics available for this task.",
+      "pos": [
+        588,
+        760
+      ]
+    },
+    {
+      "content": "Three common supervised learning scenarios are presented:",
+      "pos": [
+        761,
+        818
+      ]
+    },
+    {
+      "content": "regression",
+      "pos": [
+        823,
+        833
+      ]
+    },
+    {
+      "content": "binary classification",
+      "pos": [
+        836,
+        857
+      ]
+    },
+    {
+      "content": "multiclass classification",
+      "pos": [
+        861,
+        886
+      ]
+    },
+    {
+      "content": "Evaluating the performance of a model is one of the core stages in the data science process.",
+      "pos": [
+        983,
+        1075
+      ]
+    },
+    {
+      "content": "It indicates how successful the scoring (predictions) of a dataset has been by a trained model.",
+      "pos": [
+        1076,
+        1171
+      ]
+    },
+    {
+      "content": "Azure Machine Learning supports model evaluation through two of its main machine learning modules: [Evaluate Model][evaluate-model] and [Cross-Validate Model][cross-validate-model].",
+      "pos": [
+        1174,
+        1355
+      ]
+    },
+    {
+      "content": "These modules allow you to see how your model performs in terms of a number of metrics that are commonly used in machine learning and statistics.",
+      "pos": [
+        1356,
+        1501
+      ]
+    },
+    {
+      "content": "Evaluation vs. Cross Validation",
+      "pos": [
+        1505,
+        1536
+      ]
+    },
+    {
+      "content": "Evaluation and cross validation are standard ways to measure the performance of your model.",
+      "pos": [
+        1539,
+        1630
+      ]
+    },
+    {
+      "content": "They both generate evaluation metrics that you can inspect or compare against those of other models.",
+      "pos": [
+        1631,
+        1731
+      ]
+    },
+    {
+      "content": "[Evaluate Model][evaluate-model] expects a scored dataset as input (or 2 in case you would like to compare the performance of 2 different models).",
+      "pos": [
+        1733,
+        1879
+      ]
+    },
+    {
+      "content": "This means that you need to train your model using the [Train Model][train-model] module and make predictions on some dataset using the [Score Model][score-model] module, before you can evaluate the results.",
+      "pos": [
+        1880,
+        2087
+      ]
+    },
+    {
+      "content": "The evaluation is the based on the scored labels/probabilities along with the true labels, all of which are output by the [Score Model][score-model] module.",
+      "pos": [
+        2088,
+        2244
+      ]
+    },
+    {
+      "content": "Alternatively, you can use cross validation to perform a number of train-score-evaluate operations (10 folds) automatically on different subsets of the input data.",
+      "pos": [
+        2246,
+        2409
+      ]
+    },
+    {
+      "content": "The input data is split into 10 parts, where one is reserved for testing, and the other 9 for training.",
+      "pos": [
+        2410,
+        2513
+      ]
+    },
+    {
+      "content": "This process is repeated 10 times and the evaluation metrics are averaged.",
+      "pos": [
+        2514,
+        2588
+      ]
+    },
+    {
+      "content": "This helps in determining how well a model would generalize to new datasets.",
+      "pos": [
+        2589,
+        2665
+      ]
+    },
+    {
+      "content": "The [Cross-Validate Model][cross-validate-model] module takes in an untrained model and some labeled dataset and outputs the evaluation results of each of the 10 folds, in addition to the averaged results.",
+      "pos": [
+        2666,
+        2871
+      ]
+    },
+    {
+      "content": "In the following sections, we will build simple regression and classification models and evaluate their performance, using both the [Evaluate Model][evaluate-model] and the [Cross-Validate Model][cross-validate-model] modules.",
+      "pos": [
+        2873,
+        3099
+      ]
+    },
+    {
+      "content": "Evaluating a Regression Model",
+      "pos": [
+        3103,
+        3132
+      ]
+    },
+    {
+      "content": "Assume we want to predict a car’s price using some features such as dimensions, horsepower, engine specs, and so on.",
+      "pos": [
+        3135,
+        3251
+      ]
+    },
+    {
+      "content": "This is a typical regression problem, where the target variable (<bpt id=\"p1\">*</bpt>price<ept id=\"p1\">*</ept>) is a continuous numeric value.",
+      "pos": [
+        3252,
+        3356
+      ]
+    },
+    {
+      "content": "We can fit a simple linear regression model that, given the feature values of a certain car, can predict the price of that car.",
+      "pos": [
+        3357,
+        3484
+      ]
+    },
+    {
+      "content": "This regression model can be used to score the same dataset we trained on.",
+      "pos": [
+        3485,
+        3559
+      ]
+    },
+    {
+      "content": "Once we have the predicted prices for all of the cars, we can evaluate the performance of the model by looking at how much the predictions deviate from the actual prices on average.",
+      "pos": [
+        3560,
+        3741
+      ]
+    },
+    {
+      "content": "To illustrate this, we use the <bpt id=\"p1\">*</bpt>Automobile price data (Raw) dataset<ept id=\"p1\">*</ept> available in the <bpt id=\"p2\">**</bpt>Saved Datasets<ept id=\"p2\">**</ept> section in Azure Machine Learning Studio.",
+      "pos": [
+        3742,
+        3888
+      ]
+    },
+    {
+      "content": "Creating the Experiment",
+      "pos": [
+        3894,
+        3917
+      ]
+    },
+    {
+      "content": "Add the following modules to your workspace in Azure Machine Learning Studio:",
+      "pos": [
+        3921,
+        3998
+      ]
+    },
+    {
+      "content": "Automobile price data (Raw)",
+      "pos": [
+        4002,
+        4029
+      ]
+    },
+    {
+      "content": "[Linear Regression][linear-regression]",
+      "pos": [
+        4032,
+        4070
+      ]
+    },
+    {
+      "content": "[Train Model][train-model]",
+      "pos": [
+        4073,
+        4099
+      ]
+    },
+    {
+      "content": "[Score Model][score-model]",
+      "pos": [
+        4102,
+        4128
+      ]
+    },
+    {
+      "content": "[Evaluate Model][evaluate-model]",
+      "pos": [
+        4131,
+        4163
+      ]
+    },
+    {
+      "pos": [
+        4166,
+        4288
+      ],
+      "content": "Connect the ports as shown below in Figure 1 and set the Label column of the [Train Model][train-model] module to <bpt id=\"p1\">*</bpt>price<ept id=\"p1\">*</ept>."
+    },
+    {
+      "content": "Evaluating a Regression Model",
+      "pos": [
+        4293,
+        4322
+      ]
+    },
+    {
+      "content": "Figure 1.",
+      "pos": [
+        4382,
+        4391
+      ]
+    },
+    {
+      "content": "Evaluating a Regression Model.",
+      "pos": [
+        4392,
+        4422
+      ]
+    },
+    {
+      "content": "Inspecting the Evaluation Results",
+      "pos": [
+        4427,
+        4460
+      ]
+    },
+    {
+      "content": "After running the experiment, you can click on the output port of the [Evaluate Model][evaluate-model] module and select <bpt id=\"p1\">*</bpt>Visualize<ept id=\"p1\">*</ept> to see the evaluation results.",
+      "pos": [
+        4464,
+        4627
+      ]
+    },
+    {
+      "content": "The evaluation metrics available for regression models are: <bpt id=\"p1\">*</bpt>Mean Absolute Error<ept id=\"p1\">*</ept>, <bpt id=\"p2\">*</bpt>Root Mean Absolute Error<ept id=\"p2\">*</ept>, <bpt id=\"p3\">*</bpt>Relative Absolute Error<ept id=\"p3\">*</ept>, <bpt id=\"p4\">*</bpt>Relative Squared Error<ept id=\"p4\">*</ept>, and the <bpt id=\"p5\">*</bpt>Coefficient of Determination<ept id=\"p5\">*</ept>.",
+      "pos": [
+        4628,
+        4831
+      ]
+    },
+    {
+      "content": "The term \"error\" here represents the difference between the predicted value and the true value.",
+      "pos": [
+        4833,
+        4928
+      ]
+    },
+    {
+      "content": "The absolute value or the square of this difference are usually computed to capture the total magnitude of error across all instances, as the difference between the predicted and true value could be negative in some cases.",
+      "pos": [
+        4929,
+        5151
+      ]
+    },
+    {
+      "content": "The error metrics measure the predictive performance of a regression model in terms of the mean deviation of its predictions from the true values.",
+      "pos": [
+        5152,
+        5298
+      ]
+    },
+    {
+      "content": "Lower error values mean the model is more accurate in making predictions.",
+      "pos": [
+        5299,
+        5372
+      ]
+    },
+    {
+      "content": "An overall error metric of 0 means that the model fits the data perfectly.",
+      "pos": [
+        5373,
+        5447
+      ]
+    },
+    {
+      "content": "The coefficient of determination, which is also known as R squared, is also a standard way of measuring how well the model fits the data.",
+      "pos": [
+        5449,
+        5586
+      ]
+    },
+    {
+      "content": "It can be interpreted as the proportion of variation explained by the model.",
+      "pos": [
+        5587,
+        5663
+      ]
+    },
+    {
+      "content": "A higher proportion is better in this case, where 1 indicates a perfect fit.",
+      "pos": [
+        5664,
+        5740
+      ]
+    },
+    {
+      "content": "Linear Regression Evaluation Metrics",
+      "pos": [
+        5745,
+        5781
+      ]
+    },
+    {
+      "content": "Figure 2.",
+      "pos": [
+        5841,
+        5850
+      ]
+    },
+    {
+      "content": "Linear Regression Evaluation Metrics.",
+      "pos": [
+        5851,
+        5888
+      ]
+    },
+    {
+      "content": "Using Cross Validation",
+      "pos": [
+        5893,
+        5915
+      ]
+    },
+    {
+      "content": "As mentioned earlier, you can perform repeated training, scoring and evaluations automatically using the [Cross-Validate Model][cross-validate-model] module.",
+      "pos": [
+        5919,
+        6076
+      ]
+    },
+    {
+      "content": "All you need in this case is a dataset, an untrained model, and a [Cross-Validate Model][cross-validate-model] module (see figure below).",
+      "pos": [
+        6077,
+        6214
+      ]
+    },
+    {
+      "content": "Note that you need to set the label column to <bpt id=\"p1\">*</bpt>price<ept id=\"p1\">*</ept> in the [Cross-Validate Model][cross-validate-model] module’s properties.",
+      "pos": [
+        6215,
+        6341
+      ]
+    },
+    {
+      "content": "Cross-Validating a Regression Model",
+      "pos": [
+        6345,
+        6380
+      ]
+    },
+    {
+      "content": "Figure 3.",
+      "pos": [
+        6440,
+        6449
+      ]
+    },
+    {
+      "content": "Cross-Validating a Regression Model.",
+      "pos": [
+        6450,
+        6486
+      ]
+    },
+    {
+      "content": "After running the experiment, you can inspect the evaluation results by clicking on the right output port of the [Cross-Validate Model][cross-validate-model] module.",
+      "pos": [
+        6488,
+        6653
+      ]
+    },
+    {
+      "content": "This will provide a detailed view of the metrics for each iteration (fold), and the averaged results of each of the metrics (Figure 4).",
+      "pos": [
+        6654,
+        6789
+      ]
+    },
+    {
+      "content": "Cross-Validation Results of a Regression Model",
+      "pos": [
+        6794,
+        6840
+      ]
+    },
+    {
+      "content": "Figure 4.",
+      "pos": [
+        6900,
+        6909
+      ]
+    },
+    {
+      "content": "Cross-Validation Results of a Regression Model.",
+      "pos": [
+        6910,
+        6957
+      ]
+    },
+    {
+      "content": "Evaluating a Binary Classification Model",
+      "pos": [
+        6961,
+        7001
+      ]
+    },
+    {
+      "content": "In a binary classification scenario, the target variable has only two possible outcomes, for example: {0, 1} or {false, true}, {negative, positive}.",
+      "pos": [
+        7004,
+        7152
+      ]
+    },
+    {
+      "content": "Assume you are given a dataset of adult employees with some demographic and employment variables, and that you are asked to predict the income level, a binary variable with the values {“&lt;=50K”, “&gt;50K”}.",
+      "pos": [
+        7153,
+        7355
+      ]
+    },
+    {
+      "content": "In other words, the negative class represents the employees who make less than or equal to 50K per year, and the positive class represents all other employees.",
+      "pos": [
+        7356,
+        7515
+      ]
+    },
+    {
+      "content": "As in the regression scenario, we would train a model, score some data, and evaluate the results.",
+      "pos": [
+        7516,
+        7613
+      ]
+    },
+    {
+      "content": "The main difference here is the choice of metrics Azure Machine Learning computes and outputs.",
+      "pos": [
+        7614,
+        7708
+      ]
+    },
+    {
+      "content": "To illustrate the income level prediction scenario, we will use the <bpt id=\"p1\">[</bpt>Adult<ept id=\"p1\">](http://archive.ics.uci.edu/ml/datasets/Adult)</ept> dataset to create an Azure Machine Learning experiment and evaluate the performance of a two-class logistic regression model, a commonly used binary classifier.",
+      "pos": [
+        7709,
+        7991
+      ]
+    },
+    {
+      "content": "Creating the Experiment",
+      "pos": [
+        7996,
+        8019
+      ]
+    },
+    {
+      "content": "Add the following modules to your workspace in Azure Machine Learning Studio:",
+      "pos": [
+        8023,
+        8100
+      ]
+    },
+    {
+      "content": "Adult Census Income Binary Classification dataset",
+      "pos": [
+        8104,
+        8153
+      ]
+    },
+    {
+      "content": "[Two-Class Logistic Regression][two-class-logistic-regression]",
+      "pos": [
+        8156,
+        8218
+      ]
+    },
+    {
+      "content": "[Train Model][train-model]",
+      "pos": [
+        8221,
+        8247
+      ]
+    },
+    {
+      "content": "[Score Model][score-model]",
+      "pos": [
+        8250,
+        8276
+      ]
+    },
+    {
+      "content": "[Evaluate Model][evaluate-model]",
+      "pos": [
+        8279,
+        8311
+      ]
+    },
+    {
+      "pos": [
+        8313,
+        8436
+      ],
+      "content": "Connect the ports as shown below in Figure 5 and set the Label column of the [Train Model][train-model] module to <bpt id=\"p1\">*</bpt>income<ept id=\"p1\">*</ept>."
+    },
+    {
+      "content": "Evaluating a Binary Classification Model",
+      "pos": [
+        8440,
+        8480
+      ]
+    },
+    {
+      "content": "Figure 5.",
+      "pos": [
+        8540,
+        8549
+      ]
+    },
+    {
+      "content": "Evaluating a Binary Classification Model.",
+      "pos": [
+        8550,
+        8591
+      ]
+    },
+    {
+      "content": "Inspecting the Evaluation Results",
+      "pos": [
+        8596,
+        8629
+      ]
+    },
+    {
+      "content": "After running the experiment, you can click on the output port of the [Evaluate Model][evaluate-model] module and select <bpt id=\"p1\">*</bpt>Visualize<ept id=\"p1\">*</ept> to see the evaluation results (Figure 7).",
+      "pos": [
+        8633,
+        8807
+      ]
+    },
+    {
+      "content": "The evaluation metrics available for binary classification models are: <bpt id=\"p1\">*</bpt>Accuracy<ept id=\"p1\">*</ept>, <bpt id=\"p2\">*</bpt>Precision<ept id=\"p2\">*</ept>, <bpt id=\"p3\">*</bpt>Recall<ept id=\"p3\">*</ept>, <bpt id=\"p4\">*</bpt>F1 Score<ept id=\"p4\">*</ept>, and <bpt id=\"p5\">*</bpt>AUC<ept id=\"p5\">*</ept>.",
+      "pos": [
+        8808,
+        8936
+      ]
+    },
+    {
+      "content": "In addition, the module outputs a confusion matrix showing the number of true positives, false negatives, false positives, and true negatives, as well as <bpt id=\"p1\">*</bpt>ROC<ept id=\"p1\">*</ept>, <bpt id=\"p2\">*</bpt>Precision/Recall<ept id=\"p2\">*</ept>, and <bpt id=\"p3\">*</bpt>Lift<ept id=\"p3\">*</ept> curves.",
+      "pos": [
+        8937,
+        9136
+      ]
+    },
+    {
+      "content": "Accuracy is simply the proportion of correctly classified instances.",
+      "pos": [
+        9138,
+        9206
+      ]
+    },
+    {
+      "content": "It is usually the first metric you look at when evaluating a classifier.",
+      "pos": [
+        9207,
+        9279
+      ]
+    },
+    {
+      "content": "However, when the test data is unbalanced (where most of the instances belong to one of the classes), or you are more interested in the performance on either one of the classes, accuracy doesn’t really capture the effectiveness of a classifier.",
+      "pos": [
+        9280,
+        9524
+      ]
+    },
+    {
+      "content": "In the income level classification scenario, assume you are testing on some data where 99% of the instances represent people who earn less than or equal to 50K per year.",
+      "pos": [
+        9525,
+        9694
+      ]
+    },
+    {
+      "content": "It is possible to achieve a 0.99 accuracy by predicting the class “&lt;=50K” for all instances.",
+      "pos": [
+        9695,
+        9787
+      ]
+    },
+    {
+      "content": "The classifier in this case appears to be doing a good job overall, but in reality, it fails to classify any of the high-income individuals (the 1%) correctly.",
+      "pos": [
+        9788,
+        9947
+      ]
+    },
+    {
+      "content": "For that reason, it is helpful to compute additional metrics that capture more specific aspects of the evaluation.",
+      "pos": [
+        9949,
+        10063
+      ]
+    },
+    {
+      "content": "Before going into the details of such metrics, it is important to understand the confusion matrix of a binary classification evaluation.",
+      "pos": [
+        10064,
+        10200
+      ]
+    },
+    {
+      "content": "The class labels in the training set can take on only 2 possible values, which we usually refer to as positive or negative.",
+      "pos": [
+        10201,
+        10324
+      ]
+    },
+    {
+      "content": "The positive and negative instances that a classifier predicts correctly are called true positives (TP) and true negatives (TN), respectively.",
+      "pos": [
+        10325,
+        10467
+      ]
+    },
+    {
+      "content": "Similarly, the incorrectly classified instances are called false positives (FP) and false negatives (FN).",
+      "pos": [
+        10468,
+        10573
+      ]
+    },
+    {
+      "content": "The confusion matrix is simply a table showing the number of instances that fall under each of these 4 categories.",
+      "pos": [
+        10574,
+        10688
+      ]
+    },
+    {
+      "content": "Azure Machine Learning automatically decides which of the two classes in the dataset is the positive class.",
+      "pos": [
+        10689,
+        10796
+      ]
+    },
+    {
+      "content": "If the class labels are Boolean or integers, then the ‘true’ or ‘1’ labeled instances are assigned the positive class.",
+      "pos": [
+        10797,
+        10915
+      ]
+    },
+    {
+      "content": "If the labels are strings, as in the case of the income dataset, the labels are sorted alphabetically and the first level is chosen to be the negative class while the second level is the positive class.",
+      "pos": [
+        10916,
+        11118
+      ]
+    },
+    {
+      "content": "Binary Classification Confusion Matrix",
+      "pos": [
+        11122,
+        11160
+      ]
+    },
+    {
+      "content": "Figure 6.",
+      "pos": [
+        11221,
+        11230
+      ]
+    },
+    {
+      "content": "Binary Classification Confusion Matrix.",
+      "pos": [
+        11231,
+        11270
+      ]
+    },
+    {
+      "content": "Going back to the income classification problem, we would want to ask several evaluation questions that help us understand the performance of the classifier used.",
+      "pos": [
+        11272,
+        11434
+      ]
+    },
+    {
+      "content": "A very natural question is: ‘Out of the individuals whom the model predicted to be earning &gt;50K (TP+FP), how many were classified correctly (TP)?’",
+      "pos": [
+        11435,
+        11581
+      ]
+    },
+    {
+      "content": "This question can be answered by looking at the <bpt id=\"p1\">**</bpt>Precision<ept id=\"p1\">**</ept> of the model, which is the proportion of positives that are classified correctly: TP/(TP+FP).",
+      "pos": [
+        11582,
+        11737
+      ]
+    },
+    {
+      "content": "Another common question is “Out of all the high earning employees with income &gt;50k (TP+FN), how many did the classifier classify correctly (TP)”.",
+      "pos": [
+        11738,
+        11883
+      ]
+    },
+    {
+      "content": "This is actually the <bpt id=\"p1\">**</bpt>Recall<ept id=\"p1\">**</ept>, or the true positive rate: TP/(TP+FN) of the classifier.",
+      "pos": [
+        11884,
+        11973
+      ]
+    },
+    {
+      "content": "You might notice that there is an obvious trade-off between precision and recall.",
+      "pos": [
+        11974,
+        12055
+      ]
+    },
+    {
+      "content": "For example, given a relatively balanced dataset, a classifier that predicts mostly positive instances, would have a high recall, but a rather low precision as many of the negative instances would be misclassified resulting in a large number of false positives.",
+      "pos": [
+        12056,
+        12317
+      ]
+    },
+    {
+      "content": "To see a plot of how these two metrics vary, you can click on the ‘PRECISION/RECALL’ curve in the evaluation result output page (top left part of Figure 7).",
+      "pos": [
+        12318,
+        12474
+      ]
+    },
+    {
+      "content": "Binary Classification Evaluation Results",
+      "pos": [
+        12478,
+        12518
+      ]
+    },
+    {
+      "content": "Figure 7.",
+      "pos": [
+        12577,
+        12586
+      ]
+    },
+    {
+      "content": "Binary Classification Evaluation Results.",
+      "pos": [
+        12587,
+        12628
+      ]
+    },
+    {
+      "content": "Another related metric that is often used is the <bpt id=\"p1\">**</bpt>F1 Score<ept id=\"p1\">**</ept>, which takes both precision and recall into consideration.",
+      "pos": [
+        12630,
+        12750
+      ]
+    },
+    {
+      "content": "It is the harmonic mean of these 2 metrics and is computed as such: F1 = 2 (precision x recall) / (precision + recall).",
+      "pos": [
+        12751,
+        12870
+      ]
+    },
+    {
+      "content": "The F1 score is a good way to summarize the evaluation in a single number, but it’s always a good practice to look at both precision and recall together to better understand how a classifier behaves.",
+      "pos": [
+        12871,
+        13070
+      ]
+    },
+    {
+      "content": "In addition, one can inspect the true positive rate vs. the false positive rate in the <bpt id=\"p1\">**</bpt>Receiver Operating Characteristic (ROC)<ept id=\"p1\">**</ept> curve and the corresponding <bpt id=\"p2\">**</bpt>Area Under the Curve (AUC)<ept id=\"p2\">**</ept> value.",
+      "pos": [
+        13072,
+        13268
+      ]
+    },
+    {
+      "content": "The closer this curve is to the upper left corner, the better the classifier’s performance is (that is maximizing the true positive rate while minimizing the false positive rate).",
+      "pos": [
+        13269,
+        13448
+      ]
+    },
+    {
+      "content": "Curves that are close to the diagonal of the plot, result from classifiers that tend to make predictions that are close to random guessing.",
+      "pos": [
+        13449,
+        13588
+      ]
+    },
+    {
+      "content": "Using Cross Validation",
+      "pos": [
+        13593,
+        13615
+      ]
+    },
+    {
+      "content": "As in the regression example, we can perform cross validation to repeatedly train, score and evaluate different subsets of the data automatically.",
+      "pos": [
+        13619,
+        13765
+      ]
+    },
+    {
+      "content": "Similarly, we can use the [Cross-Validate Model][cross-validate-model] module, an untrained logistic regression model, and a dataset.",
+      "pos": [
+        13766,
+        13899
+      ]
+    },
+    {
+      "content": "The label column must be set to <bpt id=\"p1\">*</bpt>income<ept id=\"p1\">*</ept> in the [Cross-Validate Model][cross-validate-model] module’s properties.",
+      "pos": [
+        13900,
+        14013
+      ]
+    },
+    {
+      "content": "After running the experiment and clicking on the right output port of the [Cross-Validate Model][cross-validate-model] module, we can see the binary classification metric values for each fold, in addition to the mean and standard deviation of each.",
+      "pos": [
+        14014,
+        14262
+      ]
+    },
+    {
+      "content": "Cross-Validating a Binary Classification Model",
+      "pos": [
+        14268,
+        14314
+      ]
+    },
+    {
+      "content": "Figure 8.",
+      "pos": [
+        14374,
+        14383
+      ]
+    },
+    {
+      "content": "Cross-Validating a Binary Classification Model.",
+      "pos": [
+        14384,
+        14431
+      ]
+    },
+    {
+      "content": "Cross-Validation Results of a Binary Classifier",
+      "pos": [
+        14435,
+        14482
+      ]
+    },
+    {
+      "content": "Figure 9.",
+      "pos": [
+        14542,
+        14551
+      ]
+    },
+    {
+      "content": "Cross-Validation Results of a Binary Classifier.",
+      "pos": [
+        14552,
+        14600
+      ]
+    },
+    {
+      "content": "Evaluating a Multiclass Classification Model",
+      "pos": [
+        14604,
+        14648
+      ]
+    },
+    {
+      "content": "In this experiment we will use the popular <bpt id=\"p1\">[</bpt>Iris<ept id=\"p1\">](http://archive.ics.uci.edu/ml/datasets/Iris \"Iris\")</ept> dataset which contains instances of 3 different types (classes) of the iris plant.",
+      "pos": [
+        14651,
+        14835
+      ]
+    },
+    {
+      "content": "There are 4 feature values (sepal length/width and petal length/width) for each instance.",
+      "pos": [
+        14836,
+        14925
+      ]
+    },
+    {
+      "content": "In the previous experiments we trained and tested the models using the same datasets.",
+      "pos": [
+        14926,
+        15011
+      ]
+    },
+    {
+      "content": "Here, we will use the [Split][split] module to create 2 subsets of the data, train on the first, and score and evaluate on the second.",
+      "pos": [
+        15012,
+        15146
+      ]
+    },
+    {
+      "content": "The Iris dataset is publicly available on the <bpt id=\"p1\">[</bpt>UCI Machine Learning Repository<ept id=\"p1\">](http://archive.ics.uci.edu/ml/index.html)</ept>, and can be downloaded using a [Reader][reader] module.",
+      "pos": [
+        15148,
+        15325
+      ]
+    },
+    {
+      "content": "Creating the Experiment",
+      "pos": [
+        15330,
+        15353
+      ]
+    },
+    {
+      "content": "Add the following modules to your workspace in Azure Machine Learning Studio:",
+      "pos": [
+        15357,
+        15434
+      ]
+    },
+    {
+      "content": "[Reader][reader]",
+      "pos": [
+        15438,
+        15454
+      ]
+    },
+    {
+      "content": "[Multiclass Decision Forest][multiclass-decision-forest]",
+      "pos": [
+        15457,
+        15513
+      ]
+    },
+    {
+      "content": "[Split][split]",
+      "pos": [
+        15516,
+        15530
+      ]
+    },
+    {
+      "content": "[Train Model][train-model]",
+      "pos": [
+        15533,
+        15559
+      ]
+    },
+    {
+      "content": "[Score Model][score-model]",
+      "pos": [
+        15562,
+        15588
+      ]
+    },
+    {
+      "content": "[Evaluate Model][evaluate-model]",
+      "pos": [
+        15591,
+        15623
+      ]
+    },
+    {
+      "content": "Connect the ports as shown below in Figure 10.",
+      "pos": [
+        15625,
+        15671
+      ]
+    },
+    {
+      "content": "Set the Label column index of the [Train Model][train-model] module to 5.",
+      "pos": [
+        15673,
+        15746
+      ]
+    },
+    {
+      "content": "The dataset has no header row but we know that the class labels are in the fifth column.",
+      "pos": [
+        15747,
+        15835
+      ]
+    },
+    {
+      "pos": [
+        15837,
+        16021
+      ],
+      "content": "Click on the [Reader][reader] module and set the <bpt id=\"p1\">*</bpt>Data source<ept id=\"p1\">*</ept> property to <bpt id=\"p2\">*</bpt>Web URL via HTTP<ept id=\"p2\">*</ept>, and the <bpt id=\"p3\">*</bpt>URL<ept id=\"p3\">*</ept> to http://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data."
+    },
+    {
+      "content": "Set the fraction of instances to be used for training in the [Split][split] module (0.7 for example).",
+      "pos": [
+        16023,
+        16124
+      ]
+    },
+    {
+      "content": "Evaluating a Multiclass Classifier",
+      "pos": [
+        16129,
+        16163
+      ]
+    },
+    {
+      "content": "Figure 10.",
+      "pos": [
+        16224,
+        16234
+      ]
+    },
+    {
+      "content": "Evaluating a Multiclass Classifier",
+      "pos": [
+        16235,
+        16269
+      ]
+    },
+    {
+      "content": "Inspecting the Evaluation Results",
+      "pos": [
+        16274,
+        16307
+      ]
+    },
+    {
+      "content": "Run the experiment and click on the output port of [Evaluate Model][evaluate-model].",
+      "pos": [
+        16311,
+        16395
+      ]
+    },
+    {
+      "content": "The evaluation results are presented in the form of a confusion matrix, in this case.",
+      "pos": [
+        16396,
+        16481
+      ]
+    },
+    {
+      "content": "The matrix shows the actual vs. predicted instances for all 3 classes.",
+      "pos": [
+        16482,
+        16552
+      ]
+    },
+    {
+      "content": "Multiclass Classification Evaluation Results",
+      "pos": [
+        16557,
+        16601
+      ]
+    },
+    {
+      "content": "Figure 11.",
+      "pos": [
+        16662,
+        16672
+      ]
+    },
+    {
+      "content": "Multiclass Classification Evaluation Results.",
+      "pos": [
+        16673,
+        16718
+      ]
+    },
+    {
+      "content": "Using Cross Validation",
+      "pos": [
+        16723,
+        16745
+      ]
+    },
+    {
+      "content": "As mentioned earlier, you can perform repeated training, scoring and evaluations automatically using the [Cross-Validate Model][cross-validate-model] module.",
+      "pos": [
+        16749,
+        16906
+      ]
+    },
+    {
+      "content": "You would need a dataset, an untrained model, and a [Cross-Validate Model][cross-validate-model] module (see figure below).",
+      "pos": [
+        16907,
+        17030
+      ]
+    },
+    {
+      "content": "Again you need to set the label column of the [Cross-Validate Model][cross-validate-model] module (column index 5 in this case).",
+      "pos": [
+        17031,
+        17159
+      ]
+    },
+    {
+      "content": "After running the experiment and clicking the right output port of the [Cross-Validate Model][cross-validate-model], you can inspect the metric values for each fold as well as the mean and standard deviation.",
+      "pos": [
+        17160,
+        17368
+      ]
+    },
+    {
+      "content": "The metrics displayed here are the similar to the ones discussed in the binary classification case.",
+      "pos": [
+        17369,
+        17468
+      ]
+    },
+    {
+      "content": "However, note that in multiclass classification, computing the true positives/negatives and false positives/negatives is done by counting on a per-class basis, as there is no overall positive or negative class.",
+      "pos": [
+        17469,
+        17679
+      ]
+    },
+    {
+      "content": "For example, when computing the precision or recall of the ‘Iris-setosa’ class, it is assumed that this is the positive class and all others as negative.",
+      "pos": [
+        17680,
+        17833
+      ]
+    },
+    {
+      "content": "Cross-Validating a Multiclass Classification Model",
+      "pos": [
+        17838,
+        17888
+      ]
+    },
+    {
+      "content": "Figure 12.",
+      "pos": [
+        17949,
+        17959
+      ]
+    },
+    {
+      "content": "Cross-Validating a Multiclass Classification Model.",
+      "pos": [
+        17960,
+        18011
+      ]
+    },
+    {
+      "content": "Cross-Validation Results of a Multiclass Classification Model",
+      "pos": [
+        18016,
+        18077
+      ]
+    },
+    {
+      "content": "Figure 13.",
+      "pos": [
+        18138,
+        18148
+      ]
+    },
+    {
+      "content": "Cross-Validation Results of a Multiclass Classification Model.",
+      "pos": [
+        18149,
+        18211
+      ]
+    },
+    {
+      "content": "test",
+      "pos": [
+        19129,
+        19133
+      ]
+    }
+  ],
+  "content": "<properties \n    pageTitle=\"Evaluate model performance in Machine Learning | Microsoft Azure\" \n    description=\"Explains how to evaluate model performance in Azure Machine Learning.\" \n    services=\"machine-learning\"\n    documentationCenter=\"\" \n    authors=\"garyericson\" \n    manager=\"paulettm\" \n    editor=\"cgronlun\"/>\n\n<tags \n    ms.service=\"machine-learning\" \n    ms.workload=\"data-services\" \n    ms.tgt_pltfrm=\"na\" \n    ms.devlang=\"na\" \n    ms.topic=\"article\" \n    ms.date=\"07/14/2015\" \n    ms.author=\"bradsev;garye\" />\n\n\n# How to evaluate model performance in Azure Machine Learning\n\nThis topic demonstrates how to evaluate the performance of a model in Azure Machine Learning Studio and provides a brief explanation of the metrics available for this task. Three common supervised learning scenarios are presented: \n\n* regression\n* binary classification \n* multiclass classification\n\n[AZURE.INCLUDE [machine-learning-free-trial](../../includes/machine-learning-free-trial.md)]\n\n\nEvaluating the performance of a model is one of the core stages in the data science process. It indicates how successful the scoring (predictions) of a dataset has been by a trained model. \n\nAzure Machine Learning supports model evaluation through two of its main machine learning modules: [Evaluate Model][evaluate-model] and [Cross-Validate Model][cross-validate-model]. These modules allow you to see how your model performs in terms of a number of metrics that are commonly used in machine learning and statistics.\n\n##Evaluation vs. Cross Validation##\nEvaluation and cross validation are standard ways to measure the performance of your model. They both generate evaluation metrics that you can inspect or compare against those of other models.\n\n[Evaluate Model][evaluate-model] expects a scored dataset as input (or 2 in case you would like to compare the performance of 2 different models). This means that you need to train your model using the [Train Model][train-model] module and make predictions on some dataset using the [Score Model][score-model] module, before you can evaluate the results. The evaluation is the based on the scored labels/probabilities along with the true labels, all of which are output by the [Score Model][score-model] module.\n\nAlternatively, you can use cross validation to perform a number of train-score-evaluate operations (10 folds) automatically on different subsets of the input data. The input data is split into 10 parts, where one is reserved for testing, and the other 9 for training. This process is repeated 10 times and the evaluation metrics are averaged. This helps in determining how well a model would generalize to new datasets. The [Cross-Validate Model][cross-validate-model] module takes in an untrained model and some labeled dataset and outputs the evaluation results of each of the 10 folds, in addition to the averaged results.\n\nIn the following sections, we will build simple regression and classification models and evaluate their performance, using both the [Evaluate Model][evaluate-model] and the [Cross-Validate Model][cross-validate-model] modules.\n\n##Evaluating a Regression Model##\nAssume we want to predict a car’s price using some features such as dimensions, horsepower, engine specs, and so on. This is a typical regression problem, where the target variable (*price*) is a continuous numeric value. We can fit a simple linear regression model that, given the feature values of a certain car, can predict the price of that car. This regression model can be used to score the same dataset we trained on. Once we have the predicted prices for all of the cars, we can evaluate the performance of the model by looking at how much the predictions deviate from the actual prices on average. To illustrate this, we use the *Automobile price data (Raw) dataset* available in the **Saved Datasets** section in Azure Machine Learning Studio.\n \n###Creating the Experiment###\nAdd the following modules to your workspace in Azure Machine Learning Studio:\n\n- Automobile price data (Raw)\n- [Linear Regression][linear-regression]\n- [Train Model][train-model]\n- [Score Model][score-model]\n- [Evaluate Model][evaluate-model]\n\n\nConnect the ports as shown below in Figure 1 and set the Label column of the [Train Model][train-model] module to *price*.\n \n![Evaluating a Regression Model](media/machine-learning-evaluate-model-performance/1.png)\n\nFigure 1. Evaluating a Regression Model.\n\n###Inspecting the Evaluation Results###\nAfter running the experiment, you can click on the output port of the [Evaluate Model][evaluate-model] module and select *Visualize* to see the evaluation results. The evaluation metrics available for regression models are: *Mean Absolute Error*, *Root Mean Absolute Error*, *Relative Absolute Error*, *Relative Squared Error*, and the *Coefficient of Determination*.\n\nThe term \"error\" here represents the difference between the predicted value and the true value. The absolute value or the square of this difference are usually computed to capture the total magnitude of error across all instances, as the difference between the predicted and true value could be negative in some cases. The error metrics measure the predictive performance of a regression model in terms of the mean deviation of its predictions from the true values. Lower error values mean the model is more accurate in making predictions. An overall error metric of 0 means that the model fits the data perfectly.\n\nThe coefficient of determination, which is also known as R squared, is also a standard way of measuring how well the model fits the data. It can be interpreted as the proportion of variation explained by the model. A higher proportion is better in this case, where 1 indicates a perfect fit.\n \n![Linear Regression Evaluation Metrics](media/machine-learning-evaluate-model-performance/2.png)\n\nFigure 2. Linear Regression Evaluation Metrics.\n\n###Using Cross Validation###\nAs mentioned earlier, you can perform repeated training, scoring and evaluations automatically using the [Cross-Validate Model][cross-validate-model] module. All you need in this case is a dataset, an untrained model, and a [Cross-Validate Model][cross-validate-model] module (see figure below). Note that you need to set the label column to *price* in the [Cross-Validate Model][cross-validate-model] module’s properties.\n\n![Cross-Validating a Regression Model](media/machine-learning-evaluate-model-performance/3.png)\n\nFigure 3. Cross-Validating a Regression Model.\n\nAfter running the experiment, you can inspect the evaluation results by clicking on the right output port of the [Cross-Validate Model][cross-validate-model] module. This will provide a detailed view of the metrics for each iteration (fold), and the averaged results of each of the metrics (Figure 4).\n \n![Cross-Validation Results of a Regression Model](media/machine-learning-evaluate-model-performance/4.png)\n\nFigure 4. Cross-Validation Results of a Regression Model.\n\n##Evaluating a Binary Classification Model##\nIn a binary classification scenario, the target variable has only two possible outcomes, for example: {0, 1} or {false, true}, {negative, positive}. Assume you are given a dataset of adult employees with some demographic and employment variables, and that you are asked to predict the income level, a binary variable with the values {“<=50K”, “>50K”}. In other words, the negative class represents the employees who make less than or equal to 50K per year, and the positive class represents all other employees. As in the regression scenario, we would train a model, score some data, and evaluate the results. The main difference here is the choice of metrics Azure Machine Learning computes and outputs. To illustrate the income level prediction scenario, we will use the [Adult](http://archive.ics.uci.edu/ml/datasets/Adult) dataset to create an Azure Machine Learning experiment and evaluate the performance of a two-class logistic regression model, a commonly used binary classifier.\n\n###Creating the Experiment###\nAdd the following modules to your workspace in Azure Machine Learning Studio:\n\n- Adult Census Income Binary Classification dataset\n- [Two-Class Logistic Regression][two-class-logistic-regression]\n- [Train Model][train-model]\n- [Score Model][score-model]\n- [Evaluate Model][evaluate-model]\n\nConnect the ports as shown below in Figure 5 and set the Label column of the [Train Model][train-model] module to *income*.\n\n![Evaluating a Binary Classification Model](media/machine-learning-evaluate-model-performance/5.png)\n\nFigure 5. Evaluating a Binary Classification Model.\n\n###Inspecting the Evaluation Results###\nAfter running the experiment, you can click on the output port of the [Evaluate Model][evaluate-model] module and select *Visualize* to see the evaluation results (Figure 7). The evaluation metrics available for binary classification models are: *Accuracy*, *Precision*, *Recall*, *F1 Score*, and *AUC*. In addition, the module outputs a confusion matrix showing the number of true positives, false negatives, false positives, and true negatives, as well as *ROC*, *Precision/Recall*, and *Lift* curves.\n\nAccuracy is simply the proportion of correctly classified instances. It is usually the first metric you look at when evaluating a classifier. However, when the test data is unbalanced (where most of the instances belong to one of the classes), or you are more interested in the performance on either one of the classes, accuracy doesn’t really capture the effectiveness of a classifier. In the income level classification scenario, assume you are testing on some data where 99% of the instances represent people who earn less than or equal to 50K per year. It is possible to achieve a 0.99 accuracy by predicting the class “<=50K” for all instances. The classifier in this case appears to be doing a good job overall, but in reality, it fails to classify any of the high-income individuals (the 1%) correctly.\n\nFor that reason, it is helpful to compute additional metrics that capture more specific aspects of the evaluation. Before going into the details of such metrics, it is important to understand the confusion matrix of a binary classification evaluation. The class labels in the training set can take on only 2 possible values, which we usually refer to as positive or negative. The positive and negative instances that a classifier predicts correctly are called true positives (TP) and true negatives (TN), respectively. Similarly, the incorrectly classified instances are called false positives (FP) and false negatives (FN). The confusion matrix is simply a table showing the number of instances that fall under each of these 4 categories. Azure Machine Learning automatically decides which of the two classes in the dataset is the positive class. If the class labels are Boolean or integers, then the ‘true’ or ‘1’ labeled instances are assigned the positive class. If the labels are strings, as in the case of the income dataset, the labels are sorted alphabetically and the first level is chosen to be the negative class while the second level is the positive class.\n\n![Binary Classification Confusion Matrix](media/machine-learning-evaluate-model-performance/6a.png)\n\nFigure 6. Binary Classification Confusion Matrix.\n\nGoing back to the income classification problem, we would want to ask several evaluation questions that help us understand the performance of the classifier used. A very natural question is: ‘Out of the individuals whom the model predicted to be earning >50K (TP+FP), how many were classified correctly (TP)?’ This question can be answered by looking at the **Precision** of the model, which is the proportion of positives that are classified correctly: TP/(TP+FP). Another common question is “Out of all the high earning employees with income >50k (TP+FN), how many did the classifier classify correctly (TP)”. This is actually the **Recall**, or the true positive rate: TP/(TP+FN) of the classifier. You might notice that there is an obvious trade-off between precision and recall. For example, given a relatively balanced dataset, a classifier that predicts mostly positive instances, would have a high recall, but a rather low precision as many of the negative instances would be misclassified resulting in a large number of false positives. To see a plot of how these two metrics vary, you can click on the ‘PRECISION/RECALL’ curve in the evaluation result output page (top left part of Figure 7).\n\n![Binary Classification Evaluation Results](media/machine-learning-evaluate-model-performance/7.png)\nFigure 7. Binary Classification Evaluation Results.\n\nAnother related metric that is often used is the **F1 Score**, which takes both precision and recall into consideration. It is the harmonic mean of these 2 metrics and is computed as such: F1 = 2 (precision x recall) / (precision + recall). The F1 score is a good way to summarize the evaluation in a single number, but it’s always a good practice to look at both precision and recall together to better understand how a classifier behaves.\n\nIn addition, one can inspect the true positive rate vs. the false positive rate in the **Receiver Operating Characteristic (ROC)** curve and the corresponding **Area Under the Curve (AUC)** value. The closer this curve is to the upper left corner, the better the classifier’s performance is (that is maximizing the true positive rate while minimizing the false positive rate). Curves that are close to the diagonal of the plot, result from classifiers that tend to make predictions that are close to random guessing.\n\n###Using Cross Validation###\nAs in the regression example, we can perform cross validation to repeatedly train, score and evaluate different subsets of the data automatically. Similarly, we can use the [Cross-Validate Model][cross-validate-model] module, an untrained logistic regression model, and a dataset. The label column must be set to *income* in the [Cross-Validate Model][cross-validate-model] module’s properties. After running the experiment and clicking on the right output port of the [Cross-Validate Model][cross-validate-model] module, we can see the binary classification metric values for each fold, in addition to the mean and standard deviation of each. \n \n![Cross-Validating a Binary Classification Model](media/machine-learning-evaluate-model-performance/8.png)\n\nFigure 8. Cross-Validating a Binary Classification Model.\n\n![Cross-Validation Results of a Binary Classifier](media/machine-learning-evaluate-model-performance/9.png)\n\nFigure 9. Cross-Validation Results of a Binary Classifier.\n\n##Evaluating a Multiclass Classification Model##\nIn this experiment we will use the popular [Iris](http://archive.ics.uci.edu/ml/datasets/Iris \"Iris\") dataset which contains instances of 3 different types (classes) of the iris plant. There are 4 feature values (sepal length/width and petal length/width) for each instance. In the previous experiments we trained and tested the models using the same datasets. Here, we will use the [Split][split] module to create 2 subsets of the data, train on the first, and score and evaluate on the second. \nThe Iris dataset is publicly available on the [UCI Machine Learning Repository](http://archive.ics.uci.edu/ml/index.html), and can be downloaded using a [Reader][reader] module.\n\n###Creating the Experiment###\nAdd the following modules to your workspace in Azure Machine Learning Studio:\n\n- [Reader][reader]\n- [Multiclass Decision Forest][multiclass-decision-forest]\n- [Split][split]\n- [Train Model][train-model]\n- [Score Model][score-model]\n- [Evaluate Model][evaluate-model]\n\nConnect the ports as shown below in Figure 10.\n\nSet the Label column index of the [Train Model][train-model] module to 5. The dataset has no header row but we know that the class labels are in the fifth column.\n\nClick on the [Reader][reader] module and set the *Data source* property to *Web URL via HTTP*, and the *URL* to http://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data.\n\nSet the fraction of instances to be used for training in the [Split][split] module (0.7 for example).\n \n![Evaluating a Multiclass Classifier](media/machine-learning-evaluate-model-performance/10.png)\n\nFigure 10. Evaluating a Multiclass Classifier\n\n###Inspecting the Evaluation Results###\nRun the experiment and click on the output port of [Evaluate Model][evaluate-model]. The evaluation results are presented in the form of a confusion matrix, in this case. The matrix shows the actual vs. predicted instances for all 3 classes.\n \n![Multiclass Classification Evaluation Results](media/machine-learning-evaluate-model-performance/11.png)\n\nFigure 11. Multiclass Classification Evaluation Results.\n\n###Using Cross Validation###\nAs mentioned earlier, you can perform repeated training, scoring and evaluations automatically using the [Cross-Validate Model][cross-validate-model] module. You would need a dataset, an untrained model, and a [Cross-Validate Model][cross-validate-model] module (see figure below). Again you need to set the label column of the [Cross-Validate Model][cross-validate-model] module (column index 5 in this case). After running the experiment and clicking the right output port of the [Cross-Validate Model][cross-validate-model], you can inspect the metric values for each fold as well as the mean and standard deviation. The metrics displayed here are the similar to the ones discussed in the binary classification case. However, note that in multiclass classification, computing the true positives/negatives and false positives/negatives is done by counting on a per-class basis, as there is no overall positive or negative class. For example, when computing the precision or recall of the ‘Iris-setosa’ class, it is assumed that this is the positive class and all others as negative.\n \n![Cross-Validating a Multiclass Classification Model](media/machine-learning-evaluate-model-performance/12.png)\n\nFigure 12. Cross-Validating a Multiclass Classification Model.\n\n\n![Cross-Validation Results of a Multiclass Classification Model](media/machine-learning-evaluate-model-performance/13.png)\n\nFigure 13. Cross-Validation Results of a Multiclass Classification Model.\n\n\n<!-- Module References -->\n[cross-validate-model]: https://msdn.microsoft.com/library/azure/75fb875d-6b86-4d46-8bcc-74261ade5826/\n[evaluate-model]: https://msdn.microsoft.com/library/azure/927d65ac-3b50-4694-9903-20f6c1672089/\n[linear-regression]: https://msdn.microsoft.com/library/azure/31960a6f-789b-4cf7-88d6-2e1152c0bd1a/\n[multiclass-decision-forest]: https://msdn.microsoft.com/library/azure/5e70108d-2e44-45d9-86e8-94f37c68fe86/\n[reader]: https://msdn.microsoft.com/library/azure/4e1b0fe6-aded-4b3f-a36f-39b8862b9004/\n[score-model]: https://msdn.microsoft.com/library/azure/401b4f92-e724-4d5a-be81-d5b0ff9bdb33/\n[split]: https://msdn.microsoft.com/library/azure/70530644-c97a-4ab6-85f7-88bf30a8be5f/\n[train-model]: https://msdn.microsoft.com/library/azure/5cc7053e-aa30-450d-96c0-dae4be720977/\n[two-class-logistic-regression]: https://msdn.microsoft.com/library/azure/b0fd7660-eeed-43c5-9487-20d9cc79ed5d/\n \ntest\n"
+}

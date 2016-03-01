@@ -1,0 +1,992 @@
+{
+  "nodes": [
+    {
+      "content": "Script Action Development with HDInsight | Microsoft Azure",
+      "pos": [
+        27,
+        85
+      ]
+    },
+    {
+      "content": "Learn how to customize Hadoop clusters with Script Action.",
+      "pos": [
+        104,
+        162
+      ]
+    },
+    {
+      "content": "Script Action development with HDInsight",
+      "pos": [
+        468,
+        508
+      ]
+    },
+    {
+      "content": "Script Actions are a way to customize Azure HDInsight clusters by specifying cluster configuration settings during installation, or installing additional services, tools, or other software on the cluster.",
+      "pos": [
+        510,
+        714
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> The information in this document is specific to Linux-based HDInsight clusters.",
+      "pos": [
+        718,
+        810
+      ]
+    },
+    {
+      "content": "For information on using Script Actions with Windows-based clusters, see <bpt id=\"p1\">[</bpt>Script action development with HDInsight (Windows)<ept id=\"p1\">](hdinsight-hadoop-script-actions.md)</ept>.",
+      "pos": [
+        811,
+        973
+      ]
+    },
+    {
+      "content": "What are Script Actions?",
+      "pos": [
+        978,
+        1002
+      ]
+    },
+    {
+      "content": "Script actions are Bash scripts that run on the cluster nodes during provisioning.",
+      "pos": [
+        1004,
+        1086
+      ]
+    },
+    {
+      "content": "A script action is executed as root, and provides full access rights to the cluster nodes.",
+      "pos": [
+        1087,
+        1177
+      ]
+    },
+    {
+      "pos": [
+        1179,
+        1321
+      ],
+      "content": "Script Action can be used when provisioning a cluster using the <bpt id=\"p1\">__</bpt>Azure preview portal<ept id=\"p1\">__</ept>, <bpt id=\"p2\">__</bpt>Azure PowerShell<ept id=\"p2\">__</ept>, or the <bpt id=\"p3\">__</bpt>HDInsight .NET SDK<ept id=\"p3\">__</ept>."
+    },
+    {
+      "pos": [
+        1323,
+        1490
+      ],
+      "content": "For an walkthrough of customizing a cluster using Script Actions, see <bpt id=\"p1\">[</bpt>Customize HDInsight clusters using script actions<ept id=\"p1\">](hdinsight-hadoop-customize-cluster-linux.md)</ept>."
+    },
+    {
+      "pos": [
+        1495,
+        1568
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"bestPracticeScripting\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Best practices for script development"
+    },
+    {
+      "content": "When you develop a custom script for an HDInsight cluster, there are several best practices to keep in mind:",
+      "pos": [
+        1570,
+        1678
+      ]
+    },
+    {
+      "content": "Target the Hadoop version",
+      "pos": [
+        1683,
+        1708
+      ]
+    },
+    {
+      "content": "Provide stable links to script resources",
+      "pos": [
+        1720,
+        1760
+      ]
+    },
+    {
+      "content": "Ensure that the cluster customization script is idempotent",
+      "pos": [
+        1772,
+        1830
+      ]
+    },
+    {
+      "content": "Ensure high availability of the cluster architecture",
+      "pos": [
+        1842,
+        1894
+      ]
+    },
+    {
+      "content": "Configure the custom components to use Azure Blob storage",
+      "pos": [
+        1906,
+        1963
+      ]
+    },
+    {
+      "content": "Write information to STDOUT and STDERR",
+      "pos": [
+        1975,
+        2013
+      ]
+    },
+    {
+      "content": "Save files as ASCII with LF line endings",
+      "pos": [
+        2025,
+        2065
+      ]
+    },
+    {
+      "pos": [
+        2079,
+        2123
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"bPS1\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Target the Hadoop version"
+    },
+    {
+      "content": "Different versions of HDInsight have different versions of Hadoop services and components installed.",
+      "pos": [
+        2125,
+        2225
+      ]
+    },
+    {
+      "content": "If your script expects a specific version of a service or component, you should only use the script with the version of HDInsight that includes the required components.",
+      "pos": [
+        2226,
+        2394
+      ]
+    },
+    {
+      "content": "You can find information on component versions included with HDInsight using the <bpt id=\"p1\">[</bpt>HDInsight component versioning<ept id=\"p1\">](hdinsight-component-versioning.md)</ept> document.",
+      "pos": [
+        2395,
+        2553
+      ]
+    },
+    {
+      "pos": [
+        2559,
+        2618
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"bPS2\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Provide stable links to script resources"
+    },
+    {
+      "content": "Users should make sure that all of the scripts and resources used by the script remain available throughout the lifetime of the cluster and that the versions of these files do not change for the duration.",
+      "pos": [
+        2620,
+        2824
+      ]
+    },
+    {
+      "content": "These resources are required if the nodes in the cluster are re-imaged.",
+      "pos": [
+        2825,
+        2896
+      ]
+    },
+    {
+      "content": "The best practice is to download and archive everything in an Azure Storage account on your subscription.",
+      "pos": [
+        2898,
+        3003
+      ]
+    },
+    {
+      "pos": [
+        3007,
+        3164
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.IMPORTANT]</ph> The storage account used must be the default storage account for the cluster or a public, read-only container on any other storage account."
+    },
+    {
+      "pos": [
+        3166,
+        3419
+      ],
+      "content": "For example, the samples provided by Microsoft are stored in the <bpt id=\"p1\">[</bpt>https://hdiconfigactions.blob.core.windows.net/<ept id=\"p1\">](https://hdiconfigactions.blob.core.windows.net/)</ept> storage account, which is a public, read-only container maintained by the HDInsight team."
+    },
+    {
+      "pos": [
+        3425,
+        3502
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"bPS3\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Ensure that the cluster customization script is idempotent"
+    },
+    {
+      "content": "You must expect that the nodes of an HDInsight cluster will be re-imaged during the cluster lifetime, and that the cluster customization script will be used when this happens.",
+      "pos": [
+        3504,
+        3679
+      ]
+    },
+    {
+      "content": "The script must be designed to be idempotent in the sense that upon re-imaging, the script should ensure that the cluster is returned to the same state every time it is ran.",
+      "pos": [
+        3680,
+        3853
+      ]
+    },
+    {
+      "content": "For example, if a custom script installs an application at /usr/local/bin on its first run, then on each subsequent run the script should check whether the application already exists at the /usr/local/bin location before proceeding with other steps in the script.",
+      "pos": [
+        3855,
+        4118
+      ]
+    },
+    {
+      "pos": [
+        4124,
+        4195
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"bPS5\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Ensure high availability of the cluster architecture"
+    },
+    {
+      "content": "Linux-based HDInsight clusters provides two head nodes that are active within the cluster, and Script Actions are ran for both nodes.",
+      "pos": [
+        4197,
+        4330
+      ]
+    },
+    {
+      "content": "If the components you install expect only one head node, you must design a script that will only install the component on one of the two head nodes in the cluster.",
+      "pos": [
+        4331,
+        4494
+      ]
+    },
+    {
+      "content": "The head nodes are named <bpt id=\"p1\">**</bpt>headnode0<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>headnode1<ept id=\"p2\">**</ept>.",
+      "pos": [
+        4495,
+        4552
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.IMPORTANT]</ph> Default services installed as part of HDInsight are designed to fail over between the two head nodes as needed, however this functionality is not extended to custom components installed through Script Actions.",
+      "pos": [
+        4556,
+        4783
+      ]
+    },
+    {
+      "content": "If you need the components installed through a Script Action to be highly available, you must implement your own failover mechanism that uses the two available head nodes.",
+      "pos": [
+        4784,
+        4955
+      ]
+    },
+    {
+      "pos": [
+        4961,
+        5037
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"bPS6\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Configure the custom components to use Azure Blob storage"
+    },
+    {
+      "content": "Components that you install on the cluster might have a default configuration that uses Hadoop Distributed File System (HDFS) storage.",
+      "pos": [
+        5039,
+        5173
+      ]
+    },
+    {
+      "content": "On a cluster re-image, the HDFS file system gets formatted and you will lose any data that is stored there.",
+      "pos": [
+        5174,
+        5281
+      ]
+    },
+    {
+      "content": "You should change the configuration to use Azure Blob storage (WASB) instead, as this is the default storage for the cluster, and is kept even when the cluster is deleted.",
+      "pos": [
+        5282,
+        5453
+      ]
+    },
+    {
+      "content": "For example, the following copies the giraph-examples.jar file from the local file system to WASB:",
+      "pos": [
+        5455,
+        5553
+      ]
+    },
+    {
+      "pos": [
+        5648,
+        5705
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"bPS7\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Write information to STDOUT and STDERR"
+    },
+    {
+      "content": "Information written to STDOUT and STDERR is logged, and can be viewed after the cluster has been provisioned by using the Ambari web UI.",
+      "pos": [
+        5707,
+        5843
+      ]
+    },
+    {
+      "content": "Most utilities and installation packages will already write information to STDOUT and STDERR, however you may want to add additional logging.",
+      "pos": [
+        5845,
+        5986
+      ]
+    },
+    {
+      "content": "To send text to STDOUT use <ph id=\"ph1\">`echo`</ph>.",
+      "pos": [
+        5987,
+        6021
+      ]
+    },
+    {
+      "content": "For example:",
+      "pos": [
+        6022,
+        6034
+      ]
+    },
+    {
+      "content": "By default, <ph id=\"ph1\">`echo`</ph> will send the string to STDOUT.",
+      "pos": [
+        6081,
+        6131
+      ]
+    },
+    {
+      "content": "To direct it to STDERR, add <ph id=\"ph1\">`&gt;&amp;2`</ph> before <ph id=\"ph2\">`echo`</ph>.",
+      "pos": [
+        6132,
+        6180
+      ]
+    },
+    {
+      "content": "For example:",
+      "pos": [
+        6181,
+        6193
+      ]
+    },
+    {
+      "content": "This redirects information sent to STDOUT (1, which is default so not listed here,) to STDERR (2).",
+      "pos": [
+        6247,
+        6345
+      ]
+    },
+    {
+      "content": "For more information on IO redirection, see <bpt id=\"p1\">[</bpt>http://www.tldp.org/LDP/abs/html/io-redirection.html<ept id=\"p1\">](http://www.tldp.org/LDP/abs/html/io-redirection.html)</ept>.",
+      "pos": [
+        6346,
+        6499
+      ]
+    },
+    {
+      "pos": [
+        6501,
+        6686
+      ],
+      "content": "For more information on viewing information logged by Script Actions, see <bpt id=\"p1\">[</bpt>Customize HDInsight clusters using Script Action<ept id=\"p1\">](hdinsight-hadoop-customize-cluster-linux.md#troubleshooting)</ept>"
+    },
+    {
+      "pos": [
+        6691,
+        6751
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"bps8\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph> Save files as ASCII with LF line endings"
+    },
+    {
+      "content": "Bash scripts should be stored as ASCII format, with lines terminated by LF.",
+      "pos": [
+        6753,
+        6828
+      ]
+    },
+    {
+      "content": "If files are stored as UTF-8, which may include a Byte Order Mark at the beginning of the file, or with line endings of CRLF, which is common for Windows editors, then the script will fail with errors similar to the following:",
+      "pos": [
+        6829,
+        7055
+      ]
+    },
+    {
+      "pos": [
+        7144,
+        7205
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"helpermethods\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Helper methods for custom scripts"
+    },
+    {
+      "content": "Script Action helper methods are utilities that you can use while writing custom scripts.",
+      "pos": [
+        7207,
+        7296
+      ]
+    },
+    {
+      "content": "These are defined in <bpt id=\"p1\">[</bpt>https://hdiconfigactions.blob.core.windows.net/linuxconfigactionmodulev01/HDInsightUtilities-v01.sh<ept id=\"p1\">](https://hdiconfigactions.blob.core.windows.net/linuxconfigactionmodulev01/HDInsightUtilities-v01.sh)</ept>, and can be included in your scripts using the following:",
+      "pos": [
+        7297,
+        7578
+      ]
+    },
+    {
+      "content": "This makes the following helpers available for use in your script:",
+      "pos": [
+        7847,
+        7913
+      ]
+    },
+    {
+      "content": "Helper usage",
+      "pos": [
+        7917,
+        7929
+      ]
+    },
+    {
+      "content": "Description",
+      "pos": [
+        7932,
+        7943
+      ]
+    },
+    {
+      "content": "Downloads a file from the source URL to the specified file path.",
+      "pos": [
+        8032,
+        8096
+      ]
+    },
+    {
+      "content": "By default, it will not overwrite an existing file.",
+      "pos": [
+        8097,
+        8148
+      ]
+    },
+    {
+      "pos": [
+        8184,
+        8248
+      ],
+      "content": "Extracts a tar file (using <ph id=\"ph1\">`-xf`</ph>,) to the destination directory."
+    },
+    {
+      "content": "If ran on a cluster head node, returns 1; otherwise, 0.",
+      "pos": [
+        8274,
+        8329
+      ]
+    },
+    {
+      "content": "If the current node is a data (worker) node, returns a 1; otherwise, 0.",
+      "pos": [
+        8355,
+        8426
+      ]
+    },
+    {
+      "content": "If the current node is the first data (worker) node (named workernode0,) returns a 1; otherwise, 0.",
+      "pos": [
+        8458,
+        8557
+      ]
+    },
+    {
+      "pos": [
+        8564,
+        8611
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"commonusage\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Common usage patterns"
+    },
+    {
+      "content": "This section provides guidance on implementing some of the common usage patterns that you might run into while writing your own custom script.",
+      "pos": [
+        8613,
+        8755
+      ]
+    },
+    {
+      "content": "Passing parameters to a script",
+      "pos": [
+        8761,
+        8791
+      ]
+    },
+    {
+      "content": "In some cases, your script may require parameters.",
+      "pos": [
+        8793,
+        8843
+      ]
+    },
+    {
+      "content": "For example, you may need the admin password for the cluster in order to retrieve information from the Ambari REST API.",
+      "pos": [
+        8844,
+        8963
+      ]
+    },
+    {
+      "content": "Parameters passed to the script are known as <bpt id=\"p1\">_</bpt>positional parameters<ept id=\"p1\">_</ept>, and are assigned to <ph id=\"ph1\">`$1`</ph> for the first parameter, <ph id=\"ph2\">`$2`</ph> for the second, and so-on.",
+      "pos": [
+        8965,
+        9116
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">`$0`</ph> contains the name of the script itself.",
+      "pos": [
+        9117,
+        9161
+      ]
+    },
+    {
+      "content": "Values passed to the script as parameters should be enclosed by single quotes (') so that the passed value is treated as a literal, and special treatment isn't given to included characters such as '!'.",
+      "pos": [
+        9163,
+        9364
+      ]
+    },
+    {
+      "content": "Setting environment variables",
+      "pos": [
+        9370,
+        9399
+      ]
+    },
+    {
+      "content": "Setting an environment variable is performed by the following:",
+      "pos": [
+        9401,
+        9463
+      ]
+    },
+    {
+      "content": "Where VARIABLENAME is the name of the variable.",
+      "pos": [
+        9489,
+        9536
+      ]
+    },
+    {
+      "content": "To access the variable after this, use <ph id=\"ph1\">`$VARIABLENAME`</ph>.",
+      "pos": [
+        9537,
+        9592
+      ]
+    },
+    {
+      "content": "For example, to assign a value provided by a positional parameter as an environment variable named PASSWORD, you would use the following:",
+      "pos": [
+        9593,
+        9730
+      ]
+    },
+    {
+      "pos": [
+        9749,
+        9813
+      ],
+      "content": "Subsequent access to the information could then use <ph id=\"ph1\">`$PASSWORD`</ph>."
+    },
+    {
+      "content": "Environment variables set within the script only exist within the scope of the script.",
+      "pos": [
+        9815,
+        9901
+      ]
+    },
+    {
+      "content": "In some cases, you may need to add system wide environment variables that will persist after the script has finished.",
+      "pos": [
+        9902,
+        10019
+      ]
+    },
+    {
+      "content": "Usually this is so that users connecting to the cluster via SSH can use the components installed by your script.",
+      "pos": [
+        10020,
+        10132
+      ]
+    },
+    {
+      "content": "You can accomplish this by adding the environment variable to <ph id=\"ph1\">`/etc/environment`</ph>.",
+      "pos": [
+        10133,
+        10214
+      ]
+    },
+    {
+      "content": "For example, the following adds <bpt id=\"p1\">__</bpt>HADOOP\\_CONF\\_DIR<ept id=\"p1\">__</ept>:",
+      "pos": [
+        10215,
+        10269
+      ]
+    },
+    {
+      "content": "Access to locations where the custom scripts are stored",
+      "pos": [
+        10351,
+        10406
+      ]
+    },
+    {
+      "content": "Scripts used to customize a cluster needs to either be in the default storage account for the cluster or, if on another storage account, in a public read-only container.",
+      "pos": [
+        10408,
+        10577
+      ]
+    },
+    {
+      "content": "If your script accesses resources located elsewhere these also need to be in a publicly accessible (at least public read-only).",
+      "pos": [
+        10578,
+        10705
+      ]
+    },
+    {
+      "content": "For instance you might want to download a file to the cluster using <ph id=\"ph1\">`download_file`</ph>.",
+      "pos": [
+        10706,
+        10790
+      ]
+    },
+    {
+      "content": "Storing the file in an Azure storage account accessible by the cluster (such as the default storage account,) will provide fast access, as this storage is within the Azure network.",
+      "pos": [
+        10792,
+        10972
+      ]
+    },
+    {
+      "pos": [
+        10977,
+        11043
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"deployScript\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Checklist for deploying a script action"
+    },
+    {
+      "content": "Here are the steps we took when preparing to deploy these scripts:",
+      "pos": [
+        11045,
+        11111
+      ]
+    },
+    {
+      "content": "Put the files that contain the custom scripts in a place that is accessible by the cluster nodes during deployment.",
+      "pos": [
+        11115,
+        11230
+      ]
+    },
+    {
+      "content": "This can be any of the default or additional Storage accounts specified at the time of cluster deployment, or any other publicly accessible storage container.",
+      "pos": [
+        11231,
+        11389
+      ]
+    },
+    {
+      "content": "Add checks into scripts to make sure that they execute impotently, so that the script can be executed multiple times on the same node.",
+      "pos": [
+        11393,
+        11527
+      ]
+    },
+    {
+      "content": "Use a temporary file directory /tmp to keep the downloaded files used by the scripts and then clean them up after scripts have executed.",
+      "pos": [
+        11531,
+        11667
+      ]
+    },
+    {
+      "content": "In the event that OS-level settings or Hadoop service configuration files were changed, you may want to restart HDInsight services so that they can pick up any OS-level settings, such as the environment variables set in the scripts.",
+      "pos": [
+        11671,
+        11903
+      ]
+    },
+    {
+      "pos": [
+        11908,
+        11964
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"runScriptAction\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>How to run a script action"
+    },
+    {
+      "content": "You can use Script Actions to customize HDInsight clusters by using the Azure portal, Azure PowerShell, or the HDInsight .NET SDK.",
+      "pos": [
+        11966,
+        12096
+      ]
+    },
+    {
+      "content": "For instructions, see <bpt id=\"p1\">[</bpt>How to use Script Action<ept id=\"p1\">](hdinsight-hadoop-customize-cluster-linux.md#howto)</ept>.",
+      "pos": [
+        12097,
+        12197
+      ]
+    },
+    {
+      "pos": [
+        12202,
+        12251
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"sampleScripts\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Custom script samples"
+    },
+    {
+      "content": "Microsoft provides sample scripts to install components on an HDInsight cluster.",
+      "pos": [
+        12253,
+        12333
+      ]
+    },
+    {
+      "content": "The sample scripts and instructions on how to use them are available at the links below:",
+      "pos": [
+        12334,
+        12422
+      ]
+    },
+    {
+      "content": "Install and use Hue on HDInsight clusters",
+      "pos": [
+        12427,
+        12468
+      ]
+    },
+    {
+      "content": "Install and use Spark on HDInsight clusters",
+      "pos": [
+        12504,
+        12547
+      ]
+    },
+    {
+      "content": "Install and use R on HDInsight Hadoop clusters",
+      "pos": [
+        12593,
+        12639
+      ]
+    },
+    {
+      "content": "Install and use Solr on HDInsight clusters",
+      "pos": [
+        12681,
+        12723
+      ]
+    },
+    {
+      "content": "Install and use Giraph on HDInsight clusters",
+      "pos": [
+        12768,
+        12812
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> The documents linked above are specific to Linux-based HDInsight clusters.",
+      "pos": [
+        12861,
+        12948
+      ]
+    },
+    {
+      "content": "For a scripts that work with Windows-based HDInsight, see <bpt id=\"p1\">[</bpt>Script action development with HDInsight (Windows)<ept id=\"p1\">](hdinsight-hadoop-script-actions.md)</ept> or use the links available at the top of each article.",
+      "pos": [
+        12949,
+        13150
+      ]
+    },
+    {
+      "content": "Troubleshooting",
+      "pos": [
+        13154,
+        13169
+      ]
+    },
+    {
+      "content": "The following are errors you may encounter when using scripts you have developed:",
+      "pos": [
+        13171,
+        13252
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">__</bpt>Error<ept id=\"p1\">__</ept>: <ph id=\"ph1\">`$'\\r': command not found`</ph>.",
+      "pos": [
+        13254,
+        13292
+      ]
+    },
+    {
+      "content": "Sometimes followed by <ph id=\"ph1\">`syntax error: unexpected end of file`</ph>.",
+      "pos": [
+        13293,
+        13354
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">_</bpt>Cause<ept id=\"p1\">_</ept>: This error is caused when the lines in a script end with CRLF.",
+      "pos": [
+        13356,
+        13427
+      ]
+    },
+    {
+      "content": "Unix systems expect only LF as the line ending.",
+      "pos": [
+        13428,
+        13475
+      ]
+    },
+    {
+      "content": "This problem most often occurs when the script is authored on a Windows environment, as CRLF is a common line ending for many text editors on Windows.",
+      "pos": [
+        13477,
+        13627
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">_</bpt>Resolution<ept id=\"p1\">_</ept>: If it is an option in your text editor, select Unix format or LF for the line ending.",
+      "pos": [
+        13629,
+        13728
+      ]
+    },
+    {
+      "content": "You may also use the following commands on a Unix system to change the CRLF to an LF:",
+      "pos": [
+        13729,
+        13814
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> The following commands are roughly equivalent in that they should change the CRLF line endings to LF.",
+      "pos": [
+        13818,
+        13932
+      ]
+    },
+    {
+      "content": "Select one based on the utilities available on your system.",
+      "pos": [
+        13933,
+        13992
+      ]
+    },
+    {
+      "content": "Command",
+      "pos": [
+        13996,
+        14003
+      ]
+    },
+    {
+      "content": "Notes",
+      "pos": [
+        14006,
+        14011
+      ]
+    },
+    {
+      "content": "The original file will be backed up with a .BAK extension",
+      "pos": [
+        14059,
+        14116
+      ]
+    },
+    {
+      "content": "OUTFILE will contain a version with only LF endings",
+      "pos": [
+        14155,
+        14206
+      ]
+    },
+    {
+      "content": "This will modify the file directly without creating a new file",
+      "pos": [
+        14248,
+        14310
+      ]
+    },
+    {
+      "content": "OUTFILE will contain a version with only LF endings.",
+      "pos": [
+        14365,
+        14417
+      ]
+    },
+    {
+      "pos": [
+        14419,
+        14482
+      ],
+      "content": "<bpt id=\"p1\">__</bpt>Error<ept id=\"p1\">__</ept>: <ph id=\"ph1\">`line 1: #!/usr/bin/env: No such file or directory`</ph>."
+    },
+    {
+      "pos": [
+        14484,
+        14575
+      ],
+      "content": "<bpt id=\"p1\">_</bpt>Cause<ept id=\"p1\">_</ept>: This error occurs when the script was saved as UTF-8 with a Byte Order Mark (BOM)."
+    },
+    {
+      "content": "<bpt id=\"p1\">_</bpt>Resolution<ept id=\"p1\">_</ept>: Save the file either as ASCII, or as UTF-8 without a BOM.",
+      "pos": [
+        14577,
+        14648
+      ]
+    },
+    {
+      "content": "You may also use the following command on a Linux or Unix system to create a new file without the BOM:",
+      "pos": [
+        14649,
+        14751
+      ]
+    },
+    {
+      "content": "For the above command, replace <bpt id=\"p1\">__</bpt>INFILE<ept id=\"p1\">__</ept> with the file containing the BOM.",
+      "pos": [
+        14819,
+        14894
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">__</bpt>OUTFILE<ept id=\"p1\">__</ept> should be a new file name, which will contain the script without the BOM.",
+      "pos": [
+        14895,
+        14980
+      ]
+    },
+    {
+      "pos": [
+        14985,
+        15015
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"seeAlso\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>See also"
+    },
+    {
+      "content": "Customize HDInsight clusters using Script Action",
+      "pos": [
+        15018,
+        15066
+      ]
+    },
+    {
+      "content": "test",
+      "pos": [
+        15114,
+        15118
+      ]
+    }
+  ],
+  "content": "<properties\n    pageTitle=\"Script Action Development with HDInsight | Microsoft Azure\"\n    description=\"Learn how to customize Hadoop clusters with Script Action.\"\n    services=\"hdinsight\"\n    documentationCenter=\"\"\n    authors=\"Blackmist\"\n    manager=\"paulettm\"\n    editor=\"cgronlun\"/>\n\n<tags\n    ms.service=\"hdinsight\"\n    ms.workload=\"big-data\"\n    ms.tgt_pltfrm=\"na\"\n    ms.devlang=\"na\"\n    ms.topic=\"article\"\n    ms.date=\"08/18/2015\"\n    ms.author=\"larryfr\"/>\n\n# Script Action development with HDInsight\n\nScript Actions are a way to customize Azure HDInsight clusters by specifying cluster configuration settings during installation, or installing additional services, tools, or other software on the cluster.\n\n> [AZURE.NOTE] The information in this document is specific to Linux-based HDInsight clusters. For information on using Script Actions with Windows-based clusters, see [Script action development with HDInsight (Windows)](hdinsight-hadoop-script-actions.md).\n\n## What are Script Actions?\n\nScript actions are Bash scripts that run on the cluster nodes during provisioning. A script action is executed as root, and provides full access rights to the cluster nodes.\n\nScript Action can be used when provisioning a cluster using the __Azure preview portal__, __Azure PowerShell__, or the __HDInsight .NET SDK__.\n\nFor an walkthrough of customizing a cluster using Script Actions, see [Customize HDInsight clusters using script actions](hdinsight-hadoop-customize-cluster-linux.md).\n\n## <a name=\"bestPracticeScripting\"></a>Best practices for script development\n\nWhen you develop a custom script for an HDInsight cluster, there are several best practices to keep in mind:\n\n- [Target the Hadoop version](#bPS1)\n- [Provide stable links to script resources](#bPS2)\n- [Ensure that the cluster customization script is idempotent](#bPS3)\n- [Ensure high availability of the cluster architecture](#bPS5)\n- [Configure the custom components to use Azure Blob storage](#bPS6)\n- [Write information to STDOUT and STDERR](#bPS7)\n- [Save files as ASCII with LF line endings](#bps8)\n\n### <a name=\"bPS1\"></a>Target the Hadoop version\n\nDifferent versions of HDInsight have different versions of Hadoop services and components installed. If your script expects a specific version of a service or component, you should only use the script with the version of HDInsight that includes the required components. You can find information on component versions included with HDInsight using the [HDInsight component versioning](hdinsight-component-versioning.md) document.\n\n### <a name=\"bPS2\"></a>Provide stable links to script resources\n\nUsers should make sure that all of the scripts and resources used by the script remain available throughout the lifetime of the cluster and that the versions of these files do not change for the duration. These resources are required if the nodes in the cluster are re-imaged.\n\nThe best practice is to download and archive everything in an Azure Storage account on your subscription.\n\n> [AZURE.IMPORTANT] The storage account used must be the default storage account for the cluster or a public, read-only container on any other storage account.\n\nFor example, the samples provided by Microsoft are stored in the [https://hdiconfigactions.blob.core.windows.net/](https://hdiconfigactions.blob.core.windows.net/) storage account, which is a public, read-only container maintained by the HDInsight team.\n\n### <a name=\"bPS3\"></a>Ensure that the cluster customization script is idempotent\n\nYou must expect that the nodes of an HDInsight cluster will be re-imaged during the cluster lifetime, and that the cluster customization script will be used when this happens. The script must be designed to be idempotent in the sense that upon re-imaging, the script should ensure that the cluster is returned to the same state every time it is ran.\n\nFor example, if a custom script installs an application at /usr/local/bin on its first run, then on each subsequent run the script should check whether the application already exists at the /usr/local/bin location before proceeding with other steps in the script.\n\n### <a name=\"bPS5\"></a>Ensure high availability of the cluster architecture\n\nLinux-based HDInsight clusters provides two head nodes that are active within the cluster, and Script Actions are ran for both nodes. If the components you install expect only one head node, you must design a script that will only install the component on one of the two head nodes in the cluster. The head nodes are named **headnode0** and **headnode1**.\n\n> [AZURE.IMPORTANT] Default services installed as part of HDInsight are designed to fail over between the two head nodes as needed, however this functionality is not extended to custom components installed through Script Actions. If you need the components installed through a Script Action to be highly available, you must implement your own failover mechanism that uses the two available head nodes.\n\n### <a name=\"bPS6\"></a>Configure the custom components to use Azure Blob storage\n\nComponents that you install on the cluster might have a default configuration that uses Hadoop Distributed File System (HDFS) storage. On a cluster re-image, the HDFS file system gets formatted and you will lose any data that is stored there. You should change the configuration to use Azure Blob storage (WASB) instead, as this is the default storage for the cluster, and is kept even when the cluster is deleted.\n\nFor example, the following copies the giraph-examples.jar file from the local file system to WASB:\n\n    hadoop fs -copyFromLocal /usr/hdp/current/giraph/giraph-examples.jar /example/jars/\n\n### <a name=\"bPS7\"></a>Write information to STDOUT and STDERR\n\nInformation written to STDOUT and STDERR is logged, and can be viewed after the cluster has been provisioned by using the Ambari web UI.\n\nMost utilities and installation packages will already write information to STDOUT and STDERR, however you may want to add additional logging. To send text to STDOUT use `echo`. For example:\n\n        echo \"Getting ready to install Foo\"\n\nBy default, `echo` will send the string to STDOUT. To direct it to STDERR, add `>&2` before `echo`. For example:\n\n        >&2 echo \"An error occured installing Foo\"\n\nThis redirects information sent to STDOUT (1, which is default so not listed here,) to STDERR (2). For more information on IO redirection, see [http://www.tldp.org/LDP/abs/html/io-redirection.html](http://www.tldp.org/LDP/abs/html/io-redirection.html).\n\nFor more information on viewing information logged by Script Actions, see [Customize HDInsight clusters using Script Action](hdinsight-hadoop-customize-cluster-linux.md#troubleshooting)\n\n###<a name=\"bps8\"></a> Save files as ASCII with LF line endings\n\nBash scripts should be stored as ASCII format, with lines terminated by LF. If files are stored as UTF-8, which may include a Byte Order Mark at the beginning of the file, or with line endings of CRLF, which is common for Windows editors, then the script will fail with errors similar to the following:\n\n    $'\\r': command not found\n    line 1: #!/usr/bin/env: No such file or directory\n\n## <a name=\"helpermethods\"></a>Helper methods for custom scripts\n\nScript Action helper methods are utilities that you can use while writing custom scripts. These are defined in [https://hdiconfigactions.blob.core.windows.net/linuxconfigactionmodulev01/HDInsightUtilities-v01.sh](https://hdiconfigactions.blob.core.windows.net/linuxconfigactionmodulev01/HDInsightUtilities-v01.sh), and can be included in your scripts using the following:\n\n    # Import the helper method module.\n    wget -O /tmp/HDInsightUtilities-v01.sh -q https://hdiconfigactions.blob.core.windows.net/linuxconfigactionmodulev01/HDInsightUtilities-v01.sh && source /tmp/HDInsightUtilities-v01.sh && rm -f /tmp/HDInsightUtilities-v01.sh\n\nThis makes the following helpers available for use in your script:\n\n| Helper usage | Description |\n| ------------ | ----------- |\n| `download_file SOURCEURL DESTFILEPATH [OVERWRITE]` | Downloads a file from the source URL to the specified file path. By default, it will not overwrite an existing file. |\n| `untar_file TARFILE DESTDIR` | Extracts a tar file (using `-xf`,) to the destination directory. |\n| `test_is_headnode` | If ran on a cluster head node, returns 1; otherwise, 0. |\n| `test_is_datanode` | If the current node is a data (worker) node, returns a 1; otherwise, 0. |\n| `test_is_first_datanode` | If the current node is the first data (worker) node (named workernode0,) returns a 1; otherwise, 0. |\n\n## <a name=\"commonusage\"></a>Common usage patterns\n\nThis section provides guidance on implementing some of the common usage patterns that you might run into while writing your own custom script.\n\n### Passing parameters to a script\n\nIn some cases, your script may require parameters. For example, you may need the admin password for the cluster in order to retrieve information from the Ambari REST API.\n\nParameters passed to the script are known as _positional parameters_, and are assigned to `$1` for the first parameter, `$2` for the second, and so-on. `$0` contains the name of the script itself.\n\nValues passed to the script as parameters should be enclosed by single quotes (') so that the passed value is treated as a literal, and special treatment isn't given to included characters such as '!'.\n\n### Setting environment variables\n\nSetting an environment variable is performed by the following:\n\n    VARIABLENAME=value\n\nWhere VARIABLENAME is the name of the variable. To access the variable after this, use `$VARIABLENAME`. For example, to assign a value provided by a positional parameter as an environment variable named PASSWORD, you would use the following:\n\n    PASSWORD=$1\n\nSubsequent access to the information could then use `$PASSWORD`.\n\nEnvironment variables set within the script only exist within the scope of the script. In some cases, you may need to add system wide environment variables that will persist after the script has finished. Usually this is so that users connecting to the cluster via SSH can use the components installed by your script. You can accomplish this by adding the environment variable to `/etc/environment`. For example, the following adds __HADOOP\\_CONF\\_DIR__:\n\n    echo \"HADOOP_CONF_DIR=/etc/hadoop/conf\" | sudo tee -a /etc/environment\n\n### Access to locations where the custom scripts are stored\n\nScripts used to customize a cluster needs to either be in the default storage account for the cluster or, if on another storage account, in a public read-only container. If your script accesses resources located elsewhere these also need to be in a publicly accessible (at least public read-only). For instance you might want to download a file to the cluster using `download_file`.\n\nStoring the file in an Azure storage account accessible by the cluster (such as the default storage account,) will provide fast access, as this storage is within the Azure network.\n\n## <a name=\"deployScript\"></a>Checklist for deploying a script action\n\nHere are the steps we took when preparing to deploy these scripts:\n\n- Put the files that contain the custom scripts in a place that is accessible by the cluster nodes during deployment. This can be any of the default or additional Storage accounts specified at the time of cluster deployment, or any other publicly accessible storage container.\n\n- Add checks into scripts to make sure that they execute impotently, so that the script can be executed multiple times on the same node.\n\n- Use a temporary file directory /tmp to keep the downloaded files used by the scripts and then clean them up after scripts have executed.\n\n- In the event that OS-level settings or Hadoop service configuration files were changed, you may want to restart HDInsight services so that they can pick up any OS-level settings, such as the environment variables set in the scripts.\n\n## <a name=\"runScriptAction\"></a>How to run a script action\n\nYou can use Script Actions to customize HDInsight clusters by using the Azure portal, Azure PowerShell, or the HDInsight .NET SDK. For instructions, see [How to use Script Action](hdinsight-hadoop-customize-cluster-linux.md#howto).\n\n## <a name=\"sampleScripts\"></a>Custom script samples\n\nMicrosoft provides sample scripts to install components on an HDInsight cluster. The sample scripts and instructions on how to use them are available at the links below:\n\n- [Install and use Hue on HDInsight clusters](hdinsight-hadoop-hue-linux.md)\n- [Install and use Spark on HDInsight clusters](hdinsight-hadoop-spark-install-linux.md)\n- [Install and use R on HDInsight Hadoop clusters](hdinsight-hadoop-r-scripts-linux.md)\n- [Install and use Solr on HDInsight clusters](hdinsight-hadoop-solr-install-linux.md)\n- [Install and use Giraph on HDInsight clusters](hdinsight-hadoop-giraph-install-linux.md)  \n\n> [AZURE.NOTE] The documents linked above are specific to Linux-based HDInsight clusters. For a scripts that work with Windows-based HDInsight, see [Script action development with HDInsight (Windows)](hdinsight-hadoop-script-actions.md) or use the links available at the top of each article.\n\n##Troubleshooting\n\nThe following are errors you may encounter when using scripts you have developed:\n\n__Error__: `$'\\r': command not found`. Sometimes followed by `syntax error: unexpected end of file`.\n\n_Cause_: This error is caused when the lines in a script end with CRLF. Unix systems expect only LF as the line ending.\n\nThis problem most often occurs when the script is authored on a Windows environment, as CRLF is a common line ending for many text editors on Windows.\n\n_Resolution_: If it is an option in your text editor, select Unix format or LF for the line ending. You may also use the following commands on a Unix system to change the CRLF to an LF:\n\n> [AZURE.NOTE] The following commands are roughly equivalent in that they should change the CRLF line endings to LF. Select one based on the utilities available on your system.\n\n| Command | Notes |\n| ------- | ----- |\n| `unix2dos -b INFILE` | The original file will be backed up with a .BAK extension |\n| `tr -d '\\r' < INFILE > OUTFILE` | OUTFILE will contain a version with only LF endings |\n| `perl -pi -e 's/\\r\\n/\\n/g' INFILE` | This will modify the file directly without creating a new file |\n| ```sed 's/$'\"/`echo \\\\\\r`/\" INFILE > OUTFILE``` | OUTFILE will contain a version with only LF endings.\n\n__Error__: `line 1: #!/usr/bin/env: No such file or directory`.\n\n_Cause_: This error occurs when the script was saved as UTF-8 with a Byte Order Mark (BOM).\n\n_Resolution_: Save the file either as ASCII, or as UTF-8 without a BOM. You may also use the following command on a Linux or Unix system to create a new file without the BOM:\n\n    awk 'NR==1{sub(/^\\xef\\xbb\\xbf/,\"\")}{print}' INFILE > OUTFILE\n\nFor the above command, replace __INFILE__ with the file containing the BOM. __OUTFILE__ should be a new file name, which will contain the script without the BOM.\n\n## <a name=\"seeAlso\"></a>See also\n\n[Customize HDInsight clusters using Script Action](hdinsight-hadoop-customize-cluster-linux.md)\n\ntest\n"
+}

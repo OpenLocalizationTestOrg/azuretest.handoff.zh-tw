@@ -1,0 +1,914 @@
+{
+  "nodes": [
+    {
+      "content": "Azure Backup - Offline Backup or Initial Seeding using Azure Import/Export Service | Microsoft Azure",
+      "pos": [
+        26,
+        126
+      ]
+    },
+    {
+      "content": "Learn how Azure Backup enables you to send data off the network using Azure Import/Export service.",
+      "pos": [
+        144,
+        242
+      ]
+    },
+    {
+      "content": "This article explains the offline seeding of the initial backup data by using the Azure Import Export service",
+      "pos": [
+        243,
+        352
+      ]
+    },
+    {
+      "content": "Offline Backup workflow in Azure Backup",
+      "pos": [
+        657,
+        696
+      ]
+    },
+    {
+      "content": "Azure Backup is deeply integrated with the Azure Import/Export service which enables you to transfer initial backup data quickly.",
+      "pos": [
+        698,
+        827
+      ]
+    },
+    {
+      "content": "If you have TBs of initial backup data that needs to be transferred over a high latency &amp; low bandwidth network, you can use the Azure Import/Export service to ship the initial backup copy on one or more hard drives to an Azure data center.",
+      "pos": [
+        828,
+        1068
+      ]
+    },
+    {
+      "content": "This article provides an overview of the steps required to complete this workflow.",
+      "pos": [
+        1069,
+        1151
+      ]
+    },
+    {
+      "content": "Overview",
+      "pos": [
+        1156,
+        1164
+      ]
+    },
+    {
+      "content": "With Azure Backup and Azure Import/Export, it is simple and straightforward to upload the data to Azure offline through disks.",
+      "pos": [
+        1166,
+        1292
+      ]
+    },
+    {
+      "content": "Instead of transferring the initial full copy over the network, the backup data is written to a <bpt id=\"p1\">*</bpt>staging location<ept id=\"p1\">*</ept>.",
+      "pos": [
+        1293,
+        1408
+      ]
+    },
+    {
+      "content": "The staging location can be a direct attached storage or a network share.",
+      "pos": [
+        1409,
+        1482
+      ]
+    },
+    {
+      "content": "Once the initial copy is completed, using the <bpt id=\"p1\">*</bpt>Azure Import/Export tool<ept id=\"p1\">*</ept>, this data is written to a SATA drive which is eventually shipped to the Azure data center.",
+      "pos": [
+        1483,
+        1647
+      ]
+    },
+    {
+      "content": "Depending on the size of the initial backup, one or more SATA drives may be required to complete this operation.",
+      "pos": [
+        1648,
+        1760
+      ]
+    },
+    {
+      "content": "The Azure Import/Export tool accounts for these scenarios.",
+      "pos": [
+        1761,
+        1819
+      ]
+    },
+    {
+      "content": "After the backups are written to the disk, they can be shipped to the nearest data center location for uploading to Azure.",
+      "pos": [
+        1820,
+        1942
+      ]
+    },
+    {
+      "content": "Azure Backup then copies the backup data to the backup vault and the incremental backups are scheduled.",
+      "pos": [
+        1943,
+        2046
+      ]
+    },
+    {
+      "content": "Prerequisites",
+      "pos": [
+        2051,
+        2064
+      ]
+    },
+    {
+      "pos": [
+        2069,
+        2207
+      ],
+      "content": "It is important to familiarize yourself with the Azure Import export workflow which is listed <bpt id=\"p1\">[</bpt>here<ept id=\"p1\">](../storage-import-export-service.md)</ept>."
+    },
+    {
+      "content": "Before initiating the workflow, ensure that a Azure Backup vault has been created, vault credentials have been downloaded, Azure Backup agent has been installed on either your Windows Server/Windows Client or System Center Data Protection Manager (SCDPM) server and that the machine is registered with the Azure Backup vault.",
+      "pos": [
+        2211,
+        2536
+      ]
+    },
+    {
+      "pos": [
+        2540,
+        2696
+      ],
+      "content": "Download the Azure Publish file settings from <bpt id=\"p1\">[</bpt>here<ept id=\"p1\">](https://manage.windowsazure.com/publishsettings)</ept> on the machine from which you plan to backup our data."
+    },
+    {
+      "content": "Prepare a <bpt id=\"p1\">*</bpt>staging location<ept id=\"p1\">*</ept> which could be a network share or additional drive on the machine.",
+      "pos": [
+        2700,
+        2795
+      ]
+    },
+    {
+      "content": "Ensure that the staging location has enough disk space to hold your initial copy.",
+      "pos": [
+        2796,
+        2877
+      ]
+    },
+    {
+      "content": "For example, if you are trying to backup a 500GB file server, ensure that the staging area is at least 500GB (though a lesser amount will be used).",
+      "pos": [
+        2878,
+        3025
+      ]
+    },
+    {
+      "content": "The staging area is 'transient storage' and is used temporarily during this workflow.",
+      "pos": [
+        3026,
+        3111
+      ]
+    },
+    {
+      "content": "External SATA drive writer and an external 3.5 Inch SATA drive.",
+      "pos": [
+        3115,
+        3178
+      ]
+    },
+    {
+      "content": "Only 3.5 inch SATA II/III hard drives are supported for use with the Import/Export service.",
+      "pos": [
+        3179,
+        3270
+      ]
+    },
+    {
+      "content": "Hard drives larger than 6TB are not supported.",
+      "pos": [
+        3271,
+        3317
+      ]
+    },
+    {
+      "content": "You can attach a SATA II/III disk externally to most computers using a SATA II/III USB Adapter.",
+      "pos": [
+        3318,
+        3413
+      ]
+    },
+    {
+      "content": "Check the Azure Import/Export documentation for the latest set of drives which are supported by the service.",
+      "pos": [
+        3414,
+        3522
+      ]
+    },
+    {
+      "content": "Enable BitLocker on the machine to which the SATA drive writer is connected.",
+      "pos": [
+        3526,
+        3602
+      ]
+    },
+    {
+      "pos": [
+        3606,
+        3774
+      ],
+      "content": "Download the Azure Import/Export tool from <bpt id=\"p1\">[</bpt>here<ept id=\"p1\">](http://go.microsoft.com/fwlink/?LinkID=301900&amp;clcid=0x409)</ept> to the machine to which the SATA drive writer is connected."
+    },
+    {
+      "content": "Workflow",
+      "pos": [
+        3779,
+        3787
+      ]
+    },
+    {
+      "content": "The information provided in this section is for completing the <bpt id=\"p1\">**</bpt>Offline Backup<ept id=\"p1\">**</ept> workflow so your data can be delivered to an Azure data center and uploaded to Azure storage.",
+      "pos": [
+        3788,
+        3963
+      ]
+    },
+    {
+      "content": "If you have questions about the Import service or any aspect of the process, see the Import service overview referenced <bpt id=\"p1\">[</bpt>above<ept id=\"p1\">](../storage-import-export-service.md)</ept>.",
+      "pos": [
+        3964,
+        4129
+      ]
+    },
+    {
+      "content": "Initiate Offline Backup",
+      "pos": [
+        4135,
+        4158
+      ]
+    },
+    {
+      "content": "As part of scheduling a backup, you will encounter the following screen (in Windows Server, Windows client or SCDPM).",
+      "pos": [
+        4163,
+        4280
+      ]
+    },
+    {
+      "content": "ImportScreen",
+      "pos": [
+        4288,
+        4300
+      ]
+    },
+    {
+      "pos": [
+        4367,
+        4506
+      ],
+      "content": "The coresponding screen in SCDPM looks as follows. <br/>\n ![DPM Import screen](./media/backup-azure-backup-import-export/dpmoffline.png)",
+      "leadings": [
+        "",
+        "   "
+      ],
+      "nodes": [
+        {
+          "content": "The coresponding screen in SCDPM looks as follows.",
+          "pos": [
+            0,
+            50
+          ]
+        },
+        {
+          "content": "DPM Import screen",
+          "pos": [
+            60,
+            77
+          ]
+        }
+      ]
+    },
+    {
+      "content": "where:",
+      "pos": [
+        4512,
+        4518
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Staging Location<ept id=\"p1\">**</ept> - This refers to the temporary storage location to which the initial backup copy is written.",
+      "pos": [
+        4526,
+        4639
+      ]
+    },
+    {
+      "content": "This could be on a network share or on the local machine.",
+      "pos": [
+        4640,
+        4697
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Azure Import Job Name<ept id=\"p1\">**</ept> - As part of completing this workflow, you will need to create an <bpt id=\"p2\">*</bpt>Import job<ept id=\"p2\">*</ept> in the Azure portal (covered in the later part of the document).",
+      "pos": [
+        4704,
+        4873
+      ]
+    },
+    {
+      "content": "Provide an input which you plan to use later in the Azure portal as well.",
+      "pos": [
+        4874,
+        4947
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Azure Publish Settings<ept id=\"p1\">**</ept> - This is an XML file which contains information about your subscription profile.",
+      "pos": [
+        4954,
+        5062
+      ]
+    },
+    {
+      "content": "It also contains secure credentials associated to your subscription.",
+      "pos": [
+        5063,
+        5131
+      ]
+    },
+    {
+      "content": "The file can be downloaded from <bpt id=\"p1\">[</bpt>here<ept id=\"p1\">](https://manage.windowsazure.com/publishsettings)</ept>.",
+      "pos": [
+        5132,
+        5220
+      ]
+    },
+    {
+      "content": "Provide the local path to the publish settings file.",
+      "pos": [
+        5221,
+        5273
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Azure Subscription ID<ept id=\"p1\">**</ept> - Provide the Azure subscription id in which you plan to initiate the Azure Import job.",
+      "pos": [
+        5280,
+        5393
+      ]
+    },
+    {
+      "content": "If you have multiple Azure subscriptions, use the ID associated with the Import job.",
+      "pos": [
+        5394,
+        5478
+      ]
+    },
+    {
+      "pos": [
+        5485,
+        5602
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Azure Storage Account<ept id=\"p1\">**</ept> - Enter the name of the Azure storage account that will be associated with this Import job."
+    },
+    {
+      "pos": [
+        5609,
+        5725
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Azure Storage Container<ept id=\"p1\">**</ept> - Enter the name of the destination storage blob where this job’s data will be imported."
+    },
+    {
+      "content": "Complete the workflow and select <bpt id=\"p1\">**</bpt>Backup Now<ept id=\"p1\">**</ept> in the Azure Backup mmc to initiate the offline backup copy.",
+      "pos": [
+        5730,
+        5838
+      ]
+    },
+    {
+      "content": "The initial backup is written to the staging area as part of this step.",
+      "pos": [
+        5839,
+        5910
+      ]
+    },
+    {
+      "content": "Backup now",
+      "pos": [
+        5918,
+        5928
+      ]
+    },
+    {
+      "content": "The corresponding workflow in SCDPM is enabled by clicking on the <bpt id=\"p1\">**</bpt>Protection Group<ept id=\"p1\">**</ept> and choosing the <bpt id=\"p2\">**</bpt>Create recovery point<ept id=\"p2\">**</ept> option.",
+      "pos": [
+        5992,
+        6129
+      ]
+    },
+    {
+      "content": "This is followed by choosing the <bpt id=\"p1\">**</bpt>Online Protection<ept id=\"p1\">**</ept> option.",
+      "pos": [
+        6130,
+        6192
+      ]
+    },
+    {
+      "content": "DPM Backup now",
+      "pos": [
+        6200,
+        6214
+      ]
+    },
+    {
+      "pos": [
+        6281,
+        6381
+      ],
+      "content": "Once the operation completes, an <bpt id=\"p1\">*</bpt>.AIBBlob<ept id=\"p1\">*</ept> and <bpt id=\"p2\">*</bpt>.BaseBlob<ept id=\"p2\">*</ept> file is created in the staging location."
+    },
+    {
+      "content": "Output",
+      "pos": [
+        6389,
+        6395
+      ]
+    },
+    {
+      "content": "Prepare SATA drive",
+      "pos": [
+        6461,
+        6479
+      ]
+    },
+    {
+      "content": "Download the <bpt id=\"p1\">[</bpt>Microsoft Azure Import/Export Tool<ept id=\"p1\">](http://go.microsoft.com/fwlink/?linkid=301900&amp;clcid=0x409)</ept> to the <bpt id=\"p2\">*</bpt>copy machine<ept id=\"p2\">*</ept>.",
+      "pos": [
+        6484,
+        6615
+      ]
+    },
+    {
+      "content": "Ensure that the staging location (in the previous step) is accessible from the machine in which you plan to run the next set of commands.",
+      "pos": [
+        6616,
+        6753
+      ]
+    },
+    {
+      "content": "If required, the copy machine can be the same as the source machine.",
+      "pos": [
+        6754,
+        6822
+      ]
+    },
+    {
+      "content": "Unzip the <bpt id=\"p1\">*</bpt>WAImportExport.zip<ept id=\"p1\">*</ept> file.",
+      "pos": [
+        6827,
+        6863
+      ]
+    },
+    {
+      "content": "Run the <bpt id=\"p1\">*</bpt>WAImportExport<ept id=\"p1\">*</ept> tool  that will format the SATA drive, write the backup data to the SATA drive, and encrypt it.",
+      "pos": [
+        6864,
+        6984
+      ]
+    },
+    {
+      "content": "Before running the following command ensure that BitLocker is enabled on the machine.",
+      "pos": [
+        6985,
+        7070
+      ]
+    },
+    {
+      "pos": [
+        7082,
+        7323
+      ],
+      "content": "<bpt id=\"p1\">*</bpt>.\\WAImportExport.exe PrepImport /j:&lt;<ept id=\"p1\">*</ept>JournalFile<bpt id=\"p2\">*</bpt>&gt;.jrn /id: &lt;<ept id=\"p2\">*</ept>SessionId<bpt id=\"p3\">*</bpt>&gt; /sk:&lt;<ept id=\"p3\">*</ept>StorageAccountKey<bpt id=\"p4\">*</bpt>&gt; /BlobType:<ept id=\"p4\">*</ept><bpt id=\"p5\">*</bpt>PageBlob<ept id=\"p5\">*</ept>* /t:&lt;<bpt id=\"p6\">*</bpt>TargetDriveLetter<ept id=\"p6\">*</ept>&gt; /format /encrypt /srcdir:&lt;<bpt id=\"p7\">*</bpt>staging location<ept id=\"p7\">*</ept>&gt; /dstdir: &lt;<bpt id=\"p8\">*</bpt>DestinationBlobVirtualDirectory<ept id=\"p8\">*</ept>&gt;/*"
+    },
+    {
+      "content": "Parameter",
+      "pos": [
+        7328,
+        7337
+      ]
+    },
+    {
+      "content": "Description",
+      "pos": [
+        7340,
+        7351
+      ]
+    },
+    {
+      "pos": [
+        7384,
+        7402
+      ],
+      "content": "/j:&lt;<bpt id=\"p1\">*</bpt>JournalFile<ept id=\"p1\">*</ept>&gt;"
+    },
+    {
+      "content": "The path to the journal file.",
+      "pos": [
+        7404,
+        7433
+      ]
+    },
+    {
+      "content": "Each drive must have exactly one journal file.",
+      "pos": [
+        7434,
+        7480
+      ]
+    },
+    {
+      "content": "Note that the journal file must not reside on the target drive.",
+      "pos": [
+        7481,
+        7544
+      ]
+    },
+    {
+      "content": "The journal file extension is .jrn and is created as part of running this command.",
+      "pos": [
+        7545,
+        7627
+      ]
+    },
+    {
+      "pos": [
+        7630,
+        7647
+      ],
+      "content": "/id:&lt;<bpt id=\"p1\">*</bpt>SessionId<ept id=\"p1\">*</ept>&gt;"
+    },
+    {
+      "content": "The session ID identifies a <bpt id=\"p1\">*</bpt>copy session<ept id=\"p1\">*</ept>.",
+      "pos": [
+        7650,
+        7693
+      ]
+    },
+    {
+      "content": "It is used to ensure accurate recovery of an interrupted copy session.",
+      "pos": [
+        7694,
+        7764
+      ]
+    },
+    {
+      "content": "Files that are copied in a copy session are stored in a directory named after the session ID on the target drive.",
+      "pos": [
+        7765,
+        7878
+      ]
+    },
+    {
+      "pos": [
+        7882,
+        7907
+      ],
+      "content": "/sk:&lt;<bpt id=\"p1\">*</bpt>StorageAccountKey<ept id=\"p1\">*</ept>&gt;"
+    },
+    {
+      "content": "The account key for the storage account to which the data will be imported.",
+      "pos": [
+        7910,
+        7985
+      ]
+    },
+    {
+      "content": "/BlobType",
+      "pos": [
+        7990,
+        7999
+      ]
+    },
+    {
+      "content": "Specify <bpt id=\"p1\">**</bpt>PageBlob<ept id=\"p1\">**</ept>, this workflow will succeed only if the PageBlob option is specified.",
+      "pos": [
+        8002,
+        8092
+      ]
+    },
+    {
+      "content": "This is not the default option and should be mentioned in this command.",
+      "pos": [
+        8093,
+        8164
+      ]
+    },
+    {
+      "pos": [
+        8168,
+        8192
+      ],
+      "content": "/t:&lt;<bpt id=\"p1\">*</bpt>TargetDriveLetter<ept id=\"p1\">*</ept>&gt;"
+    },
+    {
+      "content": "The drive letter of the target hard drive for the current copy session, without the trailing colon.",
+      "pos": [
+        8195,
+        8294
+      ]
+    },
+    {
+      "content": "/format",
+      "pos": [
+        8297,
+        8304
+      ]
+    },
+    {
+      "content": "Specify this parameter when the drive needs to be formatted; otherwise, omit it.",
+      "pos": [
+        8307,
+        8387
+      ]
+    },
+    {
+      "content": "Before the tool formats the drive, it will prompt for a confirmation from console.",
+      "pos": [
+        8388,
+        8470
+      ]
+    },
+    {
+      "content": "To suppress the confirmation, specify the /silentmode parameter.",
+      "pos": [
+        8471,
+        8535
+      ]
+    },
+    {
+      "content": "/encrypt",
+      "pos": [
+        8538,
+        8546
+      ]
+    },
+    {
+      "content": "Specified this parameter when the drive has not yet been encrypted with BitLocker and needs to be encrypted by the tool.",
+      "pos": [
+        8549,
+        8669
+      ]
+    },
+    {
+      "content": "If the drive has already been encrypted with BitLocker, then omit this parameter and specify the /bk parameter, providing the existing BitLocker key.",
+      "pos": [
+        8670,
+        8819
+      ]
+    },
+    {
+      "content": "If you specify the /format parameter, then you must also specify the /encrypt parameter.",
+      "pos": [
+        8820,
+        8908
+      ]
+    },
+    {
+      "pos": [
+        8912,
+        8939
+      ],
+      "content": "/srcdir:&lt;<bpt id=\"p1\">*</bpt>SourceDirectory<ept id=\"p1\">*</ept>&gt;"
+    },
+    {
+      "content": "The source directory that contains files to be copied to the target drive.",
+      "pos": [
+        8942,
+        9016
+      ]
+    },
+    {
+      "content": "The directory path must be an absolute path (not a relative path).",
+      "pos": [
+        9017,
+        9083
+      ]
+    },
+    {
+      "pos": [
+        9086,
+        9129
+      ],
+      "content": "/dstdir:&lt;<bpt id=\"p1\">*</bpt>DestinationBlobVirtualDirectory<ept id=\"p1\">*</ept>&gt;"
+    },
+    {
+      "content": "The path to the destination virtual directory in your Microsoft Azure storage account.",
+      "pos": [
+        9132,
+        9218
+      ]
+    },
+    {
+      "content": "Be sure to use valid container names when specifying destination virtual directories or blobs.",
+      "pos": [
+        9219,
+        9313
+      ]
+    },
+    {
+      "content": "Keep in mind that container names must be lowercase.",
+      "pos": [
+        9314,
+        9366
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> A journal file is created in the WAImportExport folder that captures the entire information of the workflow.",
+      "pos": [
+        9373,
+        9494
+      ]
+    },
+    {
+      "content": "You will need this file when creating an import job in the Azure portal.",
+      "pos": [
+        9495,
+        9567
+      ]
+    },
+    {
+      "content": "PowerShell output",
+      "pos": [
+        9573,
+        9590
+      ]
+    },
+    {
+      "content": "Create Import Job in Azure portal",
+      "pos": [
+        9653,
+        9686
+      ]
+    },
+    {
+      "pos": [
+        9690,
+        9867
+      ],
+      "content": "Navigate to your storage account in the <bpt id=\"p1\">[</bpt>Management Portal<ept id=\"p1\">](https://manage.windowsazure.com/)</ept>, and click on <bpt id=\"p2\">**</bpt>Import/Export<ept id=\"p2\">**</ept> and then on <bpt id=\"p3\">**</bpt>Create Import Job<ept id=\"p3\">**</ept> in the task pane."
+    },
+    {
+      "content": "Portal",
+      "pos": [
+        9875,
+        9881
+      ]
+    },
+    {
+      "content": "In Step 1 of the wizard, indicate that you have prepared your drive and that you have the drive journal file available.",
+      "pos": [
+        9946,
+        10065
+      ]
+    },
+    {
+      "content": "In Step 2 of the wizard, provide contact information for the person responsible for this import job.",
+      "pos": [
+        10066,
+        10166
+      ]
+    },
+    {
+      "content": "In Step 3, upload the drive journal files that you obtained during the previous section.",
+      "pos": [
+        10170,
+        10258
+      ]
+    },
+    {
+      "content": "In Step 4, enter a descriptive name for the import job.",
+      "pos": [
+        10262,
+        10317
+      ]
+    },
+    {
+      "content": "Note that the name you enter may contain only lowercase letters, numbers, hyphens, and underscores, must start with a letter, and may not contain spaces.",
+      "pos": [
+        10318,
+        10471
+      ]
+    },
+    {
+      "content": "You'll use the name you choose to track your jobs while they are in progress and once they are completed.",
+      "pos": [
+        10472,
+        10577
+      ]
+    },
+    {
+      "content": "Next, select your data center region from the list.",
+      "pos": [
+        10581,
+        10632
+      ]
+    },
+    {
+      "content": "The data center region will indicate the data center and address to which you must ship your package.",
+      "pos": [
+        10633,
+        10734
+      ]
+    },
+    {
+      "content": "DC",
+      "pos": [
+        10742,
+        10744
+      ]
+    },
+    {
+      "content": "In Step 5, select your return carrier from the list, and enter your carrier account number.",
+      "pos": [
+        10800,
+        10891
+      ]
+    },
+    {
+      "content": "Microsoft will use this account to ship your drives back to you once your import job is complete.",
+      "pos": [
+        10892,
+        10989
+      ]
+    },
+    {
+      "content": "Ship the disk and enter the tracking number to track the status of the shipment.",
+      "pos": [
+        10994,
+        11074
+      ]
+    },
+    {
+      "content": "Once the disk arrives in the datacenter, it is copied to the storage account and the status is updated.",
+      "pos": [
+        11075,
+        11178
+      ]
+    },
+    {
+      "content": "Complete Status",
+      "pos": [
+        11186,
+        11201
+      ]
+    },
+    {
+      "content": "Completing the workflow",
+      "pos": [
+        11264,
+        11287
+      ]
+    },
+    {
+      "content": "Once the initial backup data is available in your storage account, the Azure Backup agent copies the contents of the data from this account to the multi-tenanted backup storage account.",
+      "pos": [
+        11288,
+        11473
+      ]
+    },
+    {
+      "content": "In the next schedule backup time, the Azure Backup agent performs the incremental backup over the initial backup copy.",
+      "pos": [
+        11474,
+        11592
+      ]
+    },
+    {
+      "content": "Next Steps",
+      "pos": [
+        11597,
+        11607
+      ]
+    },
+    {
+      "pos": [
+        11610,
+        11733
+      ],
+      "content": "For any questions on the Azure Import/Export workflow, please refer to this <bpt id=\"p1\">[</bpt>article<ept id=\"p1\">](../storage-import-export-service.md)</ept>."
+    },
+    {
+      "pos": [
+        11736,
+        11862
+      ],
+      "content": "Refer to the Offline Backup section of the Azure Backup <bpt id=\"p1\">[</bpt>FAQ<ept id=\"p1\">](backup-azure-backup-faq.md)</ept> for any questions about the workflow"
+    },
+    {
+      "content": "test",
+      "pos": [
+        11864,
+        11868
+      ]
+    }
+  ],
+  "content": "<properties\n   pageTitle=\"Azure Backup - Offline Backup or Initial Seeding using Azure Import/Export Service | Microsoft Azure\"\n   description=\"Learn how Azure Backup enables you to send data off the network using Azure Import/Export service. This article explains the offline seeding of the initial backup data by using the Azure Import Export service\"\n   services=\"backup\"\n   documentationCenter=\"\"\n   authors=\"aashishr\"\n   manager=\"shreeshd\"\n   editor=\"\"/>\n<tags\n   ms.service=\"backup\"\n   ms.devlang=\"na\"\n   ms.topic=\"article\"\n   ms.tgt_pltfrm=\"na\"\n   ms.workload=\"storage-backup-recovery\"\n   ms.date=\"08/28/2015\"\n   ms.author=\"aashishr\"; \"jimpark\"/>\n\n# Offline Backup workflow in Azure Backup\n\nAzure Backup is deeply integrated with the Azure Import/Export service which enables you to transfer initial backup data quickly. If you have TBs of initial backup data that needs to be transferred over a high latency & low bandwidth network, you can use the Azure Import/Export service to ship the initial backup copy on one or more hard drives to an Azure data center. This article provides an overview of the steps required to complete this workflow.\n\n## Overview\n\nWith Azure Backup and Azure Import/Export, it is simple and straightforward to upload the data to Azure offline through disks. Instead of transferring the initial full copy over the network, the backup data is written to a *staging location*. The staging location can be a direct attached storage or a network share. Once the initial copy is completed, using the *Azure Import/Export tool*, this data is written to a SATA drive which is eventually shipped to the Azure data center. Depending on the size of the initial backup, one or more SATA drives may be required to complete this operation. The Azure Import/Export tool accounts for these scenarios. After the backups are written to the disk, they can be shipped to the nearest data center location for uploading to Azure. Azure Backup then copies the backup data to the backup vault and the incremental backups are scheduled.\n\n## Prerequisites\n\n1. It is important to familiarize yourself with the Azure Import export workflow which is listed [here](../storage-import-export-service.md).\n2. Before initiating the workflow, ensure that a Azure Backup vault has been created, vault credentials have been downloaded, Azure Backup agent has been installed on either your Windows Server/Windows Client or System Center Data Protection Manager (SCDPM) server and that the machine is registered with the Azure Backup vault.\n3. Download the Azure Publish file settings from [here](https://manage.windowsazure.com/publishsettings) on the machine from which you plan to backup our data.\n4. Prepare a *staging location* which could be a network share or additional drive on the machine. Ensure that the staging location has enough disk space to hold your initial copy. For example, if you are trying to backup a 500GB file server, ensure that the staging area is at least 500GB (though a lesser amount will be used). The staging area is 'transient storage' and is used temporarily during this workflow.\n5. External SATA drive writer and an external 3.5 Inch SATA drive. Only 3.5 inch SATA II/III hard drives are supported for use with the Import/Export service. Hard drives larger than 6TB are not supported. You can attach a SATA II/III disk externally to most computers using a SATA II/III USB Adapter. Check the Azure Import/Export documentation for the latest set of drives which are supported by the service.\n6. Enable BitLocker on the machine to which the SATA drive writer is connected.\n7. Download the Azure Import/Export tool from [here](http://go.microsoft.com/fwlink/?LinkID=301900&clcid=0x409) to the machine to which the SATA drive writer is connected.\n\n## Workflow\nThe information provided in this section is for completing the **Offline Backup** workflow so your data can be delivered to an Azure data center and uploaded to Azure storage. If you have questions about the Import service or any aspect of the process, see the Import service overview referenced [above](../storage-import-export-service.md).\n\n### Initiate Offline Backup\n\n1. As part of scheduling a backup, you will encounter the following screen (in Windows Server, Windows client or SCDPM).\n\n    ![ImportScreen](./media/backup-azure-backup-import-export/importscreen.png)\n\n    The coresponding screen in SCDPM looks as follows. <br/>\n    ![DPM Import screen](./media/backup-azure-backup-import-export/dpmoffline.png)\n\n    where:\n\n    - **Staging Location** - This refers to the temporary storage location to which the initial backup copy is written. This could be on a network share or on the local machine.\n    - **Azure Import Job Name** - As part of completing this workflow, you will need to create an *Import job* in the Azure portal (covered in the later part of the document). Provide an input which you plan to use later in the Azure portal as well.\n    - **Azure Publish Settings** - This is an XML file which contains information about your subscription profile. It also contains secure credentials associated to your subscription. The file can be downloaded from [here](https://manage.windowsazure.com/publishsettings). Provide the local path to the publish settings file.\n    - **Azure Subscription ID** - Provide the Azure subscription id in which you plan to initiate the Azure Import job. If you have multiple Azure subscriptions, use the ID associated with the Import job.\n    - **Azure Storage Account** - Enter the name of the Azure storage account that will be associated with this Import job.\n    - **Azure Storage Container** - Enter the name of the destination storage blob where this job’s data will be imported.\n\n2. Complete the workflow and select **Backup Now** in the Azure Backup mmc to initiate the offline backup copy. The initial backup is written to the staging area as part of this step.\n\n    ![Backup now](./media/backup-azure-backup-import-export/backupnow.png)\n\n    The corresponding workflow in SCDPM is enabled by clicking on the **Protection Group** and choosing the **Create recovery point** option. This is followed by choosing the **Online Protection** option.\n\n    ![DPM Backup now](./media/backup-azure-backup-import-export/dpmbackupnow.png)\n\n    Once the operation completes, an *.AIBBlob* and *.BaseBlob* file is created in the staging location.\n\n    ![Output](./media/backup-azure-backup-import-export/opbackupnow.png)\n\n### Prepare SATA drive\n\n1. Download the [Microsoft Azure Import/Export Tool](http://go.microsoft.com/fwlink/?linkid=301900&clcid=0x409) to the *copy machine*. Ensure that the staging location (in the previous step) is accessible from the machine in which you plan to run the next set of commands. If required, the copy machine can be the same as the source machine.\n\n2. Unzip the *WAImportExport.zip* file. Run the *WAImportExport* tool  that will format the SATA drive, write the backup data to the SATA drive, and encrypt it. Before running the following command ensure that BitLocker is enabled on the machine. <br/>\n\n    *.\\WAImportExport.exe PrepImport /j:<*JournalFile*>.jrn /id: <*SessionId*> /sk:<*StorageAccountKey*> /BlobType:**PageBlob** /t:<*TargetDriveLetter*> /format /encrypt /srcdir:<*staging location*> /dstdir: <*DestinationBlobVirtualDirectory*>/*\n\n\n| Parameter | Description\n|-------------|-------------|\n| /j:<*JournalFile*>| The path to the journal file. Each drive must have exactly one journal file. Note that the journal file must not reside on the target drive. The journal file extension is .jrn and is created as part of running this command.|\n|/id:<*SessionId*> | The session ID identifies a *copy session*. It is used to ensure accurate recovery of an interrupted copy session. Files that are copied in a copy session are stored in a directory named after the session ID on the target drive.|\n| /sk:<*StorageAccountKey*> | The account key for the storage account to which the data will be imported. |\n| /BlobType | Specify **PageBlob**, this workflow will succeed only if the PageBlob option is specified. This is not the default option and should be mentioned in this command. |\n|/t:<*TargetDriveLetter*> | The drive letter of the target hard drive for the current copy session, without the trailing colon.|\n|/format | Specify this parameter when the drive needs to be formatted; otherwise, omit it. Before the tool formats the drive, it will prompt for a confirmation from console. To suppress the confirmation, specify the /silentmode parameter.|\n|/encrypt | Specified this parameter when the drive has not yet been encrypted with BitLocker and needs to be encrypted by the tool. If the drive has already been encrypted with BitLocker, then omit this parameter and specify the /bk parameter, providing the existing BitLocker key. If you specify the /format parameter, then you must also specify the /encrypt parameter. |\n|/srcdir:<*SourceDirectory*> | The source directory that contains files to be copied to the target drive. The directory path must be an absolute path (not a relative path).|\n|/dstdir:<*DestinationBlobVirtualDirectory*> | The path to the destination virtual directory in your Microsoft Azure storage account. Be sure to use valid container names when specifying destination virtual directories or blobs. Keep in mind that container names must be lowercase.|\n\n  > [AZURE.NOTE] A journal file is created in the WAImportExport folder that captures the entire information of the workflow. You will need this file when creating an import job in the Azure portal.\n\n  ![PowerShell output](./media/backup-azure-backup-import-export/psoutput.png)\n\n### Create Import Job in Azure portal\n1. Navigate to your storage account in the [Management Portal](https://manage.windowsazure.com/), and click on **Import/Export** and then on **Create Import Job** in the task pane.\n\n    ![Portal](./media/backup-azure-backup-import-export/azureportal.png)\n\n2. In Step 1 of the wizard, indicate that you have prepared your drive and that you have the drive journal file available. In Step 2 of the wizard, provide contact information for the person responsible for this import job.\n3. In Step 3, upload the drive journal files that you obtained during the previous section.\n4. In Step 4, enter a descriptive name for the import job. Note that the name you enter may contain only lowercase letters, numbers, hyphens, and underscores, must start with a letter, and may not contain spaces. You'll use the name you choose to track your jobs while they are in progress and once they are completed.\n5. Next, select your data center region from the list. The data center region will indicate the data center and address to which you must ship your package.\n\n    ![DC](./media/backup-azure-backup-import-export/dc.png)\n\n6. In Step 5, select your return carrier from the list, and enter your carrier account number. Microsoft will use this account to ship your drives back to you once your import job is complete.\n\n7. Ship the disk and enter the tracking number to track the status of the shipment. Once the disk arrives in the datacenter, it is copied to the storage account and the status is updated.\n\n    ![Complete Status](./media/backup-azure-backup-import-export/complete.png)\n\n### Completing the workflow\nOnce the initial backup data is available in your storage account, the Azure Backup agent copies the contents of the data from this account to the multi-tenanted backup storage account. In the next schedule backup time, the Azure Backup agent performs the incremental backup over the initial backup copy.\n\n## Next Steps\n- For any questions on the Azure Import/Export workflow, please refer to this [article](../storage-import-export-service.md).\n- Refer to the Offline Backup section of the Azure Backup [FAQ](backup-azure-backup-faq.md) for any questions about the workflow\n\ntest\n"
+}

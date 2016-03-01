@@ -1,0 +1,3239 @@
+{
+  "nodes": [
+    {
+      "content": "Use Azure Premium Storage with SQL Server on Virtual Machines",
+      "pos": [
+        28,
+        89
+      ]
+    },
+    {
+      "content": "This article provides guidance for how to start using Azure Premium Storage with SQL Server running on Azure Virtual Machines.",
+      "pos": [
+        108,
+        234
+      ]
+    },
+    {
+      "content": "This includes examples of new deployments and migrations of existing deployments of SQL Server on IaaS.",
+      "pos": [
+        235,
+        338
+      ]
+    },
+    {
+      "content": "Use Azure Premium Storage with SQL Server on Virtual Machines",
+      "pos": [
+        688,
+        749
+      ]
+    },
+    {
+      "content": "Overview",
+      "pos": [
+        755,
+        763
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt>Azure Premium Storage<ept id=\"p1\">](../storage-premium-storage-preview-portal.md)</ept> is the next generation of storage that provides low latency and high throughput IO.",
+      "pos": [
+        765,
+        918
+      ]
+    },
+    {
+      "content": "It works best for key IO intensive workloads, such as SQL Server on IaaS <bpt id=\"p1\">[</bpt>Virtual Machines<ept id=\"p1\">](http://azure.microsoft.com/services/virtual-machines/)</ept>.",
+      "pos": [
+        919,
+        1066
+      ]
+    },
+    {
+      "content": "This article provides planning and guidance for migrating a Virtual Machine running SQL Server to use Premium Storage.",
+      "pos": [
+        1067,
+        1185
+      ]
+    },
+    {
+      "content": "This includes Azure infrastructure (networking, storage) and guest Windows VM steps.",
+      "pos": [
+        1186,
+        1270
+      ]
+    },
+    {
+      "content": "The example in the <bpt id=\"p1\">[</bpt>Appendix<ept id=\"p1\">](#appendix-migrating-a-multisite-alwayson-cluster-to-premium-storage)</ept> shows a full comphrensive end to end migration of how to move larger VMs to take advantage of improved local SSD storage with PowerShell.",
+      "pos": [
+        1271,
+        1507
+      ]
+    },
+    {
+      "content": "It is important to understand the end-to-end process of utilizing Azure Premium Storage with SQL Server on IAAS VMs.",
+      "pos": [
+        1509,
+        1625
+      ]
+    },
+    {
+      "content": "This includes:",
+      "pos": [
+        1626,
+        1640
+      ]
+    },
+    {
+      "content": "Identification of the prerequisites to use Premium Storage.",
+      "pos": [
+        1644,
+        1703
+      ]
+    },
+    {
+      "content": "Examples of deploying SQL Server on IaaS to Premium Storage for new deployments.",
+      "pos": [
+        1706,
+        1786
+      ]
+    },
+    {
+      "content": "Examples of migrating existing deployments, both stand-alone servers and deployments using SQL AlwaysOn Availability Groups.",
+      "pos": [
+        1789,
+        1913
+      ]
+    },
+    {
+      "content": "Possible migration approaches.",
+      "pos": [
+        1916,
+        1946
+      ]
+    },
+    {
+      "content": "Full end-to-end example showing Azure, Windows, and SQL Server steps for  the migration of an existing AlwaysOn implementation.",
+      "pos": [
+        1949,
+        2076
+      ]
+    },
+    {
+      "pos": [
+        2078,
+        2250
+      ],
+      "content": "For more background information on SQL Server in Azure Virtual Machines, see <bpt id=\"p1\">[</bpt>SQL Server in Azure Virtual Machines<ept id=\"p1\">](virtual-machines-sql-server-infrastructure-services.md)</ept>."
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Author:<ept id=\"p1\">**</ept> Daniel Sol",
+      "pos": [
+        2252,
+        2274
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Technical Reviewers:<ept id=\"p1\">**</ept> Luis Carlos Vargas Herring, Sanjay Mishra, Pravin Mital, Juergen Thomas, Gonzalo Ruiz.",
+      "pos": [
+        2275,
+        2386
+      ]
+    },
+    {
+      "content": "Prerequisites for Premium Storage",
+      "pos": [
+        2391,
+        2424
+      ]
+    },
+    {
+      "content": "There are several prerequisites for using Premium Storage.",
+      "pos": [
+        2426,
+        2484
+      ]
+    },
+    {
+      "content": "Machine Size",
+      "pos": [
+        2490,
+        2502
+      ]
+    },
+    {
+      "content": "For using Premium Storage you will need to use DS series Virtual Machines (VM).",
+      "pos": [
+        2504,
+        2583
+      ]
+    },
+    {
+      "content": "If you have not used DS Series machines in your cloud service before, you must delete the existing VM, keep the attached disks, and then create a new cloud service before recreating  the VM as DS* role size.",
+      "pos": [
+        2584,
+        2791
+      ]
+    },
+    {
+      "content": "For more information on Virtual Machine sizes, see <bpt id=\"p1\">[</bpt>Virtual Machine and Cloud Service Sizes for Azure<ept id=\"p1\">](virtual-machines-size-specs.md)</ept>.",
+      "pos": [
+        2792,
+        2927
+      ]
+    },
+    {
+      "content": "Cloud Services",
+      "pos": [
+        2933,
+        2947
+      ]
+    },
+    {
+      "content": "You can only use DS* VMs with Premium Storage when they are created in a new cloud service.",
+      "pos": [
+        2949,
+        3040
+      ]
+    },
+    {
+      "content": "If you are using SQL Server AlwaysOn in Azure, the AlwaysOn Listener will refer to the Azure Internal or External Load Balancer IP address that is associated with a cloud service.",
+      "pos": [
+        3041,
+        3220
+      ]
+    },
+    {
+      "content": "This article focuses on how to migrate while maintaining availability in this scenario.",
+      "pos": [
+        3221,
+        3308
+      ]
+    },
+    {
+      "pos": [
+        3312,
+        3401
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> A DS* Series must be the first VM that is deployed to the new Cloud Service."
+    },
+    {
+      "content": "Regional VNETS",
+      "pos": [
+        3407,
+        3421
+      ]
+    },
+    {
+      "content": "For  DS* VMs you must configure the Virtual Network (VNET) hosting your VMs to be regional.",
+      "pos": [
+        3423,
+        3514
+      ]
+    },
+    {
+      "content": "This “widens” the VNET is to allow the larger VMs to be provisioned in other clusters and allow communication between them.",
+      "pos": [
+        3515,
+        3638
+      ]
+    },
+    {
+      "content": "In the following screenshot, the highlighted Location shows regional VNETs, whereas the first result shows a “narrow” VNET.",
+      "pos": [
+        3639,
+        3762
+      ]
+    },
+    {
+      "content": "![RegionalVNET][1]",
+      "pos": [
+        3765,
+        3783
+      ]
+    },
+    {
+      "content": "You can raise a Microsoft support ticket to migrate to a regional VNET, Microsoft will make a change, then to complete the migration to regional VNETs, change the property AffinityGroup in the network configuration.",
+      "pos": [
+        3785,
+        4000
+      ]
+    },
+    {
+      "content": "First export the Network Configuration in PowerShell, and then replace the <bpt id=\"p1\">**</bpt>AffinityGroup<ept id=\"p1\">**</ept> property in the <bpt id=\"p2\">**</bpt>VirtualNetworkSite<ept id=\"p2\">**</ept> element with a <bpt id=\"p3\">**</bpt>Location<ept id=\"p3\">**</ept> property.",
+      "pos": [
+        4001,
+        4170
+      ]
+    },
+    {
+      "content": "Specify <ph id=\"ph1\">`Location = XXXX`</ph> where <ph id=\"ph2\">`XXXX`</ph> is an Azure region.",
+      "pos": [
+        4171,
+        4229
+      ]
+    },
+    {
+      "content": "Then import the new configuration.",
+      "pos": [
+        4230,
+        4264
+      ]
+    },
+    {
+      "content": "For example, considering the following VNET configuration:",
+      "pos": [
+        4266,
+        4324
+      ]
+    },
+    {
+      "content": "To move this to a regional VNET in West Europe, change the configuration to the following:",
+      "pos": [
+        4592,
+        4682
+      ]
+    },
+    {
+      "content": "Storage Accounts",
+      "pos": [
+        4949,
+        4965
+      ]
+    },
+    {
+      "content": "You will need to create a new storage account that is configured for Premium Storage.",
+      "pos": [
+        4967,
+        5052
+      ]
+    },
+    {
+      "content": "Note that the use of Premium Storage is set at the storage account, not on individual VHDs, however when using a DS* Series VM you can attach VHD’s from Premium and Standard Storage accounts.",
+      "pos": [
+        5053,
+        5244
+      ]
+    },
+    {
+      "content": "You may consider this if you do not want to place the OS VHD on to the Premium Storage account.",
+      "pos": [
+        5245,
+        5340
+      ]
+    },
+    {
+      "pos": [
+        5342,
+        5468
+      ],
+      "content": "The following <bpt id=\"p1\">**</bpt>New-AzureStorageAccountPowerShell<ept id=\"p1\">**</ept> command with the \"Premium_LRS\" <bpt id=\"p2\">**</bpt>Type<ept id=\"p2\">**</ept> creates a Premium Storage Account:"
+    },
+    {
+      "content": "VHDs Cache Settings",
+      "pos": [
+        5637,
+        5656
+      ]
+    },
+    {
+      "content": "The main difference between creating disks that are part of a Premium Storage account is the disk cache setting.",
+      "pos": [
+        5658,
+        5770
+      ]
+    },
+    {
+      "content": "For SQL Server Data volume disks it is recommended that you use ‘<bpt id=\"p1\">**</bpt>Read Caching<ept id=\"p1\">**</ept>’.",
+      "pos": [
+        5771,
+        5854
+      ]
+    },
+    {
+      "content": "For Transaction log volumes, the disk cache setting should be set to ‘<bpt id=\"p1\">**</bpt>None<ept id=\"p1\">**</ept>’.",
+      "pos": [
+        5855,
+        5935
+      ]
+    },
+    {
+      "content": "This is different from the recommendations for Standard Storage accounts.",
+      "pos": [
+        5936,
+        6009
+      ]
+    },
+    {
+      "content": "Once the VHDs have been attached, the cache setting cannot be altered.",
+      "pos": [
+        6011,
+        6081
+      ]
+    },
+    {
+      "content": "You would need to detach and reattach the VHD with an updated cahce setting.",
+      "pos": [
+        6082,
+        6158
+      ]
+    },
+    {
+      "content": "Windows Storage Spaces",
+      "pos": [
+        6164,
+        6186
+      ]
+    },
+    {
+      "content": "You can use <bpt id=\"p1\">[</bpt>Windows Storage Spaces<ept id=\"p1\">](https://technet.microsoft.com/library/hh831739.aspx)</ept> as you did with previous Standard Storage, this will allow you to migrate a VM that is already utilizing Storage Spaces.",
+      "pos": [
+        6188,
+        6398
+      ]
+    },
+    {
+      "content": "The example in <bpt id=\"p1\">[</bpt>Appendix<ept id=\"p1\">](#appendix-migrating-a-multisite-alwayson-cluster-to-premium-storage)</ept> (step 9 and forward) demonstrates the Powershell code to extract and import a VM with multiple attached VHDs.",
+      "pos": [
+        6399,
+        6603
+      ]
+    },
+    {
+      "content": "Storage Pools were used with Standard Azure storage account to enhance throughput and reduce latency.",
+      "pos": [
+        6606,
+        6707
+      ]
+    },
+    {
+      "content": "You might find value in testing Storage Pools with Premium Storage for new deployments, but they do add additional complexity with storage setup.",
+      "pos": [
+        6708,
+        6853
+      ]
+    },
+    {
+      "content": "How to find which Azure Virtual Disks Map to Storage Pools",
+      "pos": [
+        6861,
+        6919
+      ]
+    },
+    {
+      "content": "As there are different cache setting recommendations for attached VHDs, you might decide to copy the VHDs to a Premium Storage account.",
+      "pos": [
+        6921,
+        7056
+      ]
+    },
+    {
+      "content": "However, when you reattach them to the new DS series VM, you might need to alter the cache settings.",
+      "pos": [
+        7057,
+        7157
+      ]
+    },
+    {
+      "content": "It is simpler to apply the Premium Storage recommended cache settings when you have separate VHDs for the SQL Data files and log files (rather than a single VHD that contains both).",
+      "pos": [
+        7158,
+        7339
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> If you have SQL Server data and log files on the same volume, the caching option you choose depends on the IO access patterns for your database workloads.",
+      "pos": [
+        7344,
+        7511
+      ]
+    },
+    {
+      "content": "Only testing can demonstrate which caching option is best for this scenario.",
+      "pos": [
+        7512,
+        7588
+      ]
+    },
+    {
+      "content": "However if you are using Windows Storage Spaces which are made up of multiple VHDs you will need to look at your original scripts to identify which attached VHDs are in what specific pool, so you can then set the cache settings accordingly for each disk.",
+      "pos": [
+        7590,
+        7844
+      ]
+    },
+    {
+      "content": "If you do not have original script available to show you which VHDs map to the storage pool, you can use the following steps to determine the disk/storage pool mapping.",
+      "pos": [
+        7846,
+        8014
+      ]
+    },
+    {
+      "content": "For each disk, use the following steps:",
+      "pos": [
+        8016,
+        8055
+      ]
+    },
+    {
+      "pos": [
+        8060,
+        8126
+      ],
+      "content": "Get list of disks attached to VM with the <bpt id=\"p1\">**</bpt>Get-AzureVM<ept id=\"p1\">**</ept> command:"
+    },
+    {
+      "content": "Get-AzureVM -ServiceName",
+      "pos": [
+        8132,
+        8156
+      ]
+    },
+    {
+      "content": "-Name",
+      "pos": [
+        8171,
+        8176
+      ]
+    },
+    {
+      "content": "| Get-AzureDataDisk",
+      "pos": [
+        8186,
+        8205
+      ]
+    },
+    {
+      "content": "Note the Diskname and LUN.",
+      "pos": [
+        8210,
+        8236
+      ]
+    },
+    {
+      "content": "![DisknameAndLUN][2]",
+      "pos": [
+        8242,
+        8262
+      ]
+    },
+    {
+      "content": "Remote desktop into the VM.",
+      "pos": [
+        8267,
+        8294
+      ]
+    },
+    {
+      "content": "Then go to <bpt id=\"p1\">**</bpt>Computer Management<ept id=\"p1\">**</ept> | <bpt id=\"p2\">**</bpt>Device Manager<ept id=\"p2\">**</ept> | <bpt id=\"p3\">**</bpt>Disk Drives<ept id=\"p3\">**</ept>.",
+      "pos": [
+        8295,
+        8369
+      ]
+    },
+    {
+      "content": "Look at the  properties of each of the ‘Microsoft Virtual Disks’",
+      "pos": [
+        8370,
+        8434
+      ]
+    },
+    {
+      "content": "![VirtualDiskProperties][3]",
+      "pos": [
+        8440,
+        8467
+      ]
+    },
+    {
+      "content": "The LUN number here is a reference to the LUN number you specify when attaching the VHD to the VM.",
+      "pos": [
+        8472,
+        8570
+      ]
+    },
+    {
+      "content": "For the ‘Microsoft Virtual Disk’ go to the <bpt id=\"p1\">**</bpt>Details<ept id=\"p1\">**</ept> tab, then in the <bpt id=\"p2\">**</bpt>Property<ept id=\"p2\">**</ept> list, go to <bpt id=\"p3\">**</bpt>Driver Key<ept id=\"p3\">**</ept>.",
+      "pos": [
+        8574,
+        8686
+      ]
+    },
+    {
+      "content": "In the <bpt id=\"p1\">**</bpt>Value<ept id=\"p1\">**</ept>, note the <bpt id=\"p2\">**</bpt>Offset<ept id=\"p2\">**</ept>, which is 0002 in the following screenshot.",
+      "pos": [
+        8687,
+        8768
+      ]
+    },
+    {
+      "content": "The 0002 denotes the PhysicalDisk2 that the storage pool references.",
+      "pos": [
+        8769,
+        8837
+      ]
+    },
+    {
+      "content": "![VirtualDiskPropertyDetails][4]",
+      "pos": [
+        8843,
+        8875
+      ]
+    },
+    {
+      "content": "For each storage pool dump out the associated disks:",
+      "pos": [
+        8880,
+        8932
+      ]
+    },
+    {
+      "content": "Get-StoragePool -FriendlyName AMS1pooldata | Get-PhysicalDisk",
+      "pos": [
+        8938,
+        8999
+      ]
+    },
+    {
+      "content": "![GetStoragePool][5]",
+      "pos": [
+        9005,
+        9025
+      ]
+    },
+    {
+      "content": "Now you can use this information to associate attached VHDs to Physical Disks in Storage Pools.",
+      "pos": [
+        9028,
+        9123
+      ]
+    },
+    {
+      "content": "Once you have mapped VHDs to Physical Disks in Storage Pools you can then detach and copy them over to a Premium Storage account, then attach them with the correct cache setting.",
+      "pos": [
+        9125,
+        9303
+      ]
+    },
+    {
+      "content": "Please see the example in the <bpt id=\"p1\">[</bpt>Appendix<ept id=\"p1\">](#appendix-migrating-a-multisite-alwayson-cluster-to-premium-storage)</ept>, steps 8 through 12.",
+      "pos": [
+        9304,
+        9434
+      ]
+    },
+    {
+      "content": "These steps show how to extract a VM-attached VHD disk configuration to a CSV file, copy the VHDs, alter the disk configuration cache settings, and finally redeploy the VM as a DS series VM with all the attached disks.",
+      "pos": [
+        9435,
+        9653
+      ]
+    },
+    {
+      "content": "VM Storage Bandwidth and VHD Storage Throughput",
+      "pos": [
+        9659,
+        9706
+      ]
+    },
+    {
+      "content": "The amount of storage performance depends on the DS* VM size specified and the VHD sizes.",
+      "pos": [
+        9709,
+        9798
+      ]
+    },
+    {
+      "content": "The VMs have different allowances for the number of VHDs that can be attached and the maximum bandwidth they will support (MB/s).",
+      "pos": [
+        9799,
+        9928
+      ]
+    },
+    {
+      "content": "For the specific bandwidth numbers, see <bpt id=\"p1\">[</bpt>Virtual Machine and Cloud Service Sizes for Azure<ept id=\"p1\">](virtual-machines-size-specs.md)</ept>.",
+      "pos": [
+        9929,
+        10053
+      ]
+    },
+    {
+      "content": "Increased IOPS are achieved with larger disk sizes.",
+      "pos": [
+        10055,
+        10106
+      ]
+    },
+    {
+      "content": "You should consider this when you think about your migration path.",
+      "pos": [
+        10107,
+        10173
+      ]
+    },
+    {
+      "content": "For details, <bpt id=\"p1\">[</bpt>see the table for IOPS and Disk Types<ept id=\"p1\">](../storage-premium-storage-preview-portal.md#scalability-and-performance-targets-when-using-premium-storage)</ept>.",
+      "pos": [
+        10174,
+        10336
+      ]
+    },
+    {
+      "content": "Finally, consider that VMs have different maximum disk bandwidths they will support for all disks attached.",
+      "pos": [
+        10339,
+        10446
+      ]
+    },
+    {
+      "content": "Under high load, you could saturate the maximum disk bandwidth available for that VM role size.",
+      "pos": [
+        10447,
+        10542
+      ]
+    },
+    {
+      "content": "For example a Standard_DS14 will support up to 512MB/s; therefore, with three P30 disks you could saturate the disk bandwidth of the VM.",
+      "pos": [
+        10543,
+        10679
+      ]
+    },
+    {
+      "content": "But in this example, the throughput limit could be exceeded depending on the mix of read and write IOs.",
+      "pos": [
+        10680,
+        10783
+      ]
+    },
+    {
+      "content": "New Deployments",
+      "pos": [
+        10788,
+        10803
+      ]
+    },
+    {
+      "content": "The next two sections demonstrate how you can deploy SQL Server VMs to Premium Storage.",
+      "pos": [
+        10805,
+        10892
+      ]
+    },
+    {
+      "content": "As mentioned before, you do not necessarily need to place the OS disk onto Premium storage.",
+      "pos": [
+        10893,
+        10984
+      ]
+    },
+    {
+      "content": "You might choose to do this if you are intending to place any intensive IO workloads on the OS VHD.",
+      "pos": [
+        10985,
+        11084
+      ]
+    },
+    {
+      "content": "The first example demonstrates utilizing existing Azure Gallery Images.",
+      "pos": [
+        11087,
+        11158
+      ]
+    },
+    {
+      "content": "The second example shows how to use a custom VM image that you have in an existing Standard storage account.",
+      "pos": [
+        11159,
+        11267
+      ]
+    },
+    {
+      "pos": [
+        11271,
+        11352
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> These examples assume that you have already created a Regional VNET."
+    },
+    {
+      "content": "Create a new VM with Premium Storage with Gallery Image",
+      "pos": [
+        11358,
+        11413
+      ]
+    },
+    {
+      "content": "The example below shows how to place the OS VHD onto premium storage and attach Premium Storage VHDs.",
+      "pos": [
+        11415,
+        11516
+      ]
+    },
+    {
+      "content": "However, you can also place the OS disk in a Standard Storage account and then attach VHDs that reside in a Premium Storage account.",
+      "pos": [
+        11517,
+        11649
+      ]
+    },
+    {
+      "content": "Both scenarios are demonstrated.",
+      "pos": [
+        11650,
+        11682
+      ]
+    },
+    {
+      "content": "Step 1: Create a Premium Storage Account",
+      "pos": [
+        11927,
+        11967
+      ]
+    },
+    {
+      "content": "Step 2: Create a New Cloud Service",
+      "pos": [
+        12189,
+        12223
+      ]
+    },
+    {
+      "content": "Step 3: Reserve a Cloud Service VIP (Optional)",
+      "pos": [
+        12324,
+        12370
+      ]
+    },
+    {
+      "content": "Step 4: Create a VM Container",
+      "pos": [
+        12579,
+        12608
+      ]
+    },
+    {
+      "content": "Step 5: Placing OS VHD on Standard or Premium Storage",
+      "pos": [
+        13037,
+        13090
+      ]
+    },
+    {
+      "content": "Step 6: Create VM",
+      "pos": [
+        13674,
+        13691
+      ]
+    },
+    {
+      "content": "Create a new VM to Use Premium Storage with a Custom Image",
+      "pos": [
+        15906,
+        15964
+      ]
+    },
+    {
+      "content": "This scenario demonstrates where you have existing customized images that reside in a Standard Storage account.",
+      "pos": [
+        15966,
+        16077
+      ]
+    },
+    {
+      "content": "As mentioned if you want to place the OS VHD on Premium Storage you will need to copy the image that exists in the Standard Storage account and transfer them to a Premium Storage before it can be used.",
+      "pos": [
+        16078,
+        16279
+      ]
+    },
+    {
+      "content": "If you have an image on premise, you can also use this method to copy that directly to the Premium Storage account.",
+      "pos": [
+        16280,
+        16395
+      ]
+    },
+    {
+      "content": "Step 1: Create Storage Account",
+      "pos": [
+        16402,
+        16432
+      ]
+    },
+    {
+      "content": "Step 2 Create Cloud Service",
+      "pos": [
+        16794,
+        16821
+      ]
+    },
+    {
+      "content": "Step 3: Use Existing Image",
+      "pos": [
+        16922,
+        16948
+      ]
+    },
+    {
+      "content": "You can use an existing image.",
+      "pos": [
+        16949,
+        16979
+      ]
+    },
+    {
+      "content": "Or, you can <bpt id=\"p1\">[</bpt>take an image of an existing machine<ept id=\"p1\">](virtual-machines-capture-image-windows-server.md)</ept>.",
+      "pos": [
+        16980,
+        17081
+      ]
+    },
+    {
+      "content": "Note the machine you image does not have to be DS* machine.",
+      "pos": [
+        17082,
+        17141
+      ]
+    },
+    {
+      "content": "Once you have the image, the following steps show how to copy it to the Premium Storage account with the <bpt id=\"p1\">**</bpt>Start-AzureStorageBlobCopy<ept id=\"p1\">**</ept> PowerShell commandlet.",
+      "pos": [
+        17142,
+        17300
+      ]
+    },
+    {
+      "content": "Step 4: Copy Blob between Storage Accounts",
+      "pos": [
+        17887,
+        17929
+      ]
+    },
+    {
+      "content": "Step 5: Regularly check copy status:",
+      "pos": [
+        18289,
+        18325
+      ]
+    },
+    {
+      "content": "Step 6: Add Image disk to Azure disk Repository in Subscription",
+      "pos": [
+        18375,
+        18438
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> You may find that even though the status reports as success, you could still get a disk lease error.",
+      "pos": [
+        18646,
+        18759
+      ]
+    },
+    {
+      "content": "In this case, wait about 10 minutes.",
+      "pos": [
+        18760,
+        18796
+      ]
+    },
+    {
+      "content": "Step 7:  Build the VM",
+      "pos": [
+        18803,
+        18824
+      ]
+    },
+    {
+      "content": "Here you are building the VM from your image and attaching two Premium Storage VHDs:",
+      "pos": [
+        18825,
+        18909
+      ]
+    },
+    {
+      "content": "Existing Deployments that do not use AlwaysOn Availability Groups",
+      "pos": [
+        20326,
+        20391
+      ]
+    },
+    {
+      "pos": [
+        20395,
+        20522
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> For existing deployments, first see the <bpt id=\"p1\">[</bpt>Prerequisites<ept id=\"p1\">](#prerequisites-for-premium-storage)</ept> section of this topic."
+    },
+    {
+      "content": "There are different considerations for SQL Server deployments that do not use AlwaysOn Availbility Groups and those that do.",
+      "pos": [
+        20524,
+        20648
+      ]
+    },
+    {
+      "content": "If you are not using AlwaysOn and have an existing standalone SQL Server, you can upgrade to Premium Storage by using a new cloud service and storage account.",
+      "pos": [
+        20649,
+        20807
+      ]
+    },
+    {
+      "content": "Consider the following options:",
+      "pos": [
+        20808,
+        20839
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Create a new SQL Server VM<ept id=\"p1\">**</ept>.",
+      "pos": [
+        20843,
+        20874
+      ]
+    },
+    {
+      "content": "You can create a new SQL Server VM that uses a Premium Storage account, as documented in New Deployments.",
+      "pos": [
+        20875,
+        20980
+      ]
+    },
+    {
+      "content": "Then backup and restore your SQL Server configuration and user databases.",
+      "pos": [
+        20981,
+        21054
+      ]
+    },
+    {
+      "content": "The application will need to be updated to reference the new SQL Server if it is being accessed internally or externally.",
+      "pos": [
+        21055,
+        21176
+      ]
+    },
+    {
+      "content": "You would need to copy all ‘out of db’ objects as if you were doing a Side by Side (SxS) SQL Server migration.",
+      "pos": [
+        21177,
+        21287
+      ]
+    },
+    {
+      "content": "This includes objects such as logins, certificates, and linked servers.",
+      "pos": [
+        21288,
+        21359
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Migrate an existing SQL Server VM<ept id=\"p1\">**</ept>.",
+      "pos": [
+        21362,
+        21400
+      ]
+    },
+    {
+      "content": "This will require taking the SQL Server VM offline, then transferring it to a new cloud service, which includes copying all of its attached VHDs to the Premium Storage account.",
+      "pos": [
+        21401,
+        21577
+      ]
+    },
+    {
+      "content": "When the VM comes online, the application will reference the server host name as before.",
+      "pos": [
+        21578,
+        21666
+      ]
+    },
+    {
+      "content": "Be aware that the size of the existing disk will affect the performance characteristics.",
+      "pos": [
+        21667,
+        21755
+      ]
+    },
+    {
+      "content": "For example, a 400 GB disk gets rounded up to a P20.",
+      "pos": [
+        21756,
+        21808
+      ]
+    },
+    {
+      "content": "If you know that you do not require that disk performance, then you could recreate the VM as a DS Series VM, and attach Premium Storage VHDs of the size/performance specification you require.",
+      "pos": [
+        21809,
+        22000
+      ]
+    },
+    {
+      "content": "Then you could detach and reattach the SQL DB files.",
+      "pos": [
+        22001,
+        22053
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> When copying the VHD disks you should beaware of the size, depending on the size will mean what Premium Storage Disk type they fall into, this determines disk performance specification.",
+      "pos": [
+        22057,
+        22255
+      ]
+    },
+    {
+      "content": "Azure will round up to the nearest disk size, so if you have a 400GB disk, this will be rounded up to a P20.",
+      "pos": [
+        22256,
+        22364
+      ]
+    },
+    {
+      "content": "Depending on your existing IO requirements of the OS VHD, you might not need to migrate this to a Premium Storage account.",
+      "pos": [
+        22365,
+        22487
+      ]
+    },
+    {
+      "content": "If your SQL Server is accessed externally, then the cloud service VIP will change.",
+      "pos": [
+        22489,
+        22571
+      ]
+    },
+    {
+      "content": "You will also have to update endptoints, ACLs, and DNS settings.",
+      "pos": [
+        22572,
+        22636
+      ]
+    },
+    {
+      "content": "Existing Deployments that use AlwaysOn Availability Groups",
+      "pos": [
+        22641,
+        22699
+      ]
+    },
+    {
+      "pos": [
+        22703,
+        22830
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> For existing deployments, first see the <bpt id=\"p1\">[</bpt>Prerequisites<ept id=\"p1\">](#prerequisites-for-premium-storage)</ept> section of this topic."
+    },
+    {
+      "content": "Intially in this section we will look at how AlwaysOn interacts with Azure Networking.",
+      "pos": [
+        22832,
+        22918
+      ]
+    },
+    {
+      "content": "We will then break down migrations in to two scenarios: migrations where some downtime can be tolerated and migrations where you must achieve minimal downtime.",
+      "pos": [
+        22919,
+        23078
+      ]
+    },
+    {
+      "content": "On-premises SQL Server AlwaysOn Availability Groups use a Listener on-premises that registers a virtual DNS name along with an IP address that is shared between one or more SQL Servers.",
+      "pos": [
+        23080,
+        23265
+      ]
+    },
+    {
+      "content": "When clients connect they are routed through the listener IP to the Primary SQL Server.",
+      "pos": [
+        23266,
+        23353
+      ]
+    },
+    {
+      "content": "This is the server that owns the AlwaysOn IP resource at that time.",
+      "pos": [
+        23354,
+        23421
+      ]
+    },
+    {
+      "content": "![DeploymentsUseAlwaysOn][6]",
+      "pos": [
+        23424,
+        23452
+      ]
+    },
+    {
+      "content": "In Microsoft Azure you can have only one IP address assigned to a NIC on the VM, so in order to achieve the same layer of abstraction as on-premises, Azure utilizes the IP address that is assigned to the Internal/External Load Balancers (ILB/ELB).",
+      "pos": [
+        23454,
+        23701
+      ]
+    },
+    {
+      "content": "The IP resource that is shared between the servers is set to the same IP as the ILB/ELB.",
+      "pos": [
+        23702,
+        23790
+      ]
+    },
+    {
+      "content": "This is published in the DNS, and client traffic is passed through the ILB/ELB to the Primary SQL Server replica.",
+      "pos": [
+        23791,
+        23904
+      ]
+    },
+    {
+      "content": "The ILB/ELB knows which SQL Server is primary since it uses probes to probe the AlwaysOn IP resource.",
+      "pos": [
+        23905,
+        24006
+      ]
+    },
+    {
+      "content": "In the previous example, it probes each node that has an endpoint referenced by the ELB/ILB, whichever responds is the Primary SQL Server.",
+      "pos": [
+        24007,
+        24145
+      ]
+    },
+    {
+      "pos": [
+        24150,
+        24333
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> The ILB and ELB are both assigned to a particular Azure cloud service, therefore any cloud migration in Azure will most likely mean that the Load Balancer IP will change."
+    },
+    {
+      "content": "Migrating AlwaysOn deployments that can allow some downtime",
+      "pos": [
+        24340,
+        24399
+      ]
+    },
+    {
+      "content": "There are two strategies to migrate AlwaysOn deployments that allow for some downtime:",
+      "pos": [
+        24401,
+        24487
+      ]
+    },
+    {
+      "content": "Add more secondary replicas to an existing AlwaysOn Cluster",
+      "pos": [
+        24494,
+        24553
+      ]
+    },
+    {
+      "content": "Migrate to a new AlwaysOn Cluster",
+      "pos": [
+        24561,
+        24594
+      ]
+    },
+    {
+      "content": "1. Add more Secondary Replicas to an Existing AlwaysOn Cluster",
+      "pos": [
+        24603,
+        24665
+      ]
+    },
+    {
+      "content": "One strategy is to add more secondaries to the AlwaysOn Availability Group.",
+      "pos": [
+        24667,
+        24742
+      ]
+    },
+    {
+      "content": "You need to add these into a new cloud service and update the listener with the new load balancer IP.",
+      "pos": [
+        24743,
+        24844
+      ]
+    },
+    {
+      "content": "Points of Downtime:",
+      "pos": [
+        24853,
+        24872
+      ]
+    },
+    {
+      "content": "Cluster Validation.",
+      "pos": [
+        24876,
+        24895
+      ]
+    },
+    {
+      "content": "Testing AlwaysOn failovers for New Secondaries.",
+      "pos": [
+        24898,
+        24945
+      ]
+    },
+    {
+      "content": "If you are using Windows Storage Pools within the VM for higher IO throughput, then these will be taken offline during a Full Cluster Validation.",
+      "pos": [
+        24947,
+        25092
+      ]
+    },
+    {
+      "content": "The validation test is required when you add nodes to the cluster.",
+      "pos": [
+        25093,
+        25159
+      ]
+    },
+    {
+      "content": "The time it takes to run the test can vary, so you should test this in your representative test environment to get an approximate time of how long this will take.",
+      "pos": [
+        25160,
+        25322
+      ]
+    },
+    {
+      "content": "You should provision time where you can perform manual failover and chaos testing on the newly added nodes to ensure AlwaysOn High Availability functions as expected.",
+      "pos": [
+        25325,
+        25491
+      ]
+    },
+    {
+      "content": "![DeploymentUseAlwaysOn2][7]",
+      "pos": [
+        25493,
+        25521
+      ]
+    },
+    {
+      "pos": [
+        25525,
+        25641
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> You should stop all instances of SQL Server where the Storage Pools are used before the Validaion runs."
+    },
+    {
+      "content": "High Level Steps",
+      "pos": [
+        25649,
+        25665
+      ]
+    },
+    {
+      "content": "Create two new SQL Servers in new cloud service with attached Premium Storage.",
+      "pos": [
+        25670,
+        25748
+      ]
+    },
+    {
+      "pos": [
+        25752,
+        25807
+      ],
+      "content": "Copy over FULL backups and restore with <bpt id=\"p1\">**</bpt>NORECOVERY<ept id=\"p1\">**</ept>."
+    },
+    {
+      "content": "Copy over ‘out of user DB’ dependent objects, such as logins etc.",
+      "pos": [
+        25811,
+        25876
+      ]
+    },
+    {
+      "content": "Create new a new Internal Load Balancer (ILB) or use an External Load Balancer (ELB), and then set up Load Balanced Endpoints on both new nodes.",
+      "pos": [
+        25880,
+        26024
+      ]
+    },
+    {
+      "pos": [
+        26027,
+        26115
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> Check all Nodes have the correct Endpoint configuration before you continue"
+    },
+    {
+      "content": "Stop User/Application Access to the SQL Server (if using Storage Pools).",
+      "pos": [
+        26120,
+        26192
+      ]
+    },
+    {
+      "content": "Stop SQL Server Engine Services on All Nodes (if using Storage Pools).",
+      "pos": [
+        26196,
+        26266
+      ]
+    },
+    {
+      "content": "Add new Nodes to cluster and run full validation.",
+      "pos": [
+        26270,
+        26319
+      ]
+    },
+    {
+      "content": "Once Validation is successful, start all SQL Server Services.",
+      "pos": [
+        26324,
+        26385
+      ]
+    },
+    {
+      "content": "Backup Transaction logs, and restore user databases.",
+      "pos": [
+        26389,
+        26441
+      ]
+    },
+    {
+      "pos": [
+        26445,
+        26538
+      ],
+      "content": "Add new nodes into the AlwaysOn Availability Group and place replication into <bpt id=\"p1\">**</bpt>Syncronous<ept id=\"p1\">**</ept>."
+    },
+    {
+      "content": "Add the IP address resource of the new Cloud Service ILB/ELB through PowerShell for AlwaysOn based on the Multi-site example in the <bpt id=\"p1\">[</bpt>Appendix<ept id=\"p1\">](#appendix-migrating-a-multisite-alwayson-cluster-to-premium-storage)</ept>.",
+      "pos": [
+        26543,
+        26755
+      ]
+    },
+    {
+      "content": "In Windows clustering, set the <bpt id=\"p1\">**</bpt>Possible owners<ept id=\"p1\">**</ept> of the <bpt id=\"p2\">**</bpt>IP Address<ept id=\"p2\">**</ept> resource to the new nodes old.",
+      "pos": [
+        26756,
+        26859
+      ]
+    },
+    {
+      "content": "See the ‘Adding IP Address Resource on Same Subnet’ section of the <bpt id=\"p1\">[</bpt>Appendix<ept id=\"p1\">](#appendix-migrating-a-multisite-alwayson-cluster-to-premium-storage)</ept>.",
+      "pos": [
+        26860,
+        27007
+      ]
+    },
+    {
+      "content": "Failover to one of the new nodes.",
+      "pos": [
+        27011,
+        27044
+      ]
+    },
+    {
+      "content": "Make the new nodes Auto Failover Partners and test failovers.",
+      "pos": [
+        27048,
+        27109
+      ]
+    },
+    {
+      "content": "Remove original nodes from Availability Group.",
+      "pos": [
+        27113,
+        27159
+      ]
+    },
+    {
+      "content": "Advantages",
+      "pos": [
+        27167,
+        27177
+      ]
+    },
+    {
+      "content": "New SQL Servers can be tested (SQL Server and Application) before they are added to AlwaysOn.",
+      "pos": [
+        27181,
+        27274
+      ]
+    },
+    {
+      "content": "You can change the VM size and customize the storage to your exact requirements.",
+      "pos": [
+        27277,
+        27357
+      ]
+    },
+    {
+      "content": "However, it would be beneficial to keep all the SQL file paths the same.",
+      "pos": [
+        27358,
+        27430
+      ]
+    },
+    {
+      "content": "You can control when the transfer of the DB backups to the Secondary Replicas are started.",
+      "pos": [
+        27433,
+        27523
+      ]
+    },
+    {
+      "content": "This differs from using Azure <bpt id=\"p1\">**</bpt>Start-AzureStorageBlobCopy<ept id=\"p1\">**</ept> commandlet to copy VHDs, because that is an asynchronous copy.",
+      "pos": [
+        27524,
+        27647
+      ]
+    },
+    {
+      "content": "Disadvantages",
+      "pos": [
+        27655,
+        27668
+      ]
+    },
+    {
+      "content": "When using Windows Storage Pools, there is Cluster downtime during the Full Cluster Validation for the new additional nodes.",
+      "pos": [
+        27671,
+        27795
+      ]
+    },
+    {
+      "content": "Depending on the SQL Server Version and the existing number of secondary replicas, you might not be able to add more secondary replicas without removing existing secondaries.",
+      "pos": [
+        27799,
+        27973
+      ]
+    },
+    {
+      "content": "There could be long SQL data transfer time while setting up the secondaries.",
+      "pos": [
+        27976,
+        28052
+      ]
+    },
+    {
+      "content": "There is additional cost during migration while you have new machines running in paralell.",
+      "pos": [
+        28055,
+        28145
+      ]
+    },
+    {
+      "content": "2. Migrate to a New AlwaysOn Cluster",
+      "pos": [
+        28152,
+        28188
+      ]
+    },
+    {
+      "content": "Another strategy is to create a brand new AlwaysOn Cluster with brand new nodes in new cloud service and then redirect the clients to use it.",
+      "pos": [
+        28190,
+        28331
+      ]
+    },
+    {
+      "content": "Points of Downtime",
+      "pos": [
+        28339,
+        28357
+      ]
+    },
+    {
+      "content": "There is downtime when you transfer applications and users to the new AlwaysOn listener.",
+      "pos": [
+        28359,
+        28447
+      ]
+    },
+    {
+      "content": "The downtime depends on:",
+      "pos": [
+        28448,
+        28472
+      ]
+    },
+    {
+      "content": "The time taken to restore final transaction log backups to databases on new servers.",
+      "pos": [
+        28476,
+        28560
+      ]
+    },
+    {
+      "content": "The time taken to update client applications to use new AlwaysOn listener.",
+      "pos": [
+        28563,
+        28637
+      ]
+    },
+    {
+      "content": "Advantages",
+      "pos": [
+        28645,
+        28655
+      ]
+    },
+    {
+      "content": "You can test the actual production environment, SQL Server, and OS build changes.",
+      "pos": [
+        28659,
+        28740
+      ]
+    },
+    {
+      "content": "You have the option to customize the storage and to potentially reduce size of VM.",
+      "pos": [
+        28743,
+        28825
+      ]
+    },
+    {
+      "content": "This could result in cost reduction.",
+      "pos": [
+        28826,
+        28862
+      ]
+    },
+    {
+      "content": "You can update your SQL Server build or version during this process.",
+      "pos": [
+        28865,
+        28933
+      ]
+    },
+    {
+      "content": "You can also upgrade the Operating System.",
+      "pos": [
+        28934,
+        28976
+      ]
+    },
+    {
+      "content": "The previous AlwaysOn Cluster can act as a solid rollback target.",
+      "pos": [
+        28979,
+        29044
+      ]
+    },
+    {
+      "content": "Disadvantages",
+      "pos": [
+        29052,
+        29065
+      ]
+    },
+    {
+      "content": "You need to change the DNS name of the listener if you want both AlwaysOn clusters running simultaneously.",
+      "pos": [
+        29069,
+        29175
+      ]
+    },
+    {
+      "content": "This adds administration overhead during the migration as client application strings must reflect the new Listener name.",
+      "pos": [
+        29176,
+        29296
+      ]
+    },
+    {
+      "content": "You must implement a synchronization mechanism between the two environments to keep them as close as possible to minimize the final synchronization requirements before migration.",
+      "pos": [
+        29299,
+        29477
+      ]
+    },
+    {
+      "content": "There is added cost during migration while you have the new environment running.",
+      "pos": [
+        29480,
+        29560
+      ]
+    },
+    {
+      "content": "Migrating AlwaysOn Deployments for Minimal Downtime",
+      "pos": [
+        29566,
+        29617
+      ]
+    },
+    {
+      "content": "There are two strategies for migrating AlwaysOn deployments for minimal downtime:",
+      "pos": [
+        29619,
+        29700
+      ]
+    },
+    {
+      "content": "Utilize an Existing Secondary: Single-Site",
+      "pos": [
+        29707,
+        29749
+      ]
+    },
+    {
+      "content": "Utilize Existing Secondary Replica(s): Multi-Site",
+      "pos": [
+        29757,
+        29806
+      ]
+    },
+    {
+      "content": "1. Utilize an Existing Secondary: Single-Site",
+      "pos": [
+        29815,
+        29860
+      ]
+    },
+    {
+      "content": "One strategy for minimal downtime is to take an existing cloud secondary and remove it from the current cloud service.",
+      "pos": [
+        29862,
+        29980
+      ]
+    },
+    {
+      "content": "Then copy the VHDs to the new Premium Storage account, and create the VM in the new cloud service.",
+      "pos": [
+        29981,
+        30079
+      ]
+    },
+    {
+      "content": "Then update the listener in clustering and failover.",
+      "pos": [
+        30080,
+        30132
+      ]
+    },
+    {
+      "content": "Points of Downtime",
+      "pos": [
+        30140,
+        30158
+      ]
+    },
+    {
+      "content": "There is downtime when you update the final node with the Load Balanaced endpoint.",
+      "pos": [
+        30162,
+        30244
+      ]
+    },
+    {
+      "content": "Your client reconnection might be delayed depending on your client/DNS configuration.",
+      "pos": [
+        30247,
+        30332
+      ]
+    },
+    {
+      "content": "There is additional downtime if you choose to take the AlwaysOn Cluster group offline to swap out the IP addresses.",
+      "pos": [
+        30335,
+        30450
+      ]
+    },
+    {
+      "content": "You can avoid this by using an OR dependancy and Possible Owners for the added IP Address resource.",
+      "pos": [
+        30451,
+        30550
+      ]
+    },
+    {
+      "content": "See the ‘Adding IP Address Resource on Same Subnet’ section of the <bpt id=\"p1\">[</bpt>Appendix<ept id=\"p1\">](#appendix-migrating-a-multisite-alwayson-cluster-to-premium-storage)</ept>.",
+      "pos": [
+        30551,
+        30698
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> When you want the added node to partake in as an AlwaysOn Failover Partner, you need to add an Azure Endpoint with a reference to the Load Balanced Set.",
+      "pos": [
+        30702,
+        30867
+      ]
+    },
+    {
+      "content": "When you run the <bpt id=\"p1\">**</bpt>Add-AzureEndpoint<ept id=\"p1\">**</ept> command to do this, current connections to remain open, but new connections to the listener will not be able to be established until the load balancer has updated.",
+      "pos": [
+        30868,
+        31070
+      ]
+    },
+    {
+      "content": "In testing this was seen to last 90-120seconds, this should be tested.",
+      "pos": [
+        31071,
+        31141
+      ]
+    },
+    {
+      "content": "Advantages",
+      "pos": [
+        31150,
+        31160
+      ]
+    },
+    {
+      "content": "No extra cost incurred during migration.",
+      "pos": [
+        31164,
+        31204
+      ]
+    },
+    {
+      "content": "A one-to-one migration.",
+      "pos": [
+        31207,
+        31230
+      ]
+    },
+    {
+      "content": "Reduced complexity.",
+      "pos": [
+        31233,
+        31252
+      ]
+    },
+    {
+      "content": "Allows for increased IOPS from Premium Storage SKUs.",
+      "pos": [
+        31255,
+        31307
+      ]
+    },
+    {
+      "content": "When the disks are detached from the VM and copied to the new cloud service, a 3rd party tool can be used to increase the VHD size, which provides higher throughputs.",
+      "pos": [
+        31308,
+        31474
+      ]
+    },
+    {
+      "content": "For increasing VHD sizes, see this <bpt id=\"p1\">[</bpt>forum discussion<ept id=\"p1\">](https://social.msdn.microsoft.com/Forums/azure/4a9bcc9e-e5bf-4125-9994-7c154c9b0d52/resizing-azure-data-disk?forum=WAVirtualMachinesforWindows)</ept>.",
+      "pos": [
+        31475,
+        31673
+      ]
+    },
+    {
+      "content": "Disadvantages",
+      "pos": [
+        31681,
+        31694
+      ]
+    },
+    {
+      "content": "There is a temporary loss of HA and DR during migration.",
+      "pos": [
+        31698,
+        31754
+      ]
+    },
+    {
+      "content": "As this is a 1:1 migration, you will have to use a minimum VM size that will support your number of VHDs, so you might not be able to downsize your VMs.",
+      "pos": [
+        31757,
+        31909
+      ]
+    },
+    {
+      "content": "This scenario would use the Azure <bpt id=\"p1\">**</bpt>Start-AzureStorageBlobCopy<ept id=\"p1\">**</ept> commandlet, which is asynchronous.",
+      "pos": [
+        31912,
+        32011
+      ]
+    },
+    {
+      "content": "There is no SLA on copy completion.",
+      "pos": [
+        32012,
+        32047
+      ]
+    },
+    {
+      "content": "The time of the copies varies, while this depends on wait in queue it will also depend on the amount of data to transfer.",
+      "pos": [
+        32048,
+        32169
+      ]
+    },
+    {
+      "content": "The copy time increases if the transfer is going to another Azure data center that supports Premium Storage in another region.",
+      "pos": [
+        32170,
+        32296
+      ]
+    },
+    {
+      "content": "If you just have 2 nodes, consider a possible mitigation in case the copy takes longer than in testing.",
+      "pos": [
+        32297,
+        32400
+      ]
+    },
+    {
+      "content": "This could include the following ideas.",
+      "pos": [
+        32401,
+        32440
+      ]
+    },
+    {
+      "content": "Add a temporary 3rd SQL Server node for HA before the migration with agreed downtime.",
+      "pos": [
+        32447,
+        32532
+      ]
+    },
+    {
+      "content": "Run the migration outside of Azure scheduled maintenance.",
+      "pos": [
+        32539,
+        32596
+      ]
+    },
+    {
+      "content": "Ensure you have configured your cluster quorum correctly.",
+      "pos": [
+        32603,
+        32660
+      ]
+    },
+    {
+      "content": "High Level Steps",
+      "pos": [
+        32670,
+        32686
+      ]
+    },
+    {
+      "pos": [
+        32688,
+        32901
+      ],
+      "content": "This document does not demonstrate a complete end to end example, however the <bpt id=\"p1\">[</bpt>Appendix<ept id=\"p1\">](#appendix-migrating-a-multisite-alwayson-cluster-to-premium-storage)</ept> provides details that can be leveraged to perform this."
+    },
+    {
+      "content": "![MinimalDowntime][8]",
+      "pos": [
+        32904,
+        32925
+      ]
+    },
+    {
+      "content": "Gather disk configuration, and remove the node (do not delete attached VHDs).",
+      "pos": [
+        32929,
+        33006
+      ]
+    },
+    {
+      "content": "Create a Premium Storage account and copy VHDs from the Standard Storage account",
+      "pos": [
+        33009,
+        33089
+      ]
+    },
+    {
+      "content": "Create new cloud service and redeploy the SQL2 VM in that cloud service.",
+      "pos": [
+        33092,
+        33164
+      ]
+    },
+    {
+      "content": "Create the VM using the copied original OS VHD and attaching the copied VHDs.",
+      "pos": [
+        33165,
+        33242
+      ]
+    },
+    {
+      "content": "Configure ILB / ELB and add Endpoints.",
+      "pos": [
+        33245,
+        33283
+      ]
+    },
+    {
+      "content": "Update Listener by either:",
+      "pos": [
+        33286,
+        33312
+      ]
+    },
+    {
+      "content": "Taking the AlwaysOn Group offline and updating the AlwaysOn Listener with new ILB / ELB IP address.",
+      "pos": [
+        33319,
+        33418
+      ]
+    },
+    {
+      "content": "Or adding the IP addess resource of new Cloud Service ILB/ELB through PowerShell into Windows clustering.",
+      "pos": [
+        33426,
+        33531
+      ]
+    },
+    {
+      "content": "Then set the Possible owners of the IP Address resource to the migrated node, SQL2, and set this as OR dependency in the Network Name.",
+      "pos": [
+        33532,
+        33666
+      ]
+    },
+    {
+      "content": "See the ‘Adding IP Address Resource on Same Subnet’ section of the <bpt id=\"p1\">[</bpt>Appendix<ept id=\"p1\">](#appendix-migrating-a-multisite-alwayson-cluster-to-premium-storage)</ept>.",
+      "pos": [
+        33667,
+        33814
+      ]
+    },
+    {
+      "content": "Check DNS configuration/propogation to the clients.",
+      "pos": [
+        33817,
+        33868
+      ]
+    },
+    {
+      "content": "Migrate SQL1 VM, and go through steps 2 – 4.",
+      "pos": [
+        33871,
+        33915
+      ]
+    },
+    {
+      "content": "If using steps 5ii, then add SQL1 as a Possible Owner for the added IP Address Resource",
+      "pos": [
+        33918,
+        34005
+      ]
+    },
+    {
+      "content": "Test failovers.",
+      "pos": [
+        34008,
+        34023
+      ]
+    },
+    {
+      "content": "2. Utilize Existing Secondary Replica(s): Multi-Site",
+      "pos": [
+        34030,
+        34082
+      ]
+    },
+    {
+      "content": "If you have nodes in more than one Azure datacenter (DC) or if you have a hybrid environment, then you can use an AlwaysOn configuration in this environment to minimize downtime.",
+      "pos": [
+        34084,
+        34262
+      ]
+    },
+    {
+      "content": "The approach is to change the AlwaysOn synchronization to Synchronous for the on-premises or secondary Azure DC, and then failover over to that SQL Server.",
+      "pos": [
+        34264,
+        34419
+      ]
+    },
+    {
+      "content": "Then copy the VHDs to a Premium Storage account, and redeploy the machine into a new cloud service.",
+      "pos": [
+        34420,
+        34519
+      ]
+    },
+    {
+      "content": "Update the listener, and then fail back.",
+      "pos": [
+        34520,
+        34560
+      ]
+    },
+    {
+      "content": "Points of Downtime",
+      "pos": [
+        34569,
+        34587
+      ]
+    },
+    {
+      "content": "The downtime consists of the time to failover to the alternative DC and back.",
+      "pos": [
+        34589,
+        34666
+      ]
+    },
+    {
+      "content": "It also depends on your client/DNS configuration and your client reconnection may be delayed.",
+      "pos": [
+        34667,
+        34760
+      ]
+    },
+    {
+      "content": "Consider the following example of a hybrid AlwaysOn configuration:",
+      "pos": [
+        34761,
+        34827
+      ]
+    },
+    {
+      "content": "![MultiSite1][9]",
+      "pos": [
+        34829,
+        34845
+      ]
+    },
+    {
+      "content": "Advantages",
+      "pos": [
+        34853,
+        34863
+      ]
+    },
+    {
+      "content": "You can utilize existing infrastructure.",
+      "pos": [
+        34867,
+        34907
+      ]
+    },
+    {
+      "content": "You have the option to pre-upgrade the Azure storage on the DR Azure DC first.",
+      "pos": [
+        34910,
+        34988
+      ]
+    },
+    {
+      "content": "The DR Azure DC storage can be reconfigured.",
+      "pos": [
+        34991,
+        35035
+      ]
+    },
+    {
+      "content": "There is a minimum of two failovers during migration, excluding test failovers.",
+      "pos": [
+        35038,
+        35117
+      ]
+    },
+    {
+      "content": "You do not need to move SQL Server data with backup and restore.",
+      "pos": [
+        35120,
+        35184
+      ]
+    },
+    {
+      "content": "Disadvantages",
+      "pos": [
+        35192,
+        35205
+      ]
+    },
+    {
+      "content": "Depending on client access to SQL Server, there might be increased latency when SQL Server is running in an alternative DC to the application.",
+      "pos": [
+        35209,
+        35351
+      ]
+    },
+    {
+      "content": "The copy time of VHDs to Premium storage could be long.",
+      "pos": [
+        35354,
+        35409
+      ]
+    },
+    {
+      "content": "This might affect your decision on whether to keep the node in the Availability Group.",
+      "pos": [
+        35410,
+        35496
+      ]
+    },
+    {
+      "content": "Consider this for when log intensive work loads are running during the migrationis required, since the Primary node will have to keep the unreplicated transactions in its transaction log.",
+      "pos": [
+        35497,
+        35684
+      ]
+    },
+    {
+      "content": "Therefore this could grow significantly.",
+      "pos": [
+        35685,
+        35725
+      ]
+    },
+    {
+      "content": "This scenario would use the Azure <bpt id=\"p1\">**</bpt>Start-AzureStorageBlobCopy<ept id=\"p1\">**</ept> commandlet, which is asynchronous.",
+      "pos": [
+        35728,
+        35827
+      ]
+    },
+    {
+      "content": "There is no SLA on completion.",
+      "pos": [
+        35828,
+        35858
+      ]
+    },
+    {
+      "content": "The time of the copies varies, while this depends on wait in queue, it will also depend on the amount of data to transfer.",
+      "pos": [
+        35859,
+        35981
+      ]
+    },
+    {
+      "content": "Therefore you just have one node in your 2nd data center, you should take mitigation steps in case the copy takes longer than in testing.",
+      "pos": [
+        35982,
+        36119
+      ]
+    },
+    {
+      "content": "This could include the following ideas.",
+      "pos": [
+        36120,
+        36159
+      ]
+    },
+    {
+      "content": "Add a temporary 2nd SQL node for HA before the migration with agreed downtime.",
+      "pos": [
+        36166,
+        36244
+      ]
+    },
+    {
+      "content": "Run the migration outside of Azure scheduled maintenance.",
+      "pos": [
+        36251,
+        36308
+      ]
+    },
+    {
+      "content": "Ensure you have configured your cluster quorum correctly.",
+      "pos": [
+        36316,
+        36373
+      ]
+    },
+    {
+      "content": "This scenario assumes that you have documented your install and know how the storage is mapped in order to make changes for optimal disk cache settings.",
+      "pos": [
+        36376,
+        36528
+      ]
+    },
+    {
+      "content": "High Level Steps",
+      "pos": [
+        36536,
+        36552
+      ]
+    },
+    {
+      "content": "![Multisite2][10]",
+      "pos": [
+        36553,
+        36570
+      ]
+    },
+    {
+      "content": "Make the on-premises / alternate Azure DC the SQL Server Primary, and make it the other Auto Failover Partner (AFP).",
+      "pos": [
+        36574,
+        36690
+      ]
+    },
+    {
+      "content": "Gather disk configuration information from SQL2, and remove the node (do not delete attached VHDs).",
+      "pos": [
+        36694,
+        36793
+      ]
+    },
+    {
+      "content": "Create a Premium Storage account and copy VHDs from the Standard Storage account.",
+      "pos": [
+        36796,
+        36877
+      ]
+    },
+    {
+      "content": "Create a new cloud service and create the SQL2 VM with its Premiums Storage disks attached.",
+      "pos": [
+        36880,
+        36971
+      ]
+    },
+    {
+      "content": "Configure ILB / ELB and add Endpoints.",
+      "pos": [
+        36974,
+        37012
+      ]
+    },
+    {
+      "content": "Update the AlwaysOn Listener with new ILB / ELB IP address and test failover.",
+      "pos": [
+        37015,
+        37092
+      ]
+    },
+    {
+      "content": "Check the DNS configuration.",
+      "pos": [
+        37095,
+        37123
+      ]
+    },
+    {
+      "content": "Change the AFP to SQL2, and then migrate SQL1 and go through steps 2 – 5.",
+      "pos": [
+        37126,
+        37199
+      ]
+    },
+    {
+      "content": "Test failovers.",
+      "pos": [
+        37202,
+        37217
+      ]
+    },
+    {
+      "content": "Switch the AFP back to SQL1 and SQL2",
+      "pos": [
+        37220,
+        37256
+      ]
+    },
+    {
+      "content": "Appendix: Migrating a Multisite AlwaysOn Cluster to Premium Storage",
+      "pos": [
+        37261,
+        37328
+      ]
+    },
+    {
+      "content": "The remainder of this topic provides a detailed example of converting a multi-site AlwaysOn cluster to Premium storage.",
+      "pos": [
+        37331,
+        37450
+      ]
+    },
+    {
+      "content": "It also converts the Listener from using an external load balancer (ELB) to an internal load balancer (ILB).",
+      "pos": [
+        37451,
+        37559
+      ]
+    },
+    {
+      "content": "Environment",
+      "pos": [
+        37565,
+        37576
+      ]
+    },
+    {
+      "content": "Windows 2k12 / SQL 2k12",
+      "pos": [
+        37580,
+        37603
+      ]
+    },
+    {
+      "content": "1 DB Files on SP",
+      "pos": [
+        37606,
+        37622
+      ]
+    },
+    {
+      "content": "2 x Storage Pools per Node",
+      "pos": [
+        37625,
+        37651
+      ]
+    },
+    {
+      "content": "![Appendix1][11]",
+      "pos": [
+        37653,
+        37669
+      ]
+    },
+    {
+      "content": "VM:",
+      "pos": [
+        37676,
+        37679
+      ]
+    },
+    {
+      "content": "In this example we are going to demonstrate moving from an ELB to ILB.",
+      "pos": [
+        37682,
+        37752
+      ]
+    },
+    {
+      "content": "ELB was available before ILB, so this shows how to switch to this during the migration.",
+      "pos": [
+        37753,
+        37840
+      ]
+    },
+    {
+      "content": "![Appendix2][12]",
+      "pos": [
+        37842,
+        37858
+      ]
+    },
+    {
+      "content": "Pre Steps: Connect to Subscription",
+      "pos": [
+        37864,
+        37898
+      ]
+    },
+    {
+      "content": "Step 1: Create New Storage Account and Cloud Service",
+      "pos": [
+        37984,
+        38036
+      ]
+    },
+    {
+      "content": "Step 2: Increase the Permitted Failures on Resources",
+      "pos": [
+        39456,
+        39508
+      ]
+    },
+    {
+      "content": "On certain resources that belong to your AlwaysOn Availability Group there are limits on how many failures that can occur in a period, where the cluster service will attempt to restart the resource group.",
+      "pos": [
+        39520,
+        39724
+      ]
+    },
+    {
+      "content": "It is recommended you increase this whilst you are walking through this procedure, since if you don’t manually failover and trigger failovers by shutting down machines you can get close to this limit.",
+      "pos": [
+        39725,
+        39925
+      ]
+    },
+    {
+      "content": "It would be prudent to double the failure allowance, to do this in Failover Cluster Manager, go to the Properties of the AlwaysOn resource group:",
+      "pos": [
+        39927,
+        40072
+      ]
+    },
+    {
+      "content": "![Appendix3][13]",
+      "pos": [
+        40075,
+        40091
+      ]
+    },
+    {
+      "content": "Change the Maximum Failures to 6.",
+      "pos": [
+        40093,
+        40126
+      ]
+    },
+    {
+      "content": "Step 3: Addition IP Address Resource for Cluster Group",
+      "pos": [
+        40133,
+        40187
+      ]
+    },
+    {
+      "content": "If you have only one IP address for the Cluster Group and this is aligned to the cloud subnet, beware, if you accidentally take offline all cluster nodes in the cloud on that network then the Cluster IP resource and Cluster Network Name will not be able to come online.",
+      "pos": [
+        40200,
+        40469
+      ]
+    },
+    {
+      "content": "In the event of this it will prevent updates to other cluster resources.",
+      "pos": [
+        40470,
+        40542
+      ]
+    },
+    {
+      "content": "Step 4: DNS Configuration",
+      "pos": [
+        40550,
+        40575
+      ]
+    },
+    {
+      "content": "To implement a smooth transition depends on how DNS is being utilised and updated.",
+      "pos": [
+        40577,
+        40659
+      ]
+    },
+    {
+      "content": "When AlwaysOn is installed, it creates a Windows Cluster Resource group, if you open Failover Cluster Manager, you will see that at a minimum it will have three resources, the two that the document refers to are:",
+      "pos": [
+        40660,
+        40872
+      ]
+    },
+    {
+      "content": "Virtual Network Name (VNN) – This is the DNS name that client connect to when wanting to connect to SQL Servers via AlwaysOn.",
+      "pos": [
+        40876,
+        41001
+      ]
+    },
+    {
+      "content": "IP Address Resource – This is the IP address that associated with the VNN, you can have more than one, and in a multisite configuration you will have an IP address per site/subnet.",
+      "pos": [
+        41004,
+        41184
+      ]
+    },
+    {
+      "content": "When connecting to SQL Sevrer, the SQL Server Client driver will retrieve the DNS records associated with the listener and try to connect to each AlwaysOn associated IP address, below we discuss some factors that can influence this.",
+      "pos": [
+        41186,
+        41418
+      ]
+    },
+    {
+      "content": "The number of concurrent DNS records that are associated with the listener name depends not only on the number of IP addresses associated, but the ‘RegisterAllIpProviders’setting in Failover Clustering for the AlwaysON VNN resource.",
+      "pos": [
+        41420,
+        41652
+      ]
+    },
+    {
+      "content": "When you deploy AlwaysOn in Azure there are different steps to create the Listener and IP Addresses, you have to manually configure the ‘RegisterAllIpProviders’ to 1, this is different to an on premise AlwaysOn deployment where it is already set to 1.",
+      "pos": [
+        41654,
+        41905
+      ]
+    },
+    {
+      "content": "If ‘RegisterAllIpProviders’ is 0, then you will only see one DNS record in DNS associated with the Listener:",
+      "pos": [
+        41908,
+        42016
+      ]
+    },
+    {
+      "content": "![Appendix4][14]",
+      "pos": [
+        42018,
+        42034
+      ]
+    },
+    {
+      "content": "If ‘RegisterAllIpProviders’ is 1:",
+      "pos": [
+        42036,
+        42069
+      ]
+    },
+    {
+      "content": "![Appendix5][15]",
+      "pos": [
+        42072,
+        42088
+      ]
+    },
+    {
+      "content": "The code below will dump out the VNN settings and set it for you, please note, for the change to take effect you will need to take the the VNN offline and turn it back online, this taking the Listener offline causing client connectivity disruption.",
+      "pos": [
+        42090,
+        42338
+      ]
+    },
+    {
+      "content": "In a later migration step you will need to update the AlwaysOn listener with an updated IP address that will reference a load balancer, this will involve an IP Address resource removal and addition.",
+      "pos": [
+        42627,
+        42825
+      ]
+    },
+    {
+      "content": "After the IP update, you need to ensure the new IP address has been updated in DNS Zone and that the clients are updating their local DNS cache.",
+      "pos": [
+        42826,
+        42970
+      ]
+    },
+    {
+      "content": "If you clients reside in a different network segment and reference a different DNS server, you need to consider what happens about DNS Zone Transfer during the migration, as the application reconnect time will be constrained by at least the Zone Transfer Time of any new IP addresses for the listener.",
+      "pos": [
+        42973,
+        43274
+      ]
+    },
+    {
+      "content": "If you are under time constraint here, you should discuss and test forcing an incremental zone transfer with your Windows teams, and also put the DNS host record to a lower Time To Live (TTL), so the clients update.",
+      "pos": [
+        43275,
+        43490
+      ]
+    },
+    {
+      "content": "For more information, see <bpt id=\"p1\">[</bpt>Incremental Zone Transfers<ept id=\"p1\">](https://technet.microsoft.com/library/cc958973.aspx)</ept> and <bpt id=\"p2\">[</bpt>Start-DnsServerZoneTransfer<ept id=\"p2\">](https://technet.microsoft.com/library/jj649917.aspx)</ept>.",
+      "pos": [
+        43491,
+        43686
+      ]
+    },
+    {
+      "content": "By default the TTL for DNS Record that is associated with the Listener in AlwaysOn in Azure is 1200 seconds.",
+      "pos": [
+        43688,
+        43796
+      ]
+    },
+    {
+      "content": "You may wish to reduce this if you are under time constraint during your migration to ensure the clients update their DNS with the updated IP address for the listener.",
+      "pos": [
+        43797,
+        43964
+      ]
+    },
+    {
+      "content": "You can see and modify the configuration by dumping out the configuration of the VNN:",
+      "pos": [
+        43965,
+        44050
+      ]
+    },
+    {
+      "content": "Please note, the lower the ‘HostRecordTTL’, a higher amount of DNS traffic will occur.",
+      "pos": [
+        44328,
+        44414
+      ]
+    },
+    {
+      "content": "Client Application Settings",
+      "pos": [
+        44422,
+        44449
+      ]
+    },
+    {
+      "content": "If your SQL client application supports the .Net 4.5 SQLClient, then you can use ‘MULTISUBNETFAILOVER=TRUE’ keyword, this is recommended to be applied as it allows for faster connection to SQL AlwaysOn Availability Group during failover.",
+      "pos": [
+        44451,
+        44688
+      ]
+    },
+    {
+      "content": "It enumerates through all IP addresses associated with the AlwaysOn listener in parallel, and performs a more aggressive TCP connection retry speed during a failover.",
+      "pos": [
+        44689,
+        44855
+      ]
+    },
+    {
+      "content": "For more information regarding the settings above, please see <bpt id=\"p1\">[</bpt>MultiSubnetFailover Keyword and Associated Features<ept id=\"p1\">](https://msdn.microsoft.com/library/hh213080.aspx#MultiSubnetFailover)</ept>.",
+      "pos": [
+        44857,
+        45043
+      ]
+    },
+    {
+      "content": "Also see <bpt id=\"p1\">[</bpt>SqlClient Support for High Availability, Disaster Recovery<ept id=\"p1\">](https://msdn.microsoft.com/library/hh205662(v=vs.110).aspx)</ept>.",
+      "pos": [
+        45044,
+        45174
+      ]
+    },
+    {
+      "content": "Step 5: Cluster Quorum Settings",
+      "pos": [
+        45181,
+        45212
+      ]
+    },
+    {
+      "content": "As you are going to be taking out at least one SQL Server down at a time, you should modify the cluster quorum setting, if using File Share Witnes (FSW) with 2 nodes, you should set the quorum to allow node majority and utilise dynamic voting, and this is to allow for a single node to remain standing.",
+      "pos": [
+        45214,
+        45516
+      ]
+    },
+    {
+      "pos": [
+        45558,
+        45773
+      ],
+      "content": "For more information on managing and configuring the cluster quorum, please see <bpt id=\"p1\">[</bpt>Configure and Manage the Quorum in a Windows Server 2012 Failover Cluster<ept id=\"p1\">](https://technet.microsoft.com/en-us/library/jj612870.aspx)</ept>."
+    },
+    {
+      "content": "Step 6: Extract Existing Endpoints and ACLs",
+      "pos": [
+        45780,
+        45823
+      ]
+    },
+    {
+      "content": "Save these to a text file.",
+      "pos": [
+        46129,
+        46155
+      ]
+    },
+    {
+      "content": "Step 7: Change Failover Partners and Replication Modes",
+      "pos": [
+        46162,
+        46216
+      ]
+    },
+    {
+      "content": "If you have more than 2 SQL Servers, you should change the failover of another secondary in another DC or on premise to ‘Synchronous’ and make it an Automatic Failover Partner (AFP), this is so you maintain HA whilst you are making changes.",
+      "pos": [
+        46218,
+        46458
+      ]
+    },
+    {
+      "content": "You can do this through TSQL of modify though SSMS:",
+      "pos": [
+        46459,
+        46510
+      ]
+    },
+    {
+      "content": "![Appendix6][16]",
+      "pos": [
+        46513,
+        46529
+      ]
+    },
+    {
+      "content": "Step 8: Remove Secondary VM from Cloud Service",
+      "pos": [
+        46536,
+        46582
+      ]
+    },
+    {
+      "content": "You should be planning to migrate a cloud secondary node first, if this is currently primary, you should initiate a manual failover.",
+      "pos": [
+        46584,
+        46716
+      ]
+    },
+    {
+      "content": "Step 9: Change Disk Caching Settings in CSV file and Save",
+      "pos": [
+        48679,
+        48736
+      ]
+    },
+    {
+      "content": "For data volumes these should be set to READONLY.",
+      "pos": [
+        48738,
+        48787
+      ]
+    },
+    {
+      "content": "For TLOG volumes these should be set to NONE.",
+      "pos": [
+        48789,
+        48834
+      ]
+    },
+    {
+      "content": "![Appendix7][17]",
+      "pos": [
+        48837,
+        48853
+      ]
+    },
+    {
+      "content": "Step 10: Copy VHDS",
+      "pos": [
+        48860,
+        48878
+      ]
+    },
+    {
+      "content": "You can check the copy status of the VHDs to the Premium Storage account:",
+      "pos": [
+        49783,
+        49856
+      ]
+    },
+    {
+      "content": "![Appendix8][18]",
+      "pos": [
+        50304,
+        50320
+      ]
+    },
+    {
+      "content": "Wait until all these are recorded as success.",
+      "pos": [
+        50322,
+        50367
+      ]
+    },
+    {
+      "content": "For information for individual blobs:",
+      "pos": [
+        50369,
+        50406
+      ]
+    },
+    {
+      "content": "Step 11: Register OS Disk",
+      "pos": [
+        50517,
+        50542
+      ]
+    },
+    {
+      "content": "Step 12: Import Secondary into New Cloud Service",
+      "pos": [
+        51182,
+        51230
+      ]
+    },
+    {
+      "content": "The code below also uses the added option here you can import the machine and use the retainable VIP.",
+      "pos": [
+        51232,
+        51333
+      ]
+    },
+    {
+      "content": "Step 13: Create ILB on New Cloud Svc, Add Load Balanced Endpoints and ACLs",
+      "pos": [
+        52812,
+        52886
+      ]
+    },
+    {
+      "content": "Step 14: Update AlwaysOn",
+      "pos": [
+        53830,
+        53854
+      ]
+    },
+    {
+      "content": "Code to be executed on a Cluster Node",
+      "pos": [
+        53861,
+        53898
+      ]
+    },
+    {
+      "content": "$ClusterNetworkNameAmsterdam = \"Cluster Network 2\" # the azure cluster subnet network name",
+      "pos": [
+        53903,
+        53993
+      ]
+    },
+    {
+      "content": "$newCloudServiceIPAmsterdam = \"192.168.0.25\" # IP address of your cloud service",
+      "pos": [
+        53998,
+        54077
+      ]
+    },
+    {
+      "content": "![Appendix9][19]",
+      "pos": [
+        54936,
+        54952
+      ]
+    },
+    {
+      "content": "Now remove the old cloud service IP Address.",
+      "pos": [
+        54954,
+        54998
+      ]
+    },
+    {
+      "content": "![Appendix10][20]",
+      "pos": [
+        55000,
+        55017
+      ]
+    },
+    {
+      "content": "Step 15: DNS Update Check",
+      "pos": [
+        55025,
+        55050
+      ]
+    },
+    {
+      "content": "You should now check DNS Servers on your SQL Server client networks and make sure that clustering has added the extra host record for the added IP address.",
+      "pos": [
+        55052,
+        55207
+      ]
+    },
+    {
+      "content": "If those DNS servers have not updated, consider forcing a DNS Zone transfer and ensure that the clients in there subnet are able to resolve to both AlwaysOn IP Addresses, this is so you do not need to wait for automatic DNS replication.",
+      "pos": [
+        55208,
+        55444
+      ]
+    },
+    {
+      "content": "Step 16: Reconfigure AlwaysOn",
+      "pos": [
+        55452,
+        55481
+      ]
+    },
+    {
+      "content": "At this point you wait for the secondary that node that was migrated to fully resynchronise with the on-premise node and switch to synchronous replication node and make it the AFP.",
+      "pos": [
+        55484,
+        55664
+      ]
+    },
+    {
+      "content": "Step 17: Migrate Second Node",
+      "pos": [
+        55673,
+        55701
+      ]
+    },
+    {
+      "content": "Step 18: Change Disk Caching Settings in CSV file and Save",
+      "pos": [
+        57689,
+        57747
+      ]
+    },
+    {
+      "content": "For data volumes these should be set to READONLY.",
+      "pos": [
+        57749,
+        57798
+      ]
+    },
+    {
+      "content": "For TLOG volumes these should be set to NONE.",
+      "pos": [
+        57800,
+        57845
+      ]
+    },
+    {
+      "content": "![Appendix11][21]",
+      "pos": [
+        57848,
+        57865
+      ]
+    },
+    {
+      "content": "Step 19: Create New Independent Storage Account for Secondary Node",
+      "pos": [
+        57872,
+        57938
+      ]
+    },
+    {
+      "content": "Step 20: Copy VHDS",
+      "pos": [
+        58813,
+        58831
+      ]
+    },
+    {
+      "content": "You can check the VHD copy status for all VHDs:",
+      "pos": [
+        59972,
+        60019
+      ]
+    },
+    {
+      "content": "ForEach ($disk in $diskobjects)",
+      "pos": [
+        60024,
+        60055
+      ]
+    },
+    {
+      "content": "{",
+      "pos": [
+        60063,
+        60064
+      ]
+    },
+    {
+      "content": "$lun = $disk.Lun",
+      "pos": [
+        60072,
+        60088
+      ]
+    },
+    {
+      "content": "$vhdname = $disk.vhdname",
+      "pos": [
+        60096,
+        60120
+      ]
+    },
+    {
+      "content": "$cacheoption = $disk.HostCaching",
+      "pos": [
+        60128,
+        60160
+      ]
+    },
+    {
+      "content": "$disklabel = $disk.DiskLabel",
+      "pos": [
+        60168,
+        60196
+      ]
+    },
+    {
+      "content": "$diskName = $disk.DiskName",
+      "pos": [
+        60204,
+        60230
+      ]
+    },
+    {
+      "content": "![Appendix12][22]",
+      "pos": [
+        60475,
+        60492
+      ]
+    },
+    {
+      "content": "Wait until all these are recorded as success.",
+      "pos": [
+        60494,
+        60539
+      ]
+    },
+    {
+      "content": "For information for individual blobs:",
+      "pos": [
+        60541,
+        60578
+      ]
+    },
+    {
+      "content": "Check induvidual blob status",
+      "pos": [
+        60584,
+        60612
+      ]
+    },
+    {
+      "content": "Get-AzureStorageBlobCopyState -Blob \"danRegSvcAms-dansqlams1-2014-07-03.vhd\" -Container $containerName -Context $xioContextnode2",
+      "pos": [
+        60617,
+        60745
+      ]
+    },
+    {
+      "content": "Step 21: Register OS Disk",
+      "pos": [
+        60752,
+        60777
+      ]
+    },
+    {
+      "content": "Step 22: Add Load Balanced Endpoints and ACLs",
+      "pos": [
+        62799,
+        62844
+      ]
+    },
+    {
+      "content": "Step 23: Test Failover",
+      "pos": [
+        63531,
+        63553
+      ]
+    },
+    {
+      "content": "You should now let the migrated node synchronise with the on-premise AlwaysOn node, place it in to synchronous replication mode and wait until it is synchronised.",
+      "pos": [
+        63555,
+        63717
+      ]
+    },
+    {
+      "content": "Then failover from on-prem to the first node migrated, which is the AFP.",
+      "pos": [
+        63718,
+        63790
+      ]
+    },
+    {
+      "content": "Once that has worked, change the last migrated node to the AFP.",
+      "pos": [
+        63791,
+        63854
+      ]
+    },
+    {
+      "content": "You should test failovers between all nodes and run though chaos tests to ensure failovers work as expected and in a timely manor.",
+      "pos": [
+        63856,
+        63986
+      ]
+    },
+    {
+      "content": "Step 24: Put back cluster quorum settings / DNS TTL / Failover Pntrs / Sync Settings",
+      "pos": [
+        63993,
+        64077
+      ]
+    },
+    {
+      "content": "Adding IP Address Resource on Same Subnet",
+      "pos": [
+        64085,
+        64126
+      ]
+    },
+    {
+      "content": "If you have only 2 SQL Servers and want to migrate them to a new cloud service, but want to keep them on the same subnet, you can avoid taking the listener offline to delete the original AlwaysOn IP Address and add the New IP Address.",
+      "pos": [
+        64128,
+        64362
+      ]
+    },
+    {
+      "content": "If you are migrating the VMs to another subnet you will not need to do this as there will be an additional cluster network that will reference that subnet.",
+      "pos": [
+        64363,
+        64518
+      ]
+    },
+    {
+      "content": "Once you have brought up the migrated secondary and added in the new IP Address resource for the new cloud service before failover the existing Primary, you should take these steps within the Cluster Failover Manager:",
+      "pos": [
+        64520,
+        64737
+      ]
+    },
+    {
+      "pos": [
+        64739,
+        64858
+      ],
+      "content": "To add in IP Address, see the <bpt id=\"p1\">[</bpt>Appendix<ept id=\"p1\">](#appendix-migrating-a-multisite-alwayson-cluster-to-premium-storage)</ept>, step 14."
+    },
+    {
+      "content": "For the current IP Address resource change the possible owner to ‘Existing Primary SQL Server’, in the example below, ‘dansqlams4’:",
+      "pos": [
+        64863,
+        64994
+      ]
+    },
+    {
+      "content": "![Appendix13][23]",
+      "pos": [
+        65000,
+        65017
+      ]
+    },
+    {
+      "content": "For the new IP Address resource  change the possible owner to ‘Migrated secondary SQL Server’, in the example below, ‘dansqlams5’:",
+      "pos": [
+        65022,
+        65152
+      ]
+    },
+    {
+      "content": "![Appendix14][24]",
+      "pos": [
+        65158,
+        65175
+      ]
+    },
+    {
+      "content": "Once this is set you can failover, and when the last node is migrated the Possible Owners should be edited so that node is added as a Possible Owner:",
+      "pos": [
+        65180,
+        65329
+      ]
+    },
+    {
+      "content": "![Appendix15][25]",
+      "pos": [
+        65335,
+        65352
+      ]
+    },
+    {
+      "content": "Additional Resources",
+      "pos": [
+        65357,
+        65377
+      ]
+    },
+    {
+      "content": "Azure Premium Storage",
+      "pos": [
+        65381,
+        65402
+      ]
+    },
+    {
+      "content": "Virtual Machines",
+      "pos": [
+        65453,
+        65469
+      ]
+    },
+    {
+      "content": "SQL Server in Azure Virtual Machines",
+      "pos": [
+        65529,
+        65565
+      ]
+    }
+  ],
+  "content": "<properties \n    pageTitle=\"Use Azure Premium Storage with SQL Server on Virtual Machines\"\n    description=\"This article provides guidance for how to start using Azure Premium Storage with SQL Server running on Azure Virtual Machines. This includes examples of new deployments and migrations of existing deployments of SQL Server on IaaS.\"\n    services=\"virtual-machines\"\n    documentationCenter=\"\"\n    authors=\"danielsollondon\"\n    manager=\"jeffreyg\"\n    editor=\"\"/>\n\n<tags\n    ms.service=\"virtual-machines\"\n    ms.devlang=\"na\"\n    ms.topic=\"article\"\n    ms.tgt_pltfrm=\"vm-windows-sql-server\"\n    ms.workload=\"infrastructure-services\"\n    ms.date=\"06/02/2015\"\n    ms.author=\"jroth\"/>\n\n# Use Azure Premium Storage with SQL Server on Virtual Machines\n\n\n## Overview\n\n[Azure Premium Storage](../storage-premium-storage-preview-portal.md) is the next generation of storage that provides low latency and high throughput IO. It works best for key IO intensive workloads, such as SQL Server on IaaS [Virtual Machines](http://azure.microsoft.com/services/virtual-machines/). This article provides planning and guidance for migrating a Virtual Machine running SQL Server to use Premium Storage. This includes Azure infrastructure (networking, storage) and guest Windows VM steps. The example in the [Appendix](#appendix-migrating-a-multisite-alwayson-cluster-to-premium-storage) shows a full comphrensive end to end migration of how to move larger VMs to take advantage of improved local SSD storage with PowerShell.\n\nIt is important to understand the end-to-end process of utilizing Azure Premium Storage with SQL Server on IAAS VMs. This includes:\n\n- Identification of the prerequisites to use Premium Storage.\n- Examples of deploying SQL Server on IaaS to Premium Storage for new deployments.\n- Examples of migrating existing deployments, both stand-alone servers and deployments using SQL AlwaysOn Availability Groups.\n- Possible migration approaches.\n- Full end-to-end example showing Azure, Windows, and SQL Server steps for  the migration of an existing AlwaysOn implementation.\n\nFor more background information on SQL Server in Azure Virtual Machines, see [SQL Server in Azure Virtual Machines](virtual-machines-sql-server-infrastructure-services.md).\n\n**Author:** Daniel Sol\n**Technical Reviewers:** Luis Carlos Vargas Herring, Sanjay Mishra, Pravin Mital, Juergen Thomas, Gonzalo Ruiz.\n\n## Prerequisites for Premium Storage\n\nThere are several prerequisites for using Premium Storage.\n\n### Machine Size\n\nFor using Premium Storage you will need to use DS series Virtual Machines (VM). If you have not used DS Series machines in your cloud service before, you must delete the existing VM, keep the attached disks, and then create a new cloud service before recreating  the VM as DS* role size. For more information on Virtual Machine sizes, see [Virtual Machine and Cloud Service Sizes for Azure](virtual-machines-size-specs.md).\n\n### Cloud Services\n\nYou can only use DS* VMs with Premium Storage when they are created in a new cloud service. If you are using SQL Server AlwaysOn in Azure, the AlwaysOn Listener will refer to the Azure Internal or External Load Balancer IP address that is associated with a cloud service. This article focuses on how to migrate while maintaining availability in this scenario.\n\n> [AZURE.NOTE] A DS* Series must be the first VM that is deployed to the new Cloud Service.\n\n### Regional VNETS\n\nFor  DS* VMs you must configure the Virtual Network (VNET) hosting your VMs to be regional. This “widens” the VNET is to allow the larger VMs to be provisioned in other clusters and allow communication between them. In the following screenshot, the highlighted Location shows regional VNETs, whereas the first result shows a “narrow” VNET.\n \n![RegionalVNET][1]\n\nYou can raise a Microsoft support ticket to migrate to a regional VNET, Microsoft will make a change, then to complete the migration to regional VNETs, change the property AffinityGroup in the network configuration. First export the Network Configuration in PowerShell, and then replace the **AffinityGroup** property in the **VirtualNetworkSite** element with a **Location** property. Specify `Location = XXXX` where `XXXX` is an Azure region. Then import the new configuration.\n\nFor example, considering the following VNET configuration:\n\n    <VirtualNetworkSite name=\"danAzureSQLnet\" AffinityGroup=\"AzureSQLNetwork\">\n    <AddressSpace>\n      <AddressPrefix>10.0.0.0/8</AddressPrefix>\n      <AddressPrefix>172.16.0.0/12</AddressPrefix>\n    </AddressSpace>\n    <Subnets>\n    ...\n    </VirtualNetworkSite>\n\nTo move this to a regional VNET in West Europe, change the configuration to the following:\n\n    <VirtualNetworkSite name=\"danAzureSQLnet\" Location=\"West Europe\">\n    <AddressSpace>\n      <AddressPrefix>10.0.0.0/8</AddressPrefix>\n      <AddressPrefix>172.16.0.0/12</AddressPrefix>\n    </AddressSpace>\n    <Subnets>\n    ...\n    </VirtualNetworkSite>\n    \n### Storage Accounts\n\nYou will need to create a new storage account that is configured for Premium Storage. Note that the use of Premium Storage is set at the storage account, not on individual VHDs, however when using a DS* Series VM you can attach VHD’s from Premium and Standard Storage accounts. You may consider this if you do not want to place the OS VHD on to the Premium Storage account.\n\nThe following **New-AzureStorageAccountPowerShell** command with the \"Premium_LRS\" **Type** creates a Premium Storage Account:\n\n    $newstorageaccountname = \"danpremstor\" \n    New-AzureStorageAccount -StorageAccountName $newstorageaccountname -Location \"West Europe\" -Type \"Premium_LRS\"   \n\n### VHDs Cache Settings\n\nThe main difference between creating disks that are part of a Premium Storage account is the disk cache setting. For SQL Server Data volume disks it is recommended that you use ‘**Read Caching**’. For Transaction log volumes, the disk cache setting should be set to ‘**None**’. This is different from the recommendations for Standard Storage accounts.\n\nOnce the VHDs have been attached, the cache setting cannot be altered. You would need to detach and reattach the VHD with an updated cahce setting.\n\n### Windows Storage Spaces\n\nYou can use [Windows Storage Spaces](https://technet.microsoft.com/library/hh831739.aspx) as you did with previous Standard Storage, this will allow you to migrate a VM that is already utilizing Storage Spaces. The example in [Appendix](#appendix-migrating-a-multisite-alwayson-cluster-to-premium-storage) (step 9 and forward) demonstrates the Powershell code to extract and import a VM with multiple attached VHDs. \n\nStorage Pools were used with Standard Azure storage account to enhance throughput and reduce latency. You might find value in testing Storage Pools with Premium Storage for new deployments, but they do add additional complexity with storage setup. \n\n#### How to find which Azure Virtual Disks Map to Storage Pools\n\nAs there are different cache setting recommendations for attached VHDs, you might decide to copy the VHDs to a Premium Storage account. However, when you reattach them to the new DS series VM, you might need to alter the cache settings. It is simpler to apply the Premium Storage recommended cache settings when you have separate VHDs for the SQL Data files and log files (rather than a single VHD that contains both). \n\n> [AZURE.NOTE] If you have SQL Server data and log files on the same volume, the caching option you choose depends on the IO access patterns for your database workloads. Only testing can demonstrate which caching option is best for this scenario.\n\nHowever if you are using Windows Storage Spaces which are made up of multiple VHDs you will need to look at your original scripts to identify which attached VHDs are in what specific pool, so you can then set the cache settings accordingly for each disk.\n\nIf you do not have original script available to show you which VHDs map to the storage pool, you can use the following steps to determine the disk/storage pool mapping.\n\nFor each disk, use the following steps:\n\n1. Get list of disks attached to VM with the **Get-AzureVM** command:\n\n    Get-AzureVM -ServiceName <servicename> -Name <vmname> | Get-AzureDataDisk\n\n1. Note the Diskname and LUN.\n\n    ![DisknameAndLUN][2]\n\n1. Remote desktop into the VM. Then go to **Computer Management** | **Device Manager** | **Disk Drives**. Look at the  properties of each of the ‘Microsoft Virtual Disks’\n\n    ![VirtualDiskProperties][3]\n\n1. The LUN number here is a reference to the LUN number you specify when attaching the VHD to the VM.\n1. For the ‘Microsoft Virtual Disk’ go to the **Details** tab, then in the **Property** list, go to **Driver Key**. In the **Value**, note the **Offset**, which is 0002 in the following screenshot. The 0002 denotes the PhysicalDisk2 that the storage pool references.\n\n    ![VirtualDiskPropertyDetails][4]\n\n2. For each storage pool dump out the associated disks:\n\n    Get-StoragePool -FriendlyName AMS1pooldata | Get-PhysicalDisk\n\n    ![GetStoragePool][5]\n \nNow you can use this information to associate attached VHDs to Physical Disks in Storage Pools.\n\nOnce you have mapped VHDs to Physical Disks in Storage Pools you can then detach and copy them over to a Premium Storage account, then attach them with the correct cache setting. Please see the example in the [Appendix](#appendix-migrating-a-multisite-alwayson-cluster-to-premium-storage), steps 8 through 12. These steps show how to extract a VM-attached VHD disk configuration to a CSV file, copy the VHDs, alter the disk configuration cache settings, and finally redeploy the VM as a DS series VM with all the attached disks.\n\n### VM Storage Bandwidth and VHD Storage Throughput \n\nThe amount of storage performance depends on the DS* VM size specified and the VHD sizes. The VMs have different allowances for the number of VHDs that can be attached and the maximum bandwidth they will support (MB/s). For the specific bandwidth numbers, see [Virtual Machine and Cloud Service Sizes for Azure](virtual-machines-size-specs.md).\n\nIncreased IOPS are achieved with larger disk sizes. You should consider this when you think about your migration path. For details, [see the table for IOPS and Disk Types](../storage-premium-storage-preview-portal.md#scalability-and-performance-targets-when-using-premium-storage). \n\nFinally, consider that VMs have different maximum disk bandwidths they will support for all disks attached. Under high load, you could saturate the maximum disk bandwidth available for that VM role size. For example a Standard_DS14 will support up to 512MB/s; therefore, with three P30 disks you could saturate the disk bandwidth of the VM. But in this example, the throughput limit could be exceeded depending on the mix of read and write IOs.\n\n## New Deployments\n\nThe next two sections demonstrate how you can deploy SQL Server VMs to Premium Storage. As mentioned before, you do not necessarily need to place the OS disk onto Premium storage. You might choose to do this if you are intending to place any intensive IO workloads on the OS VHD. \n\nThe first example demonstrates utilizing existing Azure Gallery Images. The second example shows how to use a custom VM image that you have in an existing Standard storage account.\n\n> [AZURE.NOTE] These examples assume that you have already created a Regional VNET.\n\n### Create a new VM with Premium Storage with Gallery Image\n\nThe example below shows how to place the OS VHD onto premium storage and attach Premium Storage VHDs. However, you can also place the OS disk in a Standard Storage account and then attach VHDs that reside in a Premium Storage account. Both scenarios are demonstrated.\n\n    $mysubscription = \"DansSubscription\"\n    $location = \"West Europe\"\n    \n    #Set up subscription \n    Set-AzureSubscription -SubscriptionName $mysubscription \n    Select-AzureSubscription -SubscriptionName $mysubscription -Current  \n\n#### Step 1: Create a Premium Storage Account\n\n\n    #Create Premium Storage account, note Type\n    $newxiostorageaccountname = \"danspremsams\" \n    New-AzureStorageAccount -StorageAccountName $newxiostorageaccountname -Location $location -Type \"Premium_LRS\"  \n\n \n#### Step 2: Create a New Cloud Service\n\n    $destcloudsvc = \"danNewSvcAms\" \n    New-AzureService $destcloudsvc -Location $location \n\n\n#### Step 3: Reserve a Cloud Service VIP (Optional)\n    #check exisitng reserved VIP\n    Get-AzureReservedIP\n    \n    $reservedVIPName = “sqlcloudVIP” \n    New-AzureReservedIP –ReservedIPName $reservedVIPName –Label $reservedVIPName –Location $location \n\n#### Step 4: Create a VM Container\n    #Generate storage keys for later \n    $xiostorage = Get-AzureStorageKey -StorageAccountName $newxiostorageaccountname \n    \n    ##Generate storage acc contexts \n    $xioContext = New-AzureStorageContext –StorageAccountName $newxiostorageaccountname -StorageAccountKey $xiostorage.Primary   \n    \n    #Create container\n    $containerName = 'vhds'\n    New-AzureStorageContainer -Name $containerName -Context $xioContext\n\n#### Step 5: Placing OS VHD on Standard or Premium Storage\n    #NOTE: Set up subscription and default storage account which will be used to place the OS VHD in\n    \n    #If you want to place the OS VHD Premium Storage Account\n    Set-AzureSubscription -SubscriptionName $mysubscription -CurrentStorageAccount  $newxiostorageaccountname  \n    \n    #If you wanted to place the OS VHD Standard Storage Account but attach Premium Storage VHDs then you would run this instead:\n    $standardstorageaccountname = \"danstdams\" \n    \n    Set-AzureSubscription -SubscriptionName $mysubscription -CurrentStorageAccount  $standardstorageaccountname\n\n#### Step 6: Create VM\n    #Get list of available SQL Server Images from the Azure Image Gallery.\n    $galleryImage = Get-AzureVMImage | where-object {$_.ImageName -like \"*SQL*2014*Enterprise*\"} \n    $image = $galleryImage.ImageName \n    \n    #Set up Machine Specific Information\n    $vmName = \"dsDan1\"\n    $vnet = \"dansvnetwesteur\"\n    $subnet = \"SQL\"\n    $ipaddr = \"192.168.0.8\"\n    \n    #Remember to change to DS series VM\n    $newInstanceSize = \"Standard_DS1\"\n    \n    #create new Avaiability Set \n    $availabilitySet = \"cloudmigAVAMS\"\n    \n    #Machine User Credentials\n    $userName = \"myadmin\"\n    $pass = \"mycomplexpwd4*\"\n    \n    #Create VM Config\n    $vmConfigsl = New-AzureVMConfig -Name $vmName -InstanceSize $newInstanceSize -ImageName $image  -AvailabilitySetName $availabilitySet  ` | Add-AzureProvisioningConfig -Windows ` -AdminUserName $userName -Password $pass | Set-AzureSubnet -SubnetNames $subnet | Set-AzureStaticVNetIP -IPAddress $ipaddr\n    \n    #Add Data and Log Disks to VM Config\n    #Note the size specified ‘-DiskSizeInGB 1023’, this will attach 2 x P30 Premium Storage Disk Type\n    #Utilising the Premium Storage enabled Storage account\n    \n    $vmConfigsl | Add-AzureDataDisk -CreateNew -DiskSizeInGB 1023 -LUN 0 -HostCaching \"ReadOnly\"  -DiskLabel \"DataDisk1\" -MediaLocation \"https://$newxiostorageaccountname.blob.core.windows.net/vhds/$vmName-data1.vhd\"\n    $vmConfigsl | Add-AzureDataDisk -CreateNew -DiskSizeInGB 1023 -LUN 1 -HostCaching \"None\"  -DiskLabel \"logDisk1\" -MediaLocation \"https://$newxiostorageaccountname.blob.core.windows.net/vhds/$vmName-log1.vhd\"\n    \n    #Create VM\n    $vmConfigsl  | New-AzureVM –ServiceName $destcloudsvc -VNetName $vnet ## Optional (-ReservedIPName $reservedVIPName)  \n    \n    #Add RDP Endpoint\n    $EndpointNameRDPInt = \"3389\"\n    Get-AzureVM -ServiceName $destcloudsvc -Name $vmName | Add-AzureEndpoint -Name \"EndpointNameRDP\" -Protocol \"TCP\" -PublicPort \"53385\" -LocalPort $EndpointNameRDPInt  | Update-AzureVM\n    \n    #Check VHD storage account, these should be in $newxiostorageaccountname \n    Get-AzureVM -ServiceName $destcloudsvc -Name $vmName | Get-AzureDataDisk\n    Get-AzureVM -ServiceName $destcloudsvc -Name $vmName |Get-AzureOSDisk\n     \n\n### Create a new VM to Use Premium Storage with a Custom Image\n\nThis scenario demonstrates where you have existing customized images that reside in a Standard Storage account. As mentioned if you want to place the OS VHD on Premium Storage you will need to copy the image that exists in the Standard Storage account and transfer them to a Premium Storage before it can be used. If you have an image on premise, you can also use this method to copy that directly to the Premium Storage account.\n\n#### Step 1: Create Storage Account\n    $mysubscription = \"DansSubscription\"\n    $location = \"West Europe\"\n    \n    #Create Premium Storage account\n    $newxiostorageaccountname = \"danspremsams\" \n    New-AzureStorageAccount -StorageAccountName $newxiostorageaccountname -Location $location -Type \"Premium_LRS\"  \n    \n    #Standard Storage account\n    $origstorageaccountname = \"danstdams\" \n \n#### Step 2 Create Cloud Service\n    $destcloudsvc = \"danNewSvcAms\" \n    New-AzureService $destcloudsvc -Location $location \n\n \n#### Step 3: Use Existing Image\nYou can use an existing image. Or, you can [take an image of an existing machine](virtual-machines-capture-image-windows-server.md). Note the machine you image does not have to be DS* machine. Once you have the image, the following steps show how to copy it to the Premium Storage account with the **Start-AzureStorageBlobCopy** PowerShell commandlet. \n\n    #Get storage account keys:\n    #Standard Storage account\n    $originalstorage =  Get-AzureStorageKey -StorageAccountName $origstorageaccountname\n    #Premium Storage account\n    $xiostorage = Get-AzureStorageKey -StorageAccountName $newxiostorageaccountname\n    \n    #Set up contexts for the storage accounts:\n    $origContext = New-AzureStorageContext  –StorageAccountName $origstorageaccountname -StorageAccountKey $originalstorage.Primary\n    $destContext = New-AzureStorageContext  –StorageAccountName $newxiostorageaccountname -StorageAccountKey $xiostorage.Primary  \n \n#### Step 4: Copy Blob between Storage Accounts\n    #Get Image VHD from Portal\n    $myImageVHD = \"dansoldonorsql2k14-os-2015-04-15.vhd\"\n    $containerName = 'vhds'\n    \n    #Copy Blob between accounts\n    $blob = Start-AzureStorageBlobCopy -SrcBlob $myImageVHD -SrcContainer $containerName `\n    -DestContainer vhds -Destblob \"prem-$myImageVHD\" `\n    -Context $origContext -DestContext $destContext  \n\n#### Step 5: Regularly check copy status:\n    $blob | Get-AzureStorageBlobCopyState \n\n#### Step 6: Add Image disk to Azure disk Repository in Subscription\n    $imageMediaLocation = $destContext.BlobEndPoint+\"/\"+$myImageVHD \n    $newimageName = \"prem\"+\"dansoldonorsql2k14\"\n    \n    Add-AzureVMImage -ImageName $newimageName -MediaLocation $imageMediaLocation\n \n> [AZURE.NOTE] You may find that even though the status reports as success, you could still get a disk lease error. In this case, wait about 10 minutes.\n\n#### Step 7:  Build the VM\nHere you are building the VM from your image and attaching two Premium Storage VHDs:\n\n    $newimageName = \"prem\"+\"dansoldonorsql2k14\"\n    #Set up Machine Specific Information\n    $vmName = \"dansolchild\"\n    $vnet = \"westeur\"\n    $subnet = \"Clients\"\n    $ipaddr = \"192.168.0.41\"\n    \n    #This will need to be a new cloud service\n    $destcloudsvc = \"danregsvcamsxio2\"\n    \n    #Use to DS Series VM\n    $newInstanceSize = \"Standard_DS1\"\n    \n    #create new Avaiability Set \n    $availabilitySet = \"cloudmigAVAMS3\"\n    \n    #Machine User Credentials\n    $userName = \"myadmin\"\n    $pass = \"theM)stC0mplexP@ssw0rd!”\n     \n    \n    #Create VM Config\n    $vmConfigsl2 = New-AzureVMConfig -Name $vmName -InstanceSize $newInstanceSize -ImageName $newimageName  -AvailabilitySetName $availabilitySet  ` | Add-AzureProvisioningConfig -Windows ` -AdminUserName $userName -Password $pass | Set-AzureSubnet -SubnetNames $subnet | Set-AzureStaticVNetIP -IPAddress $ipaddr\n    \n    $vmConfigsl2 | Add-AzureDataDisk -CreateNew -DiskSizeInGB 1023 -LUN 0 -HostCaching \"ReadOnly\"  -DiskLabel \"DataDisk1\" -MediaLocation \"https://$newxiostorageaccountname.blob.core.windows.net/vhds/$vmName-Datadisk-1.vhd\" \n    $vmConfigsl2 | Add-AzureDataDisk -CreateNew -DiskSizeInGB 1023 -LUN 1 -HostCaching \"None\"  -DiskLabel \"LogDisk1\" -MediaLocation \"https://$newxiostorageaccountname.blob.core.windows.net/vhds/$vmName-logdisk-1.vhd\" \n     \n    \n    \n    $vmConfigsl2 | New-AzureVM –ServiceName $destcloudsvc -VNetName $vnet \n\n## Existing Deployments that do not use AlwaysOn Availability Groups\n\n> [AZURE.NOTE] For existing deployments, first see the [Prerequisites](#prerequisites-for-premium-storage) section of this topic.\n\nThere are different considerations for SQL Server deployments that do not use AlwaysOn Availbility Groups and those that do. If you are not using AlwaysOn and have an existing standalone SQL Server, you can upgrade to Premium Storage by using a new cloud service and storage account. Consider the following options:\n\n- **Create a new SQL Server VM**. You can create a new SQL Server VM that uses a Premium Storage account, as documented in New Deployments. Then backup and restore your SQL Server configuration and user databases. The application will need to be updated to reference the new SQL Server if it is being accessed internally or externally. You would need to copy all ‘out of db’ objects as if you were doing a Side by Side (SxS) SQL Server migration. This includes objects such as logins, certificates, and linked servers.\n- **Migrate an existing SQL Server VM**. This will require taking the SQL Server VM offline, then transferring it to a new cloud service, which includes copying all of its attached VHDs to the Premium Storage account. When the VM comes online, the application will reference the server host name as before. Be aware that the size of the existing disk will affect the performance characteristics. For example, a 400 GB disk gets rounded up to a P20. If you know that you do not require that disk performance, then you could recreate the VM as a DS Series VM, and attach Premium Storage VHDs of the size/performance specification you require. Then you could detach and reattach the SQL DB files.\n\n> [AZURE.NOTE] When copying the VHD disks you should beaware of the size, depending on the size will mean what Premium Storage Disk type they fall into, this determines disk performance specification. Azure will round up to the nearest disk size, so if you have a 400GB disk, this will be rounded up to a P20. Depending on your existing IO requirements of the OS VHD, you might not need to migrate this to a Premium Storage account.\n\nIf your SQL Server is accessed externally, then the cloud service VIP will change. You will also have to update endptoints, ACLs, and DNS settings.\n\n## Existing Deployments that use AlwaysOn Availability Groups\n\n> [AZURE.NOTE] For existing deployments, first see the [Prerequisites](#prerequisites-for-premium-storage) section of this topic.\n\nIntially in this section we will look at how AlwaysOn interacts with Azure Networking. We will then break down migrations in to two scenarios: migrations where some downtime can be tolerated and migrations where you must achieve minimal downtime.\n\nOn-premises SQL Server AlwaysOn Availability Groups use a Listener on-premises that registers a virtual DNS name along with an IP address that is shared between one or more SQL Servers. When clients connect they are routed through the listener IP to the Primary SQL Server. This is the server that owns the AlwaysOn IP resource at that time.\n \n![DeploymentsUseAlwaysOn][6]\n\nIn Microsoft Azure you can have only one IP address assigned to a NIC on the VM, so in order to achieve the same layer of abstraction as on-premises, Azure utilizes the IP address that is assigned to the Internal/External Load Balancers (ILB/ELB). The IP resource that is shared between the servers is set to the same IP as the ILB/ELB. This is published in the DNS, and client traffic is passed through the ILB/ELB to the Primary SQL Server replica. The ILB/ELB knows which SQL Server is primary since it uses probes to probe the AlwaysOn IP resource. In the previous example, it probes each node that has an endpoint referenced by the ELB/ILB, whichever responds is the Primary SQL Server. \n\n> [AZURE.NOTE] The ILB and ELB are both assigned to a particular Azure cloud service, therefore any cloud migration in Azure will most likely mean that the Load Balancer IP will change. \n\n### Migrating AlwaysOn deployments that can allow some downtime\n\nThere are two strategies to migrate AlwaysOn deployments that allow for some downtime:\n\n1. **Add more secondary replicas to an existing AlwaysOn Cluster**\n1. **Migrate to a new AlwaysOn Cluster**\n\n#### 1. Add more Secondary Replicas to an Existing AlwaysOn Cluster\n\nOne strategy is to add more secondaries to the AlwaysOn Availability Group. You need to add these into a new cloud service and update the listener with the new load balancer IP. \n\n##### Points of Downtime:\n\n- Cluster Validation.\n- Testing AlwaysOn failovers for New Secondaries.\n\nIf you are using Windows Storage Pools within the VM for higher IO throughput, then these will be taken offline during a Full Cluster Validation. The validation test is required when you add nodes to the cluster. The time it takes to run the test can vary, so you should test this in your representative test environment to get an approximate time of how long this will take. \n\nYou should provision time where you can perform manual failover and chaos testing on the newly added nodes to ensure AlwaysOn High Availability functions as expected.\n\n![DeploymentUseAlwaysOn2][7]\n\n> [AZURE.NOTE] You should stop all instances of SQL Server where the Storage Pools are used before the Validaion runs. \n##### High Level Steps\n\n1. Create two new SQL Servers in new cloud service with attached Premium Storage.\n1. Copy over FULL backups and restore with **NORECOVERY**.\n1. Copy over ‘out of user DB’ dependent objects, such as logins etc.\n1. Create new a new Internal Load Balancer (ILB) or use an External Load Balancer (ELB), and then set up Load Balanced Endpoints on both new nodes.\n> [AZURE.NOTE] Check all Nodes have the correct Endpoint configuration before you continue\n\n1. Stop User/Application Access to the SQL Server (if using Storage Pools).\n1. Stop SQL Server Engine Services on All Nodes (if using Storage Pools).\n1. Add new Nodes to cluster and run full validation. \n1. Once Validation is successful, start all SQL Server Services.\n1. Backup Transaction logs, and restore user databases.\n1. Add new nodes into the AlwaysOn Availability Group and place replication into **Syncronous**. \n1. Add the IP address resource of the new Cloud Service ILB/ELB through PowerShell for AlwaysOn based on the Multi-site example in the [Appendix](#appendix-migrating-a-multisite-alwayson-cluster-to-premium-storage). In Windows clustering, set the **Possible owners** of the **IP Address** resource to the new nodes old. See the ‘Adding IP Address Resource on Same Subnet’ section of the [Appendix](#appendix-migrating-a-multisite-alwayson-cluster-to-premium-storage).\n1. Failover to one of the new nodes.\n1. Make the new nodes Auto Failover Partners and test failovers.\n1. Remove original nodes from Availability Group.\n\n##### Advantages\n\n- New SQL Servers can be tested (SQL Server and Application) before they are added to AlwaysOn.\n- You can change the VM size and customize the storage to your exact requirements. However, it would be beneficial to keep all the SQL file paths the same.\n- You can control when the transfer of the DB backups to the Secondary Replicas are started. This differs from using Azure **Start-AzureStorageBlobCopy** commandlet to copy VHDs, because that is an asynchronous copy.\n\n##### Disadvantages\n- When using Windows Storage Pools, there is Cluster downtime during the Full Cluster Validation for the new additional nodes. \n- Depending on the SQL Server Version and the existing number of secondary replicas, you might not be able to add more secondary replicas without removing existing secondaries.\n- There could be long SQL data transfer time while setting up the secondaries.\n- There is additional cost during migration while you have new machines running in paralell.\n\n#### 2. Migrate to a New AlwaysOn Cluster\n\nAnother strategy is to create a brand new AlwaysOn Cluster with brand new nodes in new cloud service and then redirect the clients to use it.\n\n##### Points of Downtime\n\nThere is downtime when you transfer applications and users to the new AlwaysOn listener. The downtime depends on:\n\n- The time taken to restore final transaction log backups to databases on new servers.\n- The time taken to update client applications to use new AlwaysOn listener.\n\n##### Advantages\n\n- You can test the actual production environment, SQL Server, and OS build changes.\n- You have the option to customize the storage and to potentially reduce size of VM. This could result in cost reduction.\n- You can update your SQL Server build or version during this process. You can also upgrade the Operating System.\n- The previous AlwaysOn Cluster can act as a solid rollback target.\n\n##### Disadvantages\n\n- You need to change the DNS name of the listener if you want both AlwaysOn clusters running simultaneously. This adds administration overhead during the migration as client application strings must reflect the new Listener name.\n- You must implement a synchronization mechanism between the two environments to keep them as close as possible to minimize the final synchronization requirements before migration.\n- There is added cost during migration while you have the new environment running.\n\n### Migrating AlwaysOn Deployments for Minimal Downtime\n\nThere are two strategies for migrating AlwaysOn deployments for minimal downtime:\n\n1. **Utilize an Existing Secondary: Single-Site**\n1. **Utilize Existing Secondary Replica(s): Multi-Site**\n\n#### 1. Utilize an Existing Secondary: Single-Site\n\nOne strategy for minimal downtime is to take an existing cloud secondary and remove it from the current cloud service. Then copy the VHDs to the new Premium Storage account, and create the VM in the new cloud service. Then update the listener in clustering and failover.\n\n##### Points of Downtime\n\n- There is downtime when you update the final node with the Load Balanaced endpoint.\n- Your client reconnection might be delayed depending on your client/DNS configuration.\n- There is additional downtime if you choose to take the AlwaysOn Cluster group offline to swap out the IP addresses. You can avoid this by using an OR dependancy and Possible Owners for the added IP Address resource. See the ‘Adding IP Address Resource on Same Subnet’ section of the [Appendix](#appendix-migrating-a-multisite-alwayson-cluster-to-premium-storage).\n\n> [AZURE.NOTE] When you want the added node to partake in as an AlwaysOn Failover Partner, you need to add an Azure Endpoint with a reference to the Load Balanced Set. When you run the **Add-AzureEndpoint** command to do this, current connections to remain open, but new connections to the listener will not be able to be established until the load balancer has updated. In testing this was seen to last 90-120seconds, this should be tested. \n\n##### Advantages\n\n- No extra cost incurred during migration.\n- A one-to-one migration.\n- Reduced complexity.\n- Allows for increased IOPS from Premium Storage SKUs. When the disks are detached from the VM and copied to the new cloud service, a 3rd party tool can be used to increase the VHD size, which provides higher throughputs. For increasing VHD sizes, see this [forum discussion](https://social.msdn.microsoft.com/Forums/azure/4a9bcc9e-e5bf-4125-9994-7c154c9b0d52/resizing-azure-data-disk?forum=WAVirtualMachinesforWindows).\n\n##### Disadvantages\n\n- There is a temporary loss of HA and DR during migration.\n- As this is a 1:1 migration, you will have to use a minimum VM size that will support your number of VHDs, so you might not be able to downsize your VMs.\n- This scenario would use the Azure **Start-AzureStorageBlobCopy** commandlet, which is asynchronous. There is no SLA on copy completion. The time of the copies varies, while this depends on wait in queue it will also depend on the amount of data to transfer. The copy time increases if the transfer is going to another Azure data center that supports Premium Storage in another region. If you just have 2 nodes, consider a possible mitigation in case the copy takes longer than in testing. This could include the following ideas.\n    - Add a temporary 3rd SQL Server node for HA before the migration with agreed downtime.\n    - Run the migration outside of Azure scheduled maintenance.\n    - Ensure you have configured your cluster quorum correctly.  \n\n##### High Level Steps\n\nThis document does not demonstrate a complete end to end example, however the [Appendix](#appendix-migrating-a-multisite-alwayson-cluster-to-premium-storage) provides details that can be leveraged to perform this.\n \n![MinimalDowntime][8]\n\n- Gather disk configuration, and remove the node (do not delete attached VHDs).\n- Create a Premium Storage account and copy VHDs from the Standard Storage account\n- Create new cloud service and redeploy the SQL2 VM in that cloud service. Create the VM using the copied original OS VHD and attaching the copied VHDs.\n- Configure ILB / ELB and add Endpoints.\n- Update Listener by either:\n    - Taking the AlwaysOn Group offline and updating the AlwaysOn Listener with new ILB / ELB IP address. \n    - Or adding the IP addess resource of new Cloud Service ILB/ELB through PowerShell into Windows clustering. Then set the Possible owners of the IP Address resource to the migrated node, SQL2, and set this as OR dependency in the Network Name. See the ‘Adding IP Address Resource on Same Subnet’ section of the [Appendix](#appendix-migrating-a-multisite-alwayson-cluster-to-premium-storage).\n- Check DNS configuration/propogation to the clients.\n- Migrate SQL1 VM, and go through steps 2 – 4.\n- If using steps 5ii, then add SQL1 as a Possible Owner for the added IP Address Resource\n- Test failovers.\n\n#### 2. Utilize Existing Secondary Replica(s): Multi-Site\n\nIf you have nodes in more than one Azure datacenter (DC) or if you have a hybrid environment, then you can use an AlwaysOn configuration in this environment to minimize downtime.\n\nThe approach is to change the AlwaysOn synchronization to Synchronous for the on-premises or secondary Azure DC, and then failover over to that SQL Server. Then copy the VHDs to a Premium Storage account, and redeploy the machine into a new cloud service. Update the listener, and then fail back. \n\n##### Points of Downtime\n\nThe downtime consists of the time to failover to the alternative DC and back. It also depends on your client/DNS configuration and your client reconnection may be delayed.\nConsider the following example of a hybrid AlwaysOn configuration:\n\n![MultiSite1][9]\n\n##### Advantages\n\n- You can utilize existing infrastructure.\n- You have the option to pre-upgrade the Azure storage on the DR Azure DC first.\n- The DR Azure DC storage can be reconfigured.\n- There is a minimum of two failovers during migration, excluding test failovers.\n- You do not need to move SQL Server data with backup and restore.\n\n##### Disadvantages\n\n- Depending on client access to SQL Server, there might be increased latency when SQL Server is running in an alternative DC to the application.\n- The copy time of VHDs to Premium storage could be long. This might affect your decision on whether to keep the node in the Availability Group. Consider this for when log intensive work loads are running during the migrationis required, since the Primary node will have to keep the unreplicated transactions in its transaction log. Therefore this could grow significantly.\n- This scenario would use the Azure **Start-AzureStorageBlobCopy** commandlet, which is asynchronous. There is no SLA on completion. The time of the copies varies, while this depends on wait in queue, it will also depend on the amount of data to transfer. Therefore you just have one node in your 2nd data center, you should take mitigation steps in case the copy takes longer than in testing. This could include the following ideas.\n    - Add a temporary 2nd SQL node for HA before the migration with agreed downtime.\n    - Run the migration outside of Azure scheduled maintenance. \n    - Ensure you have configured your cluster quorum correctly. \n\nThis scenario assumes that you have documented your install and know how the storage is mapped in order to make changes for optimal disk cache settings.\n\n##### High Level Steps\n![Multisite2][10]\n\n- Make the on-premises / alternate Azure DC the SQL Server Primary, and make it the other Auto Failover Partner (AFP). \n- Gather disk configuration information from SQL2, and remove the node (do not delete attached VHDs).\n- Create a Premium Storage account and copy VHDs from the Standard Storage account.\n- Create a new cloud service and create the SQL2 VM with its Premiums Storage disks attached.\n- Configure ILB / ELB and add Endpoints.\n- Update the AlwaysOn Listener with new ILB / ELB IP address and test failover.\n- Check the DNS configuration.\n- Change the AFP to SQL2, and then migrate SQL1 and go through steps 2 – 5.\n- Test failovers.\n- Switch the AFP back to SQL1 and SQL2\n\n## Appendix: Migrating a Multisite AlwaysOn Cluster to Premium Storage \n\nThe remainder of this topic provides a detailed example of converting a multi-site AlwaysOn cluster to Premium storage. It also converts the Listener from using an external load balancer (ELB) to an internal load balancer (ILB).\n\n### Environment\n\n- Windows 2k12 / SQL 2k12\n- 1 DB Files on SP\n- 2 x Storage Pools per Node\n\n![Appendix1][11]\n \n### VM:\n \nIn this example we are going to demonstrate moving from an ELB to ILB. ELB was available before ILB, so this shows how to switch to this during the migration.\n\n![Appendix2][12]\n\n### Pre Steps: Connect to Subscription\n\n    Add-AzureAccount\n    \n    #Set up subscription\n    Get-AzureSubscription \n\n#### Step 1: Create New Storage Account and Cloud Service\n    $mysubscription = \"DansSubscription\"\n    $location = \"West Europe\"\n    \n    #Storage accounts\n    #current storage account where the vm to migrate resides\n    $origstorageaccountname = \"danstdams\"\n    \n    #Create Premium Storage account\n    $newxiostorageaccountname = \"danspremsams\" \n    New-AzureStorageAccount -StorageAccountName $newxiostorageaccountname -Location $location -Type \"Premium_LRS\"  \n    \n    #Generate storage keys for later\n    $originalstorage =  Get-AzureStorageKey -StorageAccountName $origstorageaccountname\n    $xiostorage = Get-AzureStorageKey -StorageAccountName $newxiostorageaccountname\n    \n    #Generate storage acc contexts\n    $origContext = New-AzureStorageContext  –StorageAccountName $origstorageaccountname -StorageAccountKey $originalstorage.Primary\n    $xioContext = New-AzureStorageContext  –StorageAccountName $newxiostorageaccountname -StorageAccountKey $xiostorage.Primary  \n    \n    #Set up subscription and default storage account\n    Set-AzureSubscription -SubscriptionName $mysubscription -CurrentStorageAccount $origstorageaccountname\n    Select-AzureSubscription -SubscriptionName $mysubscription -Current \n    \n    #CREATE NEW CLOUD SVC\n    $vnet = \"dansvnetwesteur\"\n    \n    ##Existing cloud service\n    $sourceSvc=\"dansolSrcAms\"\n    \n    ##Create new cloud service\n    $destcloudsvc = \"danNewSvcAms\" \n    New-AzureService $destcloudsvc -Location $location \n\n#### Step 2: Increase the Permitted Failures on Resources <Optional>\nOn certain resources that belong to your AlwaysOn Availability Group there are limits on how many failures that can occur in a period, where the cluster service will attempt to restart the resource group. It is recommended you increase this whilst you are walking through this procedure, since if you don’t manually failover and trigger failovers by shutting down machines you can get close to this limit.\n\nIt would be prudent to double the failure allowance, to do this in Failover Cluster Manager, go to the Properties of the AlwaysOn resource group:\n \n![Appendix3][13]\n\nChange the Maximum Failures to 6.\n\n#### Step 3: Addition IP Address Resource for Cluster Group <Optional>\n\nIf you have only one IP address for the Cluster Group and this is aligned to the cloud subnet, beware, if you accidentally take offline all cluster nodes in the cloud on that network then the Cluster IP resource and Cluster Network Name will not be able to come online. In the event of this it will prevent updates to other cluster resources. \n\n#### Step 4: DNS Configuration\n\nTo implement a smooth transition depends on how DNS is being utilised and updated.\nWhen AlwaysOn is installed, it creates a Windows Cluster Resource group, if you open Failover Cluster Manager, you will see that at a minimum it will have three resources, the two that the document refers to are:\n\n- Virtual Network Name (VNN) – This is the DNS name that client connect to when wanting to connect to SQL Servers via AlwaysOn.\n- IP Address Resource – This is the IP address that associated with the VNN, you can have more than one, and in a multisite configuration you will have an IP address per site/subnet.\n\nWhen connecting to SQL Sevrer, the SQL Server Client driver will retrieve the DNS records associated with the listener and try to connect to each AlwaysOn associated IP address, below we discuss some factors that can influence this.\n\nThe number of concurrent DNS records that are associated with the listener name depends not only on the number of IP addresses associated, but the ‘RegisterAllIpProviders’setting in Failover Clustering for the AlwaysON VNN resource.\n\nWhen you deploy AlwaysOn in Azure there are different steps to create the Listener and IP Addresses, you have to manually configure the ‘RegisterAllIpProviders’ to 1, this is different to an on premise AlwaysOn deployment where it is already set to 1. \n\nIf ‘RegisterAllIpProviders’ is 0, then you will only see one DNS record in DNS associated with the Listener:\n\n![Appendix4][14]\n\nIf ‘RegisterAllIpProviders’ is 1:\n \n![Appendix5][15]\n\nThe code below will dump out the VNN settings and set it for you, please note, for the change to take effect you will need to take the the VNN offline and turn it back online, this taking the Listener offline causing client connectivity disruption. \n\n    ##Always On Listener Name\n    $ListenerName = \"Mylistener\"\n    ##Get AlwaysOn Network Name Settings\n    Get-ClusterResource $ListenerName| Get-ClusterParameter\n    ##Set RegisterAllProvidersIP \n    Get-ClusterResource $ListenerName| Set-ClusterParameter RegisterAllProvidersIP  1 \n\nIn a later migration step you will need to update the AlwaysOn listener with an updated IP address that will reference a load balancer, this will involve an IP Address resource removal and addition. After the IP update, you need to ensure the new IP address has been updated in DNS Zone and that the clients are updating their local DNS cache. \n\nIf you clients reside in a different network segment and reference a different DNS server, you need to consider what happens about DNS Zone Transfer during the migration, as the application reconnect time will be constrained by at least the Zone Transfer Time of any new IP addresses for the listener. If you are under time constraint here, you should discuss and test forcing an incremental zone transfer with your Windows teams, and also put the DNS host record to a lower Time To Live (TTL), so the clients update. For more information, see [Incremental Zone Transfers](https://technet.microsoft.com/library/cc958973.aspx) and [Start-DnsServerZoneTransfer](https://technet.microsoft.com/library/jj649917.aspx).\n\nBy default the TTL for DNS Record that is associated with the Listener in AlwaysOn in Azure is 1200 seconds. You may wish to reduce this if you are under time constraint during your migration to ensure the clients update their DNS with the updated IP address for the listener. You can see and modify the configuration by dumping out the configuration of the VNN:\n\n    $AGName = \"myProductionAG\"\n    $ListenerName = \"Mylistener\"\n    #Look at HostRecordTTL\n    Get-ClusterResource $ListenerName| Get-ClusterParameter\n    \n    #Set HostRecordTTL Examples\n    Get-ClusterResource $ListenerName| Set-ClusterParameter -Name \"HostRecordTTL\" 120 \n\nPlease note, the lower the ‘HostRecordTTL’, a higher amount of DNS traffic will occur.\n\n##### Client Application Settings\n\nIf your SQL client application supports the .Net 4.5 SQLClient, then you can use ‘MULTISUBNETFAILOVER=TRUE’ keyword, this is recommended to be applied as it allows for faster connection to SQL AlwaysOn Availability Group during failover. It enumerates through all IP addresses associated with the AlwaysOn listener in parallel, and performs a more aggressive TCP connection retry speed during a failover.\n\nFor more information regarding the settings above, please see [MultiSubnetFailover Keyword and Associated Features](https://msdn.microsoft.com/library/hh213080.aspx#MultiSubnetFailover). Also see [SqlClient Support for High Availability, Disaster Recovery](https://msdn.microsoft.com/library/hh205662(v=vs.110).aspx).\n\n#### Step 5: Cluster Quorum Settings\n\nAs you are going to be taking out at least one SQL Server down at a time, you should modify the cluster quorum setting, if using File Share Witnes (FSW) with 2 nodes, you should set the quorum to allow node majority and utilise dynamic voting, and this is to allow for a single node to remain standing.\n\n\n    Set-ClusterQuorum -NodeMajority  \n\nFor more information on managing and configuring the cluster quorum, please see [Configure and Manage the Quorum in a Windows Server 2012 Failover Cluster](https://technet.microsoft.com/en-us/library/jj612870.aspx).\n\n#### Step 6: Extract Existing Endpoints and ACLs\n    #GET Endpoint info\n    Get-AzureVM -ServiceName $destcloudsvc -Name $vmNameToMigrate | Get-AzureEndpoint\n    #GET ACL Rules for Each EP, this example is for the AlwaysOn Endpoint\n    Get-AzureVM -ServiceName $destcloudsvc -Name $vmNameToMigrate | Get-AzureAclConfig -EndpointName \"myAOEndPoint-LB\"  \n\nSave these to a text file.\n\n#### Step 7: Change Failover Partners and Replication Modes\n\nIf you have more than 2 SQL Servers, you should change the failover of another secondary in another DC or on premise to ‘Synchronous’ and make it an Automatic Failover Partner (AFP), this is so you maintain HA whilst you are making changes. You can do this through TSQL of modify though SSMS:\n \n![Appendix6][16]\n\n#### Step 8: Remove Secondary VM from Cloud Service\n\nYou should be planning to migrate a cloud secondary node first, if this is currently primary, you should initiate a manual failover.\n\n    $vmNameToMigrate=\"dansqlams2\"\n    \n    #Check machine status \n    Get-AzureVM -ServiceName $sourceSvc -Name $vmNameToMigrate \n    \n    #Shutdown secondary VM\n    Get-AzureVM -ServiceName $sourceSvc -Name $vmNameToMigrate | stop-AzureVM\n    \n    \n    #Extract disk configuration\n    \n    ##Building Existing Data Disk Configuration\n    $file = \"C:\\Azure Storage Testing\\mydiskconfig_$vmNameToMigrate.csv\"\n    $datadisks = @(Get-AzureVM -ServiceName $sourceSvc -Name $vmNameToMigrate | Get-AzureDataDisk )\n    Add-Content $file “lun, vhdname, hostcaching, disklabel, diskName”\n    foreach ($disk in $datadisks)\n    {\n      $vhdname = $disk.MediaLink.AbsolutePath -creplace  \"/vhds/\"\n      $disk.Lun, , $disk.HostCaching, $vhdname, $disk.DiskLabel,$disks.DiskName \n    # Write-Host \"copying disk $disk\"\n    $adddisk = \"{0},{1},{2},{3},{4}\" -f $disk.Lun,$vhdname, $disk.HostCaching, $disk.DiskLabel, $disk.DiskName \n    $adddisk | add-content -path $file\n    }\n    \n    #Get OS Disk\n    $osdisks = Get-AzureVM -ServiceName $sourceSvc -Name $vmNameToMigrate | Get-AzureOSDisk ## | select -ExpandProperty MediaLink\n    $osvhdname = $osdisks.MediaLink.AbsolutePath -creplace  \"/vhds/\"\n    $osdisks.OS, $osdisks.HostCaching, $osvhdname, $osdisks.DiskLabel, $osdisks.DiskName\n    $addosdisk = \"{0},{1},{2},{3},{4}\" -f $osdisks.OS,$osvhdname, $osdisks.HostCaching, $osdisks.Disklabel , $osdisks.DiskName \n    $addosdisk | add-content -path $file\n    \n    #Import disk config\n    $diskobjects  = Import-CSV $file\n    \n    #Check disk config, make sure below returns the disks associated with the VM\n    $diskobjects \n    \n    #Identify OS Disk\n    $osdiskimport = $diskobjects | where {$_.lun -eq \"Windows\"}\n    $osdiskforbuild = $osdiskimport.diskName\n    \n    #Check machibe is off\n    Get-AzureVM -ServiceName $sourceSvc -Name  $vmNameToMigrate \n    \n    #Drop machine and rebuild to new cls\n    Remove-AzureVM -ServiceName $sourceSvc -Name $vmNameToMigrate \n\n#### Step 9: Change Disk Caching Settings in CSV file and Save\n\nFor data volumes these should be set to READONLY.\n\nFor TLOG volumes these should be set to NONE.\n \n![Appendix7][17]\n\n#### Step 10: Copy VHDS\n    #Ensure you have created the container for these:\n    $containerName = 'vhds'\n    \n    #Create container\n    New-AzureStorageContainer -Name $containerName -Context $xioContext \n    \n    ####DISK COPYING####\n    #Get disks from csv, get settings for each VHDs and copy to Premium Storage accoun\n    ForEach ($disk in $diskobjects)\n       {\n       $lun = $disk.Lun\n       $vhdname = $disk.vhdname\n       $cacheoption = $disk.HostCaching\n       $disklabel = $disk.DiskLabel\n       $diskName = $disk.DiskName\n       Write-Host \"Copying Disk Lun $lun, Label : $disklabel, VHD : $vhdname has cache setting : $cacheoption\"\n    \n       #Start async copy\n       Start-AzureStorageBlobCopy -srcUri \"https://$origstorageaccountname.blob.core.windows.net/vhds/$vhdname\" `\n    -SrcContext $origContext `\n    -DestContainer $containerName `\n    -DestBlob $vhdname `\n    -DestContext $xioContext\n       }\n     \n \n\nYou can check the copy status of the VHDs to the Premium Storage account:\n\n    ForEach ($disk in $diskobjects)\n       {\n       $lun = $disk.Lun\n       $vhdname = $disk.vhdname\n       $cacheoption = $disk.HostCaching\n       $disklabel = $disk.DiskLabel\n       $diskName = $disk.DiskName\n      \n       $copystate = Get-AzureStorageBlobCopyState -Blob $vhdname -Container $containerName -Context $xioContext\n    Write-Host \"Copying Disk Lun $lun, Label : $disklabel, VHD : $vhdname, STATUS = \" $copystate.Status \n       }\n \n![Appendix8][18]\n\nWait until all these are recorded as success.\n\nFor information for individual blobs:\n\n    Get-AzureStorageBlobCopyState -Blob \"blobname.vhd\" -Container $containerName -Context $xioContext \n\n#### Step 11: Register OS Disk\n\n    #Change storage account\n    Set-AzureSubscription -SubscriptionName $mysubscription -CurrentStorageAccount $newxiostorageaccountname \n    Select-AzureSubscription -SubscriptionName $mysubscription -Current \n    \n    #Register OS disk\n    $osdiskimport = $diskobjects | where {$_.lun -eq \"Windows\"}\n    $osvhd = $osdiskimport.vhdname\n    $osdiskforbuild = $osdiskimport.diskName\n    \n    #Registering OS disk, but as XIO disk\n    $xioDiskName = $osdiskforbuild + \"xio\"\n    Add-AzureDisk -DiskName $xioDiskName -MediaLocation  \"https://$newxiostorageaccountname.blob.core.windows.net/vhds/$osvhd\"  -Label \"BootDisk\" -OS \"Windows\"\n\n#### Step 12: Import Secondary into New Cloud Service\n\nThe code below also uses the added option here you can import the machine and use the retainable VIP.\n\n    #Build VM Config\n    $ipaddr = \"192.168.0.5\"\n    #Remember to change to XIO\n    $newInstanceSize = \"Standard_DS13\"\n    $subnet = \"SQL\"\n    \n    #Create new Avaiability Set \n    $availabilitySet = \"cloudmigAVAMS\"\n    \n    #build machine config into object\n    $vmConfig = New-AzureVMConfig -Name $vmNameToMigrate -InstanceSize $newInstanceSize -DiskName $xioDiskName -AvailabilitySetName $availabilitySet  ` | Add-AzureProvisioningConfig -Windows ` | Set-AzureSubnet -SubnetNames $subnet | Set-AzureStaticVNetIP -IPAddress $ipaddr\n    \n    #Reload disk config\n    $diskobjects  = Import-CSV $file\n    $datadiskimport = $diskobjects | where {$_.lun -ne \"Windows\"}\n    \n    ForEach ( $attachdatadisk in $datadiskimport) \n       {\n    $label = $attachdatadisk.disklabel\n    $lunNo = $attachdatadisk.lun\n    $hostcach = $attachdatadisk.hostcaching\n    $datadiskforbuild = $attachdatadisk.diskName\n    $vhdname = $attachdatadisk.vhdname\n    \n    ###Attaching disks to a VM during a deploy to a new cloud service and new storage account is different from just attaching VHDs to just a redeploy in a new cloud service\n    $vmConfig | Add-AzureDataDisk -ImportFrom -MediaLocation \"https://$newxiostorageaccountname.blob.core.windows.net/vhds/$vhdname\" -LUN $lunNo -HostCaching $hostcach -DiskLabel $label\n    \n    }\n    \n    #Create VM\n    $vmConfig  | New-AzureVM –ServiceName $destcloudsvc –Location $location -VNetName $vnet ## Optional (-ReservedIPName $reservedVIPName)\n \n#### Step 13: Create ILB on New Cloud Svc, Add Load Balanced Endpoints and ACLs\n    #Check for existing ILB\n    GET-AzureInternalLoadBalancer -ServiceName $destcloudsvc\n    \n    $ilb=\"sqlIntIlbDest\"\n    $subnet = \"SQL\"\n    $IP=\"192.168.0.25\"\n    Add-AzureInternalLoadBalancer -ServiceName $destcloudsvc -InternalLoadBalancerName $ilb –SubnetName $subnet –StaticVNetIPAddress $IP\n    \n    #Endpoints\n    $epname=\"sqlIntEP\"\n    $prot=\"tcp\"\n    $locport=1433\n    $pubport=1433\n    Get-AzureVM –ServiceName $destcloudsvc –Name $vmNameToMigrate  | Add-AzureEndpoint -Name $epname -Protocol $prot -LocalPort $locport -PublicPort $pubport -ProbePort 59999 -ProbeIntervalInSeconds 5 -ProbeTimeoutInSeconds 11  -ProbeProtocol \"TCP\" -InternalLoadBalancerName $ilb -LBSetName $ilb -DirectServerReturn $true | Update-AzureVM\n    \n    #SET Azure ACLs or Network Security Groups & Windows FWs \n     \n    #http://msdn.microsoft.com/en-us/library/azure/dn495192.aspx\n    \n    ####WAIT FOR FULL AlwaysOn RESYNCRONISATION!!!!!!!!!#####\n\n####Step 14: Update AlwaysOn \n    #Code to be executed on a Cluster Node\n    $ClusterNetworkNameAmsterdam = \"Cluster Network 2\" # the azure cluster subnet network name\n    $newCloudServiceIPAmsterdam = \"192.168.0.25\" # IP address of your cloud service \n    \n    $AGName = \"myProductionAG\"\n    $ListenerName = \"Mylistener\" \n    \n    \n    Add-ClusterResource \"IP Address $newCloudServiceIPAmsterdam\" -ResourceType \"IP Address\" -Group $AGName -ErrorAction Stop |  Set-ClusterParameter -Multiple @{\"Address\"=\"$newCloudServiceIPAmsterdam\";\"ProbePort\"=\"59999\";SubnetMask=\"255.255.255.255\";\"Network\"=$ClusterNetworkNameAmsterdam;\"OverrideAddressMatch\"=1;\"EnableDhcp\"=0} -ErrorAction Stop \n    \n    #set dependancy and NETBIOS, then remove old IP address\n    \n    #set NETBIOS, then remove old IP address\n    Get-ClusterGroup $AGName | Get-ClusterResource -Name \"IP Address $newCloudServiceIPAmsterdam\" | Set-ClusterParameter -Name EnableNetBIOS -Value 0 \n     \n    #set dependency to Listener (OR Dependency) and delete previous IP Address resource that references:\n    \n    #Make sure no static records in DNS \n    \n![Appendix9][19]\n\nNow remove the old cloud service IP Address.\n\n![Appendix10][20]\n \n#### Step 15: DNS Update Check\n\nYou should now check DNS Servers on your SQL Server client networks and make sure that clustering has added the extra host record for the added IP address. If those DNS servers have not updated, consider forcing a DNS Zone transfer and ensure that the clients in there subnet are able to resolve to both AlwaysOn IP Addresses, this is so you do not need to wait for automatic DNS replication. \n\n#### Step 16: Reconfigure AlwaysOn \n\nAt this point you wait for the secondary that node that was migrated to fully resynchronise with the on-premise node and switch to synchronous replication node and make it the AFP.  \n\n#### Step 17: Migrate Second Node\n    $vmNameToMigrate=\"dansqlams1\"\n    \n    Get-AzureVM -ServiceName $sourceSvc -Name $vmNameToMigrate \n    \n    #Get endpoint information\n    $endpoint = Get-AzureVM -ServiceName $sourceSvc  -Name $vmNameToMigrate | Get-AzureEndpoint\n    \n    #Shutdown VM\n    Get-AzureVM -ServiceName $sourceSvc -Name $vmNameToMigrate | stop-AzureVM\n    \n    #Get disk config\n    \n    #Building Existing Data Disk Configuration\n    $file = \"C:\\Azure Storage Testing\\mydiskconfig_$vmNameToMigrate.csv\"\n    $datadisks = @(Get-AzureVM -ServiceName $sourceSvc -Name $vmNameToMigrate | Get-AzureDataDisk )\n    Add-Content $file “lun, vhdname, hostcaching, disklabel, diskName”\n    foreach ($disk in $datadisks)\n    {\n      $vhdname = $disk.MediaLink.AbsolutePath -creplace  \"/vhds/\"\n      $disk.Lun, , $disk.HostCaching, $vhdname, $disk.DiskLabel,$disks.DiskName \n    # Write-Host \"copying disk $disk\"\n    $adddisk = \"{0},{1},{2},{3},{4}\" -f $disk.Lun,$vhdname, $disk.HostCaching, $disk.DiskLabel, $disk.DiskName \n    $adddisk | add-content -path $file\n    }\n    \n    #Get OS Disk\n    $osdisks = Get-AzureVM -ServiceName $sourceSvc -Name $vmNameToMigrate | Get-AzureOSDisk ## | select -ExpandProperty MediaLink\n    $osvhdname = $osdisks.MediaLink.AbsolutePath -creplace  \"/vhds/\"\n    $osdisks.OS, $osdisks.HostCaching, $osvhdname, $osdisks.DiskLabel, $osdisks.DiskName\n    $addosdisk = \"{0},{1},{2},{3},{4}\" -f $osdisks.OS,$osvhdname, $osdisks.HostCaching, $osdisks.Disklabel , $osdisks.DiskName \n    $addosdisk | add-content -path $file\n    \n    #Import disk config\n    $diskobjects  = Import-CSV $file\n    \n    #Check disk configuration\n    $diskobjects \n    \n    #Identify OS Disk\n    $osdiskimport = $diskobjects | where {$_.lun -eq \"Windows\"}\n    $osdiskforbuild = $osdiskimport.diskName\n    \n    #Check machine is off\n    Get-AzureVM -ServiceName $sourceSvc -Name  $vmNameToMigrate \n    \n    #Drop machine and rebuild to new cls\n    Remove-AzureVM -ServiceName $sourceSvc -Name $vmNameToMigrate \n\n#### Step 18: Change Disk Caching Settings in CSV file and Save\n\nFor data volumes these should be set to READONLY.\n\nFor TLOG volumes these should be set to NONE.\n \n![Appendix11][21]\n\n#### Step 19: Create New Independent Storage Account for Secondary Node\n    $newxiostorageaccountnamenode2 = \"danspremsams2\" \n    New-AzureStorageAccount -StorageAccountName $newxiostorageaccountnamenode2 -Location $location -Type \"Premium_LRS\"  \n    \n    #Reset the storage account src if node 1 in a different storage account\n    $origstorageaccountname2nd = \"danstdams2\"\n    \n    #Generate storage keys for later\n    $xiostoragenode2 = Get-AzureStorageKey -StorageAccountName $newxiostorageaccountnamenode2\n    \n    #Generate storage acc contexts\n    $xioContextnode2 = New-AzureStorageContext  –StorageAccountName $newxiostorageaccountnamenode2 -StorageAccountKey $xiostoragenode2.Primary  \n    \n    #Set up subscription and default storage account\n    Set-AzureSubscription -SubscriptionName $mysubscription -CurrentStorageAccount $newxiostorageaccountnamenode2\n    Select-AzureSubscription -SubscriptionName $mysubscription -Current \n\n#### Step 20: Copy VHDS\n    #Ensure you have created the container for these:\n    $containerName = 'vhds'\n    \n    #Create container\n    New-AzureStorageContainer -Name $containerName -Context $xioContextnode2  \n    \n    ####DISK COPYING####\n    ##get disks from csv, get settings for each VHDs and copy to Premium Storage accoun\n    ForEach ($disk in $diskobjects)\n       {\n       $lun = $disk.Lun\n       $vhdname = $disk.vhdname\n       $cacheoption = $disk.HostCaching\n       $disklabel = $disk.DiskLabel\n       $diskName = $disk.DiskName\n       Write-Host \"Copying Disk Lun $lun, Label : $disklabel, VHD : $vhdname has cache setting : $cacheoption\"\n      \n       #Start async copy\n       Start-AzureStorageBlobCopy -srcUri \"https://$origstorageaccountname2nd.blob.core.windows.net/vhds/$vhdname\" `\n        -SrcContext $origContext `\n        -DestContainer $containerName `\n        -DestBlob $vhdname `\n        -DestContext $xioContextnode2\n       }\n    \n    #Check for copy progress\n    \n    #check induvidual blob status\n    Get-AzureStorageBlobCopyState -Blob \"danRegSvcAms-dansqlams1-2014-07-03.vhd\" -Container $containerName -Context $xioContext\n     \n    \nYou can check the VHD copy status for all VHDs:\n    ForEach ($disk in $diskobjects)\n       {\n       $lun = $disk.Lun\n       $vhdname = $disk.vhdname\n       $cacheoption = $disk.HostCaching\n       $disklabel = $disk.DiskLabel\n       $diskName = $disk.DiskName\n      \n       $copystate = Get-AzureStorageBlobCopyState -Blob $vhdname -Container $containerName -Context $xioContextnode2\n    Write-Host \"Copying Disk Lun $lun, Label : $disklabel, VHD : $vhdname, STATUS = \" $copystate.Status \n       }\n     \n![Appendix12][22]\n\nWait until all these are recorded as success.\n\nFor information for individual blobs:\n    #Check induvidual blob status\n    Get-AzureStorageBlobCopyState -Blob \"danRegSvcAms-dansqlams1-2014-07-03.vhd\" -Container $containerName -Context $xioContextnode2\n\n#### Step 21: Register OS Disk\n    #change storage account to the new XIO storage account\n    Set-AzureSubscription -SubscriptionName $mysubscription -CurrentStorageAccount $newxiostorageaccountnamenode2\n    Select-AzureSubscription -SubscriptionName $mysubscription -Current \n    \n    #Register OS disk\n    $osdiskimport = $diskobjects | where {$_.lun -eq \"Windows\"}\n    $osvhd = $osdiskimport.vhdname\n    $osdiskforbuild = $osdiskimport.diskName\n    \n    #Registering OS disk, but as XIO disk\n    $xioDiskName = $osdiskforbuild + \"xio\"\n    Add-AzureDisk -DiskName $xioDiskName -MediaLocation  \"https://$newxiostorageaccountnamenode2.blob.core.windows.net/vhds/$osvhd\"  -Label \"BootDisk\" -OS \"Windows\" \n    \n    #Build VM Config\n    $ipaddr = \"192.168.0.4\"\n    $newInstanceSize = \"Standard_DS13\"\n    \n    #Join to existing Avaiability Set \n    \n    #Build machine config into object\n    $vmConfig = New-AzureVMConfig -Name $vmNameToMigrate -InstanceSize $newInstanceSize -DiskName $xioDiskName -AvailabilitySetName $availabilitySet  ` | Add-AzureProvisioningConfig -Windows ` | Set-AzureSubnet -SubnetNames $subnet | Set-AzureStaticVNetIP -IPAddress $ipaddr\n    \n    #Reload disk config\n    $diskobjects  = Import-CSV $file\n    $datadiskimport = $diskobjects | where {$_.lun -ne \"Windows\"}\n    \n    ForEach ( $attachdatadisk in $datadiskimport) \n       {\n    $label = $attachdatadisk.disklabel\n    $lunNo = $attachdatadisk.lun\n    $hostcach = $attachdatadisk.hostcaching\n    $datadiskforbuild = $attachdatadisk.diskName\n    $vhdname = $attachdatadisk.vhdname\n    \n    ###This is different to just a straight cloud service change\n    #note if you do not have a disk label the command below will fail, populate as required.\n    $vmConfig | Add-AzureDataDisk -ImportFrom -MediaLocation \"https://$newxiostorageaccountnamenode2.blob.core.windows.net/vhds/$vhdname\" -LUN $lunNo -HostCaching $hostcach -DiskLabel $label\n    \n    }\n    \n    #Create VM\n    $vmConfig  | New-AzureVM –ServiceName $destcloudsvc –Location $location -VNetName $vnet -Verbose\n\n#### Step 22: Add Load Balanced Endpoints and ACLs\n    #Endpoints\n    $epname=\"sqlIntEP\"\n    $prot=\"tcp\"\n    $locport=1433\n    $pubport=1433\n    Get-AzureVM –ServiceName $destcloudsvc –Name $vmNameToMigrate  | Add-AzureEndpoint -Name $epname -Protocol $prot -LocalPort $locport -PublicPort $pubport -ProbePort 59999 -ProbeIntervalInSeconds 5 -ProbeTimeoutInSeconds 11  -ProbeProtocol \"TCP\" -InternalLoadBalancerName $ilb -LBSetName $ilb -DirectServerReturn $true | Update-AzureVM\n    \n    \n    #STOP!!! CHECK in portal or Machine Endpoints through powershell that these Endpoints are created!\n    \n    #SET ACLs or Azure Network Security Groups & Windows FWs \n     \n    #http://msdn.microsoft.com/en-us/library/azure/dn495192.aspx\n\n#### Step 23: Test Failover\n\nYou should now let the migrated node synchronise with the on-premise AlwaysOn node, place it in to synchronous replication mode and wait until it is synchronised. Then failover from on-prem to the first node migrated, which is the AFP. Once that has worked, change the last migrated node to the AFP.\n\nYou should test failovers between all nodes and run though chaos tests to ensure failovers work as expected and in a timely manor.\n\n#### Step 24: Put back cluster quorum settings / DNS TTL / Failover Pntrs / Sync Settings \n##### Adding IP Address Resource on Same Subnet\n\nIf you have only 2 SQL Servers and want to migrate them to a new cloud service, but want to keep them on the same subnet, you can avoid taking the listener offline to delete the original AlwaysOn IP Address and add the New IP Address. If you are migrating the VMs to another subnet you will not need to do this as there will be an additional cluster network that will reference that subnet.\n\nOnce you have brought up the migrated secondary and added in the new IP Address resource for the new cloud service before failover the existing Primary, you should take these steps within the Cluster Failover Manager:\n\nTo add in IP Address, see the [Appendix](#appendix-migrating-a-multisite-alwayson-cluster-to-premium-storage), step 14.\n\n1. For the current IP Address resource change the possible owner to ‘Existing Primary SQL Server’, in the example below, ‘dansqlams4’:\n\n    ![Appendix13][23]\n\n1. For the new IP Address resource  change the possible owner to ‘Migrated secondary SQL Server’, in the example below, ‘dansqlams5’:\n\n    ![Appendix14][24]\n\n1. Once this is set you can failover, and when the last node is migrated the Possible Owners should be edited so that node is added as a Possible Owner:\n\n    ![Appendix15][25]\n\n## Additional Resources\n- [Azure Premium Storage](../storage-premium-storage-preview-portal.md)\n- [Virtual Machines](http://azure.microsoft.com/services/virtual-machines/)\n- [SQL Server in Azure Virtual Machines](virtual-machines-sql-server-infrastructure-services.md)\n\n<!-- IMAGES -->\n[1]: ./media/virtual-machines-sql-server-use-premium-storage/1_VNET_Portal.png\n[2]: ./media/virtual-machines-sql-server-use-premium-storage/2_Diskname_Lun.png\n[3]: ./media/virtual-machines-sql-server-use-premium-storage/3_Virtual_Disk_Properties.png\n[4]: ./media/virtual-machines-sql-server-use-premium-storage/4_Virtual_Disk_Properties_Details.png\n[5]: ./media/virtual-machines-sql-server-use-premium-storage/5_Get_Storage_Pool.png\n[6]: ./media/virtual-machines-sql-server-use-premium-storage/6_Deployments_Always_On.png\n[7]: ./media/virtual-machines-sql-server-use-premium-storage/7_Add_More_Secondaries.png\n[8]: ./media/virtual-machines-sql-server-use-premium-storage/8_Use_Existing_Secondary_Single_Site.png\n[9]: ./media/virtual-machines-sql-server-use-premium-storage/9_Use_Existing_Secondary_Multi_Site.png\n[10]: ./media/virtual-machines-sql-server-use-premium-storage/9_Use_Existing_Secondary_Multi_Site_b.png\n[11]: ./media/virtual-machines-sql-server-use-premium-storage/10_Appendix_01.png\n[12]: ./media/virtual-machines-sql-server-use-premium-storage/10_Appendix_02.png\n[13]: ./media/virtual-machines-sql-server-use-premium-storage/10_Appendix_03.png\n[14]: ./media/virtual-machines-sql-server-use-premium-storage/10_Appendix_04.png\n[15]: ./media/virtual-machines-sql-server-use-premium-storage/10_Appendix_05.png\n[16]: ./media/virtual-machines-sql-server-use-premium-storage/10_Appendix_06.png\n[17]: ./media/virtual-machines-sql-server-use-premium-storage/10_Appendix_07.png\n[18]: ./media/virtual-machines-sql-server-use-premium-storage/10_Appendix_08.png\n[19]: ./media/virtual-machines-sql-server-use-premium-storage/10_Appendix_09.png\n[20]: ./media/virtual-machines-sql-server-use-premium-storage/10_Appendix_10.png\n[21]: ./media/virtual-machines-sql-server-use-premium-storage/10_Appendix_11.png\n[22]: ./media/virtual-machines-sql-server-use-premium-storage/10_Appendix_12.png\n[23]: ./media/virtual-machines-sql-server-use-premium-storage/10_Appendix_13.png\n[24]: ./media/virtual-machines-sql-server-use-premium-storage/10_Appendix_14.png\n[25]: ./media/virtual-machines-sql-server-use-premium-storage/10_Appendix_15.png\n "
+}

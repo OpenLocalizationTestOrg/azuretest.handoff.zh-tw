@@ -1,0 +1,551 @@
+{
+  "nodes": [
+    {
+      "content": "Service Fabric Application Upgrade Tutorial",
+      "pos": [
+        26,
+        69
+      ]
+    },
+    {
+      "content": "This article walks through an experience of upgrading a Service Fabric application.",
+      "pos": [
+        87,
+        170
+      ]
+    },
+    {
+      "content": "Application Upgrade Tutorial",
+      "pos": [
+        474,
+        502
+      ]
+    },
+    {
+      "content": "The most frequently used and recommended upgrade approach is the monitored rolling upgrade.",
+      "pos": [
+        504,
+        595
+      ]
+    },
+    {
+      "content": "Service Fabric monitors the health of the application being upgraded based on a set of health policies.",
+      "pos": [
+        597,
+        700
+      ]
+    },
+    {
+      "content": "When the applications in an upgrade domain (UD) have been upgraded, Service Fabric evaluates the application health and determines whether to proceed to the next upgrade domain or fail the upgrade based on the health policies.",
+      "pos": [
+        701,
+        927
+      ]
+    },
+    {
+      "content": "A monitored application upgrade can be performed using the managed or native APIs, PowerShell, or REST.",
+      "pos": [
+        928,
+        1031
+      ]
+    },
+    {
+      "content": "Service Fabric monitored rolling upgrade allows the application administrator to configure the health evaluation policy that Service Fabric uses to determine the application is healthy.",
+      "pos": [
+        1033,
+        1218
+      ]
+    },
+    {
+      "content": "In addition, it also allows the administrator to configure the action to be taken when the health evaluation fails such as automatically roll-back.",
+      "pos": [
+        1219,
+        1366
+      ]
+    },
+    {
+      "content": "This section walkthrough a monitored upgrade for one of the SDK samples.",
+      "pos": [
+        1367,
+        1439
+      ]
+    },
+    {
+      "content": "Step 1: Build &amp; Deploy the Visual Objects Sample",
+      "pos": [
+        1444,
+        1492
+      ]
+    },
+    {
+      "content": "These steps can be done by opening the project in Visual Studio, and right clicking on the Solution and selecting the deploy command in the Service Fabric menu item.",
+      "pos": [
+        1494,
+        1659
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt>managing your Service Fabric application in Visual Studio<ept id=\"p1\">](service-fabric-manage-application-in-visual-studio.md)</ept> for more information.",
+      "pos": [
+        1661,
+        1801
+      ]
+    },
+    {
+      "content": "Alternatively, one may use PowerShell.",
+      "pos": [
+        1803,
+        1841
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> Before any of the Service Fabric commands may be used in PowerShell, one has to first connect to the cluster by using the <ph id=\"ph2\">`Connect-ServiceFabricCluster`</ph> cmdlet.",
+      "pos": [
+        1845,
+        2018
+      ]
+    },
+    {
+      "content": "Similarly, it is assumed that the Cluster has already been setup on your local machine.",
+      "pos": [
+        2019,
+        2106
+      ]
+    },
+    {
+      "content": "See the article on <bpt id=\"p1\">[</bpt>setting up your Service Fabric development environment<ept id=\"p1\">](service-fabric-get-started.md)</ept>.",
+      "pos": [
+        2107,
+        2214
+      ]
+    },
+    {
+      "content": "After building the project in Visual Studio, one may use the PowerShell command <bpt id=\"p1\">**</bpt>Copy-ServiceFabricApplicationPackage<ept id=\"p1\">**</ept> to copy the application package to the ImageStore, followed by registering the application to the Service Fabric runtime by using the <bpt id=\"p2\">**</bpt>Register-ServiceFabricApplicationPackage<ept id=\"p2\">**</ept> cmdlet, and finally starting an instance of the application by using the <bpt id=\"p3\">**</bpt>New-ServiceFabricApplication<ept id=\"p3\">**</ept> cmdlet.",
+      "pos": [
+        2216,
+        2629
+      ]
+    },
+    {
+      "content": "These three steps are analogous to using the Deploy menu item in Visual Studio.",
+      "pos": [
+        2631,
+        2710
+      ]
+    },
+    {
+      "content": "Now, you can use <bpt id=\"p1\">[</bpt>Service Fabric Explorer to view the cluster and the application<ept id=\"p1\">](service-fabric-visualizing-your-cluster.md)</ept>.",
+      "pos": [
+        2712,
+        2839
+      ]
+    },
+    {
+      "content": "The application has a web service that can be navigated to in Internet Explorer by typing <bpt id=\"p1\">[</bpt>http://localhost:80<ept id=\"p1\">](http://localhost:80)</ept> in the address bar.",
+      "pos": [
+        2840,
+        2992
+      ]
+    },
+    {
+      "content": "You should see some floating visual objects moving around in the screen.",
+      "pos": [
+        2994,
+        3066
+      ]
+    },
+    {
+      "content": "Additionally, one may use <bpt id=\"p1\">**</bpt>Get-ServiceFabricApplication<ept id=\"p1\">**</ept> to check the application status.",
+      "pos": [
+        3068,
+        3159
+      ]
+    },
+    {
+      "content": "Step 2: Update the Visual Objects Sample",
+      "pos": [
+        3164,
+        3204
+      ]
+    },
+    {
+      "content": "You might notice that with the version that was deployed in Step 1, the visual objects do not rotate.",
+      "pos": [
+        3206,
+        3307
+      ]
+    },
+    {
+      "content": "Let us upgrade this application to one where the visual objects also rotate.",
+      "pos": [
+        3308,
+        3384
+      ]
+    },
+    {
+      "content": "Select the VisualObjects.DataService project within the VisualObjects solution, and open the VisualObjects.cs file in that project.",
+      "pos": [
+        3386,
+        3517
+      ]
+    },
+    {
+      "content": "Within that file navigate to the method <ph id=\"ph1\">`CreateMovedObject`</ph>, and find the line where rotation of the visual objects is set (search for the following lines in the <ph id=\"ph2\">`CreateMovedObject`</ph> method).",
+      "pos": [
+        3518,
+        3708
+      ]
+    },
+    {
+      "content": "Comment out the line <ph id=\"ph1\">`nextObject.Rotation = 1`</ph>, and uncomment the line below it.",
+      "pos": [
+        3709,
+        3789
+      ]
+    },
+    {
+      "content": "Your code should look like the following after the changes are made:",
+      "pos": [
+        3790,
+        3858
+      ]
+    },
+    {
+      "content": "We also need to update the <bpt id=\"p1\">*</bpt>ServiceManifest.xml<ept id=\"p1\">*</ept> file (under PackageRoot) of the project <bpt id=\"p2\">**</bpt>VisualObjects.DataService<ept id=\"p2\">**</ept>.",
+      "pos": [
+        4067,
+        4186
+      ]
+    },
+    {
+      "content": "Update the <bpt id=\"p1\">*</bpt>CodePackage<ept id=\"p1\">*</ept> and the service version to 2.0, and the corresponding lines in the <bpt id=\"p2\">*</bpt>ServiceManifest.xml<ept id=\"p2\">*</ept> file should look like the following (highlighted portions show the changes):",
+      "pos": [
+        4187,
+        4377
+      ]
+    },
+    {
+      "content": "Now, we need to update the <bpt id=\"p1\">*</bpt>ApplicationManifest.xml<ept id=\"p1\">*</ept> file (found under the <bpt id=\"p2\">**</bpt>VisualObjects<ept id=\"p2\">**</ept> project under the <bpt id=\"p3\">**</bpt>VisualObjects<ept id=\"p3\">**</ept> solution) to use version 2.0 of the <bpt id=\"p4\">**</bpt>VisualObjects.DataService<ept id=\"p4\">**</ept> project and also update the Application version to 2.0.0.0 from 1.0.0.0.",
+      "pos": [
+        4597,
+        4864
+      ]
+    },
+    {
+      "content": "Now, the corresponding lines in the <bpt id=\"p1\">*</bpt>ApplicationManifest.xml<ept id=\"p1\">*</ept> should read like the following:",
+      "pos": [
+        4865,
+        4958
+      ]
+    },
+    {
+      "content": "Now, build the project by selecting the <bpt id=\"p1\">**</bpt>VisualObjects<ept id=\"p1\">**</ept> project and right clicking and selecting build in Visual Studio (if you select Rebuild all, you might have to update the versions for the <bpt id=\"p2\">**</bpt>VisualObjects.WebService<ept id=\"p2\">**</ept> project as well in its <bpt id=\"p3\">*</bpt>ServiceManifest.xml<ept id=\"p3\">*</ept> and in the <bpt id=\"p4\">*</bpt>ApplicationManifest.xml<ept id=\"p4\">*</ept>, since the code would have changed).",
+      "pos": [
+        5309,
+        5652
+      ]
+    },
+    {
+      "content": "Now let's package the updated application by right clicking on the <bpt id=\"p1\">*</bpt>VisualObjects<ept id=\"p1\">*</ept> project, selecting the Service Fabric Menu and choosing Package.",
+      "pos": [
+        5653,
+        5800
+      ]
+    },
+    {
+      "content": "This should create an application package that can be deployed.",
+      "pos": [
+        5801,
+        5864
+      ]
+    },
+    {
+      "content": "Your updated application is ready to be deployed now.",
+      "pos": [
+        5866,
+        5919
+      ]
+    },
+    {
+      "content": "Step 3:  Decide on health policies and upgrade parameters",
+      "pos": [
+        5924,
+        5981
+      ]
+    },
+    {
+      "content": "Please familiarize yourself with the <bpt id=\"p1\">[</bpt>application upgrade parameters<ept id=\"p1\">](service-fabric-application-upgrade-parameters.md)</ept> and the <bpt id=\"p2\">[</bpt>upgrade process<ept id=\"p2\">](service-fabric-application-upgrade.md)</ept> to get a good understanding of the various upgrade parameters, timeouts and health criterion applied.",
+      "pos": [
+        5983,
+        6269
+      ]
+    },
+    {
+      "content": "For this walkthrough, we will leave the service health evaluation criterion to be the default (and recommended values) which mean that all services and instances should be <bpt id=\"p1\">_</bpt>healthy<ept id=\"p1\">_</ept> after the upgrade.",
+      "pos": [
+        6270,
+        6470
+      ]
+    },
+    {
+      "content": "Let's however increase the <bpt id=\"p1\">*</bpt>HealthCheckStableDuration<ept id=\"p1\">*</ept> to 60 seconds (so that the services will be healthy for at least 20 seconds before the upgrade proceeds to the next upgrade domain).",
+      "pos": [
+        6472,
+        6659
+      ]
+    },
+    {
+      "content": "Let's also set the <bpt id=\"p1\">*</bpt>UpgradeDomainTimeout<ept id=\"p1\">*</ept> to be 1200 seconds and the <bpt id=\"p2\">*</bpt>UpgradeTimeout<ept id=\"p2\">*</ept> to be 3000 seconds.",
+      "pos": [
+        6661,
+        6766
+      ]
+    },
+    {
+      "content": "Finally, let's also set the <bpt id=\"p1\">*</bpt>UpgradeFailureAction<ept id=\"p1\">*</ept> to rollback thereby requesting that Service Fabric rollback the application to the previous version if it encounters any issues during upgrade.",
+      "pos": [
+        6767,
+        6961
+      ]
+    },
+    {
+      "content": "Thus, the upgrade parameters we will specify when starting the upgrade (in Step 4) will be the following:",
+      "pos": [
+        6962,
+        7067
+      ]
+    },
+    {
+      "content": "FailureAction = Rollback",
+      "pos": [
+        7069,
+        7093
+      ]
+    },
+    {
+      "content": "HealthCheckStableDurationSec = 60",
+      "pos": [
+        7095,
+        7128
+      ]
+    },
+    {
+      "content": "UpgradeDomainTimeoutSec = 1200",
+      "pos": [
+        7130,
+        7160
+      ]
+    },
+    {
+      "content": "UpgradeTimeout = 3000",
+      "pos": [
+        7162,
+        7183
+      ]
+    },
+    {
+      "content": "Step 4: Prepare Application for Upgrade",
+      "pos": [
+        7188,
+        7227
+      ]
+    },
+    {
+      "content": "Now, the application is built and ready to be upgraded.",
+      "pos": [
+        7229,
+        7284
+      ]
+    },
+    {
+      "content": "If you open up a PowerShell window as administrator and type <bpt id=\"p1\">**</bpt>Get-ServiceFabricApplication<ept id=\"p1\">**</ept>, it should let you know that it is Application Type 1.0.0.0 of <bpt id=\"p2\">**</bpt>VisualObjects<ept id=\"p2\">**</ept> that's been deployed.",
+      "pos": [
+        7285,
+        7481
+      ]
+    },
+    {
+      "content": "The application package is stored under the following relative path where you uncompressed the Service Fabric SDK - <bpt id=\"p1\">*</bpt>Samples\\Services\\Stateful\\VisualObjects\\VisualObjects\\obj\\x64\\Debug<ept id=\"p1\">*</ept>.",
+      "pos": [
+        7483,
+        7669
+      ]
+    },
+    {
+      "content": "You should find a \"Package\" folder in that directory - this is where the application package is stored.",
+      "pos": [
+        7670,
+        7773
+      ]
+    },
+    {
+      "content": "Please check the timestamps to ensure that it is the latest build (and you may need to modify the paths appropriately as well).",
+      "pos": [
+        7774,
+        7901
+      ]
+    },
+    {
+      "content": "Now let's copy the updated application package to the Service Fabric ImageStore (where the application packages are stored by Service Fabric).",
+      "pos": [
+        7903,
+        8045
+      ]
+    },
+    {
+      "content": "The parameter <bpt id=\"p1\">*</bpt>ApplicationPackagePathInImageStore<ept id=\"p1\">*</ept> informs Service Fabric where it can find the application package.",
+      "pos": [
+        8046,
+        8162
+      ]
+    },
+    {
+      "content": "We have put the updated application in \"VisualObjects\\_V2\" with the following command (you may have to modify paths again appropriately).",
+      "pos": [
+        8163,
+        8300
+      ]
+    },
+    {
+      "content": "The next step is to register this application with Service Fabric, which can be performed using the following command:",
+      "pos": [
+        8565,
+        8683
+      ]
+    },
+    {
+      "content": "If the above command doesn't succeed it is likely that you need a rebuild of all services.",
+      "pos": [
+        8791,
+        8881
+      ]
+    },
+    {
+      "content": "As mentioned in Step 2, you may have to update your WebService version as well.",
+      "pos": [
+        8882,
+        8961
+      ]
+    },
+    {
+      "content": "Step 5: Start Application Upgrade",
+      "pos": [
+        8966,
+        8999
+      ]
+    },
+    {
+      "content": "Now, we are all set to start the application upgrade by using the following command:",
+      "pos": [
+        9001,
+        9085
+      ]
+    },
+    {
+      "content": "Note the application name is as was described in the <bpt id=\"p1\">*</bpt>ApplicationManifest.xml<ept id=\"p1\">*</ept> file.",
+      "pos": [
+        9337,
+        9421
+      ]
+    },
+    {
+      "content": "Service Fabric uses this name to identify which application is getting upgraded.",
+      "pos": [
+        9422,
+        9502
+      ]
+    },
+    {
+      "content": "If you set the timeouts to be too short, you may encounter a failure message that states the problem.",
+      "pos": [
+        9503,
+        9604
+      ]
+    },
+    {
+      "content": "Refer to the troubleshooting section, or increase the timeouts.",
+      "pos": [
+        9605,
+        9668
+      ]
+    },
+    {
+      "pos": [
+        9670,
+        9867
+      ],
+      "content": "Now, as the application upgrade proceeds, you can monitor it using Service Fabric Explorer, or using the following PowerShell command: <bpt id=\"p1\">**</bpt>Get-ServiceFabricApplicationUpgrade fabric:/VisualObjects<ept id=\"p1\">**</ept>."
+    },
+    {
+      "content": "In a few minutes, the status using the above PowerShell command should state that all upgrade domains were upgraded (completed).",
+      "pos": [
+        9869,
+        9997
+      ]
+    },
+    {
+      "content": "And you should find that the visual objects in your browser window will now have started rotating!",
+      "pos": [
+        9998,
+        10096
+      ]
+    },
+    {
+      "content": "You may want to try changing the versions and moving from version 2 to version 3 as an exercise, or even from version 2 back to version 1 (yes, you can upgrade from v2 to v1).",
+      "pos": [
+        10098,
+        10273
+      ]
+    },
+    {
+      "content": "Play with timeouts and health policies to make yourself familiar.",
+      "pos": [
+        10274,
+        10339
+      ]
+    },
+    {
+      "content": "When you are deploying to an Azure cluster, the parameters used will be different than those that worked when deploying to a local cluster - it is recommended to set the timeouts conservatively.",
+      "pos": [
+        10340,
+        10534
+      ]
+    },
+    {
+      "content": "Next steps",
+      "pos": [
+        10540,
+        10550
+      ]
+    },
+    {
+      "content": "Upgrade Parameters",
+      "pos": [
+        10553,
+        10571
+      ]
+    },
+    {
+      "content": "Data Serialization",
+      "pos": [
+        10625,
+        10643
+      ]
+    },
+    {
+      "content": "Advanced Topics",
+      "pos": [
+        10705,
+        10720
+      ]
+    },
+    {
+      "content": "Troubleshooting Application Upgrade",
+      "pos": [
+        10772,
+        10807
+      ]
+    }
+  ],
+  "content": "<properties\n   pageTitle=\"Service Fabric Application Upgrade Tutorial\"\n   description=\"This article walks through an experience of upgrading a Service Fabric application.\"\n   services=\"service-fabric\"\n   documentationCenter=\".net\"\n   authors=\"mani-ramaswamy\"\n   manager=\"samgeo\"\n   editor=\"\"/>\n\n<tags\n   ms.service=\"service-fabric\"\n   ms.devlang=\"dotnet\"\n   ms.topic=\"article\"\n   ms.tgt_pltfrm=\"NA\"\n   ms.workload=\"NA\"\n   ms.date=\"07/17/2015\"\n   ms.author=\"subramar\"/>\n\n\n\n# Application Upgrade Tutorial\n\nThe most frequently used and recommended upgrade approach is the monitored rolling upgrade.  Service Fabric monitors the health of the application being upgraded based on a set of health policies. When the applications in an upgrade domain (UD) have been upgraded, Service Fabric evaluates the application health and determines whether to proceed to the next upgrade domain or fail the upgrade based on the health policies. A monitored application upgrade can be performed using the managed or native APIs, PowerShell, or REST.\n\nService Fabric monitored rolling upgrade allows the application administrator to configure the health evaluation policy that Service Fabric uses to determine the application is healthy. In addition, it also allows the administrator to configure the action to be taken when the health evaluation fails such as automatically roll-back. This section walkthrough a monitored upgrade for one of the SDK samples.\n\n## Step 1: Build & Deploy the Visual Objects Sample\n\nThese steps can be done by opening the project in Visual Studio, and right clicking on the Solution and selecting the deploy command in the Service Fabric menu item.  See [managing your Service Fabric application in Visual Studio](service-fabric-manage-application-in-visual-studio.md) for more information.  Alternatively, one may use PowerShell.\n\n> [AZURE.NOTE] Before any of the Service Fabric commands may be used in PowerShell, one has to first connect to the cluster by using the `Connect-ServiceFabricCluster` cmdlet. Similarly, it is assumed that the Cluster has already been setup on your local machine. See the article on [setting up your Service Fabric development environment](service-fabric-get-started.md).\n\nAfter building the project in Visual Studio, one may use the PowerShell command **Copy-ServiceFabricApplicationPackage** to copy the application package to the ImageStore, followed by registering the application to the Service Fabric runtime by using the **Register-ServiceFabricApplicationPackage** cmdlet, and finally starting an instance of the application by using the **New-ServiceFabricApplication** cmdlet.  These three steps are analogous to using the Deploy menu item in Visual Studio.\n\nNow, you can use [Service Fabric Explorer to view the cluster and the application](service-fabric-visualizing-your-cluster.md). The application has a web service that can be navigated to in Internet Explorer by typing [http://localhost:80](http://localhost:80) in the address bar.  You should see some floating visual objects moving around in the screen.  Additionally, one may use **Get-ServiceFabricApplication** to check the application status.\n\n## Step 2: Update the Visual Objects Sample\n\nYou might notice that with the version that was deployed in Step 1, the visual objects do not rotate. Let us upgrade this application to one where the visual objects also rotate.\n\nSelect the VisualObjects.DataService project within the VisualObjects solution, and open the VisualObjects.cs file in that project. Within that file navigate to the method `CreateMovedObject`, and find the line where rotation of the visual objects is set (search for the following lines in the `CreateMovedObject` method). Comment out the line `nextObject.Rotation = 1`, and uncomment the line below it. Your code should look like the following after the changes are made:\n\n```c#\n            //nextObject.Rotation = 1;\n\n            // Once that's deployed, uncomment this line and upgrade the application:\n\n             nextObject.Rotation = (nextObject.Rotation + 10) % 360;\n```\n\nWe also need to update the *ServiceManifest.xml* file (under PackageRoot) of the project **VisualObjects.DataService**. Update the *CodePackage* and the service version to 2.0, and the corresponding lines in the *ServiceManifest.xml* file should look like the following (highlighted portions show the changes):\n\n```xml\n<ServiceManifestName=\"VisualObjects.DataService\"Version=\"2.0\"xmlns=\"http://schemas.microsoft.com/2011/01/fabric\"xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n\n<CodePackageName=\"Code\"Version=\"2.0\">\n```\n\nNow, we need to update the *ApplicationManifest.xml* file (found under the **VisualObjects** project under the **VisualObjects** solution) to use version 2.0 of the **VisualObjects.DataService** project and also update the Application version to 2.0.0.0 from 1.0.0.0. Now, the corresponding lines in the *ApplicationManifest.xml* should read like the following:\n\n```xml\n<ApplicationManifestxmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"ApplicationTypeName=\"VisualObjects\"ApplicationTypeVersion=\"2.0.0.0\"xmlns=\"http://schemas.microsoft.com/2011/01/fabric\">\n\n <ServiceManifestRefServiceManifestName=\"VisualObjects.DataService\"ServiceManifestVersion=\"2.0\" />\n```\n\nNow, build the project by selecting the **VisualObjects** project and right clicking and selecting build in Visual Studio (if you select Rebuild all, you might have to update the versions for the **VisualObjects.WebService** project as well in its *ServiceManifest.xml* and in the *ApplicationManifest.xml*, since the code would have changed). Now let's package the updated application by right clicking on the *VisualObjects* project, selecting the Service Fabric Menu and choosing Package. This should create an application package that can be deployed.  Your updated application is ready to be deployed now.\n\n## Step 3:  Decide on health policies and upgrade parameters\n\nPlease familiarize yourself with the [application upgrade parameters](service-fabric-application-upgrade-parameters.md) and the [upgrade process](service-fabric-application-upgrade.md) to get a good understanding of the various upgrade parameters, timeouts and health criterion applied. For this walkthrough, we will leave the service health evaluation criterion to be the default (and recommended values) which mean that all services and instances should be _healthy_ after the upgrade.  Let's however increase the *HealthCheckStableDuration* to 60 seconds (so that the services will be healthy for at least 20 seconds before the upgrade proceeds to the next upgrade domain).  Let's also set the *UpgradeDomainTimeout* to be 1200 seconds and the *UpgradeTimeout* to be 3000 seconds. Finally, let's also set the *UpgradeFailureAction* to rollback thereby requesting that Service Fabric rollback the application to the previous version if it encounters any issues during upgrade. Thus, the upgrade parameters we will specify when starting the upgrade (in Step 4) will be the following:\n\nFailureAction = Rollback\n\nHealthCheckStableDurationSec = 60\n\nUpgradeDomainTimeoutSec = 1200\n\nUpgradeTimeout = 3000\n\n## Step 4: Prepare Application for Upgrade\n\nNow, the application is built and ready to be upgraded. If you open up a PowerShell window as administrator and type **Get-ServiceFabricApplication**, it should let you know that it is Application Type 1.0.0.0 of **VisualObjects** that's been deployed.  The application package is stored under the following relative path where you uncompressed the Service Fabric SDK - *Samples\\Services\\Stateful\\VisualObjects\\VisualObjects\\obj\\x64\\Debug*. You should find a \"Package\" folder in that directory - this is where the application package is stored. Please check the timestamps to ensure that it is the latest build (and you may need to modify the paths appropriately as well).\n\nNow let's copy the updated application package to the Service Fabric ImageStore (where the application packages are stored by Service Fabric). The parameter *ApplicationPackagePathInImageStore* informs Service Fabric where it can find the application package. We have put the updated application in \"VisualObjects\\_V2\" with the following command (you may have to modify paths again appropriately).\n\n```powershell\nCopy-ServiceFabricApplicationPackage  -ApplicationPackagePath .\\Samples\\Services\\Stateful\\VisualObjects\\VisualObjects\\obj\\x64\\Debug\\Package\n-ImageStoreConnectionString fabric:ImageStore   -ApplicationPackagePathInImageStore \"VisualObjects\\_V2\"\n```\n\nThe next step is to register this application with Service Fabric, which can be performed using the following command:\n\n```powershell\nRegister-ServiceFabricApplicationType -ApplicationPathInImageStore \"VisualObjects\\_V2\"\n```\n\nIf the above command doesn't succeed it is likely that you need a rebuild of all services. As mentioned in Step 2, you may have to update your WebService version as well.\n\n## Step 5: Start Application Upgrade\n\nNow, we are all set to start the application upgrade by using the following command:\n\n```powershell\nStart-ServiceFabricApplicationUpgrade -ApplicationName fabric:/VisualObjects -ApplicationTypeVersion 2.0.0.0 -HealthCheckStableDurationSec 60 -UpgradeDomainTimeoutSec 1200 -UpgradeTimeout 3000   -FailureAction Rollback -Monitored\n```\n\n\nNote the application name is as was described in the *ApplicationManifest.xml* file. Service Fabric uses this name to identify which application is getting upgraded. If you set the timeouts to be too short, you may encounter a failure message that states the problem. Refer to the troubleshooting section, or increase the timeouts.\n\nNow, as the application upgrade proceeds, you can monitor it using Service Fabric Explorer, or using the following PowerShell command: **Get-ServiceFabricApplicationUpgrade fabric:/VisualObjects**.\n\nIn a few minutes, the status using the above PowerShell command should state that all upgrade domains were upgraded (completed). And you should find that the visual objects in your browser window will now have started rotating!\n\nYou may want to try changing the versions and moving from version 2 to version 3 as an exercise, or even from version 2 back to version 1 (yes, you can upgrade from v2 to v1). Play with timeouts and health policies to make yourself familiar. When you are deploying to an Azure cluster, the parameters used will be different than those that worked when deploying to a local cluster - it is recommended to set the timeouts conservatively.\n\n\n## Next steps\n\n[Upgrade Parameters](service-fabric-application-upgrade-parameters.md)\n\n[Data Serialization](service-fabric-application-upgrade-data-serialization.md)\n\n[Advanced Topics](service-fabric-application-upgrade-advanced.md)\n\n[Troubleshooting Application Upgrade ](service-fabric-application-upgrade-troubleshooting.md)\n \n"
+}

@@ -1,0 +1,761 @@
+{
+  "nodes": [
+    {
+      "content": "Use AES-128 Dynamic Encryption and Key Delivery Service",
+      "pos": [
+        27,
+        82
+      ]
+    },
+    {
+      "content": "Microsoft Azure Media Services enables you to deliver your content encrypted with AES 128-bit encryption keys.",
+      "pos": [
+        101,
+        211
+      ]
+    },
+    {
+      "content": "Media Services also provides the Key Delivery service that delivers encryption keys to authorized users.",
+      "pos": [
+        212,
+        316
+      ]
+    },
+    {
+      "content": "This topic shows how to dynamically encrypt with AES-128 and use the key delivery service.",
+      "pos": [
+        317,
+        407
+      ]
+    },
+    {
+      "content": "Use AES-128 Dynamic Encryption and Key Delivery Service",
+      "pos": [
+        720,
+        775
+      ]
+    },
+    {
+      "content": "[AZURE.SELECTOR]",
+      "pos": [
+        779,
+        795
+      ]
+    },
+    {
+      "content": ".NET",
+      "pos": [
+        799,
+        803
+      ]
+    },
+    {
+      "content": "Java",
+      "pos": [
+        847,
+        851
+      ]
+    },
+    {
+      "content": "Overview",
+      "pos": [
+        932,
+        940
+      ]
+    },
+    {
+      "content": "Microsoft Azure Media Services enables you to deliver Http-Live-Streaming (HLS) and Smooth Streams encrypted with Advanced Encryption Standard (AES) (using 128-bit encryption keys).",
+      "pos": [
+        942,
+        1123
+      ]
+    },
+    {
+      "content": "Media Services also provides the Key Delivery service that delivers encryption keys to authorized users.",
+      "pos": [
+        1124,
+        1228
+      ]
+    },
+    {
+      "content": "If you want for Media Services to encrypt an asset, you need to associate an encryption key with the asset and also configure authorization policies for the key.",
+      "pos": [
+        1229,
+        1390
+      ]
+    },
+    {
+      "content": "When a stream is requested by a player, Media Services uses the specified key to dynamically encrypt your content using AES encryption.",
+      "pos": [
+        1391,
+        1526
+      ]
+    },
+    {
+      "content": "To decrypt the stream, the player will request the key from the key delivery service.",
+      "pos": [
+        1527,
+        1612
+      ]
+    },
+    {
+      "content": "To decide whether or not the user is authorized to get the key, the service evaluates the authorization policies that you specified for the key.",
+      "pos": [
+        1613,
+        1757
+      ]
+    },
+    {
+      "content": "Media Services supports multiple ways of authenticating users who make key requests.",
+      "pos": [
+        1759,
+        1843
+      ]
+    },
+    {
+      "content": "The content key authorization policy could have one or more authorization restrictions: open, token restriction, or IP restriction.",
+      "pos": [
+        1844,
+        1975
+      ]
+    },
+    {
+      "content": "The token restricted policy must be accompanied by a token issued by a Secure Token Service (STS).",
+      "pos": [
+        1976,
+        2074
+      ]
+    },
+    {
+      "content": "Media Services supports tokens in the <bpt id=\"p1\">[</bpt>Simple Web Tokens<ept id=\"p1\">](https://msdn.microsoft.com/library/gg185950.aspx#BKMK_2)</ept> (SWT) format and <bpt id=\"p2\">[</bpt>JSON Web Token<ept id=\"p2\">](https://msdn.microsoft.com/library/gg185950.aspx#BKMK_3)</ept> (JWT) format.",
+      "pos": [
+        2075,
+        2294
+      ]
+    },
+    {
+      "content": "For more information, see <bpt id=\"p1\">[</bpt>Configure the content key’s authorization policy<ept id=\"p1\">](media-services-protect-with-aes128.md#configure_key_auth_policy)</ept>.",
+      "pos": [
+        2295,
+        2437
+      ]
+    },
+    {
+      "content": "To take advantage of dynamic encryption, you need to have an asset that contains a set of multi-bitrate MP4 files or multi-bitrate Smooth Streaming source files.",
+      "pos": [
+        2439,
+        2600
+      ]
+    },
+    {
+      "content": "You also need to configure the delivery policy for the asset (described later in this topic).",
+      "pos": [
+        2601,
+        2694
+      ]
+    },
+    {
+      "content": "Then, based on the format specified in the streaming URL, the On-Demand Streaming server will ensure that the stream is delivered in the protocol you have chosen.",
+      "pos": [
+        2695,
+        2857
+      ]
+    },
+    {
+      "content": "As a result, you only need to store and pay for the files in single storage format and Media Services service will build and serve the appropriate response based on requests from a client.",
+      "pos": [
+        2858,
+        3046
+      ]
+    },
+    {
+      "content": "This topic would be useful to developers that work on applications that deliver protected media.",
+      "pos": [
+        3048,
+        3144
+      ]
+    },
+    {
+      "content": "The topic shows you how to configure the key delivery service with authorization policies so that only authorized clients could receive the encryption keys.",
+      "pos": [
+        3145,
+        3301
+      ]
+    },
+    {
+      "content": "It also shows how to use dynamic encryption.",
+      "pos": [
+        3302,
+        3346
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph>To start using dynamic encryption, you must first get at least one scale unit (also known as streaming unit).",
+      "pos": [
+        3349,
+        3470
+      ]
+    },
+    {
+      "content": "For more information, see <bpt id=\"p1\">[</bpt>How to Scale a Media Service<ept id=\"p1\">](media-services-manage-origins.md#scale_streaming_endpoints)</ept>.",
+      "pos": [
+        3471,
+        3588
+      ]
+    },
+    {
+      "content": "AES-128 Dynamic Encryption and Key Delivery Service Workflow",
+      "pos": [
+        3592,
+        3652
+      ]
+    },
+    {
+      "content": "The following are general steps that you would need to perform when encrypting your assets with AES, using the Media Services key delivery service, and also using dynamic encryption.",
+      "pos": [
+        3654,
+        3836
+      ]
+    },
+    {
+      "pos": [
+        3841,
+        3943
+      ],
+      "content": "<bpt id=\"p1\">[</bpt>Create an asset and upload files into the asset<ept id=\"p1\">](media-services-protect-with-aes128.md#create_asset)</ept>."
+    },
+    {
+      "pos": [
+        3948,
+        4071
+      ],
+      "content": "<bpt id=\"p1\">[</bpt>Encode the asset containing the file to the adaptive bitrate MP4 set<ept id=\"p1\">](media-services-protect-with-aes128.md#encode_asset)</ept>."
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt>Create a content key and associate it with the encoded asset<ept id=\"p1\">](media-services-protect-with-aes128.md#create_contentkey)</ept>.",
+      "pos": [
+        4075,
+        4195
+      ]
+    },
+    {
+      "content": "In Media Services, the content key contains the asset’s encryption key.",
+      "pos": [
+        4196,
+        4267
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt>Configure the content key’s authorization policy<ept id=\"p1\">](media-services-protect-with-aes128.md#configure_key_auth_policy)</ept>.",
+      "pos": [
+        4271,
+        4387
+      ]
+    },
+    {
+      "content": "The content key authorization policy must be configured by you and met by the client in order for the content key to be delivered to the client.",
+      "pos": [
+        4388,
+        4532
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt>Configure the delivery policy for an asset<ept id=\"p1\">](media-services-protect-with-aes128.md#configure_asset_delivery_policy)</ept>.",
+      "pos": [
+        4537,
+        4653
+      ]
+    },
+    {
+      "content": "The delivery policy configuration includes: key acquisition URL and Initialization Vector (IV) (AES 128 requires the same IV to be supplied when encrypting and decrypting), delivery protocol (for example, MPEG DASH, HLS, HDS, Smooth Streaming or all), the type of dynamic encryption (for example, envelope or no dynamic encryption).",
+      "pos": [
+        4654,
+        4986
+      ]
+    },
+    {
+      "content": "You could apply different policy to each protocol on the same asset.",
+      "pos": [
+        4993,
+        5061
+      ]
+    },
+    {
+      "content": "For example, you could apply PlayReady encryption to Smooth/DASH and AES Envelope to HLS.",
+      "pos": [
+        5062,
+        5151
+      ]
+    },
+    {
+      "content": "Any protocols that are not defined in a delivery policy (for example, you add a single policy that only specifies HLS as the protocol) will be blocked from streaming.",
+      "pos": [
+        5152,
+        5318
+      ]
+    },
+    {
+      "content": "The exception to this is if you have no asset delivery policy defined at all.",
+      "pos": [
+        5319,
+        5396
+      ]
+    },
+    {
+      "content": "Then, all protocols will be allowed in the clear.",
+      "pos": [
+        5397,
+        5446
+      ]
+    },
+    {
+      "pos": [
+        5451,
+        5566
+      ],
+      "content": "<bpt id=\"p1\">[</bpt>Create an OnDemand locator<ept id=\"p1\">](media-services-protect-with-aes128.md#create_locator)</ept> in order to get a streaming URL."
+    },
+    {
+      "pos": [
+        5568,
+        5718
+      ],
+      "content": "The topic also shows <bpt id=\"p1\">[</bpt>how a client application can request a key from the key delivery service<ept id=\"p1\">](media-services-protect-with-aes128.md#client_request)</ept>."
+    },
+    {
+      "pos": [
+        5720,
+        5831
+      ],
+      "content": "You will find a complete .NET <bpt id=\"p1\">[</bpt>example<ept id=\"p1\">](media-services-protect-with-aes128.md#example)</ept> at the end of the topic."
+    },
+    {
+      "content": "The following image demonstrates the workflow described above.",
+      "pos": [
+        5833,
+        5895
+      ]
+    },
+    {
+      "content": "Here the token is used for authentication.",
+      "pos": [
+        5896,
+        5938
+      ]
+    },
+    {
+      "content": "Protect with AES-128",
+      "pos": [
+        5942,
+        5962
+      ]
+    },
+    {
+      "content": "The rest of this topic provides detailed explanations, code examples, and links to topics that show you how to achieve the tasks described above.",
+      "pos": [
+        6064,
+        6209
+      ]
+    },
+    {
+      "content": "Current limitations",
+      "pos": [
+        6213,
+        6232
+      ]
+    },
+    {
+      "content": "If you add or update your asset’s delivery policy, you must delete an existing locator (if any) and create a new locator.",
+      "pos": [
+        6234,
+        6355
+      ]
+    },
+    {
+      "pos": [
+        6359,
+        6431
+      ],
+      "content": "<ph id=\"ph1\">&lt;a id=\"create_asset\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Create an asset and upload files into the asset"
+    },
+    {
+      "content": "In order to manage, encode, and stream your videos, you must first upload your content into Microsoft Azure Media Services.",
+      "pos": [
+        6433,
+        6556
+      ]
+    },
+    {
+      "content": "Once uploaded, your content is stored securely in the cloud for further processing and streaming.",
+      "pos": [
+        6557,
+        6654
+      ]
+    },
+    {
+      "content": "The following code snippet shows how to create an asset and upload the specified file into the asset.",
+      "pos": [
+        6657,
+        6758
+      ]
+    },
+    {
+      "pos": [
+        7938,
+        8031
+      ],
+      "content": "<ph id=\"ph1\">&lt;a id=\"encode_asset\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Encode the asset containing the file to the adaptive bitrate MP4 set"
+    },
+    {
+      "content": "With dynamic encryption all you need is to create an asset that contains a set of multi-bitrate MP4 files or multi-bitrate Smooth Streaming source files.",
+      "pos": [
+        8033,
+        8186
+      ]
+    },
+    {
+      "content": "Then, based on the specified format in the manifest or fragment request, the On-Demand Streaming server will ensure that you receive the stream in the protocol you have chosen.",
+      "pos": [
+        8187,
+        8363
+      ]
+    },
+    {
+      "content": "As a result, you only need to store and pay for the files in single storage format and Media Services service will build and serve the appropriate response based on requests from a client.",
+      "pos": [
+        8364,
+        8552
+      ]
+    },
+    {
+      "content": "For more information, see the <bpt id=\"p1\">[</bpt>Dynamic Packaging Overview<ept id=\"p1\">](media-services-dynamic-packaging-overview.md)</ept> topic.",
+      "pos": [
+        8553,
+        8664
+      ]
+    },
+    {
+      "content": "The following code snippet shows you how to encode an asset to adaptive bitrate MP4 set:",
+      "pos": [
+        8666,
+        8754
+      ]
+    },
+    {
+      "pos": [
+        10209,
+        10299
+      ],
+      "content": "<ph id=\"ph1\">&lt;a id=\"create_contentkey\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Create a content key and associate it with the encoded asset"
+    },
+    {
+      "content": "In Media Services, the content key contains the key that you want to encrypt an asset with.",
+      "pos": [
+        10301,
+        10392
+      ]
+    },
+    {
+      "pos": [
+        10394,
+        10489
+      ],
+      "content": "For detailed information, see <bpt id=\"p1\">[</bpt>Create content key<ept id=\"p1\">](media-services-dotnet-create-contentkey.md)</ept>."
+    },
+    {
+      "pos": [
+        10493,
+        10579
+      ],
+      "content": "<ph id=\"ph1\">&lt;a id=\"configure_key_auth_policy\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Configure the content key’s authorization policy"
+    },
+    {
+      "content": "Media Services supports multiple ways of authenticating users who make key requests.",
+      "pos": [
+        10581,
+        10665
+      ]
+    },
+    {
+      "content": "The content key authorization policy must be configured by you and met by the client (player) in order for the key to be delivered to the client.",
+      "pos": [
+        10666,
+        10811
+      ]
+    },
+    {
+      "content": "The content key authorization policy could have one or more authorization restrictions: open, token restriction, or IP restriction.",
+      "pos": [
+        10812,
+        10943
+      ]
+    },
+    {
+      "pos": [
+        10945,
+        11080
+      ],
+      "content": "For detailed information, see <bpt id=\"p1\">[</bpt>Configure Content Key Authorization Policy<ept id=\"p1\">](media-services-dotnet-configure-content-key-auth-policy.md)</ept>."
+    },
+    {
+      "pos": [
+        11084,
+        11159
+      ],
+      "content": "<ph id=\"ph1\">&lt;a id=\"configure_asset_delivery_policy\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Configure asset delivery policy"
+    },
+    {
+      "content": "Configure the delivery policy for your asset.",
+      "pos": [
+        11162,
+        11207
+      ]
+    },
+    {
+      "content": "Some things that the asset delivery policy configuration includes:",
+      "pos": [
+        11208,
+        11274
+      ]
+    },
+    {
+      "content": "The Key acquisition URL.",
+      "pos": [
+        11278,
+        11302
+      ]
+    },
+    {
+      "content": "The Initialization Vector (IV) to use for the envelope encryption.",
+      "pos": [
+        11306,
+        11372
+      ]
+    },
+    {
+      "content": "AES 128 requires the same IV to be supplied when encrypting and decrypting.",
+      "pos": [
+        11373,
+        11448
+      ]
+    },
+    {
+      "content": "The asset delivery protocol (for example, MPEG DASH, HLS, HDS, Smooth Streaming or all).",
+      "pos": [
+        11452,
+        11540
+      ]
+    },
+    {
+      "content": "The type of dynamic encryption (for example, AES envelope) or no dynamic encryption.",
+      "pos": [
+        11543,
+        11627
+      ]
+    },
+    {
+      "pos": [
+        11630,
+        11751
+      ],
+      "content": "For detailed information, see <bpt id=\"p1\">[</bpt>Configure asset delivery policy <ept id=\"p1\">](media-services-rest-configure-asset-delivery-policy.md)</ept>."
+    },
+    {
+      "pos": [
+        11755,
+        11850
+      ],
+      "content": "<ph id=\"ph1\">&lt;a id=\"create_locator\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Create an OnDemand streaming locator in order to get a streaming URL"
+    },
+    {
+      "content": "You will need to provide your user with the streaming URL for Smooth, DASH or HLS.",
+      "pos": [
+        11852,
+        11934
+      ]
+    },
+    {
+      "pos": [
+        11937,
+        12070
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph>If you add or update your asset’s delivery policy, you must delete an existing locator (if any) and create a new locator."
+    },
+    {
+      "pos": [
+        12072,
+        12216
+      ],
+      "content": "For instructions on how to publish an asset and build a streaming URL, see <bpt id=\"p1\">[</bpt>Build a streaming URL<ept id=\"p1\">](media-services-deliver-streaming-content.md)</ept>."
+    },
+    {
+      "content": "Get a test token",
+      "pos": [
+        12220,
+        12236
+      ]
+    },
+    {
+      "content": "Get a test token based on the token restriction that was used for the key authorization policy.",
+      "pos": [
+        12238,
+        12333
+      ]
+    },
+    {
+      "pos": [
+        13018,
+        13125
+      ],
+      "content": "You can use the <bpt id=\"p1\">[</bpt>AMS Player<ept id=\"p1\">](http://amsplayer.azurewebsites.net/azuremediaplayer.html)</ept> to test your stream."
+    },
+    {
+      "pos": [
+        13129,
+        13220
+      ],
+      "content": "<ph id=\"ph1\">&lt;a id=\"client_request\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>How can your client request a key from the key delivery service?"
+    },
+    {
+      "content": "In the previous step, you constructed the URL that points to a manifest file.",
+      "pos": [
+        13222,
+        13299
+      ]
+    },
+    {
+      "content": "Your client needs to extract the necessary information from the streaming manifest files in order to make a request to the key delivery service.",
+      "pos": [
+        13300,
+        13444
+      ]
+    },
+    {
+      "content": "Manifest files",
+      "pos": [
+        13449,
+        13463
+      ]
+    },
+    {
+      "content": "The client needs to extract the URL (that also contains content key Id (kid)) value from the manifest file.",
+      "pos": [
+        13465,
+        13572
+      ]
+    },
+    {
+      "content": "The client will then try to get the encryption key from the key delivery service.",
+      "pos": [
+        13573,
+        13654
+      ]
+    },
+    {
+      "content": "The client also needs to extract the IV value and use it do decrypt the stream.The following snippet shows the",
+      "pos": [
+        13655,
+        13765
+      ]
+    },
+    {
+      "content": "element of the Smooth Streaming manifest.",
+      "pos": [
+        13779,
+        13820
+      ]
+    },
+    {
+      "content": "In the case of HLS, the root manifest is broken into segment files.",
+      "pos": [
+        14512,
+        14579
+      ]
+    },
+    {
+      "content": "For example, the root manifest is: http://test001.origin.mediaservices.windows.net/8bfe7d6f-34e3-4d1a-b289-3e48a8762490/BigBuckBunny.ism/manifest(format=m3u8-aapl) and it contains a list of segment file names.",
+      "pos": [
+        14582,
+        14791
+      ]
+    },
+    {
+      "content": "If you open one of the segment files in text editor (for example, http://test001.origin.mediaservices.windows.net/8bfe7d6f-34e3-4d1a-b289-3e48a8762490/BigBuckBunny.ism/QualityLevels(514369)/Manifest(video,format=m3u8-aapl), it should contain #EXT-X-KEY which indicates that the file is encrypted.",
+      "pos": [
+        15165,
+        15461
+      ]
+    },
+    {
+      "content": "Request the key from the key delivery service",
+      "pos": [
+        15937,
+        15982
+      ]
+    },
+    {
+      "content": "The following code shows how to send a request to the Media Services key delivery service using a key delivery Uri (that was extracted from the manifest) and a token (this topic does not talk about how to get Simple Web Tokens from a Secure Token Service).",
+      "pos": [
+        15984,
+        16240
+      ]
+    },
+    {
+      "pos": [
+        17410,
+        17437
+      ],
+      "content": "<ph id=\"ph1\">&lt;a id=\"example\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Example"
+    },
+    {
+      "content": "Create a new Console project.",
+      "pos": [
+        17442,
+        17471
+      ]
+    },
+    {
+      "content": "Use NuGet to install and add Azure Media Services .NET SDK Extensions.",
+      "pos": [
+        17475,
+        17545
+      ]
+    },
+    {
+      "content": "Installing this package, also installs Media Services .NET SDK and adds all other required dependencies.",
+      "pos": [
+        17546,
+        17650
+      ]
+    },
+    {
+      "content": "Add config file that contains the account name and key information:",
+      "pos": [
+        17654,
+        17721
+      ]
+    },
+    {
+      "content": "Overwrite the code in your Program.cs file with the code shown in this section.",
+      "pos": [
+        18306,
+        18385
+      ]
+    },
+    {
+      "content": "Make sure to update variables to point to folders where your input files are located.",
+      "pos": [
+        18395,
+        18480
+      ]
+    },
+    {
+      "content": "test",
+      "pos": [
+        36639,
+        36643
+      ]
+    }
+  ],
+  "content": "<properties\n    pageTitle=\"Use AES-128 Dynamic Encryption and Key Delivery Service\"\n    description=\"Microsoft Azure Media Services enables you to deliver your content encrypted with AES 128-bit encryption keys. Media Services also provides the Key Delivery service that delivers encryption keys to authorized users. This topic shows how to dynamically encrypt with AES-128 and use the key delivery service.\"\n    services=\"media-services\"\n    documentationCenter=\"\"\n    authors=\"Juliako\"\n    manager=\"dwrede\"\n    editor=\"\"/>\n\n<tags\n    ms.service=\"media-services\"\n    ms.workload=\"media\"\n    ms.tgt_pltfrm=\"na\"\n    ms.devlang=\"na\"\n    ms.topic=\"get-started-article\" \n    ms.date=\"08/14/2015\"\n    ms.author=\"juliako\"/>\n\n#Use AES-128 Dynamic Encryption and Key Delivery Service\n\n> [AZURE.SELECTOR]\n- [.NET](media-services-protect-with-aes128.md)\n- [Java](https://github.com/southworkscom/azure-sdk-for-media-services-java-samples)\n\n##Overview\n\nMicrosoft Azure Media Services enables you to deliver Http-Live-Streaming (HLS) and Smooth Streams encrypted with Advanced Encryption Standard (AES) (using 128-bit encryption keys). Media Services also provides the Key Delivery service that delivers encryption keys to authorized users. If you want for Media Services to encrypt an asset, you need to associate an encryption key with the asset and also configure authorization policies for the key. When a stream is requested by a player, Media Services uses the specified key to dynamically encrypt your content using AES encryption. To decrypt the stream, the player will request the key from the key delivery service. To decide whether or not the user is authorized to get the key, the service evaluates the authorization policies that you specified for the key.\n\nMedia Services supports multiple ways of authenticating users who make key requests. The content key authorization policy could have one or more authorization restrictions: open, token restriction, or IP restriction. The token restricted policy must be accompanied by a token issued by a Secure Token Service (STS). Media Services supports tokens in the [Simple Web Tokens](https://msdn.microsoft.com/library/gg185950.aspx#BKMK_2) (SWT) format and [JSON Web Token](https://msdn.microsoft.com/library/gg185950.aspx#BKMK_3) (JWT) format. For more information, see [Configure the content key’s authorization policy](media-services-protect-with-aes128.md#configure_key_auth_policy).\n\nTo take advantage of dynamic encryption, you need to have an asset that contains a set of multi-bitrate MP4 files or multi-bitrate Smooth Streaming source files. You also need to configure the delivery policy for the asset (described later in this topic). Then, based on the format specified in the streaming URL, the On-Demand Streaming server will ensure that the stream is delivered in the protocol you have chosen. As a result, you only need to store and pay for the files in single storage format and Media Services service will build and serve the appropriate response based on requests from a client.\n\nThis topic would be useful to developers that work on applications that deliver protected media. The topic shows you how to configure the key delivery service with authorization policies so that only authorized clients could receive the encryption keys. It also shows how to use dynamic encryption.\n\n>[AZURE.NOTE]To start using dynamic encryption, you must first get at least one scale unit (also known as streaming unit). For more information, see [How to Scale a Media Service](media-services-manage-origins.md#scale_streaming_endpoints).\n\n##AES-128 Dynamic Encryption and Key Delivery Service Workflow\n\nThe following are general steps that you would need to perform when encrypting your assets with AES, using the Media Services key delivery service, and also using dynamic encryption.\n\n1. [Create an asset and upload files into the asset](media-services-protect-with-aes128.md#create_asset). \n1. [Encode the asset containing the file to the adaptive bitrate MP4 set](media-services-protect-with-aes128.md#encode_asset).\n1. [Create a content key and associate it with the encoded asset](media-services-protect-with-aes128.md#create_contentkey). In Media Services, the content key contains the asset’s encryption key.\n1. [Configure the content key’s authorization policy](media-services-protect-with-aes128.md#configure_key_auth_policy). The content key authorization policy must be configured by you and met by the client in order for the content key to be delivered to the client. \n1. [Configure the delivery policy for an asset](media-services-protect-with-aes128.md#configure_asset_delivery_policy). The delivery policy configuration includes: key acquisition URL and Initialization Vector (IV) (AES 128 requires the same IV to be supplied when encrypting and decrypting), delivery protocol (for example, MPEG DASH, HLS, HDS, Smooth Streaming or all), the type of dynamic encryption (for example, envelope or no dynamic encryption). \n\n    You could apply different policy to each protocol on the same asset. For example, you could apply PlayReady encryption to Smooth/DASH and AES Envelope to HLS. Any protocols that are not defined in a delivery policy (for example, you add a single policy that only specifies HLS as the protocol) will be blocked from streaming. The exception to this is if you have no asset delivery policy defined at all. Then, all protocols will be allowed in the clear.\n\n1. [Create an OnDemand locator](media-services-protect-with-aes128.md#create_locator) in order to get a streaming URL.\n\nThe topic also shows [how a client application can request a key from the key delivery service](media-services-protect-with-aes128.md#client_request).\n\nYou will find a complete .NET [example](media-services-protect-with-aes128.md#example) at the end of the topic.\n\nThe following image demonstrates the workflow described above. Here the token is used for authentication.\n\n![Protect with AES-128](./media/media-services-content-protection-overview/media-services-content-protection-with-aes.png)\n\nThe rest of this topic provides detailed explanations, code examples, and links to topics that show you how to achieve the tasks described above.\n\n##Current limitations\n\nIf you add or update your asset’s delivery policy, you must delete an existing locator (if any) and create a new locator.\n\n##<a id=\"create_asset\"></a>Create an asset and upload files into the asset\n\nIn order to manage, encode, and stream your videos, you must first upload your content into Microsoft Azure Media Services. Once uploaded, your content is stored securely in the cloud for further processing and streaming. \n\nThe following code snippet shows how to create an asset and upload the specified file into the asset.\n    \n    static public IAsset UploadFileAndCreateAsset(string singleFilePath)\n    {\n        if(!File.Exists(singleFilePath))\n        {\n            Console.WriteLine(\"File does not exist.\");\n            return null;\n        }\n    \n        var assetName = Path.GetFileNameWithoutExtension(singleFilePath);\n        IAsset inputAsset = _context.Assets.Create(assetName, AssetCreationOptions.StorageEncrypted);\n    \n        var assetFile = inputAsset.AssetFiles.Create(Path.GetFileName(singleFilePath));\n    \n        Console.WriteLine(\"Created assetFile {0}\", assetFile.Name);\n    \n        var policy = _context.AccessPolicies.Create(\n                                assetName,\n                                TimeSpan.FromDays(30),\n                                AccessPermissions.Write | AccessPermissions.List);\n    \n        var locator = _context.Locators.CreateLocator(LocatorType.Sas, inputAsset, policy);\n    \n        Console.WriteLine(\"Upload {0}\", assetFile.Name);\n    \n        assetFile.Upload(singleFilePath);\n        Console.WriteLine(\"Done uploading {0}\", assetFile.Name);\n    \n        locator.Delete();\n        policy.Delete();\n    \n        return inputAsset;\n    }\n\n##<a id=\"encode_asset\"></a>Encode the asset containing the file to the adaptive bitrate MP4 set\n\nWith dynamic encryption all you need is to create an asset that contains a set of multi-bitrate MP4 files or multi-bitrate Smooth Streaming source files. Then, based on the specified format in the manifest or fragment request, the On-Demand Streaming server will ensure that you receive the stream in the protocol you have chosen. As a result, you only need to store and pay for the files in single storage format and Media Services service will build and serve the appropriate response based on requests from a client. For more information, see the [Dynamic Packaging Overview](media-services-dynamic-packaging-overview.md) topic.\n\nThe following code snippet shows you how to encode an asset to adaptive bitrate MP4 set:\n    \n    static public IAsset EncodeToAdaptiveBitrateMP4Set(IAsset inputAsset)\n    {\n        var encodingPreset = \"H264 Adaptive Bitrate MP4 Set 720p\";\n    \n        IJob job = _context.Jobs.Create(String.Format(\"Encoding into Mp4 {0} to {1}\",\n                                inputAsset.Name,\n                                encodingPreset));\n    \n        var mediaProcessors = \n            _context.MediaProcessors.Where(p => p.Name.Contains(\"Media Encoder\")).ToList();\n    \n        var latestMediaProcessor = \n            mediaProcessors.OrderBy(mp => new Version(mp.Version)).LastOrDefault();\n    \n    \n    \n        ITask encodeTask = job.Tasks.AddNew(\"Encoding\", latestMediaProcessor, encodingPreset, TaskOptions.None);\n        encodeTask.InputAssets.Add(inputAsset);\n        encodeTask.OutputAssets.AddNew(String.Format(\"{0} as {1}\", inputAsset.Name, encodingPreset), AssetCreationOptions.StorageEncrypted);\n    \n        job.StateChanged += new EventHandler<JobStateChangedEventArgs>(JobStateChanged);\n        job.Submit();\n        job.GetExecutionProgressTask(CancellationToken.None).Wait();\n    \n        return job.OutputMediaAssets[0];\n    }\n    \n    static private void JobStateChanged(object sender, JobStateChangedEventArgs e)\n    {\n        Console.WriteLine(string.Format(\"{0}\\n  State: {1}\\n  Time: {2}\\n\\n\",\n            ((IJob)sender).Name,\n            e.CurrentState,\n            DateTime.UtcNow.ToString(@\"yyyy_M_d__hh_mm_ss\")));\n    }\n\n##<a id=\"create_contentkey\"></a>Create a content key and associate it with the encoded asset\n\nIn Media Services, the content key contains the key that you want to encrypt an asset with.\n\nFor detailed information, see [Create content key](media-services-dotnet-create-contentkey.md).\n\n##<a id=\"configure_key_auth_policy\"></a>Configure the content key’s authorization policy\n\nMedia Services supports multiple ways of authenticating users who make key requests. The content key authorization policy must be configured by you and met by the client (player) in order for the key to be delivered to the client. The content key authorization policy could have one or more authorization restrictions: open, token restriction, or IP restriction.\n\nFor detailed information, see [Configure Content Key Authorization Policy](media-services-dotnet-configure-content-key-auth-policy.md).\n\n##<a id=\"configure_asset_delivery_policy\"></a>Configure asset delivery policy \n\nConfigure the delivery policy for your asset. Some things that the asset delivery policy configuration includes:\n\n- The Key acquisition URL. \n- The Initialization Vector (IV) to use for the envelope encryption. AES 128 requires the same IV to be supplied when encrypting and decrypting. \n- The asset delivery protocol (for example, MPEG DASH, HLS, HDS, Smooth Streaming or all).\n- The type of dynamic encryption (for example, AES envelope) or no dynamic encryption. \n\nFor detailed information, see [Configure asset delivery policy ](media-services-rest-configure-asset-delivery-policy.md).\n\n##<a id=\"create_locator\"></a>Create an OnDemand streaming locator in order to get a streaming URL\n\nYou will need to provide your user with the streaming URL for Smooth, DASH or HLS.\n\n>[AZURE.NOTE]If you add or update your asset’s delivery policy, you must delete an existing locator (if any) and create a new locator.\n\nFor instructions on how to publish an asset and build a streaming URL, see [Build a streaming URL](media-services-deliver-streaming-content.md).\n\n##Get a test token\n\nGet a test token based on the token restriction that was used for the key authorization policy.\n\n    // Deserializes a string containing an Xml representation of a TokenRestrictionTemplate\n    // back into a TokenRestrictionTemplate class instance.\n    TokenRestrictionTemplate tokenTemplate = \n        TokenRestrictionTemplateSerializer.Deserialize(tokenTemplateString);\n    \n    // Generate a test token based on the data in the given TokenRestrictionTemplate.\n    //The GenerateTestToken method returns the token without the word “Bearer” in front\n    //so you have to add it in front of the token string. \n    string testToken = TokenRestrictionTemplateSerializer.GenerateTestToken(tokenTemplate);\n    Console.WriteLine(\"The authorization token is:\\nBearer {0}\", testToken);\n\nYou can use the [AMS Player](http://amsplayer.azurewebsites.net/azuremediaplayer.html) to test your stream.\n\n##<a id=\"client_request\"></a>How can your client request a key from the key delivery service?\n\nIn the previous step, you constructed the URL that points to a manifest file. Your client needs to extract the necessary information from the streaming manifest files in order to make a request to the key delivery service.\n\n###Manifest files\n\nThe client needs to extract the URL (that also contains content key Id (kid)) value from the manifest file. The client will then try to get the encryption key from the key delivery service. The client also needs to extract the IV value and use it do decrypt the stream.The following snippet shows the <Protection> element of the Smooth Streaming manifest.\n\n    <Protection>\n      <ProtectionHeader SystemID=\"B47B251A-2409-4B42-958E-08DBAE7B4EE9\">\n        <ContentProtection xmlns:sea=\"urn:mpeg:dash:schema:sea:2012\" schemeIdUri=\"urn:mpeg:dash:sea:2012\">\n          <sea:SegmentEncryption schemeIdUri=\"urn:mpeg:dash:sea:aes128-cbc:2013\"/>\n          <sea:KeySystem keySystemUri=\"urn:mpeg:dash:sea:keysys:http:2013\"/>\n          <sea:CryptoPeriod IV=\"0xD7D7D7D7D7D7D7D7D7D7D7D7D7D7D7D7\" \n                            keyUriTemplate=\"https://wamsbayclus001kd-hs.cloudapp.net/HlsHandler.ashx?\n                                            kid=da3813af-55e6-48e7-aa9f-a4d6031f7b4d\"/>\n        </ContentProtection>\n      </ProtectionHeader>\n    </Protection>\n\nIn the case of HLS, the root manifest is broken into segment files. \n\nFor example, the root manifest is: http://test001.origin.mediaservices.windows.net/8bfe7d6f-34e3-4d1a-b289-3e48a8762490/BigBuckBunny.ism/manifest(format=m3u8-aapl) and it contains a list of segment file names.\n    \n    . . . \n    #EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=630133,RESOLUTION=424x240,CODECS=\"avc1.4d4015,mp4a.40.2\",AUDIO=\"audio\"\n    QualityLevels(514369)/Manifest(video,format=m3u8-aapl)\n    #EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=965441,RESOLUTION=636x356,CODECS=\"avc1.4d401e,mp4a.40.2\",AUDIO=\"audio\"\n    QualityLevels(842459)/Manifest(video,format=m3u8-aapl)\n    …\n\nIf you open one of the segment files in text editor (for example, http://test001.origin.mediaservices.windows.net/8bfe7d6f-34e3-4d1a-b289-3e48a8762490/BigBuckBunny.ism/QualityLevels(514369)/Manifest(video,format=m3u8-aapl), it should contain #EXT-X-KEY which indicates that the file is encrypted.\n    \n    #EXTM3U\n    #EXT-X-VERSION:4\n    #EXT-X-ALLOW-CACHE:NO\n    #EXT-X-MEDIA-SEQUENCE:0\n    #EXT-X-TARGETDURATION:9\n    #EXT-X-KEY:METHOD=AES-128,\n    URI=\"https://wamsbayclus001kd-hs.cloudapp.net/HlsHandler.ashx?\n         kid=da3813af-55e6-48e7-aa9f-a4d6031f7b4d\",\n            IV=0XD7D7D7D7D7D7D7D7D7D7D7D7D7D7D7D7\n    #EXT-X-PROGRAM-DATE-TIME:1970-01-01T00:00:00.000+00:00\n    #EXTINF:8.425708,no-desc\n    Fragments(video=0,format=m3u8-aapl)\n    #EXT-X-ENDLIST\n    \n###Request the key from the key delivery service\n\nThe following code shows how to send a request to the Media Services key delivery service using a key delivery Uri (that was extracted from the manifest) and a token (this topic does not talk about how to get Simple Web Tokens from a Secure Token Service).\n\n    private byte[] GetDeliveryKey(Uri keyDeliveryUri, string token)\n    {\n        HttpWebRequest request = (HttpWebRequest)WebRequest.Create(keyDeliveryUri);\n                \n        request.Method = \"POST\";\n        request.ContentType = \"text/xml\";\n        if (!string.IsNullOrEmpty(token))\n        {\n            request.Headers[AuthorizationHeader] = token;\n        }\n        request.ContentLength = 0;\n    \n        var response = request.GetResponse();\n     \n        var stream = response.GetResponseStream();\n        if (stream == null)\n        {\n            throw new NullReferenceException(\"Response stream is null\");\n        }\n    \n        var buffer = new byte[256];\n        var length = 0;\n        while (stream.CanRead && length <= buffer.Length)\n        {\n            var nexByte = stream.ReadByte();\n            if (nexByte == -1)\n            {\n                break;\n            }\n            buffer[length] = (byte)nexByte;\n            length++;\n        }\n        response.Close();\n    \n        // AES keys must be exactly 16 bytes (128 bits).\n        var key = new byte[length];\n        Array.Copy(buffer, key, length);\n        return key;\n    }\n    \n##<a id=\"example\"></a>Example\n\n1. Create a new Console project.\n1. Use NuGet to install and add Azure Media Services .NET SDK Extensions. Installing this package, also installs Media Services .NET SDK and adds all other required dependencies.\n2. Add config file that contains the account name and key information:\n\n    \n        <?xml version=\"1.0\" encoding=\"utf-8\"?>\n        <configuration>\n            <startup> \n                <supportedRuntime version=\"v4.0\" sku=\".NETFramework,Version=v4.5\" />\n            </startup>\n              <appSettings>\n            \n                <add key=\"MediaServicesAccountName\" value=\"AccountName\"/>\n                <add key=\"MediaServicesAccountKey\" value=\"AccountKey\"/>\n            \n                <add key=\"Issuer\" value=\"http://testacs.com\"/>\n                <add key=\"Audience\" value=\"urn:test\"/>\n              </appSettings>\n        </configuration>\n\n1. Overwrite the code in your Program.cs file with the code shown in this section.\n    \n    Make sure to update variables to point to folders where your input files are located.\n        \n        using System;\n        using System.Collections.Generic;\n        using System.Configuration;\n        using System.IO;\n        using System.Linq;\n        using System.Net;\n        using System.Security.Cryptography;\n        using System.Text;\n        using System.Threading.Tasks;\n        using Microsoft.WindowsAzure.MediaServices.Client;\n        using Newtonsoft.Json.Linq;\n        using System.Threading;\n        using Microsoft.WindowsAzure.MediaServices.Client.ContentKeyAuthorization;\n        using Microsoft.WindowsAzure.MediaServices.Client.DynamicEncryption;\n        using System.Web;\n        using System.Globalization;\n        \n        namespace AESDynamicEncryptionAndKeyDeliverySvc\n        {\n            class Program\n            {\n                // Read values from the App.config file.\n                private static readonly string _mediaServicesAccountName =\n                    ConfigurationManager.AppSettings[\"MediaServicesAccountName\"];\n                private static readonly string _mediaServicesAccountKey =\n                    ConfigurationManager.AppSettings[\"MediaServicesAccountKey\"];\n        \n                // A Uri describing the issuer of the token.  \n                // Must match the value in the token for the token to be considered valid.\n                private static readonly Uri _sampleIssuer =\n                    new Uri(ConfigurationManager.AppSettings[\"Issuer\"]);\n                // The Audience or Scope of the token.  \n                // Must match the value in the token for the token to be considered valid.\n                private static readonly Uri _sampleAudience =\n                    new Uri(ConfigurationManager.AppSettings[\"Audience\"]);\n        \n                // Field for service context.\n                private static CloudMediaContext _context = null;\n                private static MediaServicesCredentials _cachedCredentials = null;\n        \n                private static readonly string _mediaFiles =\n                    Path.GetFullPath(@\"../..\\Media\");\n        \n                private static readonly string _singleMP4File =\n                    Path.Combine(_mediaFiles, @\"BigBuckBunny.mp4\");\n        \n        \n                static void Main(string[] args)\n                {\n                    // Create and cache the Media Services credentials in a static class variable.\n                    _cachedCredentials = new MediaServicesCredentials(\n                                    _mediaServicesAccountName,\n                                    _mediaServicesAccountKey);\n                    // Used the chached credentials to create CloudMediaContext.\n                    _context = new CloudMediaContext(_cachedCredentials);\n        \n                    bool tokenRestriction = false;\n                    string tokenTemplateString = null;\n        \n                    IAsset asset = UploadFileAndCreateAsset(_singleMP4File);\n                    Console.WriteLine(\"Uploaded asset: {0}\", asset.Id);\n        \n                    IAsset encodedAsset = EncodeToAdaptiveBitrateMP4Set(asset);\n                    Console.WriteLine(\"Encoded asset: {0}\", encodedAsset.Id);\n        \n                    IContentKey key = CreateEnvelopeTypeContentKey(encodedAsset);\n                    Console.WriteLine(\"Created key {0} for the asset {1} \", key.Id, encodedAsset.Id);\n                    Console.WriteLine();\n        \n                    if (tokenRestriction)\n                        tokenTemplateString = AddTokenRestrictedAuthorizationPolicy(key);\n                    else\n                        AddOpenAuthorizationPolicy(key);\n        \n                    Console.WriteLine(\"Added authorization policy: {0}\", key.AuthorizationPolicyId);\n                    Console.WriteLine();\n        \n                    CreateAssetDeliveryPolicy(encodedAsset, key);\n                    Console.WriteLine(\"Created asset delivery policy. \\n\");\n                    Console.WriteLine();\n        \n                    if (tokenRestriction && !String.IsNullOrEmpty(tokenTemplateString))\n                    {\n                        // Deserializes a string containing an Xml representation of a TokenRestrictionTemplate\n                        // back into a TokenRestrictionTemplate class instance.\n                        TokenRestrictionTemplate tokenTemplate =\n                            TokenRestrictionTemplateSerializer.Deserialize(tokenTemplateString);\n        \n                        // Generate a test token based on the data in the given TokenRestrictionTemplate.\n                        // Note, you need to pass the key id Guid because we specified \n                        // TokenClaim.ContentKeyIdentifierClaim in during the creation of TokenRestrictionTemplate.\n                        Guid rawkey = EncryptionUtils.GetKeyIdAsGuid(key.Id);\n        \n                        //The GenerateTestToken method returns the token without the word “Bearer” in front\n                        //so you have to add it in front of the token string. \n                        string testToken = TokenRestrictionTemplateSerializer.GenerateTestToken(tokenTemplate, null, rawkey);\n                        Console.WriteLine(\"The authorization token is:\\nBearer {0}\", testToken);\n                        Console.WriteLine();\n                    }\n        \n                    // You can use the bit.ly/aesplayer Flash player to test the URL \n                    // (with open authorization policy). \n                    // Paste the URL and click the Update button to play the video. \n                    //\n                    string URL = GetStreamingOriginLocator(encodedAsset);\n                    Console.WriteLine(\"Smooth Streaming Url: {0}/manifest\", URL);\n                    Console.WriteLine();\n                    Console.WriteLine(\"HLS Url: {0}/manifest(format=m3u8-aapl)\", URL);\n                    Console.WriteLine();\n        \n                    Console.ReadLine();\n                }\n        \n                static public IAsset UploadFileAndCreateAsset(string singleFilePath)\n                {\n                    if (!File.Exists(singleFilePath))\n                    {\n                        Console.WriteLine(\"File does not exist.\");\n                        return null;\n                    }\n        \n                    var assetName = Path.GetFileNameWithoutExtension(singleFilePath);\n                    IAsset inputAsset = _context.Assets.Create(assetName, AssetCreationOptions.StorageEncrypted); \n        \n                    var assetFile = inputAsset.AssetFiles.Create(Path.GetFileName(singleFilePath));\n        \n                    Console.WriteLine(\"Created assetFile {0}\", assetFile.Name);\n        \n                    var policy = _context.AccessPolicies.Create(\n                                            assetName,\n                                            TimeSpan.FromDays(30),\n                                            AccessPermissions.Write | AccessPermissions.List);\n        \n                    var locator = _context.Locators.CreateLocator(LocatorType.Sas, inputAsset, policy);\n        \n                    Console.WriteLine(\"Upload {0}\", assetFile.Name);\n        \n                    assetFile.Upload(singleFilePath);\n                    Console.WriteLine(\"Done uploading {0}\", assetFile.Name);\n        \n                    locator.Delete();\n                    policy.Delete();\n        \n                    return inputAsset;\n                }\n        \n                static public IAsset EncodeToAdaptiveBitrateMP4Set(IAsset inputAsset)\n                {\n                    var encodingPreset = \"H264 Adaptive Bitrate MP4 Set 720p\";\n        \n                    IJob job = _context.Jobs.Create(String.Format(\"Encoding into Mp4 {0} to {1}\",\n                                            inputAsset.Name,\n                                            encodingPreset));\n        \n                    var mediaProcessors =\n                        _context.MediaProcessors.Where(p => p.Name.Contains(\"Media Encoder\")).ToList();\n        \n                    var latestMediaProcessor =\n                        mediaProcessors.OrderBy(mp => new Version(mp.Version)).LastOrDefault();\n        \n        \n        \n                    ITask encodeTask = job.Tasks.AddNew(\"Encoding\", latestMediaProcessor, encodingPreset, TaskOptions.None);\n                    encodeTask.InputAssets.Add(inputAsset);\n                    encodeTask.OutputAssets.AddNew(String.Format(\"{0} as {1}\", inputAsset.Name, encodingPreset), AssetCreationOptions.StorageEncrypted);\n        \n                    job.StateChanged += new EventHandler<JobStateChangedEventArgs>(JobStateChanged);\n                    job.Submit();\n                    job.GetExecutionProgressTask(CancellationToken.None).Wait();\n        \n                    return job.OutputMediaAssets[0];\n                }\n        \n                static public IContentKey CreateEnvelopeTypeContentKey(IAsset asset)\n                {\n                    // Create envelope encryption content key\n                    Guid keyId = Guid.NewGuid();\n                    byte[] contentKey = GetRandomBuffer(16);\n        \n                    IContentKey key = _context.ContentKeys.Create(\n                                            keyId,\n                                            contentKey,\n                                            \"ContentKey\",\n                                            ContentKeyType.EnvelopeEncryption);\n        \n                    // Associate the key with the asset.\n                    asset.ContentKeys.Add(key);\n        \n                    return key;\n                }\n        \n                static public void AddOpenAuthorizationPolicy(IContentKey contentKey)\n                {\n                    // Create ContentKeyAuthorizationPolicy with Open restrictions \n                    // and create authorization policy             \n                    IContentKeyAuthorizationPolicy policy = _context.\n                                            ContentKeyAuthorizationPolicies.\n                                            CreateAsync(\"Open Authorization Policy\").Result;\n        \n                    List<ContentKeyAuthorizationPolicyRestriction> restrictions =\n                        new List<ContentKeyAuthorizationPolicyRestriction>();\n        \n                    ContentKeyAuthorizationPolicyRestriction restriction =\n                        new ContentKeyAuthorizationPolicyRestriction\n                        {\n                            Name = \"HLS Open Authorization Policy\",\n                            KeyRestrictionType = (int)ContentKeyRestrictionType.Open,\n                            Requirements = null // no requirements needed for HLS\n                        };\n        \n                    restrictions.Add(restriction);\n        \n                    IContentKeyAuthorizationPolicyOption policyOption =\n                        _context.ContentKeyAuthorizationPolicyOptions.Create(\n                        \"policy\",\n                        ContentKeyDeliveryType.BaselineHttp,\n                        restrictions,\n                        \"\");\n        \n                    policy.Options.Add(policyOption);\n        \n                    // Add ContentKeyAutorizationPolicy to ContentKey\n                    contentKey.AuthorizationPolicyId = policy.Id;\n                    IContentKey updatedKey = contentKey.UpdateAsync().Result;\n                    Console.WriteLine(\"Adding Key to Asset: Key ID is \" + updatedKey.Id);\n                }\n        \n                public static string AddTokenRestrictedAuthorizationPolicy(IContentKey contentKey)\n                {\n                    string tokenTemplateString = GenerateTokenRequirements();\n        \n                    IContentKeyAuthorizationPolicy policy = _context.\n                                            ContentKeyAuthorizationPolicies.\n                                            CreateAsync(\"HLS token restricted authorization policy\").Result;\n        \n                    List<ContentKeyAuthorizationPolicyRestriction> restrictions =\n                            new List<ContentKeyAuthorizationPolicyRestriction>();\n        \n                    ContentKeyAuthorizationPolicyRestriction restriction =\n                            new ContentKeyAuthorizationPolicyRestriction\n                            {\n                                Name = \"Token Authorization Policy\",\n                                KeyRestrictionType = (int)ContentKeyRestrictionType.TokenRestricted,\n                                Requirements = tokenTemplateString\n                            };\n        \n                    restrictions.Add(restriction);\n        \n                    //You could have multiple options \n                    IContentKeyAuthorizationPolicyOption policyOption =\n                        _context.ContentKeyAuthorizationPolicyOptions.Create(\n                            \"Token option for HLS\",\n                            ContentKeyDeliveryType.BaselineHttp,\n                            restrictions,\n                            null  // no key delivery data is needed for HLS\n                            );\n        \n                    policy.Options.Add(policyOption);\n        \n                    // Add ContentKeyAutorizationPolicy to ContentKey\n                    contentKey.AuthorizationPolicyId = policy.Id;\n                    IContentKey updatedKey = contentKey.UpdateAsync().Result;\n                    Console.WriteLine(\"Adding Key to Asset: Key ID is \" + updatedKey.Id);\n        \n                    return tokenTemplateString;\n                }\n        \n                static public void CreateAssetDeliveryPolicy(IAsset asset, IContentKey key)\n                {\n                    Uri keyAcquisitionUri = key.GetKeyDeliveryUrl(ContentKeyDeliveryType.BaselineHttp);\n        \n                    string envelopeEncryptionIV = Convert.ToBase64String(GetRandomBuffer(16));\n        \n                    // The following policy configuration specifies: \n                    //   key url that will have KID=<Guid> appended to the envelope and\n                    //   the Initialization Vector (IV) to use for the envelope encryption.\n                    Dictionary<AssetDeliveryPolicyConfigurationKey, string> assetDeliveryPolicyConfiguration =\n                        new Dictionary<AssetDeliveryPolicyConfigurationKey, string> \n                    {\n                        {AssetDeliveryPolicyConfigurationKey.EnvelopeKeyAcquisitionUrl, keyAcquisitionUri.ToString()},\n                        {AssetDeliveryPolicyConfigurationKey.EnvelopeEncryptionIVAsBase64, envelopeEncryptionIV}\n                    };\n        \n                    IAssetDeliveryPolicy assetDeliveryPolicy =\n                        _context.AssetDeliveryPolicies.Create(\n                                    \"AssetDeliveryPolicy\",\n                                    AssetDeliveryPolicyType.DynamicEnvelopeEncryption,\n                                    AssetDeliveryProtocol.SmoothStreaming | AssetDeliveryProtocol.HLS,\n                                    assetDeliveryPolicyConfiguration);\n        \n                    // Add AssetDelivery Policy to the asset\n                    asset.DeliveryPolicies.Add(assetDeliveryPolicy);\n                    Console.WriteLine();\n                    Console.WriteLine(\"Adding Asset Delivery Policy: \" +\n                        assetDeliveryPolicy.AssetDeliveryPolicyType);\n                }\n        \n                static public string GetStreamingOriginLocator(IAsset asset)\n                {\n        \n                    // Get a reference to the streaming manifest file from the  \n                    // collection of files in the asset. \n        \n                    var assetFile = asset.AssetFiles.Where(f => f.Name.ToLower().\n                                                EndsWith(\".ism\")).\n                                                FirstOrDefault();\n        \n                    // Create a 30-day readonly access policy. \n                    IAccessPolicy policy = _context.AccessPolicies.Create(\"Streaming policy\",\n                        TimeSpan.FromDays(30),\n                        AccessPermissions.Read);\n        \n                    // Create a locator to the streaming content on an origin. \n                    ILocator originLocator = _context.Locators.CreateLocator(LocatorType.OnDemandOrigin, asset,\n                        policy,\n                        DateTime.UtcNow.AddMinutes(-5));\n        \n                    // Create a URL to the manifest file. \n                    return originLocator.Path + assetFile.Name;\n                }\n        \n                static private string GenerateTokenRequirements()\n                {\n                    TokenRestrictionTemplate template = new TokenRestrictionTemplate(TokenType.SWT);\n        \n                    template.PrimaryVerificationKey = new SymmetricVerificationKey();\n                    template.AlternateVerificationKeys.Add(new SymmetricVerificationKey());\n                    template.Audience = _sampleAudience;\n                    template.Issuer = _sampleIssuer;\n        \n                    template.RequiredClaims.Add(TokenClaim.ContentKeyIdentifierClaim);\n        \n                    return TokenRestrictionTemplateSerializer.Serialize(template);\n                }\n        \n                static private void JobStateChanged(object sender, JobStateChangedEventArgs e)\n                {\n                    Console.WriteLine(string.Format(\"{0}\\n  State: {1}\\n  Time: {2}\\n\\n\",\n                        ((IJob)sender).Name,\n                        e.CurrentState,\n                        DateTime.UtcNow.ToString(@\"yyyy_M_d__hh_mm_ss\")));\n                }\n        \n                static private byte[] GetRandomBuffer(int size)\n                {\n                    byte[] randomBytes = new byte[size];\n                    using (RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider())\n                    {\n                        rng.GetBytes(randomBytes);\n                    }\n        \n                    return randomBytes;\n                }\n            }\n        }\ntest\n"
+}

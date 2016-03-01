@@ -1,0 +1,621 @@
+{
+  "nodes": [
+    {
+      "content": "Azure Service Fabric Actors Resource Governance design pattern",
+      "pos": [
+        26,
+        88
+      ]
+    },
+    {
+      "content": "Design pattern on how Service Fabric Actors can be used to model application what needs to scale but use constrained resources",
+      "pos": [
+        106,
+        232
+      ]
+    },
+    {
+      "content": "Reliable Actors design pattern: resource governance",
+      "pos": [
+        530,
+        581
+      ]
+    },
+    {
+      "content": "This pattern and related scenarios are easily recognizable by developers—enterprise or otherwise—who have constrained resources on-premises or in the cloud, which they cannot immediately scale or that wish to ship large scale applications and data to the cloud.",
+      "pos": [
+        582,
+        843
+      ]
+    },
+    {
+      "content": "In the enterprise these constrained resources, such as databases, run on scale-up hardware.",
+      "pos": [
+        845,
+        936
+      ]
+    },
+    {
+      "content": "Anyone with a long enterprise history knows this is a common situation on-premises.",
+      "pos": [
+        937,
+        1020
+      ]
+    },
+    {
+      "content": "Even at cloud scale, we have seen this situation occur when a cloud service has attempted to exceed the 64K TCP limit of connections between an address/port tuple, or when attempting to connect to a cloud-based database that limits the number of concurrent connections.",
+      "pos": [
+        1021,
+        1290
+      ]
+    },
+    {
+      "content": "Typically in the past, this was solved by throttling through message-based middleware or by custom-built pooling and façade mechanisms.",
+      "pos": [
+        1292,
+        1427
+      ]
+    },
+    {
+      "content": "These are hard to get right, especially when we need to scale the middle tier but still maintain the correct connection counts.",
+      "pos": [
+        1428,
+        1555
+      ]
+    },
+    {
+      "content": "It’s just fragile and complex.",
+      "pos": [
+        1556,
+        1586
+      ]
+    },
+    {
+      "content": "In fact, like the Smart Cache pattern, this pattern spans across multiple scenarios and customers who already have working systems with constrained resources.",
+      "pos": [
+        1588,
+        1746
+      ]
+    },
+    {
+      "content": "They are building systems where they need to scale-out not just the services, but their state in-memory as well as the persisted state in stable storage.",
+      "pos": [
+        1747,
+        1900
+      ]
+    },
+    {
+      "content": "The diagram below illustrates this scenario:",
+      "pos": [
+        1902,
+        1946
+      ]
+    },
+    {
+      "content": "![][1]",
+      "pos": [
+        1948,
+        1954
+      ]
+    },
+    {
+      "content": "Modeling cache scenarios with actors",
+      "pos": [
+        1959,
+        1995
+      ]
+    },
+    {
+      "content": "Essentially we model access to resources as an actor or multiple actors that act as proxies (say connection, for example) to a resource or a group of resources.",
+      "pos": [
+        1996,
+        2156
+      ]
+    },
+    {
+      "content": "You can then either directly manage the resource through individual actors or use a coordination actor that manages the resource actors.",
+      "pos": [
+        2157,
+        2293
+      ]
+    },
+    {
+      "content": "To make this more concrete, we will address the common need of having to work against a partitioned (aka sharded) storage tier for performance and scalability reasons.",
+      "pos": [
+        2294,
+        2461
+      ]
+    },
+    {
+      "content": "Our first option is pretty basic: we can use a static function to map and resolve our actors to downstream resources.",
+      "pos": [
+        2462,
+        2579
+      ]
+    },
+    {
+      "content": "Such a function can return, for example, a connection string with given input.",
+      "pos": [
+        2580,
+        2658
+      ]
+    },
+    {
+      "content": "It is entirely up to us how to implement that function.",
+      "pos": [
+        2659,
+        2714
+      ]
+    },
+    {
+      "content": "Of course, this approach comes with its own drawbacks such as static affinity that makes repartitioning resources or remapping an actor to resources very difficult.",
+      "pos": [
+        2715,
+        2879
+      ]
+    },
+    {
+      "content": "Here is a very simple example—we do modulo arithmetic to determine the database name using userId and use region to identify the database server.",
+      "pos": [
+        2880,
+        3025
+      ]
+    },
+    {
+      "content": "Resource Governance code sample – static resolution",
+      "pos": [
+        3030,
+        3081
+      ]
+    },
+    {
+      "content": "Simple yet not very flexible.",
+      "pos": [
+        3443,
+        3472
+      ]
+    },
+    {
+      "content": "Now let’s have a look at a more advanced and useful approach.",
+      "pos": [
+        3473,
+        3534
+      ]
+    },
+    {
+      "content": "First, we model the affinity between physical resources and actors.",
+      "pos": [
+        3535,
+        3602
+      ]
+    },
+    {
+      "content": "This is done through an actor called Resolver that understands the mapping between users, logical partitions, and physical resources.",
+      "pos": [
+        3603,
+        3736
+      ]
+    },
+    {
+      "content": "Resolver maintains its data in a persisted store, however it is cached for easy lookup.",
+      "pos": [
+        3737,
+        3824
+      ]
+    },
+    {
+      "content": "As we saw in the Exchange Rate sample earlier in the Smart Cache pattern, Resolver can proactively fetch the latest information using a timer.",
+      "pos": [
+        3825,
+        3967
+      ]
+    },
+    {
+      "content": "Once the user actor resolves the resource it needs to use, it caches it in a local variable called _resolution and uses it during its lifetime.",
+      "pos": [
+        3968,
+        4111
+      ]
+    },
+    {
+      "content": "We chose a look-up based resolution (illustrated below) over simple hashing or range hashing because of the flexibility it provides in operations such as scaling in/out or moving a user from one resource to another.",
+      "pos": [
+        4112,
+        4327
+      ]
+    },
+    {
+      "content": "![][2]",
+      "pos": [
+        4329,
+        4335
+      ]
+    },
+    {
+      "content": "In the illustration above, we see that actor B23 is first resolving its resource (aka resolution) —DB1 and caches it.",
+      "pos": [
+        4337,
+        4454
+      ]
+    },
+    {
+      "content": "Subsequent operations can now use the cached resolution to access the constrained resource.",
+      "pos": [
+        4455,
+        4546
+      ]
+    },
+    {
+      "content": "Since the actors support single-threaded execution, developers no longer need to worry about concurrent access to the resource.",
+      "pos": [
+        4547,
+        4674
+      ]
+    },
+    {
+      "content": "The User and Resolver actors look like this:",
+      "pos": [
+        4675,
+        4719
+      ]
+    },
+    {
+      "content": "Resource Governance code sample – Resolver",
+      "pos": [
+        4724,
+        4766
+      ]
+    },
+    {
+      "content": "Resource Governance – Resolver Example",
+      "pos": [
+        5715,
+        5753
+      ]
+    },
+    {
+      "content": "Accessing resources with finite capability",
+      "pos": [
+        6787,
+        6829
+      ]
+    },
+    {
+      "content": "Now let’s look at another example; exclusive access to precious resources such as DB, storage accounts, and file systems with finite throughput capability.",
+      "pos": [
+        6830,
+        6985
+      ]
+    },
+    {
+      "content": "Our scenario is as follows: we would like to process events using an actor called EventProcessor, which is responsible for processing and persisting the event, in this case to a .CSV file for simplicity.",
+      "pos": [
+        6986,
+        7189
+      ]
+    },
+    {
+      "content": "While we can follow the partitioning approach discussed above to scale-out our resources, we will still have to deal with the concurrency issues.",
+      "pos": [
+        7190,
+        7335
+      ]
+    },
+    {
+      "content": "That is why we chose a file-based example to illustrate this particular point—writing to a single file from multiple actors will raise concurrency issues.",
+      "pos": [
+        7336,
+        7490
+      ]
+    },
+    {
+      "content": "To address the problem we introduce another actor called EventWriter that has exclusive ownership of the constrained resources.",
+      "pos": [
+        7491,
+        7618
+      ]
+    },
+    {
+      "content": "The scenario is illustrated below:",
+      "pos": [
+        7619,
+        7653
+      ]
+    },
+    {
+      "content": "![][3]",
+      "pos": [
+        7655,
+        7661
+      ]
+    },
+    {
+      "content": "We mark EventProcessor actors as “Stateless Workers,” which allows the runtime to scale them across the cluster as necessary.",
+      "pos": [
+        7663,
+        7788
+      ]
+    },
+    {
+      "content": "Hence we didn’t use any identifiers in the illustration above for these actors.",
+      "pos": [
+        7789,
+        7868
+      ]
+    },
+    {
+      "content": "In other words, stateless actors are a pool of workers maintained by the runtime.",
+      "pos": [
+        7869,
+        7950
+      ]
+    },
+    {
+      "content": "In the sample code below, the EventProcessor actor does two things: it first decides which EventWriter (therefore resource) to use, and invokes the chosen actor to write the processed event.",
+      "pos": [
+        7951,
+        8141
+      ]
+    },
+    {
+      "content": "For simplicity, we are choosing Event Type as the identifier for the EventWriter actor.",
+      "pos": [
+        8142,
+        8229
+      ]
+    },
+    {
+      "content": "In other words, there will be one and only one EventWriter for this Event Type providing single-threaded and exclusive access to the resource.",
+      "pos": [
+        8230,
+        8372
+      ]
+    },
+    {
+      "content": "Resource Governance code sample – Event Processor",
+      "pos": [
+        8377,
+        8426
+      ]
+    },
+    {
+      "content": "Now let’s have a look at the EventWriter actor.",
+      "pos": [
+        9234,
+        9281
+      ]
+    },
+    {
+      "content": "It really doesn’t do much apart from control exclusive access to the constrained resource, in this case the file and writing events to it.",
+      "pos": [
+        9282,
+        9420
+      ]
+    },
+    {
+      "content": "Resource Governance code sample – Event Writer",
+      "pos": [
+        9424,
+        9470
+      ]
+    },
+    {
+      "content": "Having a single actor responsible for the resource allows us to add capabilities such as buffering.",
+      "pos": [
+        10546,
+        10645
+      ]
+    },
+    {
+      "content": "We can buffer incoming events and write these events periodically using a timer or when our buffer is full.",
+      "pos": [
+        10646,
+        10753
+      ]
+    },
+    {
+      "content": "Here is a simple timer based example:",
+      "pos": [
+        10754,
+        10791
+      ]
+    },
+    {
+      "content": "Resource Governance code sample – Event Writer with buffer",
+      "pos": [
+        10795,
+        10853
+      ]
+    },
+    {
+      "content": "While the code above will work fine, clients will not know whether their event made it to the underlying store.",
+      "pos": [
+        12323,
+        12434
+      ]
+    },
+    {
+      "content": "To allow buffering and let clients be aware what is happening to their request, we introduce the following approach to let clients wait until their event is written to the .CSV file:",
+      "pos": [
+        12435,
+        12617
+      ]
+    },
+    {
+      "content": "Resource Governance code sample – Async batching",
+      "pos": [
+        12622,
+        12670
+      ]
+    },
+    {
+      "content": "We will use this class to create and maintain a list of incomplete tasks (to block clients) and complete them in one go once we write the buffered events to storage.",
+      "pos": [
+        13352,
+        13517
+      ]
+    },
+    {
+      "content": "In the EventWriter class, we need to do three things: mark the actor class as Reentrant, return the result of SubmitNext(), and Flush our timer.",
+      "pos": [
+        13518,
+        13662
+      ]
+    },
+    {
+      "content": "The modified code is as follows:",
+      "pos": [
+        13663,
+        13695
+      ]
+    },
+    {
+      "content": "Resource Governance code sample – Buffering with async batching",
+      "pos": [
+        13700,
+        13763
+      ]
+    },
+    {
+      "content": "Seem easy?",
+      "pos": [
+        15541,
+        15551
+      ]
+    },
+    {
+      "content": "Well it is.",
+      "pos": [
+        15552,
+        15563
+      ]
+    },
+    {
+      "content": "But the ease belies the enterprise power.",
+      "pos": [
+        15564,
+        15605
+      ]
+    },
+    {
+      "content": "With this architecture we get:",
+      "pos": [
+        15606,
+        15636
+      ]
+    },
+    {
+      "content": "Location independent resource addressing.",
+      "pos": [
+        15640,
+        15681
+      ]
+    },
+    {
+      "content": "Tuneable pool size based simply on changing the number of actors that act on behalf a resource.",
+      "pos": [
+        15684,
+        15779
+      ]
+    },
+    {
+      "content": "Client side coordinated pool usage (as depicted) or server side (just imagine a single actor in front of each of those pools in the picture).",
+      "pos": [
+        15782,
+        15923
+      ]
+    },
+    {
+      "content": "Scalable pool addition (just add actors representing the new resource).",
+      "pos": [
+        15926,
+        15997
+      ]
+    },
+    {
+      "content": "Actor (as we demonstrated earlier) can cache results from backend resource on demand or pre-cache using a timer reducing the need to hit the backend resource.",
+      "pos": [
+        16000,
+        16158
+      ]
+    },
+    {
+      "content": "Efficient asynchronous dispatch.",
+      "pos": [
+        16161,
+        16193
+      ]
+    },
+    {
+      "content": "A coding environment that will be familiar to any developer not just middleware specialists.",
+      "pos": [
+        16196,
+        16288
+      ]
+    },
+    {
+      "content": "This pattern is very common in scenarios where developers either have constrained resources they need to develop against or building large scale-out systems.",
+      "pos": [
+        16290,
+        16447
+      ]
+    },
+    {
+      "content": "Next Steps",
+      "pos": [
+        16453,
+        16463
+      ]
+    },
+    {
+      "content": "Pattern: Smart Cache",
+      "pos": [
+        16465,
+        16485
+      ]
+    },
+    {
+      "content": "Pattern: Distributed Networks and Graphs",
+      "pos": [
+        16544,
+        16584
+      ]
+    },
+    {
+      "content": "Pattern: Stateful Service Composition",
+      "pos": [
+        16663,
+        16700
+      ]
+    },
+    {
+      "content": "Pattern: Internet of Things",
+      "pos": [
+        16776,
+        16803
+      ]
+    },
+    {
+      "content": "Pattern: Distributed Computation",
+      "pos": [
+        16869,
+        16901
+      ]
+    },
+    {
+      "content": "Some Anti-patterns",
+      "pos": [
+        16972,
+        16990
+      ]
+    },
+    {
+      "content": "Introduction to Service Fabric Actors",
+      "pos": [
+        17043,
+        17080
+      ]
+    }
+  ],
+  "content": "<properties\n   pageTitle=\"Azure Service Fabric Actors Resource Governance design pattern\"\n   description=\"Design pattern on how Service Fabric Actors can be used to model application what needs to scale but use constrained resources\"\n   services=\"service-fabric\"\n   documentationCenter=\".net\"\n   authors=\"jessebenson\"\n   manager=\"timlt\"\n   editor=\"\"/>\n\n<tags\n   ms.service=\"service-fabric\"\n   ms.devlang=\"dotnet\"\n   ms.topic=\"article\"\n   ms.tgt_pltfrm=\"NA\"\n   ms.workload=\"NA\"\n   ms.date=\"08/11/2015\"\n   ms.author=\"claudioc\"/>\n\n# Reliable Actors design pattern: resource governance\nThis pattern and related scenarios are easily recognizable by developers—enterprise or otherwise—who have constrained resources on-premises or in the cloud, which they cannot immediately scale or that wish to ship large scale applications and data to the cloud.\n\nIn the enterprise these constrained resources, such as databases, run on scale-up hardware. Anyone with a long enterprise history knows this is a common situation on-premises. Even at cloud scale, we have seen this situation occur when a cloud service has attempted to exceed the 64K TCP limit of connections between an address/port tuple, or when attempting to connect to a cloud-based database that limits the number of concurrent connections.\n\nTypically in the past, this was solved by throttling through message-based middleware or by custom-built pooling and façade mechanisms. These are hard to get right, especially when we need to scale the middle tier but still maintain the correct connection counts. It’s just fragile and complex.\n\nIn fact, like the Smart Cache pattern, this pattern spans across multiple scenarios and customers who already have working systems with constrained resources. They are building systems where they need to scale-out not just the services, but their state in-memory as well as the persisted state in stable storage.\n\nThe diagram below illustrates this scenario:\n\n![][1]\n\n## Modeling cache scenarios with actors\nEssentially we model access to resources as an actor or multiple actors that act as proxies (say connection, for example) to a resource or a group of resources. You can then either directly manage the resource through individual actors or use a coordination actor that manages the resource actors.\nTo make this more concrete, we will address the common need of having to work against a partitioned (aka sharded) storage tier for performance and scalability reasons.\nOur first option is pretty basic: we can use a static function to map and resolve our actors to downstream resources. Such a function can return, for example, a connection string with given input. It is entirely up to us how to implement that function. Of course, this approach comes with its own drawbacks such as static affinity that makes repartitioning resources or remapping an actor to resources very difficult.\nHere is a very simple example—we do modulo arithmetic to determine the database name using userId and use region to identify the database server.\n\n## Resource Governance code sample – static resolution\n\n```csharp\nprivate static string _connectionString = \"none\";\n\nprivate static string ResolveConnectionString(long userId, int region)\n{\n    if (_connectionString == \"none\")\n    {\n        // an example of static mapping\n        _connectionString = String.Format(\"Server=SERVER_{0};Database=DB_{0}\", region, userId % 4);\n    }\n    return _connectionString;\n}\n```\n\nSimple yet not very flexible. Now let’s have a look at a more advanced and useful approach.\nFirst, we model the affinity between physical resources and actors. This is done through an actor called Resolver that understands the mapping between users, logical partitions, and physical resources. Resolver maintains its data in a persisted store, however it is cached for easy lookup. As we saw in the Exchange Rate sample earlier in the Smart Cache pattern, Resolver can proactively fetch the latest information using a timer. Once the user actor resolves the resource it needs to use, it caches it in a local variable called _resolution and uses it during its lifetime.\nWe chose a look-up based resolution (illustrated below) over simple hashing or range hashing because of the flexibility it provides in operations such as scaling in/out or moving a user from one resource to another.\n\n![][2]\n\nIn the illustration above, we see that actor B23 is first resolving its resource (aka resolution) —DB1 and caches it. Subsequent operations can now use the cached resolution to access the constrained resource. Since the actors support single-threaded execution, developers no longer need to worry about concurrent access to the resource.\nThe User and Resolver actors look like this:\n\n## Resource Governance code sample – Resolver\n\n```csharp\npublic interface IUser : IActor\n{\n    Task UpdateProfile(string name, string country, int age);\n}\n\n[DataContract]\npublic class UserState\n{\n    [DataMember]\n    private long _userId;\n    [DataMember]\n    private string _name;\n    [DataMember]\n    private string _country;\n    [DataMember]\n    private int _age;\n    [DataMember]\n    private Resolution _resolution;\n}\n\n\npublic class User : Actor<UserState>, IUser\n{\n    public override async Task ActivateAsync()\n    {\n        State._userId = this.GetPrimaryKeyLong();\n        var resolver = ActorProxy.Create<IResolver>(0);\n        State._resolution = await resolver.ResolveAsync(State._userId);\n        await base.ActivateAsync();\n    }\n\n    public Task UpdateProfile(string name, string country, int age)\n    {\n        Console.WriteLine(\"Using {0}\", State._resolution.Resource.ConnectionString);\n        // this is where we use the resource...\n        return TaskDone.Done;\n    }\n}\n```\n\nResource Governance – Resolver Example\n\n```csharp\npublic interface IResolver : IActor\n{\n    Task<Resolution> ResolveAsync(long entity);\n}\n\n[DataContract]\npublic class ResolverState\n{\n    ...\n}\n\npublic class Resolver : Actor<ResolverState>, IResolver\n{\n    ...\n\n    public Task<Resolution> ResolveAsync(long entityKey)\n    {\n        if (State._resolutionCache.ContainsKey(entityKey))\n            return Task.FromResult(_resolutionCache[entityKey]); // return from cache\n\n        var partitionKey = State._entityPartitions[entityKey]; // resolve partition;\n        var resourceKey = State._partitionResources[partitionKey]; // resolve resource;\n        var resolution =\n            new Resolution()\n            {\n                Entity = State._entities[entityKey],\n                Partition = State._partitions[partitionKey],\n                Resource = State._resources[resourceKey]\n            }; // create resolution\n\n        State._resolutionCache.Add(entityKey, resolution); // cache the resolution\n\n        return Task.FromResult(resolution);\n    }\n\n    ...\n}\n```\n\n## Accessing resources with finite capability\nNow let’s look at another example; exclusive access to precious resources such as DB, storage accounts, and file systems with finite throughput capability.\nOur scenario is as follows: we would like to process events using an actor called EventProcessor, which is responsible for processing and persisting the event, in this case to a .CSV file for simplicity. While we can follow the partitioning approach discussed above to scale-out our resources, we will still have to deal with the concurrency issues. That is why we chose a file-based example to illustrate this particular point—writing to a single file from multiple actors will raise concurrency issues. To address the problem we introduce another actor called EventWriter that has exclusive ownership of the constrained resources. The scenario is illustrated below:\n\n![][3]\n\nWe mark EventProcessor actors as “Stateless Workers,” which allows the runtime to scale them across the cluster as necessary. Hence we didn’t use any identifiers in the illustration above for these actors. In other words, stateless actors are a pool of workers maintained by the runtime.\nIn the sample code below, the EventProcessor actor does two things: it first decides which EventWriter (therefore resource) to use, and invokes the chosen actor to write the processed event. For simplicity, we are choosing Event Type as the identifier for the EventWriter actor. In other words, there will be one and only one EventWriter for this Event Type providing single-threaded and exclusive access to the resource.\n\n## Resource Governance code sample – Event Processor\n\n```csharp\npublic interface IEventProcessor : IActor\n{\n    Task ProcessEventAsync(long eventId, long eventType, DateTime eventTime, string payload);\n}\n\npublic class EventProcessor : Actor, IEventProcessor\n{\n    public Task ProcessEventAsync(long eventId, long eventType, DateTime eventTime, string payload)\n    {\n        // This where we write to constrained resource...\n        var eventWriterKey = ResolveWriter(eventType, eventTime);\n        var eventWriter = ActorProxy.Create<IEventWriter>(eventWriterKey);\n\n        return eventWriter.WriteEventAsync(eventId, eventType, eventTime, payload);\n    }\n\n    private long ResolveWriter(long eventType, DateTime eventTime)\n    {\n        // To simplify, we are returning event type as to identify the event writer actor.\n        return eventType;\n    }\n}\n```\n\nNow let’s have a look at the EventWriter actor. It really doesn’t do much apart from control exclusive access to the constrained resource, in this case the file and writing events to it.\n## Resource Governance code sample – Event Writer\n\n```csharp\npublic interface IEventWriter : IActor\n{\n    Task WriteEventAsync(long eventId, long eventType, DateTime eventTime, string payload);\n    Task WriteEventBufferAsync(long eventId, long eventType, DateTime eventTime, string payload);\n}\n\n[DataContract]\npublic class EventWriterState\n{\n    [DataMember]\n    public string _filename;\n}\n\npublic class EventWriter : Actor<EventWriterState>, IEventWriter\n{\n    private StreamWriter _writer;\n\n    public override Task OnActivateAsync()\n    {\n        State._filename = string.Format(@\"C:\\{0}.csv\", this.Id);\n        _writer = new StreamWriter(_filename);\n\n        return base.OnActivateAsync();\n    }\n\n    public override Task OnDeactivateAsync()\n    {\n        _writer.Close();\n        return base.OnDeactivateAsync();\n    }\n\n    public async Task WriteEventAsync(long eventId, long eventType, DateTime eventTime, string payload)\n    {\n        var text = string.Format(\"{0}, {1}, {2}, {3}\", eventId, eventType, eventTime, payload);\n        await _writer.WriteLineAsync(text);\n        await _writer.FlushAsync();\n    }\n }\n```\n\nHaving a single actor responsible for the resource allows us to add capabilities such as buffering. We can buffer incoming events and write these events periodically using a timer or when our buffer is full. Here is a simple timer based example:\n## Resource Governance code sample – Event Writer with buffer\n\n```csharp\n[DataMember]\npublic class EventWriterState\n{\n    [DataMember]\n    public string _filename;\n    [DataMember]\n    public Queue<CustomEvent> _buffer;\n}\n\npublic class EventWriter : Actor<EventWriterState>, IEventWriter\n{\n    private StreamWriter _writer;\n    private IActorTimer _timer;\n\n    public override Task OnActivateAsync()\n    {\n        State._filename = string.Format(@\"C:\\{0}.csv\", this.Id);\n        _writer = new StreamWriter(_filename);\n        State._buffer = new Queue<CustomEvent>();\n\n        this.RegisterTimer(\n            ProcessBatchAsync,\n            null,\n            TimeSpan.FromSeconds(5),\n            TimeSpan.FromSeconds(5));\n\n        return base.OnActivateAsync();\n    }\n\n    private async Task ProcessBatchAsync(object obj)\n    {\n        if (State._buffer.Count == 0)\n            return;\n\n        while (State._buffer.Count > 0)\n        {\n            var customEvent = State._buffer.Dequeue();\n            await this.WriteEventAsync(customEvent.EventId, customEvent.EventType, customEvent.EventTime, customEvent.Payload);\n        }\n    }\n\n    public Task WriteEventBufferAsync(long eventId, long eventType, DateTime eventTime, string payload)\n    {\n        var customEvent = new CustomEvent()\n        {\n            EventId = eventId,\n            EventType = eventType,\n            EventTime = eventTime,\n            Payload = payload\n        };\n\n        State._buffer.Enqueue(customEvent);\n\n        return TaskDone.Done;\n    }\n}\n```\n\nWhile the code above will work fine, clients will not know whether their event made it to the underlying store. To allow buffering and let clients be aware what is happening to their request, we introduce the following approach to let clients wait until their event is written to the .CSV file:\n\n## Resource Governance code sample – Async batching\n\n```csharp\npublic class AsyncBatchExecutor\n{\n    private readonly List<TaskCompletionSource<bool>> actionPromises;\n\n    public AsyncBatchExecutor()\n    {\n        this.actionPromises = new List<TaskCompletionSource<bool>>();\n    }\n\n    public int Count\n    {\n        get\n        {\n            return actionPromises.Count;\n        }\n    }\n\n    public Task SubmitNext()\n    {\n        var resolver = new TaskCompletionSource<bool>();\n        actionPromises.Add(resolver);\n        return resolver.Task;\n    }\n\n    public void Flush()\n    {\n        foreach (var tcs in actionPromises)\n        {\n            tcs.TrySetResult(true);\n\n        }\n        actionPromises.Clear();\n    }\n}\n```\n\nWe will use this class to create and maintain a list of incomplete tasks (to block clients) and complete them in one go once we write the buffered events to storage.\nIn the EventWriter class, we need to do three things: mark the actor class as Reentrant, return the result of SubmitNext(), and Flush our timer. The modified code is as follows:\n\n## Resource Governance code sample – Buffering with async batching\n\n```csharp\npublic class EventWriter : Actor<EventWriterState>, IEventWriter\n{\n    public override Task OnActivateAsync()\n    {\n        State._filename = string.Format(@\"C:\\{0}.csv\", this.GetPrimaryKeyLong());\n        _writer = new StreamWriter(_filename);\n        State._buffer = new Queue<CustomEvent>();\n        _batchExecuter = new AsyncBatchExecutor();\n\n        this.RegisterTimer(\n            ProcessBatchAsync,\n            null,\n            TimeSpan.FromSeconds(5),\n            TimeSpan.FromSeconds(5));\n\n        return base.OnActivateAsync();\n    }\n\n    private async Task ProcessBatchAsync(object obj)\n    {\n        if (_batchExecuter.Count > 0)\n        {\n            // take snapshot of the batch tasks\n            var batchSnapshot = _batchExecuter;\n            _batchExecuter = new AsyncBatchExecutor();\n\n            if (State._buffer.Count == 0)\n                return;\n\n            while (State._buffer.Count > 0)\n            {\n                var customEvent = State._buffer.Dequeue();\n                await this.WriteEventAsync(customEvent.EventId, customEvent.EventType, customEvent.EventTime, customEvent.Payload);\n            }\n\n            _batchExecuter.Flush();\n        }\n    }\n    ...\n\n    public Task WriteEventBufferAsync(long eventId, long eventType, DateTime eventTime, string payload)\n    {\n        var customEvent = new CustomEvent()\n        {\n            EventId = eventId,\n            EventType = eventType,\n            EventTime = eventTime,\n            Payload = payload\n        };\n\n        State._buffer.Enqueue(customEvent);\n\n        // we are adding an incomplete task to batch executer and returning this task.\n        // this will block until task is completed when we call Flush();\n        return _batchExecuter.SubmitNext();\n    }\n}\n```\n\nSeem easy? Well it is. But the ease belies the enterprise power. With this architecture we get:\n\n* Location independent resource addressing.\n* Tuneable pool size based simply on changing the number of actors that act on behalf a resource.\n* Client side coordinated pool usage (as depicted) or server side (just imagine a single actor in front of each of those pools in the picture).\n* Scalable pool addition (just add actors representing the new resource).\n* Actor (as we demonstrated earlier) can cache results from backend resource on demand or pre-cache using a timer reducing the need to hit the backend resource.\n* Efficient asynchronous dispatch.\n* A coding environment that will be familiar to any developer not just middleware specialists.\n\nThis pattern is very common in scenarios where developers either have constrained resources they need to develop against or building large scale-out systems.\n\n\n## Next Steps\n[Pattern: Smart Cache](service-fabric-reliable-actors-pattern-smart-cache.md)\n\n[Pattern: Distributed Networks and Graphs](service-fabric-reliable-actors-pattern-distributed-networks-and-graphs.md)\n\n[Pattern: Stateful Service Composition](service-fabric-reliable-actors-pattern-stateful-service-composition.md)\n\n[Pattern: Internet of Things](service-fabric-reliable-actors-pattern-internet-of-things.md)\n\n[Pattern: Distributed Computation](service-fabric-reliable-actors-pattern-distributed-computation.md)\n\n[Some Anti-patterns](service-fabric-reliable-actors-anti-patterns.md)\n\n[Introduction to Service Fabric Actors](service-fabric-reliable-actors-introduction.md)\n\n<!--Image references-->\n[1]: ./media/service-fabric-reliable-actors-pattern-resource-governance/resourcegovernance_arch1.png\n[2]: ./media/service-fabric-reliable-actors-pattern-resource-governance/resourcegovernance_arch2.png\n[3]: ./media/service-fabric-reliable-actors-pattern-resource-governance/resourcegovernance_arch3.png\n"
+}

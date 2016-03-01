@@ -1,0 +1,418 @@
+{
+  "nodes": [
+    {
+      "content": "Code sample: Retry logic in C# for connecting to SQL Database | Microsoft Azure",
+      "pos": [
+        28,
+        107
+      ]
+    },
+    {
+      "content": "C# sample includes robust retry logic for interacting with Azure SQL Database.",
+      "pos": [
+        127,
+        205
+      ]
+    },
+    {
+      "content": "Code sample: Retry logic in C# for connecting to SQL Database",
+      "pos": [
+        529,
+        590
+      ]
+    },
+    {
+      "content": "This topic provides a C# code sample that demonstrates custom retry logic.",
+      "pos": [
+        1091,
+        1165
+      ]
+    },
+    {
+      "content": "The retry logic is designed to gracefully process temporary errors or <bpt id=\"p1\">*</bpt>transient faults<ept id=\"p1\">*</ept> that tend to go away if the program waits a few seconds and retries.",
+      "pos": [
+        1166,
+        1323
+      ]
+    },
+    {
+      "content": "ADO.NET classes that you use to connect to your local Microsoft SQL Server can also connect to Azure SQL Database.",
+      "pos": [
+        1326,
+        1440
+      ]
+    },
+    {
+      "content": "However, by themselves the ADO.NET classes cannot provide all the robustness and reliability necessary in production use.",
+      "pos": [
+        1441,
+        1562
+      ]
+    },
+    {
+      "content": "Your client program can encounter transient faults from which it should silently and gracefully recover on its own.",
+      "pos": [
+        1563,
+        1678
+      ]
+    },
+    {
+      "content": "A couple examples of transient faults:",
+      "pos": [
+        1679,
+        1717
+      ]
+    },
+    {
+      "content": "A connection over the Internet is subject to brief network outages, after which the connection can be recreated.",
+      "pos": [
+        1722,
+        1834
+      ]
+    },
+    {
+      "content": "Cloud computing involves load balancing which can briefly block attempts to connect or query.",
+      "pos": [
+        1838,
+        1931
+      ]
+    },
+    {
+      "content": "Identify transient errors",
+      "pos": [
+        1937,
+        1962
+      ]
+    },
+    {
+      "content": "Your program must distinguish between transient errors versus persistent errors.",
+      "pos": [
+        1965,
+        2045
+      ]
+    },
+    {
+      "content": "If you program has a misspelling of the target database name, the \"No such database found\" error will persist and will reoccur every time you rerun the program.",
+      "pos": [
+        2046,
+        2206
+      ]
+    },
+    {
+      "content": "The list of error numbers that are categorized as transient faults is available at:",
+      "pos": [
+        2209,
+        2292
+      ]
+    },
+    {
+      "content": "Error messages for SQL Database client programs",
+      "pos": [
+        2298,
+        2345
+      ]
+    },
+    {
+      "pos": [
+        2413,
+        2478
+      ],
+      "content": "See the section about <bpt id=\"p1\">*</bpt>Transient Errors, Connection-Loss Errors<ept id=\"p1\">*</ept>."
+    },
+    {
+      "content": "C# code sample",
+      "pos": [
+        2484,
+        2498
+      ]
+    },
+    {
+      "content": "The C# code sample in the present topic contains custom detection and retry logic to handle transient errors.",
+      "pos": [
+        2501,
+        2610
+      ]
+    },
+    {
+      "content": "The code sample follows a few basic guidelines or recommendations that apply regardless of which technology you use to interact with Azure SQL Database.",
+      "pos": [
+        2613,
+        2765
+      ]
+    },
+    {
+      "content": "You can see the general recommendations at:",
+      "pos": [
+        2766,
+        2809
+      ]
+    },
+    {
+      "content": "Connecting to SQL Database: Links, Best Practices and Design Guidelines",
+      "pos": [
+        2815,
+        2886
+      ]
+    },
+    {
+      "content": "The C# code sample consists of the two .cs files whose content is pasted into the sections that follow.",
+      "pos": [
+        2939,
+        3042
+      ]
+    },
+    {
+      "content": "Their file names are:",
+      "pos": [
+        3044,
+        3065
+      ]
+    },
+    {
+      "content": "Compile and run the code sample",
+      "pos": [
+        3145,
+        3176
+      ]
+    },
+    {
+      "content": "You can compile the sample with the following steps:",
+      "pos": [
+        3179,
+        3231
+      ]
+    },
+    {
+      "content": "In Visual Studio, create a new project from the C# Console Application template.",
+      "pos": [
+        3237,
+        3317
+      ]
+    },
+    {
+      "content": "Right-click your project, and then add the .cs for which source code is provided in this topic.",
+      "pos": [
+        3322,
+        3417
+      ]
+    },
+    {
+      "content": "In a <ph id=\"ph1\">`cmd.exe`</ph> command window, run the program as shown next.",
+      "pos": [
+        3422,
+        3483
+      ]
+    },
+    {
+      "content": "Actual output from a run is also shown.",
+      "pos": [
+        3484,
+        3523
+      ]
+    },
+    {
+      "content": "The C# source code for the .cs files are in the following sections.",
+      "pos": [
+        3873,
+        3940
+      ]
+    },
+    {
+      "content": "Program.cs file",
+      "pos": [
+        3946,
+        3961
+      ]
+    },
+    {
+      "content": "The demo program is designed so that:",
+      "pos": [
+        3964,
+        4001
+      ]
+    },
+    {
+      "content": "A transient fault during an attempt to connect leads to a retry.",
+      "pos": [
+        4006,
+        4070
+      ]
+    },
+    {
+      "content": "A transient error during a query command causes the program to discard the connection and create a new connection, before retrying the query command.",
+      "pos": [
+        4074,
+        4223
+      ]
+    },
+    {
+      "content": "Microsoft neither recommends nor dis-recommends this design choice.",
+      "pos": [
+        4226,
+        4293
+      ]
+    },
+    {
+      "content": "The demo program illustrates some of the design flexibility that is available to you.",
+      "pos": [
+        4294,
+        4379
+      ]
+    },
+    {
+      "content": "Length of the source code",
+      "pos": [
+        4386,
+        4411
+      ]
+    },
+    {
+      "pos": [
+        4414,
+        4506
+      ],
+      "content": "The long length of the <ph id=\"ph1\">`Program.cs`</ph> file is due mostly to the logic that catches exceptions."
+    },
+    {
+      "pos": [
+        4509,
+        4673
+      ],
+      "content": "A <bpt id=\"p1\">[</bpt>shorter version<ept id=\"p1\">](#shorter_program_cs)</ept> of this <ph id=\"ph1\">`Program.cs`</ph> file is presented at the end in this topic, with all the retry logic and <ph id=\"ph2\">`Exception`</ph> handling removed."
+    },
+    {
+      "content": "Call stack",
+      "pos": [
+        4680,
+        4690
+      ]
+    },
+    {
+      "content": "The <ph id=\"ph1\">`Main`</ph> method is in <ph id=\"ph2\">`Program.cs`</ph>.",
+      "pos": [
+        4693,
+        4730
+      ]
+    },
+    {
+      "content": "The call stack runs as follows:",
+      "pos": [
+        4731,
+        4762
+      ]
+    },
+    {
+      "pos": [
+        4768,
+        4799
+      ],
+      "content": "<ph id=\"ph1\">`Main`</ph> calls <ph id=\"ph2\">`ConnectAndQuery`</ph>."
+    },
+    {
+      "pos": [
+        4804,
+        4850
+      ],
+      "content": "<ph id=\"ph1\">`ConnectAndQuery`</ph> calls <ph id=\"ph2\">`EstablishConnection`</ph>."
+    },
+    {
+      "pos": [
+        4855,
+        4903
+      ],
+      "content": "<ph id=\"ph1\">`EstablishConnection`</ph> calls <ph id=\"ph2\">`IssueQueryCommand`</ph>."
+    },
+    {
+      "content": "Source code for Program.cs",
+      "pos": [
+        4910,
+        4936
+      ]
+    },
+    {
+      "content": "Custom_SqlDatabaseTransientErrorDetectionStrategy.cs code file",
+      "pos": [
+        13923,
+        13985
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt><ph id=\"ph1\">`SqlDatabaseTransientErrorDetectionStrategy`</ph><ept id=\"p1\">](http://msdn.microsoft.com/library/microsoft.practices.enterpriselibrary.transientfaulthandling.sqldatabasetransienterrordetectionstrategy.aspx)</ept> is a class in the Enterprise Library (EntLib) API.",
+      "pos": [
+        13988,
+        14229
+      ]
+    },
+    {
+      "content": "The present code sample uses the following custom class that borrows the idea of the EntLib class.",
+      "pos": [
+        14230,
+        14328
+      ]
+    },
+    {
+      "content": "&amp;nbsp;",
+      "pos": [
+        16395,
+        16401
+      ]
+    },
+    {
+      "content": "Short version of Program.cs",
+      "pos": [
+        16407,
+        16434
+      ]
+    },
+    {
+      "content": "The source code in this section is a shortened repeat of the longer <ph id=\"ph1\">`Program.cs`</ph> file presented earlier.",
+      "pos": [
+        16437,
+        16541
+      ]
+    },
+    {
+      "content": "All the retry logic and all the exception handling has been removed.",
+      "pos": [
+        16542,
+        16610
+      ]
+    },
+    {
+      "content": "The short version makes it easier to see the ADO.NET calls, knowing that these usually work.",
+      "pos": [
+        16613,
+        16705
+      ]
+    },
+    {
+      "content": "Usually no transient faults occur and no exception is thrown.",
+      "pos": [
+        16706,
+        16767
+      ]
+    },
+    {
+      "content": "And usually a skydiver does not need a backup parachute.",
+      "pos": [
+        16768,
+        16824
+      ]
+    },
+    {
+      "content": "Related links",
+      "pos": [
+        19618,
+        19631
+      ]
+    },
+    {
+      "content": "Client quick-start code samples to SQL Database",
+      "pos": [
+        19637,
+        19684
+      ]
+    }
+  ],
+  "content": "<properties \n    pageTitle=\"Code sample: Retry logic in C# for connecting to SQL Database | Microsoft Azure\" \n    description=\"C# sample includes robust retry logic for interacting with Azure SQL Database.\" \n    services=\"sql-database\" \n    documentationCenter=\"\" \n    authors=\"MightyPen\" \n    manager=\"jeffreyg\" \n    editor=\"\"/>\n\n\n<tags \n    ms.service=\"sql-database\" \n    ms.workload=\"data-management\" \n    ms.tgt_pltfrm=\"na\" \n    ms.devlang=\"na\" \n    ms.topic=\"article\" \n    ms.date=\"08/04/2015\" \n    ms.author=\"genemi\"/>\n\n\n# Code sample: Retry logic in C# for connecting to SQL Database\n\n\n<!--\nsql-database-develop-csharp-retry-windows.md  ,  NEW\nmgm4f20150723retryfrommsdn68\n. . . .\nOld Titles on MSDN:  Code sample: Retry logic for connecting to Azure SQL Database with ADO.NET\n.\nHow to: Connect to Azure SQL Database by using ADO.NET\n.\nShortId on MSDN was:  ee336243.aspx\nDx  4d7936fd-341c-4a37-8796-25e385ae6c5b\n-->\n\n\n[AZURE.INCLUDE [sql-database-develop-includes-selector-language-platform-depth](../../includes/sql-database-develop-includes-selector-language-platform-depth.md)]\n\n\nThis topic provides a C# code sample that demonstrates custom retry logic. The retry logic is designed to gracefully process temporary errors or *transient faults* that tend to go away if the program waits a few seconds and retries.\n\n\nADO.NET classes that you use to connect to your local Microsoft SQL Server can also connect to Azure SQL Database.\nHowever, by themselves the ADO.NET classes cannot provide all the robustness and reliability necessary in production use.\nYour client program can encounter transient faults from which it should silently and gracefully recover on its own. A couple examples of transient faults:\n\n\n- A connection over the Internet is subject to brief network outages, after which the connection can be recreated.\n\n- Cloud computing involves load balancing which can briefly block attempts to connect or query.\n\n\n## Identify transient errors\n\n\nYour program must distinguish between transient errors versus persistent errors.\nIf you program has a misspelling of the target database name, the \"No such database found\" error will persist and will reoccur every time you rerun the program.\n\n\nThe list of error numbers that are categorized as transient faults is available at:\n\n\n- [Error messages for SQL Database client programs](sql-database-develop-error-messages.md#bkmk_connection_errors)\n - See the section about *Transient Errors, Connection-Loss Errors*.\n\n\n## C# code sample\n\n\nThe C# code sample in the present topic contains custom detection and retry logic to handle transient errors.\n\n\nThe code sample follows a few basic guidelines or recommendations that apply regardless of which technology you use to interact with Azure SQL Database.\nYou can see the general recommendations at:\n\n\n- [Connecting to SQL Database: Links, Best Practices and Design Guidelines](sql-database-connect-central-recommendations.md)\n\n\nThe C# code sample consists of the two .cs files whose content is pasted into the sections that follow.  Their file names are:\n\n\n- `Program.cs`\n- `Custom_SqlDatabaseTransientErrorDetectionStrategy.cs`\n\n\n## Compile and run the code sample\n\n\nYou can compile the sample with the following steps:\n\n\n1. In Visual Studio, create a new project from the C# Console Application template.\n\n2. Right-click your project, and then add the .cs for which source code is provided in this topic.\n\n3. In a `cmd.exe` command window, run the program as shown next. Actual output from a run is also shown.\n\n\n        [C:\\MyVS\\ConsoleApplication1\\ConsoleApplication1\\bin\\Debug\\]\n        >> ConsoleApplication1.exe\n        database_firewall_rules_table   245575913\n        filestream_tombstone_2073058421 2073058421\n        filetable_updates_2105058535    2105058535\n        \n        [C:\\MyVS\\ConsoleApplication1\\ConsoleApplication1\\bin\\Debug\\]\n        >>\n\n\nThe C# source code for the .cs files are in the following sections.\n\n\n## Program.cs file\n\n\nThe demo program is designed so that:\n\n\n- A transient fault during an attempt to connect leads to a retry.\n\n- A transient error during a query command causes the program to discard the connection and create a new connection, before retrying the query command.\n\n\nMicrosoft neither recommends nor dis-recommends this design choice.\nThe demo program illustrates some of the design flexibility that is available to you.\n\n\n### Length of the source code\n\n\nThe long length of the `Program.cs` file is due mostly to the logic that catches exceptions.\n\n\nA [shorter version](#shorter_program_cs) of this `Program.cs` file is presented at the end in this topic, with all the retry logic and `Exception` handling removed.\n\n\n### Call stack\n\n\nThe `Main` method is in `Program.cs`. The call stack runs as follows:\n\n\n1. `Main` calls `ConnectAndQuery`.\n\n2. `ConnectAndQuery` calls `EstablishConnection`.\n\n3. `EstablishConnection` calls `IssueQueryCommand`.\n\n\n### Source code for Program.cs\n\n\n    using     System;  // C#, pure ADO.NET, no Enterprise Library.\n    using X = System.Text;\n    using D = System.Data;\n    using C = System.Data.SqlClient;\n    using T = System.Threading;\n    \n    namespace ConsoleApplication1\n    {\n        class Program\n        {\n            // Fields, shared among methods.\n            C.SqlConnection sqlConnection;\n            C.SqlConnectionStringBuilder scsBuilder;\n    \n            static void Main(string[] args)\n            {\n                new Program().ConnectAndQuery();\n            }\n    \n            /// <summary>\n            /// Prepares values for a connection. Then inside a loop, it calls a method\n            /// that opens a connection. The called method calls yet another method\n            /// that issues a query.\n            /// The loop reiterates only if a transient error is encountered.\n            /// </summary>\n            void ConnectAndQuery()\n            {\n                int connectionTimeoutSeconds = 30;  // Default of 15 seconds is too short over the Internet, sometimes.\n                int maxCountTriesConnectAndQuery = 3;  // You can adjust the various retry count values.\n                int secondsBetweenRetries = 6;  // Simple retry strategy.\n    \n                // [A.1] Prepare the connection string to Azure SQL Database.\n                this.scsBuilder = new C.SqlConnectionStringBuilder();\n                // Change these values to your values.\n                this.scsBuilder[\"Server\"] = \"tcp:myazuresqldbserver.database.windows.net,1433\";\n                this.scsBuilder[\"User ID\"] = \"MyLogin\";  // @yourservername suffix sometimes.\n                this.scsBuilder[\"Password\"] = \"MyPassword\";\n                this.scsBuilder[\"Database\"] = \"MyDatabase\";\n                // Leave these values as they are.\n                this.scsBuilder[\"Trusted_Connection\"] = false;\n                this.scsBuilder[\"Integrated Security\"] = false;\n                this.scsBuilder[\"Encrypt\"] = true;\n                this.scsBuilder[\"Connection Timeout\"] = connectionTimeoutSeconds;\n    \n                //-------------------------------------------------------\n                // Preparations are complete.\n    \n                for (int cc = 1; cc <= maxCountTriesConnectAndQuery; cc++)\n                {\n                    try\n                    {\n                        // [A.2] Connect, which proceeds to issue a query command.\n                        this.EstablishConnection();\n    \n                        // [A.3] All has gone well, so let the program end.\n                        break;\n                    }\n                    catch (C.SqlException sqlExc)\n                    {\n                        bool isTransientError;\n    \n                        // [A.4] Check whether sqlExc.Number is on the whitelist of transients.\n                        isTransientError = Custom_SqlDatabaseTransientErrorDetectionStrategy\n                            .IsTransientStatic(sqlExc);\n    \n                        if (isTransientError == false)  // Is a persistent error...\n                        {\n                            Console.WriteLine();\n                            Console.WriteLine(\"Persistent error suffered, SqlException.Number=={0}.  Will terminate.\",\n                                sqlExc.Number);\n                            Console.WriteLine(sqlExc.ToString());\n    \n                            // [A.5] Either the connection attempt or the query command attempt suffered a persistent SqlException.\n                            // Break the loop, let the hopeless program end.\n                            break;\n                        }\n    \n                        // [A.6] The SqlException identified a transient fault from an attempt to issue a query command.\n                        // So let this method reloop and try again. However, we recommend that the new query\n                        // attempt should start at the beginning and establish a new connection.\n                        Console.WriteLine();\n                        Console.WriteLine(\"Transient error encountered.  SqlException.Number=={0}.\"\n                            + \"  Program might retry by itself.\", sqlExc.Number);\n                        Console.WriteLine(\"{0} = Attempts so far. Might retry.\", cc);\n                        Console.WriteLine(sqlExc.Message);\n                    }\n                    catch (Exception exc)\n                    {\n                        Console.WriteLine();\n                        Console.WriteLine(\"Unexpected exception type caught in Main. Will terminate.\");\n    \n                        // [A.7] The program must end, so re-throw the unrecognized error.\n                        throw exc;\n                    }\n    \n                    // [A.8] Throw an application exception if transient SqlExceptions caused us\n                    // to exceed our self-imposed maximum count of retries.\n                    if (cc > maxCountTriesConnectAndQuery)\n                    {\n                        Console.WriteLine();\n                        string mesg = String.Format(\n                            \"Transient errors suffered in too many retries ({0}). Will terminate.\",\n                            cc - 1);\n                        Console.WriteLine(mesg);\n    \n                        // [A.9] To end the program, throw a new exception of a different type.\n                        ApplicationException appExc = new ApplicationException(mesg);\n                        throw appExc;\n                    }\n                    // Else, can retry.\n    \n                    // A very simple retry strategy, a brief pause before looping.\n                    T.Thread.Sleep(1000 * secondsBetweenRetries);\n                } // for cc\n                return;\n            } // method ConnectAndQuery\n    \n    \n            /// <summary>\n            /// Open a connection, then call a method that issues a query.\n            /// </summary>\n            void EstablishConnection()\n            {\n                try\n                {\n                    // [B.1] The 'using' statement will .Dispose() the connection.\n                    // If you are working with a connection pool, you might want instead\n                    // to merely .Close() the connection.\n                    using (this.sqlConnection = new C.SqlConnection(this.scsBuilder.ToString()))\n                    {\n                        // [B.2] Open a connection.\n                        sqlConnection.Open();\n                        // [B.3]\n                        this.IssueQueryCommand();\n                    }\n                }\n                catch (Exception exc)\n                {\n                    // [B.4] This re-throw means we discard the connection whenever\n                    // any error occurs during query command, even for a transient error.\n                    throw exc;  // [B.5] Let caller assess any exception, SqlException or any kind.\n                }\n                return;\n            } // method EstablishConnection\n    \n    \n            /// <summary>\n            /// Issue a query, then write the result rows to the console.\n            /// </summary>\n            void IssueQueryCommand()\n            {\n                D.IDataReader dReader = null;\n                D.IDbCommand dbCommand = null;\n                X.StringBuilder sBuilder = new X.StringBuilder(512);\n    \n                try\n                {\n                    // [C.1] Use the connection to create a query command.\n                    using (dbCommand = this.sqlConnection.CreateCommand())\n                    {\n                        dbCommand.CommandText =\n                            @\"SELECT TOP 3\n                                  ob.name,\n                                  CAST(ob.object_id as nvarchar(32)) as [object_id]\n                              FROM sys.objects as ob\n                              WHERE ob.type='IT'\n                              ORDER BY ob.name;\";\n    \n                        // [C.2] Issue the query command through the connection.\n                        using (dReader = dbCommand.ExecuteReader())\n                        {\n                            // [C.3] Loop through all returned rows, writing the data to the console.\n                            while (dReader.Read())\n                            {\n                                sBuilder.Length = 0;\n                                sBuilder.Append(dReader.GetString(0));\n                                sBuilder.Append(\"\\t\");\n                                sBuilder.Append(dReader.GetString(1));\n    \n                                Console.WriteLine(sBuilder.ToString());\n                            }\n                        }\n                    }\n                }\n                catch (Exception exc)\n                {\n                    throw exc; // Let caller assess any exception.\n                }\n                return;\n            } // method IssueQueryCommand\n        } // class Program\n    }\n\n\n## Custom_SqlDatabaseTransientErrorDetectionStrategy.cs code file\n\n\n[`SqlDatabaseTransientErrorDetectionStrategy`](http://msdn.microsoft.com/library/microsoft.practices.enterpriselibrary.transientfaulthandling.sqldatabasetransienterrordetectionstrategy.aspx) is a class in the Enterprise Library (EntLib) API.\nThe present code sample uses the following custom class that borrows the idea of the EntLib class.\n\n\n    using     System;\n    using G = System.Collections.Generic;\n    using C = System.Data.SqlClient;\n    \n    namespace ConsoleApplication1\n    {\n        /// <summary>\n        /// A custom alternative to class SqlDatabaeTransientErrorDetectionStrategy.\n        /// </summary>\n        public class Custom_SqlDatabaseTransientErrorDetectionStrategy\n        {\n            static private G.List<int> M_listTransientErrorNumbers;\n    \n    \n            /// <summary>\n            /// This method happens to match ITransientErrorDetectionStrategy of EntLib60.\n            /// </summary>\n            public bool IsTransient(Exception exc)\n            {\n                return IsTransientStatic(exc);\n            }\n    \n    \n            /// <summary>\n            /// For general use beyond formal Enterprise Library classes.\n            /// </summary>\n            static public bool IsTransientStatic(Exception exc)\n            {\n                bool returnBool = false;  // Assume is a persistent error.\n                C.SqlException sqlExc;\n    \n                if (exc is C.SqlException)\n                {\n                    sqlExc = exc as C.SqlException;\n                    if (M_listTransientErrorNumbers.Contains(sqlExc.Number) == true)\n                    {\n                        returnBool = true;  // Error is transient, not persistent.\n                    }\n                }\n                return returnBool;\n            }\n    \n    \n            /// <summary>\n            /// Lists the SqlException.Number values that are considered\n            /// to indicate transient errors.\n            /// </summary>\n            static Custom_SqlDatabaseTransientErrorDetectionStrategy()\n            {\n                int[] arrayOfTransientErrorNumbers =\n                    {4060, 10928, 10929, 40197, 40501, 40613 };\n    \n                M_listTransientErrorNumbers = new G.List<int>(arrayOfTransientErrorNumbers);\n            }\n        } // class Custom_SqlDatabaseTransientErrorDetectionStrategy\n    }\n\n\n<a id=\"shorter_program_cs\" name=\"shorter_program_cs\"></a>\n\n\n&nbsp;\n\n\n## Short version of Program.cs\n\n\nThe source code in this section is a shortened repeat of the longer `Program.cs` file presented earlier.\nAll the retry logic and all the exception handling has been removed.\n\n\nThe short version makes it easier to see the ADO.NET calls, knowing that these usually work.\nUsually no transient faults occur and no exception is thrown.\nAnd usually a skydiver does not need a backup parachute.\n\n\n    using     System;  // C#, pure ADO.NET, no retry logic, no Exception handling.\n    using X = System.Text;\n    using D = System.Data;\n    using C = System.Data.SqlClient;\n    \n    namespace ConsoleApplication1_dn864744\n    {\n        class Program\n        {\n            C.SqlConnection sqlConnection;\n            C.SqlConnectionStringBuilder scsBuilder;\n    \n            static void Main(string[] args)\n            {\n                new Program().ConnectAndQuery();\n            }\n    \n            void ConnectAndQuery()\n            {\n                this.scsBuilder = new C.SqlConnectionStringBuilder();\n                // Change these values to your values.\n                this.scsBuilder[\"Server\"] = \"tcp:myazuresqldbserver.database.windows.net,1433\";\n                this.scsBuilder[\"User ID\"] = \"MyLogin\";\n                this.scsBuilder[\"Password\"] = \"MyPassword\";\n                this.scsBuilder[\"Database\"] = \"MyDatabase\";\n                this.scsBuilder[\"Trusted_Connection\"] = false;\n                this.scsBuilder[\"Integrated Security\"] = false;\n                this.scsBuilder[\"Encrypt\"] = true;\n                this.scsBuilder[\"Connection Timeout\"] = 30;\n    \n                this.EstablishConnection();\n            } // method ConnectAndQuery\n    \n            void EstablishConnection()\n            {\n                using (this.sqlConnection = new C.SqlConnection(this.scsBuilder.ToString()))\n                {\n                    sqlConnection.Open();\n                    this.IssueQueryCommand();\n                }\n            } // method EstablishConnection\n    \n            void IssueQueryCommand()\n            {\n                D.IDataReader dReader = null;\n                D.IDbCommand dbCommand = null;\n                X.StringBuilder sBuilder = new X.StringBuilder(512);\n    \n                using (dbCommand = this.sqlConnection.CreateCommand())\n                {\n                    dbCommand.CommandText =\n                        @\"SELECT TOP 3 ob.name, CAST(ob.object_id as nvarchar(32)) as [object_id]\n                            FROM sys.objects as ob\n                            WHERE ob.type='IT'\n                            ORDER BY ob.name;\";\n    \n                    using (dReader = dbCommand.ExecuteReader())\n                    {\n                        while (dReader.Read())\n                        {\n                            sBuilder.Length = 0;\n                            sBuilder.Append(dReader.GetString(0));\n                            sBuilder.Append(\"\\t\");\n                            sBuilder.Append(dReader.GetString(1));\n                            Console.WriteLine(sBuilder.ToString());\n                        }\n                    }\n                }\n            } // method IssueQueryCommand\n        } // class Program\n    }\n\n\n## Related links\n\n\n- [Client quick-start code samples to SQL Database](sql-database-develop-quick-start-client-code-samples.md)\n\n"
+}

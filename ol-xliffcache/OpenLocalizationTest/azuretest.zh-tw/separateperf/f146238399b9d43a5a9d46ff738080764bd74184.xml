@@ -1,0 +1,2238 @@
+{
+  "nodes": [
+    {
+      "content": "Automatically Scale Compute Nodes in an Azure Batch Pool | Microsoft Azure",
+      "pos": [
+        28,
+        102
+      ]
+    },
+    {
+      "content": "Enable automatic scaling on a cloud pool to dynamically adjust the number of compute nodes in the pool.",
+      "pos": [
+        121,
+        224
+      ]
+    },
+    {
+      "content": "Automatically scale compute nodes in an Azure Batch pool",
+      "pos": [
+        524,
+        580
+      ]
+    },
+    {
+      "content": "Automatically scaling compute nodes in an Azure Batch pool is the dynamic adjustment of processing power used by your application.",
+      "pos": [
+        582,
+        712
+      ]
+    },
+    {
+      "content": "This ease of adjustment saves you time and money.",
+      "pos": [
+        713,
+        762
+      ]
+    },
+    {
+      "content": "To learn more about compute nodes and pools, see the <bpt id=\"p1\">[</bpt>Azure Batch technical overview<ept id=\"p1\">](batch-technical-overview.md)</ept>.",
+      "pos": [
+        763,
+        878
+      ]
+    },
+    {
+      "content": "Automatic scaling occurs when it is enabled on a pool and a formula is associated with the pool.",
+      "pos": [
+        880,
+        976
+      ]
+    },
+    {
+      "content": "The formula is used to determine the number of compute nodes that are needed to process the application.",
+      "pos": [
+        977,
+        1081
+      ]
+    },
+    {
+      "content": "Acting on samples that are collected periodically, the number of available compute nodes in the pool are adjusted every 15 minutes based on the associated formula.",
+      "pos": [
+        1082,
+        1245
+      ]
+    },
+    {
+      "content": "Automatic scaling can be set when a pool is created, or enabled later on an existing pool.",
+      "pos": [
+        1247,
+        1337
+      ]
+    },
+    {
+      "content": "The formula can also be updated on a pool where automatic scaling was previously enabled.",
+      "pos": [
+        1338,
+        1427
+      ]
+    },
+    {
+      "content": "It’s always good practice to evaluate a formula before assigning it to a pool, and it’s important to monitor the status of the automatic scaling runs; we discuss each of these topics below.",
+      "pos": [
+        1428,
+        1617
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> Each Azure Batch account is limited to a maximum number of compute nodes that can be used for processing.",
+      "pos": [
+        1621,
+        1739
+      ]
+    },
+    {
+      "content": "The system will create nodes only up to that limit and therefore may not reach the target numbers specified by a formula.",
+      "pos": [
+        1740,
+        1861
+      ]
+    },
+    {
+      "content": "Scale compute resources automatically",
+      "pos": [
+        1866,
+        1903
+      ]
+    },
+    {
+      "content": "The scaling formulas you define determine the number of available compute nodes in a pool for the next interval of processing.",
+      "pos": [
+        1905,
+        2031
+      ]
+    },
+    {
+      "content": "An automatic scaling formula is simply a string value assigned to a pool's <bpt id=\"p1\">[</bpt>autoScaleFormula<ept id=\"p1\">](https://msdn.microsoft.com/library/azure/dn820173.aspx)</ept> element in a request body (REST API) or <bpt id=\"p2\">[</bpt>CloudPool.AutoScaleFormula<ept id=\"p2\">](https://msdn.microsoft.com/library/azure/microsoft.azure.batch.cloudpool.autoscaleformula.aspx)</ept> property (.NET API).",
+      "pos": [
+        2032,
+        2367
+      ]
+    },
+    {
+      "content": "This formula string cannot exceed 8KB in size, can include up to 100 statements separated by semicolons, and can include line breaks and comments.",
+      "pos": [
+        2368,
+        2514
+      ]
+    },
+    {
+      "content": "Statements in a formula are free-formed expressions.",
+      "pos": [
+        2516,
+        2568
+      ]
+    },
+    {
+      "content": "They can include any system-defined variables, user-defined variables, constant values, and supported operations on these variables or constants.",
+      "pos": [
+        2569,
+        2714
+      ]
+    },
+    {
+      "content": "Complex formulas are created by using multiple statements and variables:",
+      "pos": [
+        2789,
+        2861
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> An automatic scaling formula is comprised of <bpt id=\"p1\">[</bpt>Batch REST<ept id=\"p1\">](https://msdn.microsoft.com/library/azure/dn820158.aspx)</ept> API variables, types, operations, and functions.",
+      "pos": [
+        2972,
+        3147
+      ]
+    },
+    {
+      "content": "These are used in formula strings even while working with the <bpt id=\"p1\">[</bpt>Batch .NET<ept id=\"p1\">](https://msdn.microsoft.com/library/azure/mt348682.aspx)</ept> library.",
+      "pos": [
+        3148,
+        3287
+      ]
+    },
+    {
+      "content": "Variables",
+      "pos": [
+        3293,
+        3302
+      ]
+    },
+    {
+      "content": "Both system-defined and user-defined variables can be used in a formula.",
+      "pos": [
+        3304,
+        3376
+      ]
+    },
+    {
+      "pos": [
+        3378,
+        3490
+      ],
+      "content": "<bpt id=\"p1\">*</bpt>Get<ept id=\"p1\">*</ept> and <bpt id=\"p2\">*</bpt>set<ept id=\"p2\">*</ept> the value of these <bpt id=\"p3\">**</bpt>system-defined variables<ept id=\"p3\">**</ept> to manage the number of compute nodes in a pool."
+    },
+    {
+      "content": "Variable",
+      "pos": [
+        3515,
+        3523
+      ]
+    },
+    {
+      "content": "Description",
+      "pos": [
+        3537,
+        3548
+      ]
+    },
+    {
+      "content": "$TargetDedicated",
+      "pos": [
+        3577,
+        3593
+      ]
+    },
+    {
+      "content": "The target number of dedicated compute nodes for the pool.",
+      "pos": [
+        3607,
+        3665
+      ]
+    },
+    {
+      "content": "The value can be changed based upon actual usage for tasks.",
+      "pos": [
+        3666,
+        3725
+      ]
+    },
+    {
+      "content": "$NodeDeallocationOption",
+      "pos": [
+        3754,
+        3777
+      ]
+    },
+    {
+      "content": "The action that occurs when compute nodes are removed from a pool.",
+      "pos": [
+        3791,
+        3857
+      ]
+    },
+    {
+      "content": "Possible values are:",
+      "pos": [
+        3858,
+        3878
+      ]
+    },
+    {
+      "content": "requeue<ph id=\"ph1\">&lt;/b&gt;</ph> – Terminate tasks immediately and put them back on the job queue so that they are rescheduled.",
+      "pos": [
+        3920,
+        4026
+      ]
+    },
+    {
+      "content": "terminate<ph id=\"ph1\">&lt;/b&gt;</ph> – Terminate tasks immediately and remove them from the job queue.",
+      "pos": [
+        4054,
+        4133
+      ]
+    },
+    {
+      "content": "taskcompletion<ph id=\"ph1\">&lt;/b&gt;</ph> – Wait for currently running tasks to finish and then remove the node from the pool.",
+      "pos": [
+        4161,
+        4264
+      ]
+    },
+    {
+      "content": "retaineddata<ph id=\"ph1\">&lt;/b&gt;</ph><ph id=\"ph2\"> -</ph> Wait for all the local task retained data on the node to be cleaned up before removing the node from the pool.",
+      "pos": [
+        4292,
+        4421
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">*</bpt>Get<ept id=\"p1\">*</ept> the value of these <bpt id=\"p2\">**</bpt>system-defined variables<ept id=\"p2\">**</ept> to make adjustments based on metrics from compute nodes in the samples.",
+      "pos": [
+        4467,
+        4592
+      ]
+    },
+    {
+      "content": "These variables are read-only.",
+      "pos": [
+        4593,
+        4623
+      ]
+    },
+    {
+      "content": "Variable",
+      "pos": [
+        4648,
+        4656
+      ]
+    },
+    {
+      "content": "Description",
+      "pos": [
+        4670,
+        4681
+      ]
+    },
+    {
+      "content": "$CPUPercent",
+      "pos": [
+        4710,
+        4721
+      ]
+    },
+    {
+      "content": "The average percentage of CPU usage",
+      "pos": [
+        4735,
+        4770
+      ]
+    },
+    {
+      "content": "$WallClockSeconds",
+      "pos": [
+        4799,
+        4816
+      ]
+    },
+    {
+      "content": "The number of seconds consumed",
+      "pos": [
+        4830,
+        4860
+      ]
+    },
+    {
+      "content": "$MemoryBytes",
+      "pos": [
+        4889,
+        4901
+      ]
+    },
+    {
+      "content": "The average number of megabytes used",
+      "pos": [
+        4915,
+        4951
+      ]
+    },
+    {
+      "content": "$DiskBytes",
+      "pos": [
+        4972,
+        4982
+      ]
+    },
+    {
+      "content": "The average number of gigabytes used on the local disks",
+      "pos": [
+        4996,
+        5051
+      ]
+    },
+    {
+      "content": "$DiskReadBytes",
+      "pos": [
+        5080,
+        5094
+      ]
+    },
+    {
+      "content": "The number of bytes read",
+      "pos": [
+        5108,
+        5132
+      ]
+    },
+    {
+      "content": "$DiskWriteBytes",
+      "pos": [
+        5161,
+        5176
+      ]
+    },
+    {
+      "content": "The number of bytes written",
+      "pos": [
+        5190,
+        5217
+      ]
+    },
+    {
+      "content": "$DiskReadOps",
+      "pos": [
+        5246,
+        5258
+      ]
+    },
+    {
+      "content": "The count of read disk operations performed",
+      "pos": [
+        5272,
+        5315
+      ]
+    },
+    {
+      "content": "$DiskWriteOps",
+      "pos": [
+        5344,
+        5357
+      ]
+    },
+    {
+      "content": "The count of write disk operations performed",
+      "pos": [
+        5371,
+        5415
+      ]
+    },
+    {
+      "content": "$NetworkInBytes",
+      "pos": [
+        5444,
+        5459
+      ]
+    },
+    {
+      "content": "The number of inbound bytes",
+      "pos": [
+        5473,
+        5500
+      ]
+    },
+    {
+      "content": "$NetworkOutBytes",
+      "pos": [
+        5529,
+        5545
+      ]
+    },
+    {
+      "content": "The number of outbound bytes",
+      "pos": [
+        5559,
+        5587
+      ]
+    },
+    {
+      "content": "$SampleNodeCount",
+      "pos": [
+        5616,
+        5632
+      ]
+    },
+    {
+      "content": "The count of compute nodes",
+      "pos": [
+        5646,
+        5672
+      ]
+    },
+    {
+      "content": "$ActiveTasks",
+      "pos": [
+        5701,
+        5713
+      ]
+    },
+    {
+      "content": "The number of tasks that are in an active state",
+      "pos": [
+        5727,
+        5774
+      ]
+    },
+    {
+      "content": "$RunningTasks",
+      "pos": [
+        5803,
+        5816
+      ]
+    },
+    {
+      "content": "The number of tasks in a running state",
+      "pos": [
+        5830,
+        5868
+      ]
+    },
+    {
+      "content": "$SucceededTasks",
+      "pos": [
+        5897,
+        5912
+      ]
+    },
+    {
+      "content": "The number of tasks that finished successfully",
+      "pos": [
+        5926,
+        5972
+      ]
+    },
+    {
+      "content": "$FailedTasks",
+      "pos": [
+        6001,
+        6013
+      ]
+    },
+    {
+      "content": "The number of tasks that failed",
+      "pos": [
+        6027,
+        6058
+      ]
+    },
+    {
+      "content": "$CurrentDedicated",
+      "pos": [
+        6087,
+        6104
+      ]
+    },
+    {
+      "content": "The current number of dedicated compute nodes",
+      "pos": [
+        6118,
+        6163
+      ]
+    },
+    {
+      "content": "Types",
+      "pos": [
+        6191,
+        6196
+      ]
+    },
+    {
+      "pos": [
+        6198,
+        6241
+      ],
+      "content": "These <bpt id=\"p1\">**</bpt>types<ept id=\"p1\">**</ept> are supported in a formula."
+    },
+    {
+      "content": "double",
+      "pos": [
+        6245,
+        6251
+      ]
+    },
+    {
+      "content": "doubleVec",
+      "pos": [
+        6254,
+        6263
+      ]
+    },
+    {
+      "content": "string",
+      "pos": [
+        6266,
+        6272
+      ]
+    },
+    {
+      "content": "timestamp -- timestamp is a compound structure which contains the following members:",
+      "pos": [
+        6275,
+        6359
+      ]
+    },
+    {
+      "content": "year",
+      "pos": [
+        6366,
+        6370
+      ]
+    },
+    {
+      "content": "month (1-12)",
+      "pos": [
+        6377,
+        6389
+      ]
+    },
+    {
+      "content": "day (1-31)",
+      "pos": [
+        6396,
+        6406
+      ]
+    },
+    {
+      "content": "weekday (in the format of number, e.g. 1 for Monday)",
+      "pos": [
+        6413,
+        6465
+      ]
+    },
+    {
+      "content": "hour (in 24-hour number format, e.g. 13 means 1PM)",
+      "pos": [
+        6472,
+        6522
+      ]
+    },
+    {
+      "content": "minute (00-59)",
+      "pos": [
+        6529,
+        6543
+      ]
+    },
+    {
+      "content": "second (00-59)",
+      "pos": [
+        6550,
+        6564
+      ]
+    },
+    {
+      "content": "timeinterval",
+      "pos": [
+        6567,
+        6579
+      ]
+    },
+    {
+      "content": "TimeInterval_Zero",
+      "pos": [
+        6586,
+        6603
+      ]
+    },
+    {
+      "content": "TimeInterval_100ns",
+      "pos": [
+        6610,
+        6628
+      ]
+    },
+    {
+      "content": "TimeInterval_Microsecond",
+      "pos": [
+        6635,
+        6659
+      ]
+    },
+    {
+      "content": "TimeInterval_Millisecond",
+      "pos": [
+        6666,
+        6690
+      ]
+    },
+    {
+      "content": "TimeInterval_Second",
+      "pos": [
+        6697,
+        6716
+      ]
+    },
+    {
+      "content": "TimeInterval_Minute",
+      "pos": [
+        6723,
+        6742
+      ]
+    },
+    {
+      "content": "TimeInterval_Hour",
+      "pos": [
+        6749,
+        6766
+      ]
+    },
+    {
+      "content": "TimeInterval_Day",
+      "pos": [
+        6773,
+        6789
+      ]
+    },
+    {
+      "content": "TimeInterval_Week",
+      "pos": [
+        6796,
+        6813
+      ]
+    },
+    {
+      "content": "TimeInterval_Year",
+      "pos": [
+        6820,
+        6837
+      ]
+    },
+    {
+      "content": "Operations",
+      "pos": [
+        6843,
+        6853
+      ]
+    },
+    {
+      "pos": [
+        6855,
+        6914
+      ],
+      "content": "These <bpt id=\"p1\">**</bpt>operations<ept id=\"p1\">**</ept> are allowed on the types listed above."
+    },
+    {
+      "content": "Operation",
+      "pos": [
+        6939,
+        6948
+      ]
+    },
+    {
+      "content": "Allowed operators",
+      "pos": [
+        6962,
+        6979
+      ]
+    },
+    {
+      "content": "double &amp;lt;operator&amp;gt; double =&amp;gt; double",
+      "pos": [
+        7008,
+        7051
+      ]
+    },
+    {
+      "content": "+, -, *, /",
+      "pos": [
+        7065,
+        7075
+      ]
+    },
+    {
+      "content": "double &amp;lt;operator&amp;gt; timeinterval =&amp;gt; timeinterval",
+      "pos": [
+        7104,
+        7159
+      ]
+    },
+    {
+      "content": "doubleVec &amp;lt;operator&amp;gt; double =&amp;gt; doubleVec",
+      "pos": [
+        7203,
+        7252
+      ]
+    },
+    {
+      "content": "+, -, *, /",
+      "pos": [
+        7266,
+        7276
+      ]
+    },
+    {
+      "content": "doubleVec &amp;lt;operator&amp;gt; doubleVec =&amp;gt; doubleVec",
+      "pos": [
+        7305,
+        7357
+      ]
+    },
+    {
+      "content": "+, -, *, /",
+      "pos": [
+        7371,
+        7381
+      ]
+    },
+    {
+      "content": "timeinterval &amp;lt;operator&amp;gt; double =&amp;gt; timeinterval",
+      "pos": [
+        7410,
+        7465
+      ]
+    },
+    {
+      "content": "*, /",
+      "pos": [
+        7479,
+        7483
+      ]
+    },
+    {
+      "content": "timeinterval &amp;lt;operator&amp;gt; timeinterval =&amp;gt; timeinterval",
+      "pos": [
+        7512,
+        7573
+      ]
+    },
+    {
+      "content": "+, -",
+      "pos": [
+        7587,
+        7591
+      ]
+    },
+    {
+      "content": "timeinterval &amp;lt;operator&amp;gt; timestamp =&amp;gt; timestamp",
+      "pos": [
+        7620,
+        7675
+      ]
+    },
+    {
+      "content": "timestamp &amp;lt;operator&amp;gt; timeinterval =&amp;gt; timestamp",
+      "pos": [
+        7719,
+        7774
+      ]
+    },
+    {
+      "content": "timestamp &amp;lt;operator&amp;gt; timestamp =&amp;gt; timeinterval",
+      "pos": [
+        7818,
+        7873
+      ]
+    },
+    {
+      "content": "&amp;lt;operator&amp;gt;double =&amp;gt; double",
+      "pos": [
+        7917,
+        7952
+      ]
+    },
+    {
+      "content": "-, !",
+      "pos": [
+        7966,
+        7970
+      ]
+    },
+    {
+      "content": "&amp;lt;operator&amp;gt;timeinterval =&amp;gt; timeinterval",
+      "pos": [
+        7999,
+        8046
+      ]
+    },
+    {
+      "content": "double &amp;lt;operator&amp;gt; double =&amp;gt; double",
+      "pos": [
+        8090,
+        8133
+      ]
+    },
+    {
+      "content": "&amp;lt;, &amp;lt;=, ==, &amp;gt;=, &amp;gt;, !=",
+      "pos": [
+        8147,
+        8179
+      ]
+    },
+    {
+      "content": "string &amp;lt;operator&amp;gt; string =&amp;gt; double",
+      "pos": [
+        8208,
+        8251
+      ]
+    },
+    {
+      "content": "&amp;lt;, &amp;lt;=, ==, &amp;gt;=, &amp;gt;, !=",
+      "pos": [
+        8265,
+        8297
+      ]
+    },
+    {
+      "content": "timestamp &amp;lt;operator&amp;gt; timestamp =&amp;gt; double",
+      "pos": [
+        8326,
+        8375
+      ]
+    },
+    {
+      "content": "&amp;lt;, &amp;lt;=, ==, &amp;gt;=, &amp;gt, !=",
+      "pos": [
+        8389,
+        8420
+      ]
+    },
+    {
+      "content": "timeinterval &amp;lt;operator&amp;gt; timeinterval =&amp;gt; double",
+      "pos": [
+        8449,
+        8504
+      ]
+    },
+    {
+      "content": "&amp;lt;, &amp;lt;=, ==, &amp;gt;=, &amp;gt;, !=",
+      "pos": [
+        8518,
+        8550
+      ]
+    },
+    {
+      "content": "double &amp;lt;operator&amp;gt; double =&amp;gt; double",
+      "pos": [
+        8579,
+        8622
+      ]
+    },
+    {
+      "content": "&amp;&amp;, ||",
+      "pos": [
+        8636,
+        8642
+      ]
+    },
+    {
+      "content": "test double only (non-zero is true, zero is false)",
+      "pos": [
+        8671,
+        8721
+      ]
+    },
+    {
+      "content": "?",
+      "pos": [
+        8735,
+        8736
+      ]
+    },
+    {
+      "content": ":",
+      "pos": [
+        8737,
+        8738
+      ]
+    },
+    {
+      "content": "Functions",
+      "pos": [
+        8766,
+        8775
+      ]
+    },
+    {
+      "pos": [
+        8777,
+        8864
+      ],
+      "content": "These predefined <bpt id=\"p1\">**</bpt>functions<ept id=\"p1\">**</ept> are available for defining an automatic scaling formula."
+    },
+    {
+      "content": "Function",
+      "pos": [
+        8889,
+        8897
+      ]
+    },
+    {
+      "content": "Description",
+      "pos": [
+        8911,
+        8922
+      ]
+    },
+    {
+      "content": "double <ph id=\"ph1\">&lt;b&gt;</ph>avg<ph id=\"ph2\">&lt;/b&gt;</ph>(doubleVecList)",
+      "pos": [
+        8951,
+        8983
+      ]
+    },
+    {
+      "content": "The average value for all values in the doubleVecList.",
+      "pos": [
+        8997,
+        9051
+      ]
+    },
+    {
+      "content": "double <ph id=\"ph1\">&lt;b&gt;</ph>len<ph id=\"ph2\">&lt;/b&gt;</ph>(doubleVecList)",
+      "pos": [
+        9080,
+        9112
+      ]
+    },
+    {
+      "content": "The length of the vector created from the doubleVecList.",
+      "pos": [
+        9126,
+        9182
+      ]
+    },
+    {
+      "content": "double <ph id=\"ph1\">&lt;b&gt;</ph>lg<ph id=\"ph2\">&lt;/b&gt;</ph>(double)",
+      "pos": [
+        9203,
+        9227
+      ]
+    },
+    {
+      "content": "Log base 2.",
+      "pos": [
+        9241,
+        9252
+      ]
+    },
+    {
+      "content": "doubleVec <ph id=\"ph1\">&lt;b&gt;</ph>lg<ph id=\"ph2\">&lt;/b&gt;</ph>(doubleVecList)",
+      "pos": [
+        9281,
+        9315
+      ]
+    },
+    {
+      "content": "Componentwise log base 2.",
+      "pos": [
+        9329,
+        9354
+      ]
+    },
+    {
+      "content": "A vec(double) must be explicitly passed for single double parameter, otherwise the double lg(double) version is assumed.",
+      "pos": [
+        9355,
+        9475
+      ]
+    },
+    {
+      "content": "double <ph id=\"ph1\">&lt;b&gt;</ph>ln<ph id=\"ph2\">&lt;/b&gt;</ph>(double)",
+      "pos": [
+        9504,
+        9528
+      ]
+    },
+    {
+      "content": "Natural log.",
+      "pos": [
+        9542,
+        9554
+      ]
+    },
+    {
+      "content": "doubleVec <ph id=\"ph1\">&lt;b&gt;</ph>ln<ph id=\"ph2\">&lt;/b&gt;</ph>(doubleVecList)",
+      "pos": [
+        9583,
+        9617
+      ]
+    },
+    {
+      "content": "Componentwise log base 2.",
+      "pos": [
+        9631,
+        9656
+      ]
+    },
+    {
+      "content": "A vec(double) must be explicitly passed for single double parameter, otherwise the double lg(double) version is assumed.",
+      "pos": [
+        9658,
+        9778
+      ]
+    },
+    {
+      "content": "double <ph id=\"ph1\">&lt;b&gt;</ph>log<ph id=\"ph2\">&lt;/b&gt;</ph>(double)",
+      "pos": [
+        9807,
+        9832
+      ]
+    },
+    {
+      "content": "Log base 10.",
+      "pos": [
+        9846,
+        9858
+      ]
+    },
+    {
+      "content": "doubleVec <ph id=\"ph1\">&lt;b&gt;</ph>log<ph id=\"ph2\">&lt;/b&gt;</ph>(doubleVecList)",
+      "pos": [
+        9887,
+        9922
+      ]
+    },
+    {
+      "content": "Componentwise log base 10.",
+      "pos": [
+        9936,
+        9962
+      ]
+    },
+    {
+      "content": "A vec(double) must be explicitly passed for single double parameter, otherwise the double log(double) version is assumed.",
+      "pos": [
+        9963,
+        10084
+      ]
+    },
+    {
+      "content": "double <ph id=\"ph1\">&lt;b&gt;</ph>max<ph id=\"ph2\">&lt;/b&gt;</ph>(doubleVecList)",
+      "pos": [
+        10113,
+        10145
+      ]
+    },
+    {
+      "content": "The maximum value in the doubleVecList.",
+      "pos": [
+        10159,
+        10198
+      ]
+    },
+    {
+      "content": "double <ph id=\"ph1\">&lt;b&gt;</ph>min<ph id=\"ph2\">&lt;/b&gt;</ph>(doubleVecList)",
+      "pos": [
+        10227,
+        10259
+      ]
+    },
+    {
+      "content": "The minimum value in the doubleVecList.",
+      "pos": [
+        10273,
+        10312
+      ]
+    },
+    {
+      "content": "double <ph id=\"ph1\">&lt;b&gt;</ph>norm<ph id=\"ph2\">&lt;/b&gt;</ph>(doubleVecList)",
+      "pos": [
+        10341,
+        10374
+      ]
+    },
+    {
+      "content": "The two-norm of the vector created from the doubleVecList.",
+      "pos": [
+        10388,
+        10446
+      ]
+    },
+    {
+      "content": "double <ph id=\"ph1\">&lt;b&gt;</ph>percentile<ph id=\"ph2\">&lt;/b&gt;</ph>(doubleVec v, double p)",
+      "pos": [
+        10470,
+        10517
+      ]
+    },
+    {
+      "content": "The percentile element of the vector v.",
+      "pos": [
+        10531,
+        10570
+      ]
+    },
+    {
+      "content": "double <ph id=\"ph1\">&lt;b&gt;</ph>rand<ph id=\"ph2\">&lt;/b&gt;</ph>()",
+      "pos": [
+        10599,
+        10619
+      ]
+    },
+    {
+      "content": "A random value between 0.0 and 1.0.",
+      "pos": [
+        10633,
+        10668
+      ]
+    },
+    {
+      "content": "double <ph id=\"ph1\">&lt;b&gt;</ph>range<ph id=\"ph2\">&lt;/b&gt;</ph>(doubleVecList)",
+      "pos": [
+        10697,
+        10731
+      ]
+    },
+    {
+      "content": "The difference between the min and max values in doubleVecList.",
+      "pos": [
+        10745,
+        10808
+      ]
+    },
+    {
+      "content": "double <ph id=\"ph1\">&lt;b&gt;</ph>std<ph id=\"ph2\">&lt;/b&gt;</ph>(doubleVecList)",
+      "pos": [
+        10837,
+        10869
+      ]
+    },
+    {
+      "content": "The sample standard deviation of the values in the doubleVecList.",
+      "pos": [
+        10883,
+        10948
+      ]
+    },
+    {
+      "content": "stop<ph id=\"ph1\">&lt;/b&gt;</ph>()",
+      "pos": [
+        10980,
+        10990
+      ]
+    },
+    {
+      "content": "Stop auto-scaling expression evaluation.",
+      "pos": [
+        11004,
+        11044
+      ]
+    },
+    {
+      "content": "double <ph id=\"ph1\">&lt;b&gt;</ph>sum<ph id=\"ph2\">&lt;/b&gt;</ph>(doubleVecList)",
+      "pos": [
+        11073,
+        11105
+      ]
+    },
+    {
+      "content": "The sum of all the components of doubleVecList.",
+      "pos": [
+        11119,
+        11166
+      ]
+    },
+    {
+      "content": "timestamp <ph id=\"ph1\">&lt;b&gt;</ph>time<ph id=\"ph2\">&lt;/b&gt;</ph>(string dateTime=\"\")",
+      "pos": [
+        11195,
+        11236
+      ]
+    },
+    {
+      "content": "The timestamp of the current time if no parameters passed, or the timestamp of the dateTime string if passed.",
+      "pos": [
+        11250,
+        11359
+      ]
+    },
+    {
+      "content": "Supported dateTime formats are W3CDTF and RFC1123.",
+      "pos": [
+        11360,
+        11410
+      ]
+    },
+    {
+      "content": "double <ph id=\"ph1\">&lt;b&gt;</ph>val<ph id=\"ph2\">&lt;/b&gt;</ph>(doubleVec v, double i)",
+      "pos": [
+        11439,
+        11479
+      ]
+    },
+    {
+      "content": "The value of the element at location i in vector v with a starting index of zero.",
+      "pos": [
+        11493,
+        11574
+      ]
+    },
+    {
+      "content": "Some of the functions described in the table above can accept a list as an argument.",
+      "pos": [
+        11598,
+        11682
+      ]
+    },
+    {
+      "content": "The comma separated list is any combination of <bpt id=\"p1\">*</bpt>double<ept id=\"p1\">*</ept> and <bpt id=\"p2\">*</bpt>doubleVec<ept id=\"p2\">*</ept>.",
+      "pos": [
+        11683,
+        11755
+      ]
+    },
+    {
+      "content": "For example:",
+      "pos": [
+        11756,
+        11768
+      ]
+    },
+    {
+      "content": "The <bpt id=\"p1\">*</bpt>doubleVecList<ept id=\"p1\">*</ept> value is converted to a single <bpt id=\"p2\">*</bpt>doubleVec<ept id=\"p2\">*</ept> prior to evaluation.",
+      "pos": [
+        11845,
+        11928
+      ]
+    },
+    {
+      "content": "For example, if v = [1,2,3], then calling avg(v) is equivalent to calling avg(1,2,3) and calling avg(v, 7) is equivalent to calling avg(1,2,3,7).",
+      "pos": [
+        11929,
+        12074
+      ]
+    },
+    {
+      "content": "Obtain sample data",
+      "pos": [
+        12080,
+        12098
+      ]
+    },
+    {
+      "content": "The system-defined variables described above are objects that provide methods to access the associated data.",
+      "pos": [
+        12100,
+        12208
+      ]
+    },
+    {
+      "content": "For example, the following expression shows a request to get the last five minutes of CPU usage:",
+      "pos": [
+        12209,
+        12305
+      ]
+    },
+    {
+      "content": "These methods can be used to get sample data.",
+      "pos": [
+        12357,
+        12402
+      ]
+    },
+    {
+      "content": "Method",
+      "pos": [
+        12427,
+        12433
+      ]
+    },
+    {
+      "content": "Description",
+      "pos": [
+        12447,
+        12458
+      ]
+    },
+    {
+      "content": "Count()",
+      "pos": [
+        12487,
+        12494
+      ]
+    },
+    {
+      "content": "Returns the total number of samples in the metric history.",
+      "pos": [
+        12508,
+        12566
+      ]
+    },
+    {
+      "content": "GetSample()",
+      "pos": [
+        12595,
+        12606
+      ]
+    },
+    {
+      "content": "Returns a vector of data samples.",
+      "pos": [
+        12623,
+        12656
+      ]
+    },
+    {
+      "content": "For example:",
+      "pos": [
+        12657,
+        12669
+      ]
+    },
+    {
+      "content": "doubleVec GetSample(double count)<ph id=\"ph1\">&lt;/b&gt;</ph><ph id=\"ph2\"> -</ph> Specifies the number of samples that are required from the most recent samples.",
+      "pos": [
+        12707,
+        12826
+      ]
+    },
+    {
+      "content": "A sample is 5 seconds worth of metrics data.",
+      "pos": [
+        12852,
+        12896
+      ]
+    },
+    {
+      "content": "GetSample(1) returns the last available sample, but for metrics like $CPUPercent you shouldn’t use this because it isn’t possible to know when the sample was collected.",
+      "pos": [
+        12897,
+        13065
+      ]
+    },
+    {
+      "content": "It might be recent, or because of system issues, it might be much older.",
+      "pos": [
+        13066,
+        13138
+      ]
+    },
+    {
+      "content": "It is better to use a time interval as shown below.",
+      "pos": [
+        13139,
+        13190
+      ]
+    },
+    {
+      "content": "doubleVec GetSample((timestamp | timeinterval) startTime [, double samplePercent])<ph id=\"ph1\">&lt;/b&gt;</ph> – Specifies a time frame for gathering sample data and optionally specifies the percentage of samples that must be in the requested range.",
+      "pos": [
+        13220,
+        13445
+      ]
+    },
+    {
+      "content": "$CPUPercent.GetSample(TimeInterval\\_Minute\\*10), should return 200 samples if all samples for the last ten minutes are present in the CPUPercent history.",
+      "pos": [
+        13463,
+        13616
+      ]
+    },
+    {
+      "content": "If the last minute of history is still not present, only 180 samples are returned.",
+      "pos": [
+        13617,
+        13699
+      ]
+    },
+    {
+      "content": "$CPUPercent.GetSample(TimeInterval\\_Minute\\*10, 80) succeeds, and $CPUPercent.GetSample(TimeInterval_Minute\\*10,95) fails.",
+      "pos": [
+        13727,
+        13849
+      ]
+    },
+    {
+      "content": "doubleVec GetSample((timestamp | timeinterval) startTime, (timestamp | timeinterval) endTime [, double samplePercent])<ph id=\"ph1\">&lt;/b&gt;</ph> – Specifies a time frame for gathering data with both a start time and an end time.",
+      "pos": [
+        13879,
+        14085
+      ]
+    },
+    {
+      "content": "Note that there is a delay between when a sample is collected and when it is available to a formula; this must be considered when using the GetSample method; see GetSamplePercent below.",
+      "pos": [
+        14113,
+        14298
+      ]
+    },
+    {
+      "content": "GetSamplePeriod()",
+      "pos": [
+        14327,
+        14344
+      ]
+    },
+    {
+      "content": "Returns the period of the samples taken in a historical sample data set.",
+      "pos": [
+        14358,
+        14430
+      ]
+    },
+    {
+      "content": "HistoryBeginTime()",
+      "pos": [
+        14459,
+        14477
+      ]
+    },
+    {
+      "content": "Returns the timestamp  of the oldest available data sample for the metric.",
+      "pos": [
+        14491,
+        14565
+      ]
+    },
+    {
+      "content": "GetSamplePercent()",
+      "pos": [
+        14594,
+        14612
+      ]
+    },
+    {
+      "content": "Returns the percent of samples a history currently has for a given time interval.",
+      "pos": [
+        14629,
+        14710
+      ]
+    },
+    {
+      "content": "For example:",
+      "pos": [
+        14711,
+        14723
+      ]
+    },
+    {
+      "content": "doubleVec GetSamplePercent( (timestamp | timeinterval) startTime [, (timestamp | timeinterval) endTime] )<ph id=\"ph1\">&lt;/b&gt;</ph><ph id=\"ph2\">\n    </ph>",
+      "pos": [
+        14738,
+        14852
+      ]
+    },
+    {
+      "content": "Because the GetSample method fails if the percent of samples returned is less than the samplePercent specified, you can use the GetSamplePercent method to first check, then perform an alternate action when enough samples are not present without halting their automatic scaling evaluation.",
+      "pos": [
+        14855,
+        15143
+      ]
+    },
+    {
+      "content": "Metrics",
+      "pos": [
+        15175,
+        15182
+      ]
+    },
+    {
+      "pos": [
+        15184,
+        15324
+      ],
+      "content": "You can use both resource and task <bpt id=\"p1\">**</bpt>metrics<ept id=\"p1\">**</ept> when defining a formula, and these metrics can be used to manage the compute nodes in a pool."
+    },
+    {
+      "content": "Metric",
+      "pos": [
+        15349,
+        15355
+      ]
+    },
+    {
+      "content": "Description",
+      "pos": [
+        15369,
+        15380
+      ]
+    },
+    {
+      "content": "Resource",
+      "pos": [
+        15409,
+        15417
+      ]
+    },
+    {
+      "content": "Resource metrics are based on CPU usage, bandwidth usage, memory usage, and the number of compute nodes.",
+      "pos": [
+        15434,
+        15538
+      ]
+    },
+    {
+      "content": "These system-defined variables (described in <bpt id=\"p1\">**</bpt>Variables<ept id=\"p1\">**</ept> above) are used in formulas to manage the compute nodes in a pool:",
+      "pos": [
+        15539,
+        15664
+      ]
+    },
+    {
+      "content": "$TargetDedicated",
+      "pos": [
+        15691,
+        15707
+      ]
+    },
+    {
+      "content": "$NodeDeallocationOption",
+      "pos": [
+        15723,
+        15746
+      ]
+    },
+    {
+      "content": "These system-defined variables are used for making adjustments based on node resource metrics:",
+      "pos": [
+        15773,
+        15867
+      ]
+    },
+    {
+      "content": "$CPUPercent",
+      "pos": [
+        15894,
+        15905
+      ]
+    },
+    {
+      "content": "$WallClockSeconds",
+      "pos": [
+        15921,
+        15938
+      ]
+    },
+    {
+      "content": "$MemoryBytes",
+      "pos": [
+        15954,
+        15966
+      ]
+    },
+    {
+      "content": "$DiskBytes",
+      "pos": [
+        15982,
+        15992
+      ]
+    },
+    {
+      "content": "$DiskReadBytes",
+      "pos": [
+        16008,
+        16022
+      ]
+    },
+    {
+      "content": "$DiskWriteBytes",
+      "pos": [
+        16038,
+        16053
+      ]
+    },
+    {
+      "content": "$DiskReadOps",
+      "pos": [
+        16069,
+        16081
+      ]
+    },
+    {
+      "content": "$DiskWriteOps",
+      "pos": [
+        16097,
+        16110
+      ]
+    },
+    {
+      "content": "$NetworkInBytes",
+      "pos": [
+        16126,
+        16141
+      ]
+    },
+    {
+      "content": "$NetworkOutBytes",
+      "pos": [
+        16157,
+        16173
+      ]
+    },
+    {
+      "content": "Task",
+      "pos": [
+        16211,
+        16215
+      ]
+    },
+    {
+      "content": "Based on the status of tasks, such as Active, Pending, and Completed.",
+      "pos": [
+        16232,
+        16301
+      ]
+    },
+    {
+      "content": "These system-defined variables are used for making adjustments based on task metrics:",
+      "pos": [
+        16313,
+        16398
+      ]
+    },
+    {
+      "content": "$ActiveTasks",
+      "pos": [
+        16425,
+        16437
+      ]
+    },
+    {
+      "content": "$RunningTasks",
+      "pos": [
+        16453,
+        16466
+      ]
+    },
+    {
+      "content": "$SucceededTasks",
+      "pos": [
+        16482,
+        16497
+      ]
+    },
+    {
+      "content": "$FailedTasks",
+      "pos": [
+        16513,
+        16525
+      ]
+    },
+    {
+      "content": "$CurrentDedicated",
+      "pos": [
+        16541,
+        16558
+      ]
+    },
+    {
+      "content": "Build an autoscale formula",
+      "pos": [
+        16599,
+        16625
+      ]
+    },
+    {
+      "content": "Constructing an autoscaling formula is done by forming statements using the above components and combining those statements into a complete formula.",
+      "pos": [
+        16627,
+        16775
+      ]
+    },
+    {
+      "content": "For example, here we construct a formula by first defining the requirements for a formula that will:",
+      "pos": [
+        16776,
+        16876
+      ]
+    },
+    {
+      "content": "Increase the target number of compute nodes in a pool if CPU usage is high",
+      "pos": [
+        16881,
+        16955
+      ]
+    },
+    {
+      "content": "Descrease the target number of compute nodes in a pool when CPU usage is low",
+      "pos": [
+        16959,
+        17035
+      ]
+    },
+    {
+      "content": "Always restrict the maximum number of nodes to 400",
+      "pos": [
+        17039,
+        17089
+      ]
+    },
+    {
+      "pos": [
+        17091,
+        17357
+      ],
+      "content": "For the <bpt id=\"p1\">*</bpt>increase<ept id=\"p1\">*</ept> of nodes during high CPU usage, we define the statement that populates a user-defined variable ($TotalNodes) with a value that is 110% of the current target number of nodes if the minimum average CPU usage during the last 10 minutes was above 70%:"
+    },
+    {
+      "content": "The next statement sets the same variable to 90% of the current target number of nodes if the average CPU usage of the past 60 minutes was <bpt id=\"p1\">*</bpt>under<ept id=\"p1\">*</ept> 20%, lowering the target number during low CPU usage.",
+      "pos": [
+        17486,
+        17686
+      ]
+    },
+    {
+      "content": "Note that this statement also references the user-defined variable <bpt id=\"p1\">*</bpt>$TotalNodes<ept id=\"p1\">*</ept> from the statement above.",
+      "pos": [
+        17687,
+        17793
+      ]
+    },
+    {
+      "pos": [
+        17916,
+        17995
+      ],
+      "content": "Now limit the target number of dedicated compute nodes to a <bpt id=\"p1\">**</bpt>maximum<ept id=\"p1\">**</ept> of 400:"
+    },
+    {
+      "content": "Here's the complete formula:",
+      "pos": [
+        18043,
+        18071
+      ]
+    },
+    {
+      "content": "Create a pool with automatic scaling enabled",
+      "pos": [
+        18368,
+        18412
+      ]
+    },
+    {
+      "content": "To enable automatic scaling when creating a pool, use one of the following techniques:",
+      "pos": [
+        18414,
+        18500
+      ]
+    },
+    {
+      "pos": [
+        18504,
+        18689
+      ],
+      "content": "<bpt id=\"p1\">[</bpt>New-AzureBatchPool<ept id=\"p1\">](https://msdn.microsoft.com/library/azure/mt125936.aspx)</ept> – This Azure PowerShell cmdlet uses the AutoScaleFormula parameter to specify the automatic scaling formula."
+    },
+    {
+      "pos": [
+        18692,
+        19200
+      ],
+      "content": "<bpt id=\"p1\">[</bpt>BatchClient.PoolOperations.CreatePool<ept id=\"p1\">](https://msdn.microsoft.com/library/azure/microsoft.azure.batch.pooloperations.createpool.aspx)</ept> – After this .NET method is called to create a pool, you'll then set the pool's <bpt id=\"p2\">[</bpt>CloudPool.AutoScaleEnabled<ept id=\"p2\">](https://msdn.microsoft.com/library/azure/microsoft.azure.batch.cloudpool.autoscaleenabled.aspx)</ept> and <bpt id=\"p3\">[</bpt>CloudPool.AutoScaleFormula<ept id=\"p3\">](https://msdn.microsoft.com/library/azure/microsoft.azure.batch.cloudpool.autoscaleformula.aspx)</ept> properties to enable automatic scaling."
+    },
+    {
+      "pos": [
+        19203,
+        19432
+      ],
+      "content": "<bpt id=\"p1\">[</bpt>Add a pool to an account<ept id=\"p1\">](https://msdn.microsoft.com/library/azure/dn820174.aspx)</ept> – The enableAutoScale and autoScaleFormula elements are used in this REST API request to set up automatic scaling for the pool when it is created."
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> If you set up automatic scaling when the pool is created using one of the techniques above, the <bpt id=\"p1\">*</bpt>targetDedicated<ept id=\"p1\">*</ept> parameter for the pool is not (and must not) be specified when created.",
+      "pos": [
+        19436,
+        19634
+      ]
+    },
+    {
+      "content": "Also note that if you wish to manually resize an autoscale-enabled pool (for example with <bpt id=\"p1\">[</bpt>BatchClient.PoolOperations.ResizePool<ept id=\"p1\">](https://msdn.microsoft.com/library/azure/microsoft.azure.batch.pooloperations.resizepool.aspx)</ept>) then you must first disable automatic scaling on the pool, then resize the pool.",
+      "pos": [
+        19635,
+        19941
+      ]
+    },
+    {
+      "content": "The following code snippet shows the creation of an autoscale-enabled <bpt id=\"p1\">[</bpt>CloudPool<ept id=\"p1\">](https://msdn.microsoft.com/library/azure/microsoft.azure.batch.cloudpool.aspx)</ept> using the <bpt id=\"p2\">[</bpt>Batch .NET<ept id=\"p2\">](https://msdn.microsoft.com/library/azure/mt348682.aspx)</ept> library whose formula sets the target number of nodes to 5 on Mondays, and 1 on every other day of the week.",
+      "pos": [
+        19943,
+        20291
+      ]
+    },
+    {
+      "content": "In the snippet, \"myBatchClient\" is a properly initialized instance of <bpt id=\"p1\">[</bpt>BatchClient<ept id=\"p1\">](http://msdn.microsoft.com/library/azure/microsoft.azure.batch.batchclient.aspx)</ept>):",
+      "pos": [
+        20292,
+        20457
+      ]
+    },
+    {
+      "content": "Enable automatic scaling after a pool was created",
+      "pos": [
+        20691,
+        20740
+      ]
+    },
+    {
+      "content": "If you've already set up a pool with a specified number of compute nodes using the <bpt id=\"p1\">*</bpt>targetDedicated<ept id=\"p1\">*</ept> parameter, you can update the existing pool at a later time to automatically scale.",
+      "pos": [
+        20742,
+        20926
+      ]
+    },
+    {
+      "content": "Do this in one of these ways:",
+      "pos": [
+        20927,
+        20956
+      ]
+    },
+    {
+      "pos": [
+        20960,
+        21215
+      ],
+      "content": "<bpt id=\"p1\">[</bpt>BatchClient.PoolOperations.EnableAutoScale<ept id=\"p1\">](https://msdn.microsoft.com/library/azure/microsoft.azure.batch.pooloperations.enableautoscale.aspx)</ept> – This .NET method requires the ID of an existing pool and the automatic scaling formula to apply to the pool."
+    },
+    {
+      "pos": [
+        21218,
+        21437
+      ],
+      "content": "<bpt id=\"p1\">[</bpt>Enable automatic scaling on a pool<ept id=\"p1\">](https://msdn.microsoft.com/library/azure/dn820173.aspx)</ept> – This REST API request requires the ID of the existing pool in the URI and the automatic scaling formula in the request body."
+    },
+    {
+      "pos": [
+        21441,
+        21604
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> If a value was specified for the <bpt id=\"p1\">*</bpt>targetDedicated<ept id=\"p1\">*</ept> parameter when the pool was created, it is ignored when the automatic scaling formula is evaluated."
+    },
+    {
+      "content": "This code snippet demonstrates enabling autoscaling on an existing pool using the <bpt id=\"p1\">[</bpt>Batch .NET<ept id=\"p1\">](https://msdn.microsoft.com/library/azure/mt348682.aspx)</ept> library.",
+      "pos": [
+        21606,
+        21765
+      ]
+    },
+    {
+      "content": "Note that both enabling and updating the formula on an existing pool use the same method.",
+      "pos": [
+        21766,
+        21855
+      ]
+    },
+    {
+      "content": "As such, this technique would <bpt id=\"p1\">*</bpt>update<ept id=\"p1\">*</ept> the formula on the specified pool if autoscaling had already been enabled.",
+      "pos": [
+        21856,
+        21969
+      ]
+    },
+    {
+      "content": "This snippet assumes that \"myBatchClient\" is a properly initialized instance of <bpt id=\"p1\">[</bpt>BatchClient<ept id=\"p1\">](http://msdn.microsoft.com/library/azure/microsoft.azure.batch.batchclient.aspx)</ept>, and \"mypool\" is the ID of an existing <bpt id=\"p2\">[</bpt>CloudPool<ept id=\"p2\">](https://msdn.microsoft.com/library/azure/microsoft.azure.batch.cloudpool.aspx)</ept>.",
+      "pos": [
+        21970,
+        22274
+      ]
+    },
+    {
+      "content": "Evaluate the automatic scaling formula",
+      "pos": [
+        22810,
+        22848
+      ]
+    },
+    {
+      "content": "It’s always good practice to evaluate a formula before you use it in your application.",
+      "pos": [
+        22850,
+        22936
+      ]
+    },
+    {
+      "content": "A formula is evaluated by performing a \"test run\" of the formula on an existing pool.",
+      "pos": [
+        22937,
+        23022
+      ]
+    },
+    {
+      "content": "Do this by using:",
+      "pos": [
+        23023,
+        23040
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt>BatchClient.PoolOperations.EvaluateAutoScale<ept id=\"p1\">](https://msdn.microsoft.com/library/azure/microsoft.azure.batch.pooloperations.evaluateautoscale.aspx)</ept> or <bpt id=\"p2\">[</bpt>BatchClient.PoolOperations.EvaluateAutoScaleAsync<ept id=\"p2\">](https://msdn.microsoft.com/library/azure/microsoft.azure.batch.pooloperations.evaluateautoscaleasync.aspx)</ept> – These .NET methods require the ID of an existing pool and the string that contains the automatic scaling formula.",
+      "pos": [
+        23044,
+        23470
+      ]
+    },
+    {
+      "content": "The results of the call are contained in an instance of the <bpt id=\"p1\">[</bpt>AutoScaleEvaluation<ept id=\"p1\">](https://msdn.microsoft.com/library/azure/microsoft.azure.batch.autoscaleevaluation.aspx)</ept> class.",
+      "pos": [
+        23471,
+        23648
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt>Evaluate an automatic scaling formula<ept id=\"p1\">](https://msdn.microsoft.com/library/azure/dn820183.aspx)</ept> – In this REST API request, the pool ID is specified in the URI and the automatic scaling formula is specified in the <bpt id=\"p2\">*</bpt>autoScaleFormula<ept id=\"p2\">*</ept> element of the request body.",
+      "pos": [
+        23651,
+        23912
+      ]
+    },
+    {
+      "content": "The response of the operation contains any error information that might be related to the formula.",
+      "pos": [
+        23913,
+        24011
+      ]
+    },
+    {
+      "pos": [
+        24015,
+        24138
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> To evaluate an autoscaling formula, you must first have enabled autoscaling on the pool using a valid formula."
+    },
+    {
+      "pos": [
+        24140,
+        24390
+      ],
+      "content": "In this code snippet using the <bpt id=\"p1\">[</bpt>Batch .NET<ept id=\"p1\">](https://msdn.microsoft.com/library/azure/mt348682.aspx)</ept> library, we evaluate a formula prior to applying it to the <bpt id=\"p2\">[</bpt>CloudPool<ept id=\"p2\">](https://msdn.microsoft.com/library/azure/microsoft.azure.batch.cloudpool.aspx)</ept>."
+    },
+    {
+      "content": "Successful evaluation of the formula in this snippet will result in output similar to the following:",
+      "pos": [
+        26147,
+        26247
+      ]
+    },
+    {
+      "content": "Obtain information about automatic scaling runs",
+      "pos": [
+        26436,
+        26483
+      ]
+    },
+    {
+      "content": "Periodically checking the results of automatic scaling runs should be done to a formula is performing as expected.",
+      "pos": [
+        26485,
+        26599
+      ]
+    },
+    {
+      "content": "Do this in one of these ways:",
+      "pos": [
+        26600,
+        26629
+      ]
+    },
+    {
+      "pos": [
+        26633,
+        27012
+      ],
+      "content": "<bpt id=\"p1\">[</bpt>CloudPool.AutoScaleRun<ept id=\"p1\">](https://msdn.microsoft.com/library/azure/microsoft.azure.batch.cloudpool.autoscalerun.aspx)</ept> – When using the .NET library, this property of a pool provides an instance of the <bpt id=\"p2\">[</bpt>AutoScaleRun<ept id=\"p2\">](https://msdn.microsoft.com/library/azure/microsoft.azure.batch.autoscalerun.aspx)</ept> class which provides the following properties of the latest automatic scaling run:"
+    },
+    {
+      "content": "AutoScaleRun.Error",
+      "pos": [
+        27018,
+        27036
+      ]
+    },
+    {
+      "content": "AutoScaleRun.Results",
+      "pos": [
+        27131,
+        27151
+      ]
+    },
+    {
+      "content": "AutoScaleRun.Timestamp",
+      "pos": [
+        27248,
+        27270
+      ]
+    },
+    {
+      "pos": [
+        27366,
+        27555
+      ],
+      "content": "<bpt id=\"p1\">[</bpt>Get information about a pool<ept id=\"p1\">](https://msdn.microsoft.com/library/dn820165.aspx)</ept> – This REST API request returns information about the pool, which includes the latest automatic scaling run."
+    },
+    {
+      "content": "Example formulas",
+      "pos": [
+        27560,
+        27576
+      ]
+    },
+    {
+      "content": "Let's take a look at some examples showing just a few ways formulas can be used to automatically scale compute resources in a pool.",
+      "pos": [
+        27578,
+        27709
+      ]
+    },
+    {
+      "content": "Example 1",
+      "pos": [
+        27715,
+        27724
+      ]
+    },
+    {
+      "content": "Perhaps you want to adjust the pool size based on the day of the week and time of day, increasing or decreasing the number of nodes in the pool accordingly:",
+      "pos": [
+        27726,
+        27882
+      ]
+    },
+    {
+      "content": "This formula first obtains the current time.",
+      "pos": [
+        28140,
+        28184
+      ]
+    },
+    {
+      "content": "If it's a weekday (1-5) and within working hours (8AM-6PM), the target pool size is set to 20 nodes.",
+      "pos": [
+        28185,
+        28285
+      ]
+    },
+    {
+      "content": "Otherwise, the pool size is targeted at 10 nodes.",
+      "pos": [
+        28286,
+        28335
+      ]
+    },
+    {
+      "content": "Example 2",
+      "pos": [
+        28341,
+        28350
+      ]
+    },
+    {
+      "content": "In this example, the pool size is adjusted based on the number of tasks in the queue.",
+      "pos": [
+        28352,
+        28437
+      ]
+    },
+    {
+      "content": "Note that both comments and line breaks are acceptable in formula strings.",
+      "pos": [
+        28438,
+        28512
+      ]
+    },
+    {
+      "content": "Example 3",
+      "pos": [
+        29503,
+        29512
+      ]
+    },
+    {
+      "content": "Another example that adjusts the pool size based on the number of tasks, this formula also takes into account the <bpt id=\"p1\">[</bpt>MaxTasksPerComputeNode<ept id=\"p1\">](https://msdn.microsoft.com/library/azure/microsoft.azure.batch.cloudpool.maxtaskspercomputenode.aspx)</ept> value that has been set for the pool.",
+      "pos": [
+        29514,
+        29792
+      ]
+    },
+    {
+      "content": "This is particularly useful in situations where parallel task execution on compute nodes is desired.",
+      "pos": [
+        29793,
+        29893
+      ]
+    },
+    {
+      "content": "Next Steps",
+      "pos": [
+        30844,
+        30854
+      ]
+    },
+    {
+      "content": "To fully assess the efficiency of your application, you might need to access a compute node.",
+      "pos": [
+        30859,
+        30951
+      ]
+    },
+    {
+      "content": "To take advantage of remote access, a user account must be added to the node that you want to access and an RDP file must be retrieved for that node.",
+      "pos": [
+        30952,
+        31101
+      ]
+    },
+    {
+      "content": "Add the user account in one of these ways:",
+      "pos": [
+        31108,
+        31150
+      ]
+    },
+    {
+      "pos": [
+        31161,
+        31340
+      ],
+      "content": "<bpt id=\"p1\">[</bpt>New-AzureBatchVMUser<ept id=\"p1\">](https://msdn.microsoft.com/library/mt149846.aspx)</ept> – This PowerShell cmdlet takes the pool name, compute node name, account name, and password as parameters."
+    },
+    {
+      "pos": [
+        31351,
+        31907
+      ],
+      "content": "<bpt id=\"p1\">[</bpt>BatchClient.PoolOperations.CreateComputeNodeUser<ept id=\"p1\">](https://msdn.microsoft.com/library/azure/microsoft.azure.batch.pooloperations.createcomputenodeuser.aspx)</ept> – This .NET method creates an instance of the <bpt id=\"p2\">[</bpt>ComputeNodeUser<ept id=\"p2\">](https://msdn.microsoft.com/library/microsoft.azure.batch.computenodeuser.aspx)</ept> class on which the account name and password can be set for the compute node, and <bpt id=\"p3\">[</bpt>ComputeNodeUser.Commit<ept id=\"p3\">](https://msdn.microsoft.com/library/microsoft.azure.batch.computenodeuser.commit.aspx)</ept> is then called on the instance to create the user on that node."
+    },
+    {
+      "pos": [
+        31918,
+        32168
+      ],
+      "content": "<bpt id=\"p1\">[</bpt>Add a user account to a node<ept id=\"p1\">](https://msdn.microsoft.com/library/dn820137.aspx)</ept> – The name of the pool and the compute node are specified in the URI and the account name and password are sent to the node in the request body of this REST API request."
+    },
+    {
+      "content": "Get the RDP file:",
+      "pos": [
+        32175,
+        32192
+      ]
+    },
+    {
+      "pos": [
+        32203,
+        32438
+      ],
+      "content": "<bpt id=\"p1\">[</bpt>BatchClient.PoolOperations.GetRDPFile<ept id=\"p1\">](https://msdn.microsoft.com/library/azure/microsoft.azure.batch.pooloperations.getrdpfile.aspx)</ept> – This .NET method requires the ID of the pool, the node ID, and the name of the RDP file to create."
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt>Get a remote desktop protocol file from a node<ept id=\"p1\">](https://msdn.microsoft.com/library/dn820120.aspx)</ept> – This REST API request requires the name of the pool and the name of the compute node.",
+      "pos": [
+        32449,
+        32635
+      ]
+    },
+    {
+      "content": "The response contains the contents of the RDP file.",
+      "pos": [
+        32636,
+        32687
+      ]
+    },
+    {
+      "pos": [
+        32698,
+        32906
+      ],
+      "content": "<bpt id=\"p1\">[</bpt>Get-AzureBatchRDPFile<ept id=\"p1\">](https://msdn.microsoft.com/library/mt149851.aspx)</ept> – This PowerShell cmdlet gets the RDP file from the specified compute node and saves it to the specified file location or to a stream."
+    },
+    {
+      "content": "Some applications produce large amounts of data that can be difficult to process.",
+      "pos": [
+        32911,
+        32992
+      ]
+    },
+    {
+      "content": "One way to solve this is through <bpt id=\"p1\">[</bpt>efficient list querying<ept id=\"p1\">](batch-efficient-list-queries.md)</ept>.",
+      "pos": [
+        32993,
+        33085
+      ]
+    },
+    {
+      "content": "test",
+      "pos": [
+        33087,
+        33091
+      ]
+    }
+  ],
+  "content": "\n<properties\n    pageTitle=\"Automatically Scale Compute Nodes in an Azure Batch Pool | Microsoft Azure\"\n    description=\"Enable automatic scaling on a cloud pool to dynamically adjust the number of compute nodes in the pool.\"\n    services=\"batch\"\n    documentationCenter=\"\"\n    authors=\"davidmu1\"\n    manager=\"timlt\"\n    editor=\"tysonn\"/>\n\n<tags\n    ms.service=\"batch\"\n    ms.devlang=\"na\"\n    ms.topic=\"article\"\n    ms.tgt_pltfrm=\"vm-windows\"\n    ms.workload=\"multiple\"\n    ms.date=\"08/26/2015\"\n    ms.author=\"davidmu\"/>\n\n# Automatically scale compute nodes in an Azure Batch pool\n\nAutomatically scaling compute nodes in an Azure Batch pool is the dynamic adjustment of processing power used by your application. This ease of adjustment saves you time and money. To learn more about compute nodes and pools, see the [Azure Batch technical overview](batch-technical-overview.md).\n\nAutomatic scaling occurs when it is enabled on a pool and a formula is associated with the pool. The formula is used to determine the number of compute nodes that are needed to process the application. Acting on samples that are collected periodically, the number of available compute nodes in the pool are adjusted every 15 minutes based on the associated formula.\n\nAutomatic scaling can be set when a pool is created, or enabled later on an existing pool. The formula can also be updated on a pool where automatic scaling was previously enabled. It’s always good practice to evaluate a formula before assigning it to a pool, and it’s important to monitor the status of the automatic scaling runs; we discuss each of these topics below.\n\n> [AZURE.NOTE] Each Azure Batch account is limited to a maximum number of compute nodes that can be used for processing. The system will create nodes only up to that limit and therefore may not reach the target numbers specified by a formula.\n\n## Scale compute resources automatically\n\nThe scaling formulas you define determine the number of available compute nodes in a pool for the next interval of processing. An automatic scaling formula is simply a string value assigned to a pool's [autoScaleFormula](https://msdn.microsoft.com/library/azure/dn820173.aspx) element in a request body (REST API) or [CloudPool.AutoScaleFormula](https://msdn.microsoft.com/library/azure/microsoft.azure.batch.cloudpool.autoscaleformula.aspx) property (.NET API). This formula string cannot exceed 8KB in size, can include up to 100 statements separated by semicolons, and can include line breaks and comments.\n\nStatements in a formula are free-formed expressions. They can include any system-defined variables, user-defined variables, constant values, and supported operations on these variables or constants.\n\n    VAR = Expression(system-defined variables, user-defined variables);\n\nComplex formulas are created by using multiple statements and variables:\n\n    VAR₀ = Expression₀(system-defined variables);\n    VAR₁ = Expression₁(system-defined variables, VAR₀);\n\n> [AZURE.NOTE] An automatic scaling formula is comprised of [Batch REST](https://msdn.microsoft.com/library/azure/dn820158.aspx) API variables, types, operations, and functions. These are used in formula strings even while working with the [Batch .NET](https://msdn.microsoft.com/library/azure/mt348682.aspx) library.\n\n### Variables\n\nBoth system-defined and user-defined variables can be used in a formula.\n\n*Get* and *set* the value of these **system-defined variables** to manage the number of compute nodes in a pool.\n\n<table>\n  <tr>\n    <th>Variable</th>\n    <th>Description</th>\n  </tr>\n  <tr>\n    <td>$TargetDedicated</td>\n    <td>The target number of dedicated compute nodes for the pool. The value can be changed based upon actual usage for tasks.</td>\n  </tr>\n  <tr>\n    <td>$NodeDeallocationOption</td>\n    <td>The action that occurs when compute nodes are removed from a pool. Possible values are:\n      <br/>\n      <ul>\n        <li><p><b>requeue</b> – Terminate tasks immediately and put them back on the job queue so that they are rescheduled.</p></li>\n        <li><p><b>terminate</b> – Terminate tasks immediately and remove them from the job queue.</p></li>\n        <li><p><b>taskcompletion</b> – Wait for currently running tasks to finish and then remove the node from the pool.</p></li>\n        <li><p><b>retaineddata</b> - Wait for all the local task retained data on the node to be cleaned up before removing the node from the pool.</p></li>\n      </ul></td>\n   </tr>\n</table>\n\n*Get* the value of these **system-defined variables** to make adjustments based on metrics from compute nodes in the samples. These variables are read-only.\n\n<table>\n  <tr>\n    <th>Variable</th>\n    <th>Description</th>\n  </tr>\n  <tr>\n    <td>$CPUPercent</td>\n    <td>The average percentage of CPU usage</td>\n  </tr>\n  <tr>\n    <td>$WallClockSeconds</td>\n    <td>The number of seconds consumed</td>\n  </tr>\n  <tr>\n    <td>$MemoryBytes</td>\n    <td>The average number of megabytes used</td>\n  <tr>\n    <td>$DiskBytes</td>\n    <td>The average number of gigabytes used on the local disks</td>\n  </tr>\n  <tr>\n    <td>$DiskReadBytes</td>\n    <td>The number of bytes read</td>\n  </tr>\n  <tr>\n    <td>$DiskWriteBytes</td>\n    <td>The number of bytes written</td>\n  </tr>\n  <tr>\n    <td>$DiskReadOps</td>\n    <td>The count of read disk operations performed</td>\n  </tr>\n  <tr>\n    <td>$DiskWriteOps</td>\n    <td>The count of write disk operations performed</td>\n  </tr>\n  <tr>\n    <td>$NetworkInBytes</td>\n    <td>The number of inbound bytes</td>\n  </tr>\n  <tr>\n    <td>$NetworkOutBytes</td>\n    <td>The number of outbound bytes</td>\n  </tr>\n  <tr>\n    <td>$SampleNodeCount</td>\n    <td>The count of compute nodes</td>\n  </tr>\n  <tr>\n    <td>$ActiveTasks</td>\n    <td>The number of tasks that are in an active state</td>\n  </tr>\n  <tr>\n    <td>$RunningTasks</td>\n    <td>The number of tasks in a running state</td>\n  </tr>\n  <tr>\n    <td>$SucceededTasks</td>\n    <td>The number of tasks that finished successfully</td>\n  </tr>\n  <tr>\n    <td>$FailedTasks</td>\n    <td>The number of tasks that failed</td>\n  </tr>\n  <tr>\n    <td>$CurrentDedicated</td>\n    <td>The current number of dedicated compute nodes</td>\n  </tr>\n</table>\n\n### Types\n\nThese **types** are supported in a formula.\n\n- double\n- doubleVec\n- string\n- timestamp -- timestamp is a compound structure which contains the following members:\n    - year\n    - month (1-12)\n    - day (1-31)\n    - weekday (in the format of number, e.g. 1 for Monday)\n    - hour (in 24-hour number format, e.g. 13 means 1PM)\n    - minute (00-59)\n    - second (00-59)\n- timeinterval\n    - TimeInterval_Zero\n    - TimeInterval_100ns\n    - TimeInterval_Microsecond\n    - TimeInterval_Millisecond\n    - TimeInterval_Second\n    - TimeInterval_Minute\n    - TimeInterval_Hour\n    - TimeInterval_Day\n    - TimeInterval_Week\n    - TimeInterval_Year\n\n### Operations\n\nThese **operations** are allowed on the types listed above.\n\n<table>\n  <tr>\n    <th>Operation</th>\n    <th>Allowed operators</th>\n  </tr>\n  <tr>\n    <td>double &lt;operator&gt; double =&gt; double</td>\n    <td>+, -, *, /</td>\n  </tr>\n  <tr>\n    <td>double &lt;operator&gt; timeinterval =&gt; timeinterval</td>\n    <td>*</td>\n  </tr>\n  <tr>\n    <td>doubleVec &lt;operator&gt; double =&gt; doubleVec</td>\n    <td>+, -, *, /</td>\n  </tr>\n  <tr>\n    <td>doubleVec &lt;operator&gt; doubleVec =&gt; doubleVec</td>\n    <td>+, -, *, /</td>\n  </tr>\n  <tr>\n    <td>timeinterval &lt;operator&gt; double =&gt; timeinterval</td>\n    <td>*, /</td>\n  </tr>\n  <tr>\n    <td>timeinterval &lt;operator&gt; timeinterval =&gt; timeinterval</td>\n    <td>+, -</td>\n  </tr>\n  <tr>\n    <td>timeinterval &lt;operator&gt; timestamp =&gt; timestamp</td>\n    <td>+</td>\n  </tr>\n  <tr>\n    <td>timestamp &lt;operator&gt; timeinterval =&gt; timestamp</td>\n    <td>+</td>\n  </tr>\n  <tr>\n    <td>timestamp &lt;operator&gt; timestamp =&gt; timeinterval</td>\n    <td>-</td>\n  </tr>\n  <tr>\n    <td>&lt;operator&gt;double =&gt; double</td>\n    <td>-, !</td>\n  </tr>\n  <tr>\n    <td>&lt;operator&gt;timeinterval =&gt; timeinterval</td>\n    <td>-</td>\n  </tr>\n  <tr>\n    <td>double &lt;operator&gt; double =&gt; double</td>\n    <td>&lt;, &lt;=, ==, &gt;=, &gt;, !=</td>\n  </tr>\n  <tr>\n    <td>string &lt;operator&gt; string =&gt; double</td>\n    <td>&lt;, &lt;=, ==, &gt;=, &gt;, !=</td>\n  </tr>\n  <tr>\n    <td>timestamp &lt;operator&gt; timestamp =&gt; double</td>\n    <td>&lt;, &lt;=, ==, &gt;=, &gt, !=</td>\n  </tr>\n  <tr>\n    <td>timeinterval &lt;operator&gt; timeinterval =&gt; double</td>\n    <td>&lt;, &lt;=, ==, &gt;=, &gt;, !=</td>\n  </tr>\n  <tr>\n    <td>double &lt;operator&gt; double =&gt; double</td>\n    <td>&&, ||</td>\n  </tr>\n  <tr>\n    <td>test double only (non-zero is true, zero is false)</td>\n    <td>? :</td>\n  </tr>\n</table>\n\n### Functions\n\nThese predefined **functions** are available for defining an automatic scaling formula.\n\n<table>\n  <tr>\n    <th>Function</th>\n    <th>Description</th>\n  </tr>\n  <tr>\n    <td>double <b>avg</b>(doubleVecList)</td>\n    <td>The average value for all values in the doubleVecList.</td>\n  </tr>\n  <tr>\n    <td>double <b>len</b>(doubleVecList)</td>\n    <td>The length of the vector created from the doubleVecList.</td>\n  <tr>\n    <td>double <b>lg</b>(double)</td>\n    <td>Log base 2.</td>\n  </tr>\n  <tr>\n    <td>doubleVec <b>lg</b>(doubleVecList)</td>\n    <td>Componentwise log base 2. A vec(double) must be explicitly passed for single double parameter, otherwise the double lg(double) version is assumed.</td>\n  </tr>\n  <tr>\n    <td>double <b>ln</b>(double)</td>\n    <td>Natural log.</td>\n  </tr>\n  <tr>\n    <td>doubleVec <b>ln</b>(doubleVecList)</td>\n    <td>Componentwise log base 2.  A vec(double) must be explicitly passed for single double parameter, otherwise the double lg(double) version is assumed.</td>\n  </tr>\n  <tr>\n    <td>double <b>log</b>(double)</td>\n    <td>Log base 10.</td>\n  </tr>\n  <tr>\n    <td>doubleVec <b>log</b>(doubleVecList)</td>\n    <td>Componentwise log base 10. A vec(double) must be explicitly passed for single double parameter, otherwise the double log(double) version is assumed.</td>\n  </tr>\n  <tr>\n    <td>double <b>max</b>(doubleVecList)</td>\n    <td>The maximum value in the doubleVecList.</td>\n  </tr>\n  <tr>\n    <td>double <b>min</b>(doubleVecList)</td>\n    <td>The minimum value in the doubleVecList.</td>\n  </tr>\n  <tr>\n    <td>double <b>norm</b>(doubleVecList)</td>\n    <td>The two-norm of the vector created from the doubleVecList.\n  </tr>\n  <tr>\n    <td>double <b>percentile</b>(doubleVec v, double p)</td>\n    <td>The percentile element of the vector v.</td>\n  </tr>\n  <tr>\n    <td>double <b>rand</b>()</td>\n    <td>A random value between 0.0 and 1.0.</td>\n  </tr>\n  <tr>\n    <td>double <b>range</b>(doubleVecList)</td>\n    <td>The difference between the min and max values in doubleVecList.</td>\n  </tr>\n  <tr>\n    <td>double <b>std</b>(doubleVecList)</td>\n    <td>The sample standard deviation of the values in the doubleVecList.</td>\n  </tr>\n  <tr>\n    <td><b>stop</b>()</td>\n    <td>Stop auto-scaling expression evaluation.</td>\n  </tr>\n  <tr>\n    <td>double <b>sum</b>(doubleVecList)</td>\n    <td>The sum of all the components of doubleVecList.</td>\n  </tr>\n  <tr>\n    <td>timestamp <b>time</b>(string dateTime=\"\")</td>\n    <td>The timestamp of the current time if no parameters passed, or the timestamp of the dateTime string if passed. Supported dateTime formats are W3CDTF and RFC1123.</td>\n  </tr>\n  <tr>\n    <td>double <b>val</b>(doubleVec v, double i)</td>\n    <td>The value of the element at location i in vector v with a starting index of zero.</td>\n  </tr>\n</table>\n\nSome of the functions described in the table above can accept a list as an argument. The comma separated list is any combination of *double* and *doubleVec*. For example:\n\n    doubleVecList := ( (double | doubleVec)+(, (double | doubleVec) )* )?\n\nThe *doubleVecList* value is converted to a single *doubleVec* prior to evaluation. For example, if v = [1,2,3], then calling avg(v) is equivalent to calling avg(1,2,3) and calling avg(v, 7) is equivalent to calling avg(1,2,3,7).\n\n### Obtain sample data\n\nThe system-defined variables described above are objects that provide methods to access the associated data. For example, the following expression shows a request to get the last five minutes of CPU usage:\n\n    $CPUPercent.GetSample(TimeInterval_Minute*5)\n\nThese methods can be used to get sample data.\n\n<table>\n  <tr>\n    <th>Method</th>\n    <th>Description</th>\n  </tr>\n  <tr>\n    <td>Count()</td>\n    <td>Returns the total number of samples in the metric history.</td>\n  </tr>\n  <tr>\n    <td>GetSample()</td>\n    <td><p>Returns a vector of data samples. For example:</p>\n        <ul>\n          <li><p><b>doubleVec GetSample(double count)</b> - Specifies the number of samples that are required from the most recent samples.</p>\n                  <p>A sample is 5 seconds worth of metrics data. GetSample(1) returns the last available sample, but for metrics like $CPUPercent you shouldn’t use this because it isn’t possible to know when the sample was collected. It might be recent, or because of system issues, it might be much older. It is better to use a time interval as shown below.</p></li>\n          <li><p><b>doubleVec GetSample((timestamp | timeinterval) startTime [, double samplePercent])</b> – Specifies a time frame for gathering sample data and optionally specifies the percentage of samples that must be in the requested range.</p>\n          <p>$CPUPercent.GetSample(TimeInterval\\_Minute\\*10), should return 200 samples if all samples for the last ten minutes are present in the CPUPercent history. If the last minute of history is still not present, only 180 samples are returned.</p>\n                    <p>$CPUPercent.GetSample(TimeInterval\\_Minute\\*10, 80) succeeds, and $CPUPercent.GetSample(TimeInterval_Minute\\*10,95) fails.</p></li>\n          <li><p><b>doubleVec GetSample((timestamp | timeinterval) startTime, (timestamp | timeinterval) endTime [, double samplePercent])</b> – Specifies a time frame for gathering data with both a start time and an end time.</p></li></ul>\n          <p>Note that there is a delay between when a sample is collected and when it is available to a formula; this must be considered when using the GetSample method; see GetSamplePercent below.</td>\n  </tr>\n  <tr>\n    <td>GetSamplePeriod()</td>\n    <td>Returns the period of the samples taken in a historical sample data set.</td>\n  </tr>\n  <tr>\n    <td>HistoryBeginTime()</td>\n    <td>Returns the timestamp  of the oldest available data sample for the metric.</td>\n  </tr>\n  <tr>\n    <td>GetSamplePercent()</td>\n    <td><p>Returns the percent of samples a history currently has for a given time interval. For example:</p>\n    <p><b>doubleVec GetSamplePercent( (timestamp | timeinterval) startTime [, (timestamp | timeinterval) endTime] )</b>\n    <p>Because the GetSample method fails if the percent of samples returned is less than the samplePercent specified, you can use the GetSamplePercent method to first check, then perform an alternate action when enough samples are not present without halting their automatic scaling evaluation.</p></td>\n  </tr>\n</table>\n\n### Metrics\n\nYou can use both resource and task **metrics** when defining a formula, and these metrics can be used to manage the compute nodes in a pool.\n\n<table>\n  <tr>\n    <th>Metric</th>\n    <th>Description</th>\n  </tr>\n  <tr>\n    <td>Resource</td>\n    <td><p>Resource metrics are based on CPU usage, bandwidth usage, memory usage, and the number of compute nodes. These system-defined variables (described in **Variables** above) are used in formulas to manage the compute nodes in a pool:</p>\n    <p><ul>\n      <li>$TargetDedicated</li>\n      <li>$NodeDeallocationOption</li>\n    </ul></p>\n    <p>These system-defined variables are used for making adjustments based on node resource metrics:</p>\n    <p><ul>\n      <li>$CPUPercent</li>\n      <li>$WallClockSeconds</li>\n      <li>$MemoryBytes</li>\n      <li>$DiskBytes</li>\n      <li>$DiskReadBytes</li>\n      <li>$DiskWriteBytes</li>\n      <li>$DiskReadOps</li>\n      <li>$DiskWriteOps</li>\n      <li>$NetworkInBytes</li>\n      <li>$NetworkOutBytes</li></ul></p>\n  </tr>\n  <tr>\n    <td>Task</td>\n    <td><p>Based on the status of tasks, such as Active, Pending, and Completed.</p>\n    <p>These system-defined variables are used for making adjustments based on task metrics:</p>\n    <p><ul>\n      <li>$ActiveTasks</li>\n      <li>$RunningTasks</li>\n      <li>$SucceededTasks</li>\n      <li>$FailedTasks</li>\n      <li>$CurrentDedicated</li></ul></p></td>\n  </tr>\n</table>\n\n## Build an autoscale formula\n\nConstructing an autoscaling formula is done by forming statements using the above components and combining those statements into a complete formula. For example, here we construct a formula by first defining the requirements for a formula that will:\n\n1. Increase the target number of compute nodes in a pool if CPU usage is high\n2. Descrease the target number of compute nodes in a pool when CPU usage is low\n3. Always restrict the maximum number of nodes to 400\n\nFor the *increase* of nodes during high CPU usage, we define the statement that populates a user-defined variable ($TotalNodes) with a value that is 110% of the current target number of nodes if the minimum average CPU usage during the last 10 minutes was above 70%:\n\n    $TotalNodes = (min($CPUPercent.GetSample(TimeInterval_Minute*10)) > 0.7) ? ($CurrentDedicated * 1.1) : $CurrentDedicated;\n\nThe next statement sets the same variable to 90% of the current target number of nodes if the average CPU usage of the past 60 minutes was *under* 20%, lowering the target number during low CPU usage. Note that this statement also references the user-defined variable *$TotalNodes* from the statement above.\n\n    $TotalNodes = (avg($CPUPercent.GetSample(TimeInterval_Minute*60)) < 0.2) ? ($CurrentDedicated * 0.9) : $TotalNodes;\n\nNow limit the target number of dedicated compute nodes to a **maximum** of 400:\n\n    $TargetDedicated = min(400, $TotalNodes)\n\nHere's the complete formula:\n\n    $TotalNodes = (min($CPUPercent.GetSample(TimeInterval_Minute*10)) > 0.7) ? ($CurrentDedicated * 1.1) : $CurrentDedicated;\n    $TotalNodes = (avg($CPUPercent.GetSample(TimeInterval_Minute*60)) < 0.2) ? ($CurrentDedicated * 0.9) : $TotalNodes;\n    $TargetDedicated = min(400, $TotalNodes)\n\n## Create a pool with automatic scaling enabled\n\nTo enable automatic scaling when creating a pool, use one of the following techniques:\n\n- [New-AzureBatchPool](https://msdn.microsoft.com/library/azure/mt125936.aspx) – This Azure PowerShell cmdlet uses the AutoScaleFormula parameter to specify the automatic scaling formula.\n- [BatchClient.PoolOperations.CreatePool](https://msdn.microsoft.com/library/azure/microsoft.azure.batch.pooloperations.createpool.aspx) – After this .NET method is called to create a pool, you'll then set the pool's [CloudPool.AutoScaleEnabled](https://msdn.microsoft.com/library/azure/microsoft.azure.batch.cloudpool.autoscaleenabled.aspx) and [CloudPool.AutoScaleFormula](https://msdn.microsoft.com/library/azure/microsoft.azure.batch.cloudpool.autoscaleformula.aspx) properties to enable automatic scaling.\n- [Add a pool to an account](https://msdn.microsoft.com/library/azure/dn820174.aspx) – The enableAutoScale and autoScaleFormula elements are used in this REST API request to set up automatic scaling for the pool when it is created.\n\n> [AZURE.NOTE] If you set up automatic scaling when the pool is created using one of the techniques above, the *targetDedicated* parameter for the pool is not (and must not) be specified when created. Also note that if you wish to manually resize an autoscale-enabled pool (for example with [BatchClient.PoolOperations.ResizePool](https://msdn.microsoft.com/library/azure/microsoft.azure.batch.pooloperations.resizepool.aspx)) then you must first disable automatic scaling on the pool, then resize the pool.\n\nThe following code snippet shows the creation of an autoscale-enabled [CloudPool](https://msdn.microsoft.com/library/azure/microsoft.azure.batch.cloudpool.aspx) using the [Batch .NET](https://msdn.microsoft.com/library/azure/mt348682.aspx) library whose formula sets the target number of nodes to 5 on Mondays, and 1 on every other day of the week. In the snippet, \"myBatchClient\" is a properly initialized instance of [BatchClient](http://msdn.microsoft.com/library/azure/microsoft.azure.batch.batchclient.aspx)):\n\n        CloudPool pool myBatchClient.PoolOperations.CreatePool(\"mypool\", \"3\", \"small\");\n        pool.AutoScaleEnabled = true;\n        pool.AutoScaleFormula = \"$TargetDedicated = (time().weekday==1?5:1);\";\n        pool.Commit();\n\n## Enable automatic scaling after a pool was created\n\nIf you've already set up a pool with a specified number of compute nodes using the *targetDedicated* parameter, you can update the existing pool at a later time to automatically scale. Do this in one of these ways:\n\n- [BatchClient.PoolOperations.EnableAutoScale](https://msdn.microsoft.com/library/azure/microsoft.azure.batch.pooloperations.enableautoscale.aspx) – This .NET method requires the ID of an existing pool and the automatic scaling formula to apply to the pool.\n- [Enable automatic scaling on a pool](https://msdn.microsoft.com/library/azure/dn820173.aspx) – This REST API request requires the ID of the existing pool in the URI and the automatic scaling formula in the request body.\n\n> [AZURE.NOTE] If a value was specified for the *targetDedicated* parameter when the pool was created, it is ignored when the automatic scaling formula is evaluated.\n\nThis code snippet demonstrates enabling autoscaling on an existing pool using the [Batch .NET](https://msdn.microsoft.com/library/azure/mt348682.aspx) library. Note that both enabling and updating the formula on an existing pool use the same method. As such, this technique would *update* the formula on the specified pool if autoscaling had already been enabled. This snippet assumes that \"myBatchClient\" is a properly initialized instance of [BatchClient](http://msdn.microsoft.com/library/azure/microsoft.azure.batch.batchclient.aspx), and \"mypool\" is the ID of an existing [CloudPool](https://msdn.microsoft.com/library/azure/microsoft.azure.batch.cloudpool.aspx).\n\n         // Define the autoscaling formula. In this snippet, the  formula sets the target number of nodes to 5 on\n         // Mondays, and 1 on every other day of the week\n         string myAutoScaleFormula = \"$TargetDedicated = (time().weekday==1?5:1);\";\n\n         // Update the existing pool's autoscaling formula by calling the BatchClient.PoolOperations.EnableAutoScale\n         // method, passing in both the pool's ID and the new formula.\n         myBatchClient.PoolOperations.EnableAutoScale(\"mypool\", myAutoScaleFormula);\n\n## Evaluate the automatic scaling formula\n\nIt’s always good practice to evaluate a formula before you use it in your application. A formula is evaluated by performing a \"test run\" of the formula on an existing pool. Do this by using:\n\n- [BatchClient.PoolOperations.EvaluateAutoScale](https://msdn.microsoft.com/library/azure/microsoft.azure.batch.pooloperations.evaluateautoscale.aspx) or [BatchClient.PoolOperations.EvaluateAutoScaleAsync](https://msdn.microsoft.com/library/azure/microsoft.azure.batch.pooloperations.evaluateautoscaleasync.aspx) – These .NET methods require the ID of an existing pool and the string that contains the automatic scaling formula. The results of the call are contained in an instance of the [AutoScaleEvaluation](https://msdn.microsoft.com/library/azure/microsoft.azure.batch.autoscaleevaluation.aspx) class.\n- [Evaluate an automatic scaling formula](https://msdn.microsoft.com/library/azure/dn820183.aspx) – In this REST API request, the pool ID is specified in the URI and the automatic scaling formula is specified in the *autoScaleFormula* element of the request body. The response of the operation contains any error information that might be related to the formula.\n\n> [AZURE.NOTE] To evaluate an autoscaling formula, you must first have enabled autoscaling on the pool using a valid formula.\n\nIn this code snippet using the [Batch .NET](https://msdn.microsoft.com/library/azure/mt348682.aspx) library, we evaluate a formula prior to applying it to the [CloudPool](https://msdn.microsoft.com/library/azure/microsoft.azure.batch.cloudpool.aspx).\n\n        // First obtain a reference to the existing pool\n        CloudPool pool = myBatchClient.PoolOperations.GetPool(\"mypool\");\n\n        // We must ensure that autoscaling is enabled on the pool prior to evaluating a formula\n        if (pool.AutoScaleEnabled.HasValue && pool.AutoScaleEnabled.Value)\n        {\n            // The formula to evaluate - adjusts target number of nodes based on day of week and time of day\n            string myFormula = @\"\n                $CurTime=time();\n                $WorkHours=$CurTime.hour>=8 && $CurTime.hour<18;\n                $IsWeekday=$CurTime.weekday>=1 && $CurTime.weekday<=5;\n                $IsWorkingWeekdayHour=$WorkHours && $IsWeekday;\n                $TargetDedicated=$IsWorkingWeekdayHour?20:10;\n            \";\n\n            // Perform the autoscale formula evaluation. Note that this does not actually apply the formula to\n            // the pool.\n            AutoScaleEvaluation eval = client.PoolOperations.EvaluateAutoScale(pool.Id, myFormula);\n\n            if (eval.AutoScaleRun.Error == null)\n            {\n                // Evaluation success - print the results of the AutoScaleRun. This will display the values of each\n                // variable as evaluated by the the autoscaling formula.\n                Console.WriteLine(\"AutoScaleRun.Results: \" + eval.AutoScaleRun.Results);\n\n                // Apply the formula to the pool since it evaluated successfully\n                client.PoolOperations.EnableAutoScale(pool.Id, myFormula);\n            }\n            else\n            {\n                // Evaluation failed, output the message associated with the error\n                Console.WriteLine(\"AutoScaleRun.Error.Message: \" + eval.AutoScaleRun.Error.Message);\n            }\n        }\n\nSuccessful evaluation of the formula in this snippet will result in output similar to the following:\n\n        AutoScaleRun.Results: $TargetDedicated = 10;$NodeDeallocationOption = requeue;$CurTime = 2015 - 08 - 25T20: 08:42.271Z;$IsWeekday = 1;$IsWorkingWeekdayHour = 0;$WorkHours = 0\n\n## Obtain information about automatic scaling runs\n\nPeriodically checking the results of automatic scaling runs should be done to a formula is performing as expected. Do this in one of these ways:\n\n- [CloudPool.AutoScaleRun](https://msdn.microsoft.com/library/azure/microsoft.azure.batch.cloudpool.autoscalerun.aspx) – When using the .NET library, this property of a pool provides an instance of the [AutoScaleRun](https://msdn.microsoft.com/library/azure/microsoft.azure.batch.autoscalerun.aspx) class which provides the following properties of the latest automatic scaling run:\n  - [AutoScaleRun.Error](https://msdn.microsoft.com/library/azure/microsoft.azure.batch.autoscalerun.error.aspx)\n  - [AutoScaleRun.Results](https://msdn.microsoft.com/library/azure/microsoft.azure.batch.autoscalerun.results.aspx)\n  - [AutoScaleRun.Timestamp](https://msdn.microsoft.com/library/azure/microsoft.azure.batch.autoscalerun.timestamp.aspx)\n- [Get information about a pool](https://msdn.microsoft.com/library/dn820165.aspx) – This REST API request returns information about the pool, which includes the latest automatic scaling run.\n\n## Example formulas\n\nLet's take a look at some examples showing just a few ways formulas can be used to automatically scale compute resources in a pool.\n\n### Example 1\n\nPerhaps you want to adjust the pool size based on the day of the week and time of day, increasing or decreasing the number of nodes in the pool accordingly:\n\n        $CurTime=time();\n        $WorkHours=$CurTime.hour>=8 && $CurTime.hour<18;\n        $IsWeekday=$CurTime.weekday>=1 && $CurTime.weekday<=5;\n        $IsWorkingWeekdayHour=$WorkHours && $IsWeekday;\n        $TargetDedicated=$IsWorkingWeekdayHour?20:10;\n\nThis formula first obtains the current time. If it's a weekday (1-5) and within working hours (8AM-6PM), the target pool size is set to 20 nodes. Otherwise, the pool size is targeted at 10 nodes.\n\n### Example 2\n\nIn this example, the pool size is adjusted based on the number of tasks in the queue. Note that both comments and line breaks are acceptable in formula strings.\n\n        // Get pending tasks for the past 15 minutes.\n        $Samples = $ActiveTasks.GetSamplePercent(TimeInterval_Minute * 15);\n        // If we have less than 70% data points, we use the last sample point, otherwise we use the maximum of\n        // last sample point and the history average.\n        $Tasks = $Samples < 70 ? max(0,$ActiveTasks.GetSample(1)) : max( $ActiveTasks.GetSample(1), avg($ActiveTasks.GetSample(TimeInterval_Minute * 15)));\n        // If number of pending tasks is not 0, set targetVM to pending tasks, otherwise half of current dedicated.\n        $TargetVMs = $Tasks > 0? $Tasks:max(0, $TargetDedicated/2);\n        // The pool size is capped at 20, if target VM value is more than that, set it to 20. This value\n        // should be adjusted according to your use case.\n        $TargetDedicated = max(0,min($TargetVMs,20));\n        // Set node deallocation mode - keep nodes active only until tasks finish\n        $NodeDeallocationOption = taskcompletion;\n\n### Example 3\n\nAnother example that adjusts the pool size based on the number of tasks, this formula also takes into account the [MaxTasksPerComputeNode](https://msdn.microsoft.com/library/azure/microsoft.azure.batch.cloudpool.maxtaskspercomputenode.aspx) value that has been set for the pool. This is particularly useful in situations where parallel task execution on compute nodes is desired.\n\n        // Determine whether 70% of the samples have been recorded in the past 15 minutes; if not, use last sample\n        $Samples = $ActiveTasks.GetSamplePercent(TimeInterval_Minute * 15);\n        $Tasks = $Samples < 70 ? max(0,$ActiveTasks.GetSample(1)) : max( $ActiveTasks.GetSample(1),avg($ActiveTasks.GetSample(TimeInterval_Minute * 15)));\n        // Set the number of nodes to add to one-fourth the number of active tasks (the MaxTasksPerComputeNode\n        // property on this pool is set to 4, adjust this number for your use case)\n        $Cores = $TargetDedicated * 4;\n        $ExtraVMs = ($Tasks - $Cores) / 4;\n        $TargetVMs = ($TargetDedicated+$ExtraVMs);\n        // Attempt to grow the number of compute nodes to match the number of active tasks, with a maximum of 3\n        $TargetDedicated = max(0,min($TargetVMs,3));\n        // Keep the nodes active until the tasks finish\n        $NodeDeallocationOption = taskcompletion;\n\n## Next Steps\n\n1. To fully assess the efficiency of your application, you might need to access a compute node. To take advantage of remote access, a user account must be added to the node that you want to access and an RDP file must be retrieved for that node.\n    - Add the user account in one of these ways:\n        * [New-AzureBatchVMUser](https://msdn.microsoft.com/library/mt149846.aspx) – This PowerShell cmdlet takes the pool name, compute node name, account name, and password as parameters.\n        * [BatchClient.PoolOperations.CreateComputeNodeUser](https://msdn.microsoft.com/library/azure/microsoft.azure.batch.pooloperations.createcomputenodeuser.aspx) – This .NET method creates an instance of the [ComputeNodeUser](https://msdn.microsoft.com/library/microsoft.azure.batch.computenodeuser.aspx) class on which the account name and password can be set for the compute node, and [ComputeNodeUser.Commit](https://msdn.microsoft.com/library/microsoft.azure.batch.computenodeuser.commit.aspx) is then called on the instance to create the user on that node.\n        * [Add a user account to a node](https://msdn.microsoft.com/library/dn820137.aspx) – The name of the pool and the compute node are specified in the URI and the account name and password are sent to the node in the request body of this REST API request.\n    - Get the RDP file:\n        * [BatchClient.PoolOperations.GetRDPFile](https://msdn.microsoft.com/library/azure/microsoft.azure.batch.pooloperations.getrdpfile.aspx) – This .NET method requires the ID of the pool, the node ID, and the name of the RDP file to create.\n        * [Get a remote desktop protocol file from a node](https://msdn.microsoft.com/library/dn820120.aspx) – This REST API request requires the name of the pool and the name of the compute node. The response contains the contents of the RDP file.\n        * [Get-AzureBatchRDPFile](https://msdn.microsoft.com/library/mt149851.aspx) – This PowerShell cmdlet gets the RDP file from the specified compute node and saves it to the specified file location or to a stream.\n2.  Some applications produce large amounts of data that can be difficult to process. One way to solve this is through [efficient list querying](batch-efficient-list-queries.md).\n\ntest\n"
+}

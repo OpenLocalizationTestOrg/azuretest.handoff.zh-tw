@@ -1,0 +1,530 @@
+{
+  "nodes": [
+    {
+      "content": "How to Use docker-machine with Azure",
+      "pos": [
+        26,
+        62
+      ]
+    },
+    {
+      "content": "Shows how to get up and running on Azure with Docker Machine on Ubuntu.",
+      "pos": [
+        80,
+        151
+      ]
+    },
+    {
+      "content": "How to use docker-machine with Azure",
+      "pos": [
+        483,
+        519
+      ]
+    },
+    {
+      "content": "This topic describes how to use <bpt id=\"p1\">[</bpt>Docker<ept id=\"p1\">](https://www.docker.com/)</ept> with <bpt id=\"p2\">[</bpt>machine<ept id=\"p2\">](https://github.com/docker/machine)</ept> and the <bpt id=\"p3\">[</bpt>Azure CLI<ept id=\"p3\">](https://github.com/Azure/azure-xplat-cli)</ept> to create an Azure Virtual Machine to quickly and easily manage Linux containers from a computer running Ubuntu.",
+      "pos": [
+        521,
+        811
+      ]
+    },
+    {
+      "content": "To demonstrate, the tutorial shows how to deploy both the <bpt id=\"p1\">[</bpt>busybox Docker Hub image<ept id=\"p1\">](https://registry.hub.docker.com/_/busybox/)</ept> image and also the <bpt id=\"p2\">[</bpt>nginx Docker Hub image<ept id=\"p2\">](https://registry.hub.docker.com/_/nginx/)</ept> and configures the container to route web requests to the nginx container.",
+      "pos": [
+        812,
+        1101
+      ]
+    },
+    {
+      "content": "(The Docker <bpt id=\"p1\">**</bpt>machine<ept id=\"p1\">**</ept> documentation describes how to modify these instructions for other platforms.)",
+      "pos": [
+        1102,
+        1204
+      ]
+    },
+    {
+      "content": "There are some prerequisites for completing this tutorial.",
+      "pos": [
+        1206,
+        1264
+      ]
+    },
+    {
+      "content": "You will need to install the following:",
+      "pos": [
+        1265,
+        1304
+      ]
+    },
+    {
+      "pos": [
+        1309,
+        1373
+      ],
+      "content": "<bpt id=\"p1\">[</bpt>npm<ept id=\"p1\">](https://docs.npmjs.com/)</ept> and <bpt id=\"p2\">[</bpt>Node.js<ept id=\"p2\">](http://nodejs.org/)</ept>"
+    },
+    {
+      "content": "The Azure CLI",
+      "pos": [
+        1378,
+        1391
+      ]
+    },
+    {
+      "pos": [
+        1438,
+        1494
+      ],
+      "content": "A <bpt id=\"p1\">[</bpt>Docker client<ept id=\"p1\">](https://docs.docker.com/installation/)</ept>"
+    },
+    {
+      "content": "If you install those items in that order, your Ubuntu computer will be ready for the tutorial.",
+      "pos": [
+        1496,
+        1590
+      ]
+    },
+    {
+      "content": "(This tutorial should be largely the same for any other dpkg-based distro such as Debian.",
+      "pos": [
+        1591,
+        1680
+      ]
+    },
+    {
+      "content": "Let us know in comments if you discover extra requirements or steps.)",
+      "pos": [
+        1681,
+        1750
+      ]
+    },
+    {
+      "content": "Get docker-machine -- or build it",
+      "pos": [
+        1755,
+        1788
+      ]
+    },
+    {
+      "content": "The quickest way to get going with <bpt id=\"p1\">**</bpt>docker-machine<ept id=\"p1\">**</ept> is to download the appropriate release directly from the <bpt id=\"p2\">[</bpt>release share<ept id=\"p2\">](https://github.com/docker/machine/releases)</ept>.",
+      "pos": [
+        1790,
+        1961
+      ]
+    },
+    {
+      "content": "The client computer in this tutorial was running Ubuntu on an x64 computer, so the <bpt id=\"p1\">**</bpt>docker-machine_linux-amd64<ept id=\"p1\">**</ept> image is the one used.",
+      "pos": [
+        1962,
+        2098
+      ]
+    },
+    {
+      "content": "You can also build your <bpt id=\"p1\">**</bpt>docker-machine<ept id=\"p1\">**</ept> yourself by following the steps for <bpt id=\"p2\">[</bpt>contributing to machine<ept id=\"p2\">](https://github.com/docker/machine#contributing)</ept>.",
+      "pos": [
+        2100,
+        2253
+      ]
+    },
+    {
+      "content": "You should be ready to download as much as 1 GB or more to perform the build, but by doing so you can customize your experience precisely the way you want.",
+      "pos": [
+        2254,
+        2409
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> You might well create a <bpt id=\"p1\">[</bpt>symbolic link<ept id=\"p1\">](http://en.wikipedia.org/wiki/Symbolic_link)</ept> to your platform version of it, but this tutorial uses the binary directly to demonstrate behavior very clearly.",
+      "pos": [
+        2413,
+        2622
+      ]
+    },
+    {
+      "content": "The result is that instead of commands such as <ph id=\"ph1\">`docker-machine env`</ph> as the <bpt id=\"p1\">**</bpt>docker-machine<ept id=\"p1\">**</ept> documentation shows, this tutorial  uses <ph id=\"ph2\">`docker-machine_linux-amd64 env`</ph> instead.",
+      "pos": [
+        2623,
+        2799
+      ]
+    },
+    {
+      "content": "Whether you create a symlink or just use the binary name directly is up to you, but if you change the name you are using, remember to modify the name in the instructions below.",
+      "pos": [
+        2800,
+        2976
+      ]
+    },
+    {
+      "content": "Whichever method you choose, you must either call in the binary directly on the command line or place the binary the path such as <bpt id=\"p1\">**</bpt>/usr/local/bin<ept id=\"p1\">**</ept>.",
+      "pos": [
+        2989,
+        3138
+      ]
+    },
+    {
+      "content": "Remember to make sure it is marked as executable by typing <ph id=\"ph1\">`chmod +x`</ph> &amp;lt;<bpt id=\"p1\">*</bpt><ph id=\"ph2\">`binaryName`</ph><ept id=\"p1\">*</ept>&amp;gt; where &amp;lt;<bpt id=\"p2\">*</bpt><ph id=\"ph3\">`binaryName`</ph><ept id=\"p2\">*</ept>&amp;gt; is the name of your Docker machine executable.",
+      "pos": [
+        3139,
+        3307
+      ]
+    },
+    {
+      "content": "This tutorial uses <bpt id=\"p1\">**</bpt>docker-machine_linux-amd64<ept id=\"p1\">**</ept>.",
+      "pos": [
+        3308,
+        3358
+      ]
+    },
+    {
+      "content": "Create the certificate and key files for docker, machine, and Azure",
+      "pos": [
+        3363,
+        3430
+      ]
+    },
+    {
+      "content": "Now you must create the certificate and key files that Azure needs to confirm your identity and permissions as well as those <bpt id=\"p1\">**</bpt>docker-machine<ept id=\"p1\">**</ept> needs to communicate with your Azure Virtual Machine to create and manage containers remotely.",
+      "pos": [
+        3432,
+        3670
+      ]
+    },
+    {
+      "content": "If you already have these files in a directory -- perhaps for use with docker -- you can reuse them.",
+      "pos": [
+        3671,
+        3771
+      ]
+    },
+    {
+      "content": "However, the best practice for testing <bpt id=\"p1\">**</bpt>docker-machine<ept id=\"p1\">**</ept> would be to create them in a separate directory and point docker-machine at them.",
+      "pos": [
+        3772,
+        3911
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> If you end up trying <bpt id=\"p1\">**</bpt>docker-machine<ept id=\"p1\">**</ept> over and over again, be sure to either reuse the same certificate and key files.",
+      "pos": [
+        3915,
+        4048
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>docker-machine<ept id=\"p1\">**</ept> creates a set of client certs as well -- everything it creates can be examined in <ph id=\"ph1\">`~/.docker/machine`</ph>.",
+      "pos": [
+        4049,
+        4170
+      ]
+    },
+    {
+      "content": "If you move those certs to another computer, you'll need to move the <bpt id=\"p1\">**</bpt>docker-machine<ept id=\"p1\">**</ept> certificate folders as well.",
+      "pos": [
+        4171,
+        4287
+      ]
+    },
+    {
+      "content": "This makes a difference if you're going to use <bpt id=\"p1\">**</bpt>docker-machine<ept id=\"p1\">**</ept> on another platform, for example, just to see how it all works.",
+      "pos": [
+        4288,
+        4417
+      ]
+    },
+    {
+      "content": "If you have experience with Linux distributions, you may already have these files available to use on your computer in a specific place, and the <bpt id=\"p1\">[</bpt>Docker HTTPS documentation explains these steps well<ept id=\"p1\">](https://docs.docker.com/articles/https/)</ept>.",
+      "pos": [
+        4419,
+        4660
+      ]
+    },
+    {
+      "content": "However, the following is the simplest form of this step.",
+      "pos": [
+        4661,
+        4718
+      ]
+    },
+    {
+      "content": "Create a local folder and on the command-line, navigate to that folder and type:",
+      "pos": [
+        4723,
+        4803
+      ]
+    },
+    {
+      "content": "Be ready here to enter the export password for your certificate and capture it for future usage.",
+      "pos": [
+        4990,
+        5086
+      ]
+    },
+    {
+      "content": "Then type:",
+      "pos": [
+        5087,
+        5097
+      ]
+    },
+    {
+      "content": "Upload your certificate's .cer file to Azure.",
+      "pos": [
+        5180,
+        5225
+      ]
+    },
+    {
+      "content": "In the <bpt id=\"p1\">[</bpt>Azure Portal<ept id=\"p1\">](https://manage.windowsazure.com)</ept>, click <bpt id=\"p2\">**</bpt>Settings<ept id=\"p2\">**</ept> in the bottom left of the service area (shown below)",
+      "pos": [
+        5226,
+        5353
+      ]
+    },
+    {
+      "pos": [
+        5388,
+        5431
+      ],
+      "content": "and then click <bpt id=\"p1\">**</bpt>Management Certificates<ept id=\"p1\">**</ept>:"
+    },
+    {
+      "pos": [
+        5474,
+        5605
+      ],
+      "content": "and then <bpt id=\"p1\">**</bpt>Upload<ept id=\"p1\">**</ept> (at the bottom of the page) <ph id=\"ph1\">![][uploaditem]</ph> to upload the <bpt id=\"p2\">**</bpt>mycert.cer<ept id=\"p2\">**</ept> file you created in the previous step."
+    },
+    {
+      "content": "In the same <bpt id=\"p1\">**</bpt>Settings<ept id=\"p1\">**</ept> pane in the portal, click <bpt id=\"p2\">**</bpt>Subscriptions<ept id=\"p2\">**</ept> and capture the subscription ID to use when creating your VM, because you'll use it in the next step.",
+      "pos": [
+        5610,
+        5780
+      ]
+    },
+    {
+      "content": "(You can also locate the subscription id on the command line using the Azure CLI command <ph id=\"ph1\">`azure account list`</ph>, which displays the subscription id for each subscription you have in the account.)",
+      "pos": [
+        5781,
+        5974
+      ]
+    },
+    {
+      "content": "Create a docker host VM on Azure using the <bpt id=\"p1\">**</bpt>docker-machine create<ept id=\"p1\">**</ept> command.",
+      "pos": [
+        5979,
+        6056
+      ]
+    },
+    {
+      "content": "The command requires the subscription ID you just captured in the previous step and the path to the <bpt id=\"p1\">**</bpt>.pem<ept id=\"p1\">**</ept> file you created in step 1.",
+      "pos": [
+        6057,
+        6193
+      ]
+    },
+    {
+      "content": "This topic uses \"machine-name\" as the Azure Cloud Service (and your VM) name, but you should replace that with your own choice and remember to use your cloud service name in any other step that requires the vm name.",
+      "pos": [
+        6194,
+        6409
+      ]
+    },
+    {
+      "content": "(Remember that in this example, we are using the full binary name and not a <bpt id=\"p1\">**</bpt>docker-machine<ept id=\"p1\">**</ept> symlink.)",
+      "pos": [
+        6410,
+        6514
+      ]
+    },
+    {
+      "content": "As the first two steps require the creation of a new VM and the loading of the Linux Azure agent as well as the updating of the new VM, you should see something like the following.",
+      "pos": [
+        6723,
+        6903
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> Because a VM is being created, it may take a few minutes to be in a ready state.",
+      "pos": [
+        8383,
+        8476
+      ]
+    },
+    {
+      "content": "While you're waiting, you can check the state of your new Docker host by typing <ph id=\"ph1\">`azure vm list`</ph> using the Azure CLI until you see your VMs with the <bpt id=\"p1\">**</bpt>ReadyRole<ept id=\"p1\">**</ept> status.",
+      "pos": [
+        8477,
+        8646
+      ]
+    },
+    {
+      "content": "Set the docker and machine environment variables for the terminal session.",
+      "pos": [
+        8651,
+        8725
+      ]
+    },
+    {
+      "content": "The last line of feedback suggest that you immediately run the <bpt id=\"p1\">**</bpt>env<ept id=\"p1\">**</ept> command to export the environment variables necessary to use your docker client directly with a specific machine.",
+      "pos": [
+        8726,
+        8910
+      ]
+    },
+    {
+      "pos": [
+        8972,
+        9110
+      ],
+      "content": "Once you do so, you do not need any special commands to use your local docker client to connect to the VM that Docker <bpt id=\"p1\">**</bpt>machine<ept id=\"p1\">**</ept> created."
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> This tutorial shows <bpt id=\"p1\">**</bpt>docker-machine<ept id=\"p1\">**</ept> creating one VM.",
+      "pos": [
+        10091,
+        10159
+      ]
+    },
+    {
+      "content": "However, you can repeat the steps to create as many machines as you want.",
+      "pos": [
+        10160,
+        10233
+      ]
+    },
+    {
+      "content": "If you do so, the best way to switch between VMs with docker is to use the <bpt id=\"p1\">**</bpt>env<ept id=\"p1\">**</ept> command inline to set the <bpt id=\"p2\">**</bpt>docker<ept id=\"p2\">**</ept> environment variables for each individual command.",
+      "pos": [
+        10234,
+        10404
+      ]
+    },
+    {
+      "content": "For example, to use <bpt id=\"p1\">**</bpt>docker info<ept id=\"p1\">**</ept> with a different VM, you can type <ph id=\"ph1\">`docker $(docker-machine env &lt;VM name&gt;) info`</ph> and the <bpt id=\"p2\">**</bpt>env<ept id=\"p2\">**</ept> command fills in the docker connection information to use with that VM.",
+      "pos": [
+        10405,
+        10608
+      ]
+    },
+    {
+      "content": "We're done.",
+      "pos": [
+        10613,
+        10624
+      ]
+    },
+    {
+      "content": "Let's run some applications remotely using docker and images from the Docker Hub.",
+      "pos": [
+        10625,
+        10706
+      ]
+    },
+    {
+      "content": "You can now use docker in the normal way to create an application in the container.",
+      "pos": [
+        10708,
+        10791
+      ]
+    },
+    {
+      "content": "The easiest to demonstrate is <bpt id=\"p1\">[</bpt>busybox<ept id=\"p1\">](https://registry.hub.docker.com/_/busybox/)</ept>:",
+      "pos": [
+        10792,
+        10876
+      ]
+    },
+    {
+      "pos": [
+        11376,
+        11587
+      ],
+      "content": "However, you may want to create an application that you can see immediately on the internet, such as the <bpt id=\"p1\">[</bpt>nginx<ept id=\"p1\">](https://registry.hub.docker.com/_/nginx/)</ept> from the <bpt id=\"p2\">[</bpt>Docker Hub<ept id=\"p2\">](https://registry.hub.docker.com/)</ept>."
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> Remember to use the <bpt id=\"p1\">**</bpt>-P<ept id=\"p1\">**</ept> option to have <bpt id=\"p2\">**</bpt>docker<ept id=\"p2\">**</ept> assign random ports to the image, and <bpt id=\"p3\">**</bpt>-d<ept id=\"p3\">**</ept> to ensure that the container runs in the background continuously.",
+      "pos": [
+        11591,
+        11767
+      ]
+    },
+    {
+      "content": "(If you forget, you'll start nginx and then it will immediately shut down.",
+      "pos": [
+        11768,
+        11842
+      ]
+    },
+    {
+      "content": "Don't forget!)",
+      "pos": [
+        11843,
+        11857
+      ]
+    },
+    {
+      "content": "To see it from the internet, create a public endpoint on port 80 for the Azure VM and map that port to the nginx container's port.",
+      "pos": [
+        12663,
+        12793
+      ]
+    },
+    {
+      "content": "First, use <ph id=\"ph1\">`docker ps -a`</ph> to locate the container and find which ports <bpt id=\"p1\">**</bpt>docker<ept id=\"p1\">**</ept> has assigned to the container's port 80.",
+      "pos": [
+        12794,
+        12916
+      ]
+    },
+    {
+      "content": "(Below the displayed information is edited to show only port information; you'll see more.)",
+      "pos": [
+        12917,
+        13008
+      ]
+    },
+    {
+      "content": "We can see that docker has assigned the container's port 80 to the VM's port 49153.",
+      "pos": [
+        13149,
+        13232
+      ]
+    },
+    {
+      "content": "We can now use the Azure CLI to map the external Cloud Service's public port 80 to port 49153 on the VM.",
+      "pos": [
+        13233,
+        13337
+      ]
+    },
+    {
+      "content": "Docker then ensures that inbound tcp traffic on VM port 49153 is routed to the nginx container.",
+      "pos": [
+        13338,
+        13433
+      ]
+    },
+    {
+      "content": "Open your favorite browser and have a look.",
+      "pos": [
+        13686,
+        13729
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">\n##</ph> Next steps\nGo to the <bpt id=\"p1\">[</bpt><ept id=\"p1\">Docker user guide](https://docs.docker.com/userguide/)</ept> and create some applications on Microsoft Azure.",
+      "pos": [
+        13858,
+        13987
+      ]
+    },
+    {
+      "content": "Or, go play with <bpt id=\"p1\">[</bpt><bpt id=\"p2\">**</bpt>docker<ept id=\"p2\">**</ept> and swarm<ept id=\"p1\">](https://github.com/docker/swarm)</ept> on Azure](virtual-machines-docker-swarm) and see how swarm can be used with docker and Azure.",
+      "pos": [
+        13988,
+        14154
+      ]
+    }
+  ],
+  "content": "<properties\n   pageTitle=\"How to Use docker-machine with Azure\"\n   description=\"Shows how to get up and running on Azure with Docker Machine on Ubuntu.\"\n   services=\"virtual-machines\"\n   documentationCenter=\"virtual-machines\"\n   authors=\"squillace\"\n   manager=\"timlt\"\n   editor=\"tysonn\"/>\n\n<tags\n   ms.service=\"virtual-machines\"\n   ms.devlang=\"na\"\n   ms.topic=\"article\"\n   ms.tgt_pltfrm=\"vm-linux\"\n   ms.workload=\"infrastructure\"\n   ms.date=\"05/25/2015\"\n   ms.author=\"rasquill\"/>\n\n# How to use docker-machine with Azure\n\nThis topic describes how to use [Docker](https://www.docker.com/) with [machine](https://github.com/docker/machine) and the [Azure CLI](https://github.com/Azure/azure-xplat-cli) to create an Azure Virtual Machine to quickly and easily manage Linux containers from a computer running Ubuntu. To demonstrate, the tutorial shows how to deploy both the [busybox Docker Hub image](https://registry.hub.docker.com/_/busybox/) image and also the [nginx Docker Hub image](https://registry.hub.docker.com/_/nginx/) and configures the container to route web requests to the nginx container. (The Docker **machine** documentation describes how to modify these instructions for other platforms.)\n\nThere are some prerequisites for completing this tutorial. You will need to install the following:\n\n1. [npm](https://docs.npmjs.com/) and [Node.js](http://nodejs.org/)\n2. [The Azure CLI](https://github.com/Azure/azure-xplat-cli)\n3. A [Docker client](https://docs.docker.com/installation/)\n\nIf you install those items in that order, your Ubuntu computer will be ready for the tutorial. (This tutorial should be largely the same for any other dpkg-based distro such as Debian. Let us know in comments if you discover extra requirements or steps.)\n\n## Get docker-machine -- or build it\n\nThe quickest way to get going with **docker-machine** is to download the appropriate release directly from the [release share](https://github.com/docker/machine/releases). The client computer in this tutorial was running Ubuntu on an x64 computer, so the **docker-machine_linux-amd64** image is the one used.\n\nYou can also build your **docker-machine** yourself by following the steps for [contributing to machine](https://github.com/docker/machine#contributing). You should be ready to download as much as 1 GB or more to perform the build, but by doing so you can customize your experience precisely the way you want.\n\n> [AZURE.NOTE] You might well create a [symbolic link](http://en.wikipedia.org/wiki/Symbolic_link) to your platform version of it, but this tutorial uses the binary directly to demonstrate behavior very clearly. The result is that instead of commands such as `docker-machine env` as the **docker-machine** documentation shows, this tutorial  uses `docker-machine_linux-amd64 env` instead. Whether you create a symlink or just use the binary name directly is up to you, but if you change the name you are using, remember to modify the name in the instructions below.\n\n<br />\n\n>  Whichever method you choose, you must either call in the binary directly on the command line or place the binary the path such as **/usr/local/bin**. Remember to make sure it is marked as executable by typing `chmod +x` &lt;*`binaryName`*&gt; where &lt;*`binaryName`*&gt; is the name of your Docker machine executable. This tutorial uses **docker-machine_linux-amd64**.\n\n## Create the certificate and key files for docker, machine, and Azure\n\nNow you must create the certificate and key files that Azure needs to confirm your identity and permissions as well as those **docker-machine** needs to communicate with your Azure Virtual Machine to create and manage containers remotely. If you already have these files in a directory -- perhaps for use with docker -- you can reuse them. However, the best practice for testing **docker-machine** would be to create them in a separate directory and point docker-machine at them.\n\n> [AZURE.NOTE] If you end up trying **docker-machine** over and over again, be sure to either reuse the same certificate and key files. **docker-machine** creates a set of client certs as well -- everything it creates can be examined in `~/.docker/machine`. If you move those certs to another computer, you'll need to move the **docker-machine** certificate folders as well. This makes a difference if you're going to use **docker-machine** on another platform, for example, just to see how it all works.\n\nIf you have experience with Linux distributions, you may already have these files available to use on your computer in a specific place, and the [Docker HTTPS documentation explains these steps well](https://docs.docker.com/articles/https/). However, the following is the simplest form of this step.\n\n1. Create a local folder and on the command-line, navigate to that folder and type:\n\n        openssl req -x509 -nodes -days 365 -newkey rsa:1024 -keyout mycert.pem -out mycert.pem\n        openssl pkcs12 -export -out mycert.pfx -in mycert.pem -name \"My Certificate\"\n\n    Be ready here to enter the export password for your certificate and capture it for future usage. Then type:\n\n        openssl x509 -inform pem -in mycert.pem -outform der -out mycert.cer\n\n2. Upload your certificate's .cer file to Azure. In the [Azure Portal](https://manage.windowsazure.com), click **Settings** in the bottom left of the service area (shown below)\n\n    ![][portalsettingsitem]\n\n    and then click **Management Certificates**:\n\n    ![][managementcertificatesitem]\n\n    and then **Upload** (at the bottom of the page) ![][uploaditem] to upload the **mycert.cer** file you created in the previous step.\n\n3. In the same **Settings** pane in the portal, click **Subscriptions** and capture the subscription ID to use when creating your VM, because you'll use it in the next step. (You can also locate the subscription id on the command line using the Azure CLI command `azure account list`, which displays the subscription id for each subscription you have in the account.)\n\n4. Create a docker host VM on Azure using the **docker-machine create** command. The command requires the subscription ID you just captured in the previous step and the path to the **.pem** file you created in step 1. This topic uses \"machine-name\" as the Azure Cloud Service (and your VM) name, but you should replace that with your own choice and remember to use your cloud service name in any other step that requires the vm name. (Remember that in this example, we are using the full binary name and not a **docker-machine** symlink.)\n\n        docker-machine_linux-amd64 create \\\n        -d azure \\\n        --azure-subscription-id=\"<subscription ID acquired above>\" \\\n        --azure-subscription-cert=\"mycert.pem\" \\\n        machine-name\n\n    As the first two steps require the creation of a new VM and the loading of the Linux Azure agent as well as the updating of the new VM, you should see something like the following.\n\n        INFO[0001] Creating Azure machine...\n        INFO[0049] Waiting for SSH...\n        modprobe: FATAL: Module aufs not found.\n        + sudo -E sh -c sleep 3; apt-get update\n        + sudo -E sh -c sleep 3; apt-get install -y -q linux-image-extra-3.13.0-36-generic\n        E: Unable to correct problems, you have held broken packages.\n        modprobe: FATAL: Module aufs not found.\n        Warning: tried to install linux-image-extra-3.13.0-36-generic (for AUFS)\n         but we still have no AUFS.  Docker may not work. Proceeding anyways!\n        + sleep 10\n        + [ https://get.docker.com/ = https://get.docker.com/ ]\n        + sudo -E sh -c apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9\n        gpg: requesting key A88D21E9 from hkp server keyserver.ubuntu.com\n        gpg: key A88D21E9: public key \"Docker Release Tool (releasedocker) <docker@dotcloud.com>\" imported\n        gpg: Total number processed: 1\n        gpg:               imported: 1  (RSA: 1)\n        + sudo -E sh -c echo deb https://get.docker.com/ubuntu docker main > /etc/apt/sources.list.d/docker.list\n        + sudo -E sh -c sleep 3; apt-get update; apt-get install -y -q lxc-docker\n        + sudo -E sh -c docker version\n        INFO[0368] \"machine-name\" has been created and is now the active machine.\n        INFO[0368] To point your Docker client at it, run this in your shell: $(docker-machine_linux-amd64 env machine-name)\n\n    > [AZURE.NOTE] Because a VM is being created, it may take a few minutes to be in a ready state. While you're waiting, you can check the state of your new Docker host by typing `azure vm list` using the Azure CLI until you see your VMs with the **ReadyRole** status.\n\n5. Set the docker and machine environment variables for the terminal session. The last line of feedback suggest that you immediately run the **env** command to export the environment variables necessary to use your docker client directly with a specific machine.\n\n        $(docker-machine_linux-amd64 env machine-name)\n\n    Once you do so, you do not need any special commands to use your local docker client to connect to the VM that Docker **machine** created.\n\n        $ docker info\n        Containers: 0\n        Images: 0\n        Storage Driver: devicemapper\n         Pool Name: docker-8:1-131736-pool\n         Pool Blocksize: 65.54 kB\n         Backing Filesystem: extfs\n         Data file: /dev/loop0\n         Metadata file: /dev/loop1\n         Data Space Used: 305.7 MB\n         Data Space Total: 107.4 GB\n         Metadata Space Used: 729.1 kB\n         Metadata Space Total: 2.147 GB\n         Udev Sync Supported: false\n         Data loop file: /var/lib/docker/devicemapper/devicemapper/data\n         Metadata loop file: /var/lib/docker/devicemapper/devicemapper/metadata\n         Library Version: 1.02.82-git (2013-10-04)\n        Execution Driver: native-0.2\n        Kernel Version: 3.13.0-36-generic\n        Operating System: Ubuntu 14.04.1 LTS\n        CPUs: 1\n        Total Memory: 1.639 GiB\n        Name: machine-name\n        ID: W3FZ:BCZW:UX24:GDSV:FR4N:N3JW:XOC2:RI56:IWQX:LRTZ:3G4P:6KJK\n        WARNING: No swap limit support\n\n> [AZURE.NOTE] This tutorial shows **docker-machine** creating one VM. However, you can repeat the steps to create as many machines as you want. If you do so, the best way to switch between VMs with docker is to use the **env** command inline to set the **docker** environment variables for each individual command. For example, to use **docker info** with a different VM, you can type `docker $(docker-machine env <VM name>) info` and the **env** command fills in the docker connection information to use with that VM.\n\n## We're done. Let's run some applications remotely using docker and images from the Docker Hub.\n\nYou can now use docker in the normal way to create an application in the container. The easiest to demonstrate is [busybox](https://registry.hub.docker.com/_/busybox/):\n\n        $  docker run busybox echo hello world\n        Unable to find image 'busybox:latest' locally\n        511136ea3c5a: Pull complete\n        df7546f9f060: Pull complete\n        ea13149945cb: Pull complete\n        4986bf8c1536: Pull complete\n        busybox:latest: The image you are pulling has been verified. Important: image verification is a tech preview feature and should not be relied on to provide security.\n        Status: Downloaded newer image for busybox:latest\n        hello world\n\nHowever, you may want to create an application that you can see immediately on the internet, such as the [nginx](https://registry.hub.docker.com/_/nginx/) from the [Docker Hub](https://registry.hub.docker.com/).\n\n> [AZURE.NOTE] Remember to use the **-P** option to have **docker** assign random ports to the image, and **-d** to ensure that the container runs in the background continuously. (If you forget, you'll start nginx and then it will immediately shut down. Don't forget!)\n\n    $ docker run --name machinenginx -P -d nginx\n    Unable to find image 'nginx:latest' locally\n    30d39e59ffe2: Pull complete\n    c90d655b99b2: Pull complete\n    d9ee0b8eeda7: Pull complete\n    3225d58a895a: Pull complete\n    224fea58b6cc: Pull complete\n    ef9d79968cc6: Pull complete\n    f22d05624ebc: Pull complete\n    117696d1464e: Pull complete\n    2ebe3e67fb76: Pull complete\n    ad82b43d6595: Pull complete\n    e90c322c3a1c: Pull complete\n    4b5657a3d162: Pull complete\n    511136ea3c5a: Already exists\n    nginx:latest: The image you are pulling has been verified. Important: image verification is a tech preview feature and should not be relied on to provide security.\n    Status: Downloaded newer image for nginx:latest\n    5883e2ff55a4ba0aa55c5c9179cebb590ad86539ea1d4d367d83dc98a4976848\n\nTo see it from the internet, create a public endpoint on port 80 for the Azure VM and map that port to the nginx container's port. First, use `docker ps -a` to locate the container and find which ports **docker** has assigned to the container's port 80. (Below the displayed information is edited to show only port information; you'll see more.)\n\n    $ docker ps -a\n    IMAGE               PORTS\n    nginx:latest        0.0.0.0:49153->80/tcp, 0.0.0.0:49154->443/tcp\n    busybox:latest\n\nWe can see that docker has assigned the container's port 80 to the VM's port 49153. We can now use the Azure CLI to map the external Cloud Service's public port 80 to port 49153 on the VM. Docker then ensures that inbound tcp traffic on VM port 49153 is routed to the nginx container.\n\n    $ azure vm endpoint create machine-name 80 49153\n    info:    Executing command vm endpoint create\n    + Getting virtual machines\n    + Reading network configuration\n    + Updating network configuration\n    info:    vm endpoint create command OK\n\nOpen your favorite browser and have a look.\n\n![][nginx]\n\n<!--Every topic should have next steps and links to the next logical set of content to keep the customer engaged-->\n## Next steps\nGo to the [Docker user guide](https://docs.docker.com/userguide/) and create some applications on Microsoft Azure. Or, go play with [**docker** and swarm](https://github.com/docker/swarm) on Azure](virtual-machines-docker-swarm) and see how swarm can be used with docker and Azure.\n\n<!--Image references-->\n[nginx]: ./media/virtual-machines-docker-machine/nginxondocker.png\n[portalsettingsitem]: ./media/virtual-machines-docker-machine/portalsettingsitem.png\n[managementcertificatesitem]: ./media/virtual-machines-docker-machine/managementcertificatesitem.png\n[uploaditem]: ./media/virtual-machines-docker-machine/uploaditem.png\n\n<!--Link references-->\n[Link 1 to another azure.microsoft.com documentation topic]: virtual-machines-windows-tutorial.md\n[Link 2 to another azure.microsoft.com documentation topic]: ../web-sites-custom-domain-name.md\n[Link 3 to another azure.microsoft.com documentation topic]: ../storage-whatis-account.md\n "
+}

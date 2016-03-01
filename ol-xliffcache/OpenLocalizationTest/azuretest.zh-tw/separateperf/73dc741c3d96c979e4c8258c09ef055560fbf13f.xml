@@ -1,0 +1,537 @@
+{
+  "nodes": [
+    {
+      "content": "10GB GraySort Hadoop MapReduce sample | Microsoft Azure",
+      "pos": [
+        28,
+        83
+      ]
+    },
+    {
+      "content": "Learn how to run a general purpose GraySort for very large amounts of data, usually a 100 TB minimum, on Hadoop with HDInsight using Azure PowerShell.",
+      "pos": [
+        102,
+        252
+      ]
+    },
+    {
+      "content": "The 10GB GraySort Hadoop MapReduce sample in HDInsight",
+      "pos": [
+        576,
+        630
+      ]
+    },
+    {
+      "content": "This sample topic shows how to run a general-purpose GraySort Hadoop MapReduce program on Azure HDInsight by using Azure PowerShell.",
+      "pos": [
+        632,
+        764
+      ]
+    },
+    {
+      "content": "GraySort is a benchmark sort whose metric is the sort rate (TB/minute) that is achieved while sorting very large amounts of data, usually a 100TB minimum.",
+      "pos": [
+        765,
+        919
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> The steps in this document require a Windows-based HDInsight cluster.",
+      "pos": [
+        923,
+        1005
+      ]
+    },
+    {
+      "content": "For information on running this and other samples with Linux-based clusters, see <bpt id=\"p1\">[</bpt>Run the Hadoop samples in HDInsight<ept id=\"p1\">](hdinsight-hadoop-run-samples-linux.md)</ept>",
+      "pos": [
+        1006,
+        1163
+      ]
+    },
+    {
+      "content": "This sample uses a modest 10GB of data so that it can be run relatively quickly.",
+      "pos": [
+        1165,
+        1245
+      ]
+    },
+    {
+      "content": "It uses the MapReduce applications developed by Owen O'Malley and Arun Murthy that won the annual general-purpose (\"daytona\") terabyte sort benchmark in 2009 with a rate of 0.578TB/min (100TB in 173 minutes).",
+      "pos": [
+        1246,
+        1454
+      ]
+    },
+    {
+      "content": "For more information on this and other sorting benchmarks, see the <bpt id=\"p1\">[</bpt>Sortbenchmark<ept id=\"p1\">](http://sortbenchmark.org/)</ept> site.",
+      "pos": [
+        1455,
+        1570
+      ]
+    },
+    {
+      "content": "This sample uses three sets of MapReduce programs:",
+      "pos": [
+        1572,
+        1622
+      ]
+    },
+    {
+      "pos": [
+        1627,
+        1716
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>TeraGen<ept id=\"p1\">**</ept> is a MapReduce program that you can use to generate the rows of data to sort."
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>TeraSort<ept id=\"p1\">**</ept> samples the input data and uses MapReduce to sort the data into a total order.",
+      "pos": [
+        1720,
+        1811
+      ]
+    },
+    {
+      "content": "TeraSort is a standard sort of MapReduce functions, except for a custom partitioner that uses a sorted list of N-1 sampled keys that define the key range for each reduce.",
+      "pos": [
+        1812,
+        1982
+      ]
+    },
+    {
+      "content": "In particular, all keys such that sample[i-1] &lt;= key &lt; sample[i] are sent to reduce i.",
+      "pos": [
+        1983,
+        2069
+      ]
+    },
+    {
+      "content": "This guarantees that the outputs of reduce i are all less than the output of reduce i+1.",
+      "pos": [
+        2070,
+        2158
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>TeraValidate<ept id=\"p1\">**</ept> is a MapReduce program that validates that the output is globally sorted.",
+      "pos": [
+        2162,
+        2252
+      ]
+    },
+    {
+      "content": "It creates one map per file in the output directory, and each map ensures that each key is less than or equal to the previous one.",
+      "pos": [
+        2253,
+        2383
+      ]
+    },
+    {
+      "content": "The map function also generates records of the first and last keys of each file, and the reduce function ensures that the first key of file i is greater than the last key of file i-1.",
+      "pos": [
+        2384,
+        2567
+      ]
+    },
+    {
+      "content": "Any problems are reported as an output of the reduce with the keys that are out of order.",
+      "pos": [
+        2568,
+        2657
+      ]
+    },
+    {
+      "content": "The input and output format, used by all three applications, reads and writes the text files in the right format.",
+      "pos": [
+        2659,
+        2772
+      ]
+    },
+    {
+      "content": "The output of the reduce has replication set to 1, instead of the default 3, because the benchmark contest does not require that the output data be replicated on to multiple nodes.",
+      "pos": [
+        2773,
+        2953
+      ]
+    },
+    {
+      "content": "You will learn:",
+      "pos": [
+        2958,
+        2973
+      ]
+    },
+    {
+      "content": "How to use Azure PowerShell to run a series of MapReduce programs on Azure HDInsight.",
+      "pos": [
+        2978,
+        3063
+      ]
+    },
+    {
+      "content": "What a MapReduce program written in Java looks like.",
+      "pos": [
+        3066,
+        3118
+      ]
+    },
+    {
+      "content": "Prerequisites:",
+      "pos": [
+        3123,
+        3137
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>An Azure subscription<ept id=\"p1\">**</ept>.",
+      "pos": [
+        3143,
+        3169
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt>Get Azure free trial<ept id=\"p1\">](http://azure.microsoft.com/documentation/videos/get-azure-free-trial-for-testing-hadoop-in-hdinsight/)</ept>.",
+      "pos": [
+        3170,
+        3300
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>an HDInsight cluster<ept id=\"p1\">**</ept>.",
+      "pos": [
+        3303,
+        3328
+      ]
+    },
+    {
+      "content": "For instructions on the various ways in which such clusters can be created, see <bpt id=\"p1\">[</bpt>Provision HDInsight Clusters<ept id=\"p1\">](hdinsight-provision-clusters.md)</ept>.",
+      "pos": [
+        3329,
+        3473
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>A workstation with Azure PowerShell<ept id=\"p1\">**</ept>.",
+      "pos": [
+        3476,
+        3516
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt>Install and use Azure PowerShell<ept id=\"p1\">](http://azure.microsoft.com/documentation/videos/install-and-use-azure-powershell/)</ept>.",
+      "pos": [
+        3517,
+        3639
+      ]
+    },
+    {
+      "content": "Run the sample with Azure PowerShell",
+      "pos": [
+        3645,
+        3681
+      ]
+    },
+    {
+      "content": "Three tasks are required by the sample, each corresponding to one of the MapReduce programs described in the introduction:",
+      "pos": [
+        3683,
+        3805
+      ]
+    },
+    {
+      "pos": [
+        3810,
+        3881
+      ],
+      "content": "Generate the data for sorting by running the <bpt id=\"p1\">**</bpt>TeraGen<ept id=\"p1\">**</ept> MapReduce job."
+    },
+    {
+      "pos": [
+        3885,
+        3941
+      ],
+      "content": "Sort the data by running the <bpt id=\"p1\">**</bpt>TeraSort<ept id=\"p1\">**</ept> MapReduce job."
+    },
+    {
+      "pos": [
+        3945,
+        4039
+      ],
+      "content": "Confirm that the data has been correctly sorted by running the <bpt id=\"p1\">**</bpt>TeraValidate<ept id=\"p1\">**</ept> MapReduce job."
+    },
+    {
+      "content": "To run the TeraGen program",
+      "pos": [
+        4044,
+        4070
+      ]
+    },
+    {
+      "content": "Open Azure PowerShell.",
+      "pos": [
+        4077,
+        4099
+      ]
+    },
+    {
+      "content": "For instructions on opening the Azure PowerShell console window, see <bpt id=\"p1\">[</bpt>Install and configure Azure PowerShell<ept id=\"p1\">] [powershell-install-configure]</ept>.",
+      "pos": [
+        4100,
+        4241
+      ]
+    },
+    {
+      "content": "Set the two variables in the following commands, and then run them:",
+      "pos": [
+        4245,
+        4312
+      ]
+    },
+    {
+      "content": "Run the following command to create a MapReduce job definition:",
+      "pos": [
+        4488,
+        4551
+      ]
+    },
+    {
+      "content": "The <bpt id=\"p1\">*</bpt>\"-Dmapred.map.tasks=50\"<ept id=\"p1\">*</ept> argument specifies that 50 maps will be created to execute the job.",
+      "pos": [
+        4853,
+        4950
+      ]
+    },
+    {
+      "content": "The <bpt id=\"p1\">*</bpt>100000000<ept id=\"p1\">*</ept> argument specifies the amount of data to generate.",
+      "pos": [
+        4951,
+        5017
+      ]
+    },
+    {
+      "content": "The final argument, <bpt id=\"p1\">*</bpt>/example/data/10GB-sort-input<ept id=\"p1\">*</ept>, specifies the output directory to which the results are saved (and which contains the input for the following sort stage).",
+      "pos": [
+        5018,
+        5193
+      ]
+    },
+    {
+      "content": "Run the following commands to submit the job, wait for the job to finish, and then print the standard error:",
+      "pos": [
+        5198,
+        5306
+      ]
+    },
+    {
+      "content": "To run the TeraSort program",
+      "pos": [
+        5692,
+        5719
+      ]
+    },
+    {
+      "content": "Open Azure PowerShell.",
+      "pos": [
+        5726,
+        5748
+      ]
+    },
+    {
+      "content": "Set the two variables in the following commands, and then run them:",
+      "pos": [
+        5752,
+        5819
+      ]
+    },
+    {
+      "content": "Run the following command to define the MapReduce job:",
+      "pos": [
+        5995,
+        6049
+      ]
+    },
+    {
+      "content": "The <bpt id=\"p1\">*</bpt>\"-Dmapred.map.tasks=50\"<ept id=\"p1\">*</ept> argument specifies that 50 maps will be created to execute the job.",
+      "pos": [
+        6403,
+        6500
+      ]
+    },
+    {
+      "content": "The <bpt id=\"p1\">*</bpt>100000000<ept id=\"p1\">*</ept> argument specifies the amount of data to generate.",
+      "pos": [
+        6501,
+        6567
+      ]
+    },
+    {
+      "content": "The final two arguments specify the input and output directories.",
+      "pos": [
+        6568,
+        6633
+      ]
+    },
+    {
+      "content": "Run the following command to submit the job, wait for the job to finish, and print the standard error:",
+      "pos": [
+        6638,
+        6740
+      ]
+    },
+    {
+      "content": "To run the TeraValidate program",
+      "pos": [
+        7128,
+        7159
+      ]
+    },
+    {
+      "content": "Open Azure PowerShell.",
+      "pos": [
+        7166,
+        7188
+      ]
+    },
+    {
+      "content": "Set the two variables in the following commands, and then run them:",
+      "pos": [
+        7192,
+        7259
+      ]
+    },
+    {
+      "content": "Run the following command to define the MapReduce job:",
+      "pos": [
+        7435,
+        7489
+      ]
+    },
+    {
+      "content": "The <bpt id=\"p1\">*</bpt>\"-Dmapred.map.tasks=50\"<ept id=\"p1\">*</ept> argument specifies that 50 maps will be created to execute the job.",
+      "pos": [
+        7860,
+        7957
+      ]
+    },
+    {
+      "content": "The <bpt id=\"p1\">*</bpt>\"-Dmapred.reduce.tasks=25\"<ept id=\"p1\">*</ept> argument specifies that 25 reduce tasks will be created to execute the job.",
+      "pos": [
+        7958,
+        8066
+      ]
+    },
+    {
+      "content": "The final two arguments specify the input and output directories.",
+      "pos": [
+        8067,
+        8132
+      ]
+    },
+    {
+      "content": "Run the following commands to submit the MapReduce job, wait for the job to finish, and print the standard error:",
+      "pos": [
+        8140,
+        8253
+      ]
+    },
+    {
+      "content": "The Java code for the TeraSort MapReduce program",
+      "pos": [
+        8645,
+        8693
+      ]
+    },
+    {
+      "content": "The code for the TeraSort MapReduce program is presented for inspection in this section.",
+      "pos": [
+        8695,
+        8783
+      ]
+    },
+    {
+      "content": "Summary",
+      "pos": [
+        18524,
+        18531
+      ]
+    },
+    {
+      "content": "This sample has demonstrated how to run a series of MapReduce jobs by using Azure HDInsight, where the data output for one job becomes the input for the next job in the series.",
+      "pos": [
+        18533,
+        18709
+      ]
+    },
+    {
+      "content": "Next steps",
+      "pos": [
+        18713,
+        18723
+      ]
+    },
+    {
+      "content": "For tutorials that guide you through running other samples and that provide instructions on using Pig, Hive, and MapReduce jobs on Azure HDInsight with Azure PowerShell, see the following topics:",
+      "pos": [
+        18725,
+        18920
+      ]
+    },
+    {
+      "content": "Get started with Azure HDInsight",
+      "pos": [
+        18925,
+        18957
+      ]
+    },
+    {
+      "content": "Sample: Pi estimator",
+      "pos": [
+        18985,
+        19005
+      ]
+    },
+    {
+      "content": "Sample: Word count",
+      "pos": [
+        19041,
+        19059
+      ]
+    },
+    {
+      "content": "Sample: C# Streaming",
+      "pos": [
+        19092,
+        19112
+      ]
+    },
+    {
+      "content": "Use Pig with HDInsight",
+      "pos": [
+        19152,
+        19174
+      ]
+    },
+    {
+      "content": "Use Hive with HDInsight",
+      "pos": [
+        19198,
+        19221
+      ]
+    },
+    {
+      "content": "Azure HDInsight SDK documentation",
+      "pos": [
+        19246,
+        19279
+      ]
+    },
+    {
+      "content": "test",
+      "pos": [
+        19934,
+        19938
+      ]
+    }
+  ],
+  "content": "\n<properties\n    pageTitle=\"10GB GraySort Hadoop MapReduce sample | Microsoft Azure\"\n    description=\"Learn how to run a general purpose GraySort for very large amounts of data, usually a 100 TB minimum, on Hadoop with HDInsight using Azure PowerShell.\"\n    editor=\"cgronlun\"\n    manager=\"paulettm\"\n    tags=\"azure-portal\"\n    services=\"hdinsight\"\n    documentationCenter=\"\"\n    authors=\"mumian\"/>\n\n<tags\n    ms.service=\"hdinsight\"\n    ms.workload=\"big-data\"\n    ms.tgt_pltfrm=\"na\"\n    ms.devlang=\"na\"\n    ms.topic=\"article\"\n    ms.date=\"07/09/2015\"\n    ms.author=\"jgao\"/>\n\n# The 10GB GraySort Hadoop MapReduce sample in HDInsight\n\nThis sample topic shows how to run a general-purpose GraySort Hadoop MapReduce program on Azure HDInsight by using Azure PowerShell. GraySort is a benchmark sort whose metric is the sort rate (TB/minute) that is achieved while sorting very large amounts of data, usually a 100TB minimum.\n\n> [AZURE.NOTE] The steps in this document require a Windows-based HDInsight cluster. For information on running this and other samples with Linux-based clusters, see [Run the Hadoop samples in HDInsight](hdinsight-hadoop-run-samples-linux.md)\n\nThis sample uses a modest 10GB of data so that it can be run relatively quickly. It uses the MapReduce applications developed by Owen O'Malley and Arun Murthy that won the annual general-purpose (\"daytona\") terabyte sort benchmark in 2009 with a rate of 0.578TB/min (100TB in 173 minutes). For more information on this and other sorting benchmarks, see the [Sortbenchmark](http://sortbenchmark.org/) site.\n\nThis sample uses three sets of MapReduce programs:\n\n1. **TeraGen** is a MapReduce program that you can use to generate the rows of data to sort.\n2. **TeraSort** samples the input data and uses MapReduce to sort the data into a total order. TeraSort is a standard sort of MapReduce functions, except for a custom partitioner that uses a sorted list of N-1 sampled keys that define the key range for each reduce. In particular, all keys such that sample[i-1] <= key < sample[i] are sent to reduce i. This guarantees that the outputs of reduce i are all less than the output of reduce i+1.\n3. **TeraValidate** is a MapReduce program that validates that the output is globally sorted. It creates one map per file in the output directory, and each map ensures that each key is less than or equal to the previous one. The map function also generates records of the first and last keys of each file, and the reduce function ensures that the first key of file i is greater than the last key of file i-1. Any problems are reported as an output of the reduce with the keys that are out of order.\n\nThe input and output format, used by all three applications, reads and writes the text files in the right format. The output of the reduce has replication set to 1, instead of the default 3, because the benchmark contest does not require that the output data be replicated on to multiple nodes.\n\n\n**You will learn:**\n* How to use Azure PowerShell to run a series of MapReduce programs on Azure HDInsight.\n* What a MapReduce program written in Java looks like.\n\n\n**Prerequisites:**\n\n- **An Azure subscription**. See [Get Azure free trial](http://azure.microsoft.com/documentation/videos/get-azure-free-trial-for-testing-hadoop-in-hdinsight/).\n- **an HDInsight cluster**. For instructions on the various ways in which such clusters can be created, see [Provision HDInsight Clusters](hdinsight-provision-clusters.md).\n- **A workstation with Azure PowerShell**. See [Install and use Azure PowerShell](http://azure.microsoft.com/documentation/videos/install-and-use-azure-powershell/).\n\n\n\n##Run the sample with Azure PowerShell\n\nThree tasks are required by the sample, each corresponding to one of the MapReduce programs described in the introduction:\n\n1. Generate the data for sorting by running the **TeraGen** MapReduce job.\n2. Sort the data by running the **TeraSort** MapReduce job.\n3. Confirm that the data has been correctly sorted by running the **TeraValidate** MapReduce job.\n\n\n**To run the TeraGen program**\n\n1. Open Azure PowerShell. For instructions on opening the Azure PowerShell console window, see [Install and configure Azure PowerShell] [powershell-install-configure].\n2. Set the two variables in the following commands, and then run them:\n\n        # Provide the Azure subscription name and the HDInsight cluster name\n        $subscriptionName = \"myAzureSubscriptionName\"\n        $clusterName = \"myClusterName\"\n\n4. Run the following command to create a MapReduce job definition:\n\n        # Create a MapReduce job definition for the TeraGen MapReduce program\n        $teragen = New-AzureHDInsightMapReduceJobDefinition -JarFile \"/example/jars/hadoop-mapreduce-examples.jar\" -ClassName \"teragen\" -Arguments \"-Dmapred.map.tasks=50\", \"100000000\", \"/example/data/10GB-sort-input\"\n\n    The *\"-Dmapred.map.tasks=50\"* argument specifies that 50 maps will be created to execute the job. The *100000000* argument specifies the amount of data to generate. The final argument, */example/data/10GB-sort-input*, specifies the output directory to which the results are saved (and which contains the input for the following sort stage).\n\n5. Run the following commands to submit the job, wait for the job to finish, and then print the standard error:\n\n        # Run the TeraGen MapReduce job\n        # Wait for the job to finish\n        # Print output and standard error file of the MapReduce job\n        Select-AzureSubscription $subscriptionName\n        $teragen | Start-AzureHDInsightJob -Cluster $clustername | Wait-AzureHDInsightJob -WaitTimeoutInSeconds 3600 | Get-AzureHDInsightJobOutput -Cluster $clustername -StandardError\n\n\n**To run the TeraSort program**\n\n1. Open Azure PowerShell.\n2. Set the two variables in the following commands, and then run them:\n\n        # Provide the Azure subscription name and the HDInsight cluster name\n        $subscriptionName = \"myAzureSubscriptionName\"\n        $clusterName = \"myClusterName\"\n\n3. Run the following command to define the MapReduce job:\n\n        # Create a MapReduce job definition for the TeraSort MapReduce program\n        $terasort = New-AzureHDInsightMapReduceJobDefinition -JarFile \"/example/jars/hadoop-mapreduce-examples.jar\" -ClassName \"terasort\" -Arguments \"-Dmapred.map.tasks=50\", \"-Dmapred.reduce.tasks=25\", \"/example/data/10GB-sort-input\", \"/example/data/10GB-sort-output\"\n\n    The *\"-Dmapred.map.tasks=50\"* argument specifies that 50 maps will be created to execute the job. The *100000000* argument specifies the amount of data to generate. The final two arguments specify the input and output directories.\n\n4. Run the following command to submit the job, wait for the job to finish, and print the standard error:\n\n        # Run the TeraSort MapReduce job\n        # Wait for the job to finish\n        # Print output and standard error file of the MapReduce job\n        Select-AzureSubscription $subscriptionName\n        $terasort | Start-AzureHDInsightJob -Cluster $clustername | Wait-AzureHDInsightJob -WaitTimeoutInSeconds 3600 | Get-AzureHDInsightJobOutput -Cluster $clustername -StandardError\n\n\n**To run the TeraValidate program**\n\n1. Open Azure PowerShell.\n2. Set the two variables in the following commands, and then run them:\n\n        # Provide the Azure subscription name and the HDInsight cluster name\n        $subscriptionName = \"myAzureSubscriptionName\"\n        $clusterName = \"myClusterName\"\n\n3. Run the following command to define the MapReduce job:\n\n        #   Create a MapReduce job definition for the TeraValidate MapReduce program\n        $teravalidate = New-AzureHDInsightMapReduceJobDefinition -JarFile \"/example/jars/hadoop-mapreduce-examples.jar\" -ClassName \"teravalidate\" -Arguments \"-Dmapred.map.tasks=50\", \"-Dmapred.reduce.tasks=25\", \"/example/data/10GB-sort-output\", \"/example/data/10GB-sort-validate\"\n\n    The *\"-Dmapred.map.tasks=50\"* argument specifies that 50 maps will be created to execute the job. The *\"-Dmapred.reduce.tasks=25\"* argument specifies that 25 reduce tasks will be created to execute the job. The final two arguments specify the input and output directories.  \n\n\n4. Run the following commands to submit the MapReduce job, wait for the job to finish, and print the standard error:\n\n        # Run the TeraSort MapReduce job\n        # Wait for the job to finish\n        # Print output and standard error file of the MapReduce job\n        Select-AzureSubscription $subscriptionName\n        $teravalidate | Start-AzureHDInsightJob -Cluster $clustername | Wait-AzureHDInsightJob -WaitTimeoutInSeconds 3600 | Get-AzureHDInsightJobOutput -Cluster $clustername -StandardError\n\n\n##The Java code for the TeraSort MapReduce program\n\nThe code for the TeraSort MapReduce program is presented for inspection in this section.\n\n\n    /**\n     * Licensed to the Apache Software Foundation (ASF) under one\n     * or more contributor license agreements.  See the NOTICE file\n     * distributed with this work for additional information\n     * regarding copyright ownership.  The ASF licenses this file\n     * to you under the Apache License, Version 2.0 (the\n     * \"License\"); you may not use this file except in compliance\n     * with the License.  You may obtain a copy of the License at\n     *\n     *     http://www.apache.org/licenses/LICENSE-2.0\n     *\n     * Unless required by applicable law or agreed to in writing, software\n     * distributed under the License is distributed on an \"AS IS\" BASIS,\n     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n     * See the License for the specific language governing permissions and\n     * limitations under the License.\n     */\n\n    package org.apache.hadoop.examples.terasort;\n\n    import java.io.IOException;\n    import java.io.PrintStream;\n    import java.net.URI;\n    import java.util.ArrayList;\n    import java.util.List;\n\n    import org.apache.commons.logging.Log;\n    import org.apache.commons.logging.LogFactory;\n    import org.apache.hadoop.conf.Configured;\n    import org.apache.hadoop.filecache.DistributedCache;\n    import org.apache.hadoop.fs.FileSystem;\n    import org.apache.hadoop.fs.Path;\n    import org.apache.hadoop.io.NullWritable;\n    import org.apache.hadoop.io.SequenceFile;\n    import org.apache.hadoop.io.Text;\n    import org.apache.hadoop.mapred.FileOutputFormat;\n    import org.apache.hadoop.mapred.JobClient;\n    import org.apache.hadoop.mapred.JobConf;\n    import org.apache.hadoop.mapred.Partitioner;\n    import org.apache.hadoop.util.Tool;\n    import org.apache.hadoop.util.ToolRunner;\n\n    /**\n     * Generates the sampled split points, launches the job,\n     * and waits for it to finish.\n     * <p>\n     * To run the program:\n     * <b>bin/hadoop jar hadoop-examples-*.jar terasort in-dir out-dir</b>\n     */\n\n    public class TeraSort extends Configured implements Tool {\n      private static final Log LOG = LogFactory.getLog(TeraSort.class);\n\n      /**\n       * A partitioner that splits text keys into roughly equal\n       * partitions in a global sorted order.\n       */\n\n      static class TotalOrderPartitioner implements Partitioner<Text,Text>{\n        private TrieNode trie;\n        private Text[] splitPoints;\n\n        /**\n         * A generic trie node\n         */\n        static abstract class TrieNode {\n          private int level;\n          TrieNode(int level) {\n            this.level = level;\n          }\n          abstract int findPartition(Text key);\n          abstract void print(PrintStream strm) throws IOException;\n          int getLevel() {\n            return level;\n          }\n        }\n\n        /**\n         * An inner trie node that contains 256 children based on the next\n         * character.\n         */\n        static class InnerTrieNode extends TrieNode {\n          private TrieNode[] child = new TrieNode[256];\n\n          InnerTrieNode(int level) {\n            super(level);\n          }\n          int findPartition(Text key) {\n            int level = getLevel();\n            if (key.getLength() <= level) {\n              return child[0].findPartition(key);\n            }\n            return child[key.getBytes()[level]].findPartition(key);\n          }\n          void setChild(int idx, TrieNode child) {\n            this.child[idx] = child;\n          }\n          void print(PrintStream strm) throws IOException {\n            for(int ch=0; ch < 255; ++ch) {\n              for(int i = 0; i < 2*getLevel(); ++i) {\n                strm.print(' ');\n              }\n              strm.print(ch);\n              strm.println(\" ->\");\n              if (child[ch] != null) {\n                child[ch].print(strm);\n              }\n            }\n          }\n        }\n\n        /**\n         * A leaf trie node that does string compares to figure out where the given\n         * key belongs between lower..upper.\n         */\n        static class LeafTrieNode extends TrieNode {\n          int lower;\n          int upper;\n          Text[] splitPoints;\n          LeafTrieNode(int level, Text[] splitPoints, int lower, int upper) {\n            super(level);\n            this.splitPoints = splitPoints;\n            this.lower = lower;\n            this.upper = upper;\n          }\n          int findPartition(Text key) {\n            for(int i=lower; i<upper; ++i) {\n              if (splitPoints[i].compareTo(key) >= 0) {\n                return i;\n              }\n            }\n            return upper;\n          }\n          void print(PrintStream strm) throws IOException {\n            for(int i = 0; i < 2*getLevel(); ++i) {\n              strm.print(' ');\n            }\n            strm.print(lower);\n            strm.print(\", \");\n            strm.println(upper);\n          }\n        }\n\n\n        /**\n         * Read the cut points from the given sequence file.\n         * @param fs the file system\n         * @param p the path to read\n         * @param job the job config\n         * @return the strings to split the partitions on\n         * @throws IOException\n         */\n        private static Text[] readPartitions(FileSystem fs, Path p,\n                                             JobConf job) throws IOException {\n          SequenceFile.Reader reader = new SequenceFile.Reader(fs, p, job);\n          List<Text> parts = new ArrayList<Text>();\n          Text key = new Text();\n          NullWritable value = NullWritable.get();\n          while (reader.next(key, value)) {\n            parts.add(key);\n            key = new Text();\n          }\n          reader.close();\n          return parts.toArray(new Text[parts.size()]);  \n        }\n\n        /**\n         * Given a sorted set of cut points, build a trie that will find the correct\n         * partition quickly.\n         * @param splits the list of cut points\n         * @param lower the lower bound of partitions 0..numPartitions-1\n         * @param upper the upper bound of partitions 0..numPartitions-1\n         * @param prefix the prefix that we have already checked against\n         * @param maxDepth the maximum depth we will build a trie for\n         * @return the trie node that will divide the splits correctly\n         */\n        private static TrieNode buildTrie(Text[] splits, int lower, int upper,\n                                          Text prefix, int maxDepth) {\n          int depth = prefix.getLength();\n          if (depth >= maxDepth || lower == upper) {\n            return new LeafTrieNode(depth, splits, lower, upper);\n          }\n          InnerTrieNode result = new InnerTrieNode(depth);\n          Text trial = new Text(prefix);\n          // append an extra byte on to the prefix\n          trial.append(new byte[1], 0, 1);\n          int currentBound = lower;\n          for(int ch = 0; ch < 255; ++ch) {\n            trial.getBytes()[depth] = (byte) (ch + 1);\n            lower = currentBound;\n            while (currentBound < upper) {\n              if (splits[currentBound].compareTo(trial) >= 0) {\n                break;\n              }\n              currentBound += 1;\n            }\n            trial.getBytes()[depth] = (byte) ch;\n            result.child[ch] = buildTrie(splits, lower, currentBound, trial,\n                                         maxDepth);\n          }\n          // pick up the rest\n          trial.getBytes()[depth] = 127;\n          result.child[255] = buildTrie(splits, currentBound, upper, trial,\n                                        maxDepth);\n          return result;\n        }\n\n        public void configure(JobConf job) {\n          try {\n            FileSystem fs = FileSystem.getLocal(job);\n            Path partFile = new Path(TeraInputFormat.PARTITION_FILENAME);\n            splitPoints = readPartitions(fs, partFile, job);\n            trie = buildTrie(splitPoints, 0, splitPoints.length, new Text(), 2);\n          } catch (IOException ie) {\n            throw new IllegalArgumentException(\"can't read paritions file\", ie);\n          }\n        }\n\n        public TotalOrderPartitioner() {\n        }\n\n        public int getPartition(Text key, Text value, int numPartitions) {\n          return trie.findPartition(key);\n        }\n\n      }\n\n      public int run(String[] args) throws Exception {\n        LOG.info(\"starting\");\n        JobConf job = (JobConf) getConf();\n        Path inputDir = new Path(args[0]);\n        inputDir = inputDir.makeQualified(inputDir.getFileSystem(job));\n        Path partitionFile = new Path(inputDir, TeraInputFormat.PARTITION_FILENAME);\n        URI partitionUri = new URI(partitionFile.toString() +\n                                   \"#\" + TeraInputFormat.PARTITION_FILENAME);\n        TeraInputFormat.setInputPaths(job, new Path(args[0]));\n        FileOutputFormat.setOutputPath(job, new Path(args[1]));\n        job.setJobName(\"TeraSort\");\n        job.setJarByClass(TeraSort.class);\n        job.setOutputKeyClass(Text.class);\n        job.setOutputValueClass(Text.class);\n        job.setInputFormat(TeraInputFormat.class);\n        job.setOutputFormat(TeraOutputFormat.class);\n        job.setPartitionerClass(TotalOrderPartitioner.class);\n        TeraInputFormat.writePartitionFile(job, partitionFile);\n        DistributedCache.addCacheFile(partitionUri, job);\n        DistributedCache.createSymlink(job);\n        job.setInt(\"dfs.replication\", 1);\n        TeraOutputFormat.setFinalSync(job, true);\n        JobClient.runJob(job);\n        LOG.info(\"done\");\n        return 0;\n      }\n\n      /**\n       * @param args\n       */\n\n      public static void main(String[] args) throws Exception {\n        int res = ToolRunner.run(new JobConf(), new TeraSort(), args);\n        System.exit(res);\n      }\n\n    }\n\n\n##Summary\n\nThis sample has demonstrated how to run a series of MapReduce jobs by using Azure HDInsight, where the data output for one job becomes the input for the next job in the series.\n\n##Next steps\n\nFor tutorials that guide you through running other samples and that provide instructions on using Pig, Hive, and MapReduce jobs on Azure HDInsight with Azure PowerShell, see the following topics:\n\n* [Get started with Azure HDInsight][hdinsight-get-started]\n* [Sample: Pi estimator][hdinsight-sample-pi-estimator]\n* [Sample: Word count][hdinsight-sample-wordcount]\n* [Sample: C# Streaming][hdinsight-sample-csharp-streaming]\n* [Use Pig with HDInsight][hdinsight-use-pig]\n* [Use Hive with HDInsight][hdinsight-use-hive]\n* [Azure HDInsight SDK documentation][hdinsight-sdk-documentation]\n\n[hdinsight-sdk-documentation]: http://msdnstage.redmond.corp.microsoft.com/library/dn479185.aspx\n\n\n[powershell-install-configure]: ../install-configure-powershell.md\n\n[hdinsight-get-started]: ../hdinsight-get-started.md\n\n[hdinsight-samples]: hdinsight-run-samples.md\n[hdinsight-sample-10gb-graysort]: hdinsight-sample-10gb-graysort.md\n[hdinsight-sample-csharp-streaming]: hdinsight-sample-csharp-streaming.md\n[hdinsight-sample-pi-estimator]: hdinsight-sample-pi-estimator.md\n[hdinsight-sample-wordcount]: hdinsight-sample-wordcount.md\n\n[hdinsight-use-hive]: hdinsight-use-hive.md\n[hdinsight-use-pig]: hdinsight-use-pig.md\n\ntest\n"
+}

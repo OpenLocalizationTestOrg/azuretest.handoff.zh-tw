@@ -1,0 +1,663 @@
+{
+  "nodes": [
+    {
+      "content": "How to partition data in DocumentDB with the .NET SDK | Microsoft Azure",
+      "pos": [
+        28,
+        99
+      ]
+    },
+    {
+      "content": "Learn how to use the Azure DocumentDB .NET SDK to partition (shard) data and route requests across multiple collections",
+      "pos": [
+        119,
+        238
+      ]
+    },
+    {
+      "content": "How to partition data in DocumentDB with the .NET SDK",
+      "pos": [
+        561,
+        614
+      ]
+    },
+    {
+      "content": "Azure DocumentDB is a document database service that enables you to seamlessly scale your account through provisioning of collections using the <bpt id=\"p1\">[</bpt>SDKs<ept id=\"p1\">](https://msdn.microsoft.com/library/azure/dn781482.aspx)</ept> and <bpt id=\"p2\">[</bpt>REST APIs<ept id=\"p2\">](https://msdn.microsoft.com/library/azure/dn781481.aspx)</ept> (also called <bpt id=\"p3\">**</bpt>sharding<ept id=\"p3\">**</ept>).",
+      "pos": [
+        616,
+        922
+      ]
+    },
+    {
+      "content": "In order to make it easier to develop partitioned applications and reduce the amount of boiler-plate code required for partitioning tasks, we have added functionality in the .NET SDK that makes it easier to build applications that are scaled out across multiple partitions.",
+      "pos": [
+        923,
+        1196
+      ]
+    },
+    {
+      "content": "In this article, we'll take a look at the classes and interfaces in the .NET SDK and how you can use them to develop partitioned applications.",
+      "pos": [
+        1198,
+        1340
+      ]
+    },
+    {
+      "content": "Partitioning with the DocumentDB SDK",
+      "pos": [
+        1345,
+        1381
+      ]
+    },
+    {
+      "content": "Before we dig deeper into partitioning, let's recap some basic DocumentDB concepts that relate to partitioning.",
+      "pos": [
+        1383,
+        1494
+      ]
+    },
+    {
+      "content": "Every Azure DocumentDB database account consists of a set of databases, each containing multiple collections, each of which can contain stored procedures, triggers, UDFs, documents, and related attachments.",
+      "pos": [
+        1495,
+        1701
+      ]
+    },
+    {
+      "content": "Collections can be treated as partitions in DocumentDB and have the following properties:",
+      "pos": [
+        1702,
+        1791
+      ]
+    },
+    {
+      "content": "Collections are physical partitions, not just logical containers.",
+      "pos": [
+        1795,
+        1860
+      ]
+    },
+    {
+      "content": "Hence there is a performance benefit in querying or processing documents which are located within the same collection.",
+      "pos": [
+        1861,
+        1979
+      ]
+    },
+    {
+      "content": "Collections are the boundary for ACID transactions, i.e., stored procedures and triggers.",
+      "pos": [
+        1982,
+        2071
+      ]
+    },
+    {
+      "content": "Collections do not enforce a schema, so they can be used for JSON documents of the same type or different types.",
+      "pos": [
+        2074,
+        2186
+      ]
+    },
+    {
+      "content": "Starting with version <bpt id=\"p1\">[</bpt>1.1.0 of the Azure DocumentDB .NET SDK<ept id=\"p1\">](http://www.nuget.org/packages/Microsoft.Azure.DocumentDB/)</ept>, you can perform document operations directly against a database.",
+      "pos": [
+        2188,
+        2375
+      ]
+    },
+    {
+      "content": "Internally the <bpt id=\"p1\">[</bpt>DocumentClient<ept id=\"p1\">](https://msdn.microsoft.com/library/azure/microsoft.azure.documents.client.documentclient.aspx)</ept> uses the PartitionResolver that you have specified for the database to route requests to the appropriate collection.",
+      "pos": [
+        2376,
+        2619
+      ]
+    },
+    {
+      "content": "Each PartitionResolver class is a concrete implementation of an <bpt id=\"p1\">[</bpt>IPartitionResolver<ept id=\"p1\">](https://msdn.microsoft.com/library/azure/microsoft.azure.documents.client.ipartitionresolver.aspx)</ept> interface that has three methods - <bpt id=\"p2\">[</bpt>GetPartitionKey<ept id=\"p2\">](https://msdn.microsoft.com/library/azure/microsoft.azure.documents.client.ipartitionresolver.getpartitionkey.aspx)</ept>, <bpt id=\"p3\">[</bpt>ResolveForCreate<ept id=\"p3\">](https://msdn.microsoft.com/library/azure/microsoft.azure.documents.client.ipartitionresolver.resolveforcreate.aspx)</ept> and <bpt id=\"p4\">[</bpt>ResolveForRead<ept id=\"p4\">](https://msdn.microsoft.com/library/azure/microsoft.azure.documents.client.ipartitionresolver.resolveforread.aspx)</ept>.",
+      "pos": [
+        2621,
+        3244
+      ]
+    },
+    {
+      "content": "LINQ queries and ReadFeed iterators use the ResolveForRead method internally to iterate over all the collections that match the partition key for the request.",
+      "pos": [
+        3245,
+        3403
+      ]
+    },
+    {
+      "content": "Similarly, create operations use the ResolveForCreate method to route creates to the right partition.",
+      "pos": [
+        3404,
+        3505
+      ]
+    },
+    {
+      "content": "There are no changes required for Replace, Delete and Read since they use documents, which already contain the reference to the corresponding collection.",
+      "pos": [
+        3506,
+        3659
+      ]
+    },
+    {
+      "content": "The SDK also includes two classes that support the two canonical partitioning techniques, hashing and range lookups, via a <bpt id=\"p1\">[</bpt>HashPartitionResolver<ept id=\"p1\">](https://msdn.microsoft.com/library/azure/microsoft.azure.documents.partitioning.hashpartitionresolver.aspx)</ept> and a <bpt id=\"p2\">[</bpt>RangePartitionResolver<ept id=\"p2\">](https://msdn.microsoft.com/library/azure/mt126047.aspx)</ept>.",
+      "pos": [
+        3661,
+        4003
+      ]
+    },
+    {
+      "content": "You can use these classes to easily add partitioning logic to your application.",
+      "pos": [
+        4004,
+        4083
+      ]
+    },
+    {
+      "content": "Add partitioning logic and register the PartitionResolver",
+      "pos": [
+        4090,
+        4147
+      ]
+    },
+    {
+      "pos": [
+        4150,
+        4375
+      ],
+      "content": "Here's a snippet showing how to create a <bpt id=\"p1\">[</bpt>HashPartitionResolver<ept id=\"p1\">](https://msdn.microsoft.com/library/azure/microsoft.azure.documents.partitioning.hashpartitionresolver.aspx)</ept> and register with the DocumentClient for a database."
+    },
+    {
+      "content": "Create documents in a partition",
+      "pos": [
+        4989,
+        5020
+      ]
+    },
+    {
+      "content": "Once the PartitionResolver is registered, you can perform creates and queries directly against the database as shown below.",
+      "pos": [
+        5024,
+        5147
+      ]
+    },
+    {
+      "content": "In this example, the SDK uses the PartitionResolver to extract the UserId, hash it, and then use that value to route the create operation to the correct collection.",
+      "pos": [
+        5148,
+        5312
+      ]
+    },
+    {
+      "content": "Create queries against partitions",
+      "pos": [
+        5634,
+        5667
+      ]
+    },
+    {
+      "content": "You can query using the <bpt id=\"p1\">[</bpt>CreateDocumentQuery<ept id=\"p1\">]( https://msdn.microsoft.com/library/azure/microsoft.azure.documents.linq.documentqueryable.createdocumentquery.aspx)</ept> method by passing in the database and a partition key.",
+      "pos": [
+        5671,
+        5888
+      ]
+    },
+    {
+      "content": "The query returns a single result-set over all the collections within the database that map to the partition key.",
+      "pos": [
+        5889,
+        6002
+      ]
+    },
+    {
+      "content": "Create queries against all collections in the database",
+      "pos": [
+        6488,
+        6542
+      ]
+    },
+    {
+      "content": "You can also query all collections within the database and enumerate the results as show below, by skipping the partition key argument.",
+      "pos": [
+        6545,
+        6680
+      ]
+    },
+    {
+      "content": "Hash Partition Resolver",
+      "pos": [
+        7076,
+        7099
+      ]
+    },
+    {
+      "content": "With hash partitioning, partitions are assigned based on the value of a hash function, allowing you to evenly distribute requests and data across a number of partitions.",
+      "pos": [
+        7100,
+        7269
+      ]
+    },
+    {
+      "content": "This approach is commonly used to partition data produced or consumed from a large number of distinct clients, and is useful for storing user profiles, catalog items, and IoT (\"Internet of Things\") telemetry data.",
+      "pos": [
+        7270,
+        7483
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Hash Partitioning:<ept id=\"p1\">**</ept>",
+      "pos": [
+        7485,
+        7507
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">![</ph>Diagram illustrating how hash partitioning evenly distributes requests across partitions<ph id=\"ph2\">](media/documentdb-sharding/partition-hash.png \"Hash partitioning\")</ph>",
+      "pos": [
+        7508,
+        7665
+      ]
+    },
+    {
+      "content": "A simple hash partitioning scheme across <bpt id=\"p1\">*</bpt>N<ept id=\"p1\">*</ept> collections would be to take any document, compute <bpt id=\"p2\">*</bpt>hash(d) mod N<ept id=\"p2\">*</ept> to determine which collection it's placed in.",
+      "pos": [
+        7667,
+        7824
+      ]
+    },
+    {
+      "content": "But a problem with this simple technique is that it does not work well when you add new collections, or remove collections as this would require almost all the data to get reshuffled.",
+      "pos": [
+        7825,
+        8008
+      ]
+    },
+    {
+      "content": "[Consistent hashing] (http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.23.3738) is a well-known algorithm that addresses this by implementing a hashing scheme that minimizes the amount of data movement required during adding or removing collections.",
+      "pos": [
+        8009,
+        8265
+      ]
+    },
+    {
+      "content": "The <bpt id=\"p1\">[</bpt>HashPartitionResolver<ept id=\"p1\">](https://msdn.microsoft.com/library/azure/microsoft.azure.documents.partitioning.hashpartitionresolver.aspx)</ept> class implements logic to build a consistent hash ring over the hash function specified in the <bpt id=\"p2\">[</bpt>IHashGenerator<ept id=\"p2\">](https://msdn.microsoft.com/library/azure/microsoft.azure.documents.partitioning.ihashgenerator.aspx)</ept> interface.",
+      "pos": [
+        8267,
+        8626
+      ]
+    },
+    {
+      "content": "By default, the HashPartitionResolver uses an MD5 hash function, but you can swap this out with your own hashing implementation.",
+      "pos": [
+        8627,
+        8755
+      ]
+    },
+    {
+      "content": "The HashPartitionResolver internally creates 16 hashes or \"virtual nodes\" within the hash ring for each collection in order to achieve a more uniform distribution of documents across the collections, but you can vary this number to trade off data skewness with the amount of client side computation.",
+      "pos": [
+        8756,
+        9055
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Consistent hashing with HashPartitionResolver:<ept id=\"p1\">**</ept>",
+      "pos": [
+        9057,
+        9107
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">![</ph>Diagram illustrating how HashPartitionResolver creates a hash ring<ph id=\"ph2\">](media/documentdb-sharding/HashPartitionResolver.JPG \"Consistent hashing\")</ph>",
+      "pos": [
+        9108,
+        9251
+      ]
+    },
+    {
+      "content": "Range Partition Resolver",
+      "pos": [
+        9256,
+        9280
+      ]
+    },
+    {
+      "content": "In range partitioning, partitions are assigned based on whether the partition key is within a certain range.",
+      "pos": [
+        9282,
+        9390
+      ]
+    },
+    {
+      "content": "This is commonly used for partitioning with time stamp properties (e.g., eventTime between Apr 1, 2015 and Apr 14, 2015).",
+      "pos": [
+        9391,
+        9512
+      ]
+    },
+    {
+      "content": "The <bpt id=\"p1\">[</bpt>RangePartitionResolver<ept id=\"p1\">](https://msdn.microsoft.com/library/azure/mt126047.aspx)</ept> class helps you maintain a mapping between a Range\\&lt;T\\&gt; and collection self-link.",
+      "pos": [
+        9513,
+        9679
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt>Range\\&lt;T\\&gt;<ept id=\"p1\">](https://msdn.microsoft.com/library/azure/mt126048.aspx)</ept> is a simple class that manages ranges of any types that implement IComparable\\&lt;T\\&gt; and IEquatable\\&lt;T\\&gt; like strings or numbers.",
+      "pos": [
+        9682,
+        9878
+      ]
+    },
+    {
+      "content": "For reads and creates, you can pass in any arbitrary range, and the resolver identifies all the candidate collections by identifying the ranges of the partitions that intersect with the requested range.",
+      "pos": [
+        9879,
+        10081
+      ]
+    },
+    {
+      "content": "This functionality can be useful when performing range queries against time series data.",
+      "pos": [
+        10082,
+        10170
+      ]
+    },
+    {
+      "content": "Range Partitioning:",
+      "pos": [
+        10174,
+        10193
+      ]
+    },
+    {
+      "content": "Diagram illustrating how range partitioning evenly distributes requests across partitions",
+      "pos": [
+        10202,
+        10291
+      ]
+    },
+    {
+      "content": "A special case of range partitioning is when the range is just a single discrete value, sometimes called \"lookup partitioning\".",
+      "pos": [
+        10364,
+        10491
+      ]
+    },
+    {
+      "content": "This is commonly used for partitioning by region (e.g. the partition for Scandinavia contains Norway, Denmark, and Sweden) or for partitioning tenants in a multi-tenant application.",
+      "pos": [
+        10492,
+        10673
+      ]
+    },
+    {
+      "content": "Samples",
+      "pos": [
+        10678,
+        10685
+      ]
+    },
+    {
+      "pos": [
+        10688,
+        11008
+      ],
+      "content": "Take a look at the  <bpt id=\"p1\">[</bpt>DocumentDB Partitioning Samples Github project<ept id=\"p1\">](https://github.com/Azure/azure-documentdb-net/tree/master/samples/code-samples/Partitioning)</ept> containing code snippets on how to use these PartitionResolvers and extend them to implement your own resolvers to fit specific use cases, like the following:"
+    },
+    {
+      "content": "How to specify an arbitrary lambda expression for GetPartitionKey and use it to implement compound partitioning keys or to partition different types of objects differently.",
+      "pos": [
+        11013,
+        11185
+      ]
+    },
+    {
+      "content": "How to create a simple <bpt id=\"p1\">[</bpt>LookupPartitionResolver<ept id=\"p1\">](https://github.com/Azure/azure-documentdb-net/tree/master/samples/code-samples/Partitioning/Partitioners/LookupPartitionResolver.cs)</ept> that uses a manual lookup table to perform partitioning.",
+      "pos": [
+        11188,
+        11426
+      ]
+    },
+    {
+      "content": "This pattern is commonly used for partitioning based on discrete values like region, tenant ID or application name.",
+      "pos": [
+        11427,
+        11542
+      ]
+    },
+    {
+      "pos": [
+        11545,
+        11903
+      ],
+      "content": "How to create a <bpt id=\"p1\">[</bpt>ManagedPartitionResolver<ept id=\"p1\">](https://github.com/Azure/azure-documentdb-net/tree/master/samples/code-samples/Partitioning/Partitioners/ManagedHashPartitionResolver.cs)</ept> that creates collections automatically based on a template that defines a naming scheme, IndexingPolicy and stored procedures that need to be registered against new collections."
+    },
+    {
+      "pos": [
+        11906,
+        12166
+      ],
+      "content": "How to create a scheme-less <bpt id=\"p1\">[</bpt>SpilloverPartitionResolver<ept id=\"p1\">](https://github.com/Azure/azure-documentdb-net/tree/master/samples/code-samples/Partitioning/Partitioners/SpilloverPartitionResolver.cs)</ept> that simply creates new collections as the old collections fill up."
+    },
+    {
+      "content": "How to serialize and deserialize your PartitionResolver state as JSON, so that you can share between processes and across shutdowns.",
+      "pos": [
+        12169,
+        12301
+      ]
+    },
+    {
+      "content": "You can persist these in config files, or even in a DocumentDB collection.",
+      "pos": [
+        12302,
+        12376
+      ]
+    },
+    {
+      "content": "A <bpt id=\"p1\">[</bpt>DocumentClientHashPartitioningManager<ept id=\"p1\">](https://github.com/Azure/azure-documentdb-net/tree/master/samples/code-samples/Partitioning/Util/DocumentClientHashPartitioningManager.cs)</ept> class for dynamically adding and removing partitions to a database partitioned based on consistent hashing.",
+      "pos": [
+        12379,
+        12667
+      ]
+    },
+    {
+      "content": "Internally it uses a <bpt id=\"p1\">[</bpt>TransitionHashPartitionResolver<ept id=\"p1\">]( https://github.com/Azure/azure-documentdb-net/tree/master/samples/code-samples/Partitioning/Partitioners/TransitionHashPartitionResolver.cs)</ept> to route reads and writes during migration using one of four modes - read from the old partitioning scheme (ReadCurrent), the new one (ReadNext), merge results from both (ReadBoth) or be unavailable during migration (None).",
+      "pos": [
+        12668,
+        13088
+      ]
+    },
+    {
+      "content": "The samples are open source and we encourage you to submit pull requests with contributions that could benefit other DocumentDB developers.",
+      "pos": [
+        13090,
+        13229
+      ]
+    },
+    {
+      "content": "Please refer to the <bpt id=\"p1\">[</bpt>Contribution guidelines<ept id=\"p1\">](https://github.com/Azure/azure-documentdb-net/blob/master/Contributing.md)</ept> for guidance on how to contribute.",
+      "pos": [
+        13230,
+        13385
+      ]
+    },
+    {
+      "pos": [
+        13390,
+        13532
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> Collection creates are rate-limited by DocumentDB, so some of the sample methods shown here might take a few minutes to complete."
+    },
+    {
+      "content": "FAQ",
+      "pos": [
+        13536,
+        13539
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Why does DocumentDB support client-side partitioning vs. server-side partitioning?<ept id=\"p1\">**</ept>",
+      "pos": [
+        13540,
+        13626
+      ]
+    },
+    {
+      "content": "DocumentDB supports client-side partitioning for a couple of reasons:",
+      "pos": [
+        13628,
+        13697
+      ]
+    },
+    {
+      "content": "It is really difficult to abstract away the concept of a collection from developers without compromising one of the three among consistent indexing/querying, high availability and ACID transaction guarantees.",
+      "pos": [
+        13701,
+        13909
+      ]
+    },
+    {
+      "content": "Document databases often require flexibility in terms of defining partitioning strategies, which a server-side approach might not be able to accommodate.",
+      "pos": [
+        13913,
+        14066
+      ]
+    },
+    {
+      "content": "Why is partitioning not supported in other platforms (Node.js, Java, or Python)?",
+      "pos": [
+        14071,
+        14151
+      ]
+    },
+    {
+      "content": "We will gradually rollout partitioning support to other platforms based on feedback from the .NET SDK customers.",
+      "pos": [
+        14155,
+        14267
+      ]
+    },
+    {
+      "content": "How do I add or remove a collection to my partitioning scheme?",
+      "pos": [
+        14271,
+        14333
+      ]
+    },
+    {
+      "content": "Take a look at the implementation of DocumentClientHashPartitioningManager in the samples project for an example of how you can implement repartitioning.",
+      "pos": [
+        14337,
+        14490
+      ]
+    },
+    {
+      "content": "How do I persist or share my partitioning configuration with other clients?",
+      "pos": [
+        14494,
+        14569
+      ]
+    },
+    {
+      "content": "You can serialize the partitioner state as JSON and store in configuration files, or even within DocumentDB collections.",
+      "pos": [
+        14573,
+        14693
+      ]
+    },
+    {
+      "content": "Take a look at the RunSerializeDeserializeSample method in the samples project for an example.",
+      "pos": [
+        14694,
+        14788
+      ]
+    },
+    {
+      "content": "How do I chain various partitioning techniques?",
+      "pos": [
+        14792,
+        14839
+      ]
+    },
+    {
+      "content": "You can chain PartitionResolvers by implementing your own IPartitionResolver that internally uses one or more existing resolvers.",
+      "pos": [
+        14843,
+        14972
+      ]
+    },
+    {
+      "content": "Take a look at TransitionHashPartitionResolver in the samples project for an example.",
+      "pos": [
+        14973,
+        15058
+      ]
+    },
+    {
+      "content": "References",
+      "pos": [
+        15062,
+        15072
+      ]
+    },
+    {
+      "content": "Partitioning code samples on Github",
+      "pos": [
+        15076,
+        15111
+      ]
+    },
+    {
+      "content": "Partitioning data with DocumentDB concepts",
+      "pos": [
+        15209,
+        15251
+      ]
+    },
+    {
+      "content": "DocumentDB collections and performance levels",
+      "pos": [
+        15286,
+        15331
+      ]
+    },
+    {
+      "content": "DocumentDB .NET SDK Documentation at MSDN",
+      "pos": [
+        15370,
+        15411
+      ]
+    },
+    {
+      "content": "DocumentDB .NET samples",
+      "pos": [
+        15472,
+        15495
+      ]
+    },
+    {
+      "content": "DocumentDB Limits",
+      "pos": [
+        15547,
+        15564
+      ]
+    },
+    {
+      "content": "DocumentDB Blog on Performance Tips",
+      "pos": [
+        15591,
+        15626
+      ]
+    },
+    {
+      "content": "test",
+      "pos": [
+        15722,
+        15726
+      ]
+    }
+  ],
+  "content": "<properties \n    pageTitle=\"How to partition data in DocumentDB with the .NET SDK | Microsoft Azure\" \n    description=\"Learn how to use the Azure DocumentDB .NET SDK to partition (shard) data and route requests across multiple collections\" \n    services=\"documentdb\" \n    authors=\"arramac\" \n    manager=\"jhubbard\" \n    editor=\"cgronlun\" \n    documentationCenter=\"\"/>\n\n<tags \n    ms.service=\"documentdb\" \n    ms.workload=\"data-services\" \n    ms.tgt_pltfrm=\"na\" \n    ms.devlang=\"na\" \n    ms.topic=\"article\" \n    ms.date=\"06/16/2015\" \n    ms.author=\"arramac\"/>\n\n# How to partition data in DocumentDB with the .NET SDK\n\nAzure DocumentDB is a document database service that enables you to seamlessly scale your account through provisioning of collections using the [SDKs](https://msdn.microsoft.com/library/azure/dn781482.aspx) and [REST APIs](https://msdn.microsoft.com/library/azure/dn781481.aspx) (also called **sharding**). In order to make it easier to develop partitioned applications and reduce the amount of boiler-plate code required for partitioning tasks, we have added functionality in the .NET SDK that makes it easier to build applications that are scaled out across multiple partitions.\n\nIn this article, we'll take a look at the classes and interfaces in the .NET SDK and how you can use them to develop partitioned applications.\n\n## Partitioning with the DocumentDB SDK\n\nBefore we dig deeper into partitioning, let's recap some basic DocumentDB concepts that relate to partitioning. Every Azure DocumentDB database account consists of a set of databases, each containing multiple collections, each of which can contain stored procedures, triggers, UDFs, documents, and related attachments. Collections can be treated as partitions in DocumentDB and have the following properties:\n\n- Collections are physical partitions, not just logical containers. Hence there is a performance benefit in querying or processing documents which are located within the same collection.\n- Collections are the boundary for ACID transactions, i.e., stored procedures and triggers.\n- Collections do not enforce a schema, so they can be used for JSON documents of the same type or different types.\n\nStarting with version [1.1.0 of the Azure DocumentDB .NET SDK](http://www.nuget.org/packages/Microsoft.Azure.DocumentDB/), you can perform document operations directly against a database. Internally the [DocumentClient](https://msdn.microsoft.com/library/azure/microsoft.azure.documents.client.documentclient.aspx) uses the PartitionResolver that you have specified for the database to route requests to the appropriate collection.\n\nEach PartitionResolver class is a concrete implementation of an [IPartitionResolver](https://msdn.microsoft.com/library/azure/microsoft.azure.documents.client.ipartitionresolver.aspx) interface that has three methods - [GetPartitionKey](https://msdn.microsoft.com/library/azure/microsoft.azure.documents.client.ipartitionresolver.getpartitionkey.aspx), [ResolveForCreate](https://msdn.microsoft.com/library/azure/microsoft.azure.documents.client.ipartitionresolver.resolveforcreate.aspx) and [ResolveForRead](https://msdn.microsoft.com/library/azure/microsoft.azure.documents.client.ipartitionresolver.resolveforread.aspx). LINQ queries and ReadFeed iterators use the ResolveForRead method internally to iterate over all the collections that match the partition key for the request. Similarly, create operations use the ResolveForCreate method to route creates to the right partition. There are no changes required for Replace, Delete and Read since they use documents, which already contain the reference to the corresponding collection.\n\nThe SDK also includes two classes that support the two canonical partitioning techniques, hashing and range lookups, via a [HashPartitionResolver](https://msdn.microsoft.com/library/azure/microsoft.azure.documents.partitioning.hashpartitionresolver.aspx) and a [RangePartitionResolver](https://msdn.microsoft.com/library/azure/mt126047.aspx). You can use these classes to easily add partitioning logic to your application.  \n\n## Add partitioning logic and register the PartitionResolver \n\nHere's a snippet showing how to create a [HashPartitionResolver](https://msdn.microsoft.com/library/azure/microsoft.azure.documents.partitioning.hashpartitionresolver.aspx) and register with the DocumentClient for a database.\n\n```cs\n// Create some collections to partition data.\nDocumentCollection collection1 = await client.CreateDocumentCollectionAsync(...);\nDocumentCollection collection2 = await client.CreateDocumentCollectionAsync(...);\n\n// Initialize a HashPartitionResolver using the \"UserId\" property and the two collection self-links.\nHashPartitionResolver hashResolver = new HashPartitionResolver(\n    u => ((UserProfile)u).UserId, \n    new string[] { collection1.SelfLink, collection2.SelfLink });\n\n// Register the PartitionResolver with the database.\nthis.client.PartitionResolvers[database.SelfLink] = hashResolver;\n\n```\n\n## Create documents in a partition  \n\nOnce the PartitionResolver is registered, you can perform creates and queries directly against the database as shown below. In this example, the SDK uses the PartitionResolver to extract the UserId, hash it, and then use that value to route the create operation to the correct collection.\n\n```cs\nDocument johnDocument = await this.client.CreateDocumentAsync(\n    database.SelfLink, new UserProfile(\"J1\", \"@John\", Region.UnitedStatesEast));\nDocument ryanDocument = await this.client.CreateDocumentAsync(\n    database.SelfLink, new UserProfile(\"U4\", \"@Ryan\", Region.AsiaPacific, UserStatus.AppearAway));\n```\n\n## Create queries against partitions  \n\nYou can query using the [CreateDocumentQuery]( https://msdn.microsoft.com/library/azure/microsoft.azure.documents.linq.documentqueryable.createdocumentquery.aspx) method by passing in the database and a partition key. The query returns a single result-set over all the collections within the database that map to the partition key.  \n\n```cs\n// Query for John's document by ID - uses PartitionResolver to restrict the query to the partitions \n// containing @John. Again the query uses the database self link, and relies on the hash resolver \n// to route the appropriate collection.\nvar query = this.client.CreateDocumentQuery<UserProfile>(\n    database.SelfLink, null, partitionResolver.GetPartitionKey(johnProfile))\n    .Where(u => u.UserName == \"@John\");\njohnProfile = query.AsEnumerable().FirstOrDefault();\n```\n\n## Create queries against all collections in the database \n\nYou can also query all collections within the database and enumerate the results as show below, by skipping the partition key argument.\n\n```cs\n// Query for all \"Available\" users. Here since there is no partition key, the query is serially executed \n// across each partition/collection and returns a single result-set. \nquery = this.client.CreateDocumentQuery<UserProfile>(database.SelfLink)\n    .Where(u => u.Status == UserStatus.Available);\nforeach (UserProfile activeUser in query)\n{\n    Console.WriteLine(activeUser);\n}\n```\n\n## Hash Partition Resolver\nWith hash partitioning, partitions are assigned based on the value of a hash function, allowing you to evenly distribute requests and data across a number of partitions. This approach is commonly used to partition data produced or consumed from a large number of distinct clients, and is useful for storing user profiles, catalog items, and IoT (\"Internet of Things\") telemetry data.\n\n**Hash Partitioning:**\n![Diagram illustrating how hash partitioning evenly distributes requests across partitions](media/documentdb-sharding/partition-hash.png \"Hash partitioning\")\n\nA simple hash partitioning scheme across *N* collections would be to take any document, compute *hash(d) mod N* to determine which collection it's placed in. But a problem with this simple technique is that it does not work well when you add new collections, or remove collections as this would require almost all the data to get reshuffled. [Consistent hashing] (http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.23.3738) is a well-known algorithm that addresses this by implementing a hashing scheme that minimizes the amount of data movement required during adding or removing collections.\n\nThe [HashPartitionResolver](https://msdn.microsoft.com/library/azure/microsoft.azure.documents.partitioning.hashpartitionresolver.aspx) class implements logic to build a consistent hash ring over the hash function specified in the [IHashGenerator](https://msdn.microsoft.com/library/azure/microsoft.azure.documents.partitioning.ihashgenerator.aspx) interface. By default, the HashPartitionResolver uses an MD5 hash function, but you can swap this out with your own hashing implementation. The HashPartitionResolver internally creates 16 hashes or \"virtual nodes\" within the hash ring for each collection in order to achieve a more uniform distribution of documents across the collections, but you can vary this number to trade off data skewness with the amount of client side computation.\n\n**Consistent hashing with HashPartitionResolver:**\n![Diagram illustrating how HashPartitionResolver creates a hash ring](media/documentdb-sharding/HashPartitionResolver.JPG \"Consistent hashing\")\n\n## Range Partition Resolver\n\nIn range partitioning, partitions are assigned based on whether the partition key is within a certain range. This is commonly used for partitioning with time stamp properties (e.g., eventTime between Apr 1, 2015 and Apr 14, 2015). The [RangePartitionResolver](https://msdn.microsoft.com/library/azure/mt126047.aspx) class helps you maintain a mapping between a Range\\<T\\> and collection self-link. \n\n[Range\\<T\\>](https://msdn.microsoft.com/library/azure/mt126048.aspx) is a simple class that manages ranges of any types that implement IComparable\\<T\\> and IEquatable\\<T\\> like strings or numbers. For reads and creates, you can pass in any arbitrary range, and the resolver identifies all the candidate collections by identifying the ranges of the partitions that intersect with the requested range. This functionality can be useful when performing range queries against time series data.\n\n**Range Partitioning:**  \n\n![ Diagram illustrating how range partitioning evenly distributes requests across partitions](media/documentdb-sharding/partition-range.png \"Range partitioning\")  \n\nA special case of range partitioning is when the range is just a single discrete value, sometimes called \"lookup partitioning\". This is commonly used for partitioning by region (e.g. the partition for Scandinavia contains Norway, Denmark, and Sweden) or for partitioning tenants in a multi-tenant application.\n\n## Samples \n\nTake a look at the  [DocumentDB Partitioning Samples Github project](https://github.com/Azure/azure-documentdb-net/tree/master/samples/code-samples/Partitioning) containing code snippets on how to use these PartitionResolvers and extend them to implement your own resolvers to fit specific use cases, like the following: \n\n* How to specify an arbitrary lambda expression for GetPartitionKey and use it to implement compound partitioning keys or to partition different types of objects differently.\n* How to create a simple [LookupPartitionResolver](https://github.com/Azure/azure-documentdb-net/tree/master/samples/code-samples/Partitioning/Partitioners/LookupPartitionResolver.cs) that uses a manual lookup table to perform partitioning. This pattern is commonly used for partitioning based on discrete values like region, tenant ID or application name.\n* How to create a [ManagedPartitionResolver](https://github.com/Azure/azure-documentdb-net/tree/master/samples/code-samples/Partitioning/Partitioners/ManagedHashPartitionResolver.cs) that creates collections automatically based on a template that defines a naming scheme, IndexingPolicy and stored procedures that need to be registered against new collections.\n* How to create a scheme-less [SpilloverPartitionResolver](https://github.com/Azure/azure-documentdb-net/tree/master/samples/code-samples/Partitioning/Partitioners/SpilloverPartitionResolver.cs) that simply creates new collections as the old collections fill up.\n* How to serialize and deserialize your PartitionResolver state as JSON, so that you can share between processes and across shutdowns. You can persist these in config files, or even in a DocumentDB collection.\n* A [DocumentClientHashPartitioningManager](https://github.com/Azure/azure-documentdb-net/tree/master/samples/code-samples/Partitioning/Util/DocumentClientHashPartitioningManager.cs) class for dynamically adding and removing partitions to a database partitioned based on consistent hashing. Internally it uses a [TransitionHashPartitionResolver]( https://github.com/Azure/azure-documentdb-net/tree/master/samples/code-samples/Partitioning/Partitioners/TransitionHashPartitionResolver.cs) to route reads and writes during migration using one of four modes - read from the old partitioning scheme (ReadCurrent), the new one (ReadNext), merge results from both (ReadBoth) or be unavailable during migration (None).\n\nThe samples are open source and we encourage you to submit pull requests with contributions that could benefit other DocumentDB developers. Please refer to the [Contribution guidelines](https://github.com/Azure/azure-documentdb-net/blob/master/Contributing.md) for guidance on how to contribute.  \n\n>[AZURE.NOTE] Collection creates are rate-limited by DocumentDB, so some of the sample methods shown here might take a few minutes to complete.\n\n##FAQ\n**Why does DocumentDB support client-side partitioning vs. server-side partitioning?**\n\nDocumentDB supports client-side partitioning for a couple of reasons:\n\n- It is really difficult to abstract away the concept of a collection from developers without compromising one of the three among consistent indexing/querying, high availability and ACID transaction guarantees. \n- Document databases often require flexibility in terms of defining partitioning strategies, which a server-side approach might not be able to accommodate. \n\n**Why is partitioning not supported in other platforms (Node.js, Java, or Python)?**\n\nWe will gradually rollout partitioning support to other platforms based on feedback from the .NET SDK customers.\n\n**How do I add or remove a collection to my partitioning scheme?**\n\nTake a look at the implementation of DocumentClientHashPartitioningManager in the samples project for an example of how you can implement repartitioning.\n\n**How do I persist or share my partitioning configuration with other clients?**\n\nYou can serialize the partitioner state as JSON and store in configuration files, or even within DocumentDB collections. Take a look at the RunSerializeDeserializeSample method in the samples project for an example.\n\n**How do I chain various partitioning techniques?**\n\nYou can chain PartitionResolvers by implementing your own IPartitionResolver that internally uses one or more existing resolvers. Take a look at TransitionHashPartitionResolver in the samples project for an example.\n\n##References\n* [Partitioning code samples on Github](https://github.com/Azure/azure-documentdb-net/tree/master/samples/code-samples/Partitioning)\n* [Partitioning data with DocumentDB concepts](documentdb-partition-data.md)\n* [DocumentDB collections and performance levels](documentdb-performance-levels.md)\n* [DocumentDB .NET SDK Documentation at MSDN](https://msdn.microsoft.com/library/azure/dn948556.aspx)\n* [DocumentDB .NET samples](https://github.com/Azure/azure-documentdb-net)\n* [DocumentDB Limits](documentdb-limits.md)\n* [DocumentDB Blog on Performance Tips](http://azure.microsoft.com/blog/2015/01/20/performance-tips-for-azure-documentdb-part-1-2/)\n \ntest\n"
+}

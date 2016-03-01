@@ -1,0 +1,411 @@
+{
+  "nodes": [
+    {
+      "content": "SSO for On Prem IWA Apps Using KCD with Application Proxy",
+      "pos": [
+        27,
+        84
+      ]
+    },
+    {
+      "content": "Covers how to get up and running with Azure AD Application Proxy.",
+      "pos": [
+        103,
+        168
+      ]
+    },
+    {
+      "content": "SSO for on-prem IWA apps using KCD with Application Proxy",
+      "pos": [
+        480,
+        537
+      ]
+    },
+    {
+      "content": "You can enable Single Sign On (SSO) to your applications using Integrated Windows Authentication (IWA) by giving Application Proxy Connectors permission in Active Directory to impersonate users and send and receive tokens on their behalf.",
+      "pos": [
+        540,
+        778
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.IMPORTANT]</ph> Application Proxy is a feature that is available only if you upgraded to the Premium or Basic edition of Azure Active Directory.",
+      "pos": [
+        782,
+        928
+      ]
+    },
+    {
+      "content": "For more information, see <bpt id=\"p1\">[</bpt>Azure Active Directory editions<ept id=\"p1\">](active-directory-editions.md)</ept>.",
+      "pos": [
+        929,
+        1019
+      ]
+    },
+    {
+      "content": "Network diagram",
+      "pos": [
+        1025,
+        1040
+      ]
+    },
+    {
+      "content": "Microsoft AAD authentication flow diagram",
+      "pos": [
+        1044,
+        1085
+      ]
+    },
+    {
+      "content": "This diagram explains the flow when a user attempts to access an on-prem application that uses IWA.",
+      "pos": [
+        1162,
+        1261
+      ]
+    },
+    {
+      "content": "The general flow is:",
+      "pos": [
+        1262,
+        1282
+      ]
+    },
+    {
+      "content": "The user enters the URL to access the on-prem application through Application Proxy.",
+      "pos": [
+        1287,
+        1371
+      ]
+    },
+    {
+      "content": "Application Proxy redirects the request to Azure AD authentication services to preauthenticate.",
+      "pos": [
+        1375,
+        1470
+      ]
+    },
+    {
+      "content": "At this point, Azure AD applies any applicable authentication and authorization policies, such as multifactor authentication.",
+      "pos": [
+        1471,
+        1596
+      ]
+    },
+    {
+      "content": "If the user is validated, Azure AD creates a token and sends it to the user.",
+      "pos": [
+        1597,
+        1673
+      ]
+    },
+    {
+      "content": "The user passes the token to Application Proxy.",
+      "pos": [
+        1677,
+        1724
+      ]
+    },
+    {
+      "content": "Application Proxy validates the token and retrieves the User Principal Name (UPN) from it, and then sends the request, the UPN, and the Service Principal Name (SPN) to the Connector through a dually authenticated secure channel.",
+      "pos": [
+        1728,
+        1956
+      ]
+    },
+    {
+      "content": "The Connector performs Kerberos Constrained Delegation (KCD) negotiation with the on-prem AD, impersonating the user to get a Kerberos token to the application.",
+      "pos": [
+        1960,
+        2120
+      ]
+    },
+    {
+      "content": "Active Directory sends the Kerberos token for the application to the Connector.",
+      "pos": [
+        2124,
+        2203
+      ]
+    },
+    {
+      "content": "The Connector sends the original request to the application server, using the Kerberos token it received from AD.",
+      "pos": [
+        2207,
+        2320
+      ]
+    },
+    {
+      "content": "The application sends the response to the Connector which is then returned to the Application Proxy service and finally to the user.",
+      "pos": [
+        2324,
+        2456
+      ]
+    },
+    {
+      "content": "Prerequisites",
+      "pos": [
+        2462,
+        2475
+      ]
+    },
+    {
+      "content": "Make sure that your apps, such as your SharePoint Web apps, are set to use Integrated Windows Authentication.",
+      "pos": [
+        2480,
+        2589
+      ]
+    },
+    {
+      "content": "For more information see <bpt id=\"p1\">[</bpt>Enable Support for Kerberos Authentication<ept id=\"p1\">](https://technet.microsoft.com/library/dd759186.aspx)</ept>, or for SharePoint see <bpt id=\"p2\">[</bpt>Plan for Kerberos authentication in SharePoint 2013<ept id=\"p2\">](https://technet.microsoft.com/library/ee806870.aspx)</ept>.",
+      "pos": [
+        2590,
+        2843
+      ]
+    },
+    {
+      "content": "Create Service Principal Names for your applications.",
+      "pos": [
+        2847,
+        2900
+      ]
+    },
+    {
+      "content": "Make sure that the server running the Connector and the server running the app you are publishing are domain joined and part of the same domain.",
+      "pos": [
+        2904,
+        3048
+      ]
+    },
+    {
+      "content": "For more information on domain join, see <bpt id=\"p1\">[</bpt>Join a Computer to a Domain<ept id=\"p1\">](https://technet.microsoft.com/library/dd807102.aspx)</ept>.",
+      "pos": [
+        3049,
+        3173
+      ]
+    },
+    {
+      "content": "Active Directory configuration",
+      "pos": [
+        3179,
+        3209
+      ]
+    },
+    {
+      "content": "The Active Directory configuration varies, depending on whether your Application Proxy Connector and the published server are in the same domain or not.",
+      "pos": [
+        3211,
+        3363
+      ]
+    },
+    {
+      "content": "Connector and published server in the same domain",
+      "pos": [
+        3369,
+        3418
+      ]
+    },
+    {
+      "content": "In Active Directory, go to <bpt id=\"p1\">**</bpt>Tools<ept id=\"p1\">**</ept> &gt; <bpt id=\"p2\">**</bpt>Users and Computers<ept id=\"p2\">**</ept>.",
+      "pos": [
+        3420,
+        3483
+      ]
+    },
+    {
+      "content": "Select the server running the Connector.",
+      "pos": [
+        3484,
+        3524
+      ]
+    },
+    {
+      "content": "Right click and select <bpt id=\"p1\">**</bpt>Properties<ept id=\"p1\">**</ept> &gt; <bpt id=\"p2\">**</bpt>Delegation<ept id=\"p2\">**</ept>.",
+      "pos": [
+        3525,
+        3580
+      ]
+    },
+    {
+      "content": "Select <bpt id=\"p1\">**</bpt>Trust this computer for delegation to specified services only<ept id=\"p1\">**</ept> and under <bpt id=\"p2\">**</bpt>Services to which this account can present delegated credentials<ept id=\"p2\">**</ept>, add the value for the Service Principal Name (SPN) identity of the application server.",
+      "pos": [
+        3581,
+        3820
+      ]
+    },
+    {
+      "content": "This enables the Application Proxy Connector to impersonate users in AD against the applications defined in the list.",
+      "pos": [
+        3821,
+        3938
+      ]
+    },
+    {
+      "content": "Connector-SVR Properties window screenshot",
+      "pos": [
+        3942,
+        3984
+      ]
+    },
+    {
+      "content": "Connector and published server in different domains",
+      "pos": [
+        4064,
+        4115
+      ]
+    },
+    {
+      "pos": [
+        4120,
+        4291
+      ],
+      "content": "For a list of prerequisites for working with KCD across domains, see <bpt id=\"p1\">[</bpt>Kerberos Constrained Delegation across domains<ept id=\"p1\">](https://technet.microsoft.com/library/hh831477.aspx)</ept>."
+    },
+    {
+      "pos": [
+        4295,
+        4570
+      ],
+      "content": "In Windows 2012 R2, use the <ph id=\"ph1\">`principalsallowedtodelegateto`</ph> property on the Connector server to enable the Application Proxy to delegate for the Connector server, where the published server is <ph id=\"ph2\">`sharepointserviceaccount`</ph> and the delegating server is <ph id=\"ph3\">`connectormachineaccount`</ph>."
+    },
+    {
+      "pos": [
+        4881,
+        5013
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> <ph id=\"ph2\">`sharepointserviceaccount`</ph> can be the SPS machine account or a service account under which the SPS app pool is running."
+    },
+    {
+      "content": "Azure portal configuration",
+      "pos": [
+        5019,
+        5045
+      ]
+    },
+    {
+      "content": "Publish your application according to the instructions described in <bpt id=\"p1\">[</bpt>Publish applications with Application Proxy<ept id=\"p1\">](active-directory-application-proxy-publish.md)</ept>.",
+      "pos": [
+        5050,
+        5211
+      ]
+    },
+    {
+      "content": "Make sure to select <bpt id=\"p1\">**</bpt>Azure Active Directory<ept id=\"p1\">**</ept> as the <bpt id=\"p2\">**</bpt>Preauthentication Method<ept id=\"p2\">**</ept>.",
+      "pos": [
+        5212,
+        5295
+      ]
+    },
+    {
+      "pos": [
+        5299,
+        5393
+      ],
+      "content": "After your application appears in the list of applications, select it and click <bpt id=\"p1\">**</bpt>Configure<ept id=\"p1\">**</ept>."
+    },
+    {
+      "pos": [
+        5397,
+        5499
+      ],
+      "content": "Under <bpt id=\"p1\">**</bpt>Properties<ept id=\"p1\">**</ept>, set <bpt id=\"p2\">**</bpt>Internal Authentication Method<ept id=\"p2\">**</ept> to <bpt id=\"p3\">**</bpt>Integrated Windows Authentication<ept id=\"p3\">**</ept>."
+    },
+    {
+      "content": "Advanced Application Configuration",
+      "pos": [
+        5503,
+        5537
+      ]
+    },
+    {
+      "content": "Enter the <bpt id=\"p1\">**</bpt>Internal Application SPN<ept id=\"p1\">**</ept> of the application server.",
+      "pos": [
+        5616,
+        5681
+      ]
+    },
+    {
+      "content": "In this example, the SPN for our published application is http/lob.contoso.com.",
+      "pos": [
+        5682,
+        5761
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.IMPORTANT]</ph> The UPNs in Azure Active Directory must be identical to the UPNs in your on-premises Active Directory in order for preauthentication to work.",
+      "pos": [
+        5764,
+        5923
+      ]
+    },
+    {
+      "content": "Make sure your Azure Active Directory is synchronized with your on-premises Active Directory.",
+      "pos": [
+        5924,
+        6017
+      ]
+    },
+    {
+      "content": "Internal Authentication Method",
+      "pos": [
+        6041,
+        6071
+      ]
+    },
+    {
+      "content": "If you use Azure AD for preauthentication, you can set an internal authentication method to enable your users to benefit from single-sign on (SSO) to this application.",
+      "pos": [
+        6074,
+        6241
+      ]
+    },
+    {
+      "content": "Select <bpt id=\"p1\">**</bpt>Integrated Windows Authentication<ept id=\"p1\">**</ept> (IWA) if your application uses IWA and you can configure Kerberos Constrained Delegation (KCD) to enable SSO for this application.",
+      "pos": [
+        6251,
+        6426
+      ]
+    },
+    {
+      "content": "Applications that use IWA must be configured using KCD, otherwise Application Proxy will not be able to publish these applications.",
+      "pos": [
+        6427,
+        6558
+      ]
+    },
+    {
+      "content": "Select <bpt id=\"p1\">**</bpt>None<ept id=\"p1\">**</ept> if your application does not use IWA.",
+      "pos": [
+        6568,
+        6621
+      ]
+    },
+    {
+      "content": "Internal Application SPN",
+      "pos": [
+        6626,
+        6650
+      ]
+    },
+    {
+      "content": "This is the Service-Principal-Name (SPN) of the internal application as configured in the on-prem Azure AD.",
+      "pos": [
+        6653,
+        6760
+      ]
+    },
+    {
+      "content": "The SPN is used by the Application Proxy Connector to fetch Kerberos tokens for the application using KCD.",
+      "pos": [
+        6761,
+        6867
+      ]
+    },
+    {
+      "content": "test",
+      "pos": [
+        7051,
+        7055
+      ]
+    }
+  ],
+  "content": "<properties\n    pageTitle=\"SSO for On Prem IWA Apps Using KCD with Application Proxy\"\n    description=\"Covers how to get up and running with Azure AD Application Proxy.\"\n    services=\"active-directory\"\n    documentationCenter=\"\"\n    authors=\"rkarlin\"\n    manager=\"stevenpo\"\n    editor=\"\"/>\n\n<tags\n    ms.service=\"active-directory\"\n    ms.workload=\"identity\"\n    ms.tgt_pltfrm=\"na\"\n    ms.devlang=\"na\"\n    ms.topic=\"article\"\n    ms.date=\"08/11/2015\"\n    ms.author=\"rkarlin\"/>\n\n\n\n# SSO for on-prem IWA apps using KCD with Application Proxy\n\n\nYou can enable Single Sign On (SSO) to your applications using Integrated Windows Authentication (IWA) by giving Application Proxy Connectors permission in Active Directory to impersonate users and send and receive tokens on their behalf.\n\n> [AZURE.IMPORTANT] Application Proxy is a feature that is available only if you upgraded to the Premium or Basic edition of Azure Active Directory. For more information, see [Azure Active Directory editions](active-directory-editions.md).\n\n\n## Network diagram\n\n![Microsoft AAD authentication flow diagram](./media/active-directory-application-proxy-sso-using-kcd/AuthDiagram.png)\n\nThis diagram explains the flow when a user attempts to access an on-prem application that uses IWA. The general flow is:\n\n1. The user enters the URL to access the on-prem application through Application Proxy.\n2. Application Proxy redirects the request to Azure AD authentication services to preauthenticate. At this point, Azure AD applies any applicable authentication and authorization policies, such as multifactor authentication. If the user is validated, Azure AD creates a token and sends it to the user.\n3. The user passes the token to Application Proxy.\n4. Application Proxy validates the token and retrieves the User Principal Name (UPN) from it, and then sends the request, the UPN, and the Service Principal Name (SPN) to the Connector through a dually authenticated secure channel.\n5. The Connector performs Kerberos Constrained Delegation (KCD) negotiation with the on-prem AD, impersonating the user to get a Kerberos token to the application.\n6. Active Directory sends the Kerberos token for the application to the Connector.\n7. The Connector sends the original request to the application server, using the Kerberos token it received from AD.\n8. The application sends the response to the Connector which is then returned to the Application Proxy service and finally to the user.\n\n### Prerequisites\n\n1. Make sure that your apps, such as your SharePoint Web apps, are set to use Integrated Windows Authentication. For more information see [Enable Support for Kerberos Authentication](https://technet.microsoft.com/library/dd759186.aspx), or for SharePoint see [Plan for Kerberos authentication in SharePoint 2013](https://technet.microsoft.com/library/ee806870.aspx).\n2. Create Service Principal Names for your applications.\n3. Make sure that the server running the Connector and the server running the app you are publishing are domain joined and part of the same domain. For more information on domain join, see [Join a Computer to a Domain](https://technet.microsoft.com/library/dd807102.aspx).\n\n\n## Active Directory configuration\n\nThe Active Directory configuration varies, depending on whether your Application Proxy Connector and the published server are in the same domain or not.\n\n### Connector and published server in the same domain\n\nIn Active Directory, go to **Tools** > **Users and Computers**. Select the server running the Connector. Right click and select **Properties** > **Delegation**. Select **Trust this computer for delegation to specified services only** and under **Services to which this account can present delegated credentials**, add the value for the Service Principal Name (SPN) identity of the application server. This enables the Application Proxy Connector to impersonate users in AD against the applications defined in the list.\n\n![Connector-SVR Properties window screenshot](./media/active-directory-application-proxy-sso-using-kcd/Properties.jpg)\n\n### Connector and published server in different domains\n\n1. For a list of prerequisites for working with KCD across domains, see [Kerberos Constrained Delegation across domains](https://technet.microsoft.com/library/hh831477.aspx).\n2. In Windows 2012 R2, use the `principalsallowedtodelegateto` property on the Connector server to enable the Application Proxy to delegate for the Connector server, where the published server is `sharepointserviceaccount` and the delegating server is `connectormachineaccount`.\n\n        $connector= Get-ADComputer -Identity connectormachineaccount -server dc.connectordomain.com\n\n        Set-ADComputer -Identity sharepointserviceaccount -PrincipalsAllowedToDelegateToAccount $connector\n\n        Get-ADComputer sharepointserviceaccount -Properties PrincipalsAllowedToDelegateToAccount\n\n\n>[AZURE.NOTE] `sharepointserviceaccount` can be the SPS machine account or a service account under which the SPS app pool is running.\n\n\n## Azure portal configuration\n\n1. Publish your application according to the instructions described in [Publish applications with Application Proxy](active-directory-application-proxy-publish.md). Make sure to select **Azure Active Directory** as the **Preauthentication Method**.\n2. After your application appears in the list of applications, select it and click **Configure**.\n3. Under **Properties**, set **Internal Authentication Method** to **Integrated Windows Authentication**.\n\n![Advanced Application Configuration](./media/active-directory-application-proxy-sso-using-kcd/cwap_auth2.png)\n\n4. Enter the **Internal Application SPN** of the application server. In this example, the SPN for our published application is http/lob.contoso.com.\n\n>[AZURE.IMPORTANT] The UPNs in Azure Active Directory must be identical to the UPNs in your on-premises Active Directory in order for preauthentication to work. Make sure your Azure Active Directory is synchronized with your on-premises Active Directory.\n\n| | |\n| --- | --- |\n| Internal Authentication Method | If you use Azure AD for preauthentication, you can set an internal authentication method to enable your users to benefit from single-sign on (SSO) to this application. <br><br> Select **Integrated Windows Authentication** (IWA) if your application uses IWA and you can configure Kerberos Constrained Delegation (KCD) to enable SSO for this application. Applications that use IWA must be configured using KCD, otherwise Application Proxy will not be able to publish these applications. <br><br> Select **None** if your application does not use IWA. |\n| Internal Application SPN | This is the Service-Principal-Name (SPN) of the internal application as configured in the on-prem Azure AD. The SPN is used by the Application Proxy Connector to fetch Kerberos tokens for the application using KCD. |\n\n<!--Image references-->\n[1]: ./media/active-directory-application-proxy-sso-using-kcd/AuthDiagram.png\n[2]: ./media/active-directory-application-proxy-sso-using-kcd/Properties.jpg\n\ntest\n"
+}

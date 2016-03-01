@@ -1,0 +1,1090 @@
+{
+  "nodes": [
+    {
+      "content": "Service Fabric Web API Services with OWIN self-host | Microsoft Azure",
+      "pos": [
+        26,
+        95
+      ]
+    },
+    {
+      "content": "This Service Fabric article explains how to implement service communication using ASP.NET Web API with OWIN self-hosting in Reliable Services.",
+      "pos": [
+        113,
+        255
+      ]
+    },
+    {
+      "content": "Getting Started with Microsoft Azure Service Fabric Web API services with OWIN self-host",
+      "pos": [
+        556,
+        644
+      ]
+    },
+    {
+      "content": "Service Fabric puts the power in your hands when deciding how you want your services to communicate with users and with each other.",
+      "pos": [
+        646,
+        777
+      ]
+    },
+    {
+      "content": "This tutorial focuses on implementing service communication using ASP.NET Web API with OWIN self-hosting in Service Fabric's <bpt id=\"p1\">*</bpt>Reliable Services<ept id=\"p1\">*</ept> API.",
+      "pos": [
+        778,
+        927
+      ]
+    },
+    {
+      "content": "We'll go in depth into the <bpt id=\"p1\">*</bpt>Reliable Services<ept id=\"p1\">*</ept> pluggable communication API and show you step-by-step how to set up a custom communication listener for you service with Web API used as an example.",
+      "pos": [
+        928,
+        1123
+      ]
+    },
+    {
+      "content": "To see a complete example of a Web API communication listener, check out the <bpt id=\"p1\">[</bpt>Service Fabric WebApplication sample on GitHub<ept id=\"p1\">](https://github.com/Azure/servicefabric-samples/tree/master/samples/Services/VS2015/WebApplication)</ept>.",
+      "pos": [
+        1124,
+        1349
+      ]
+    },
+    {
+      "content": "Intro to Web API in Service Fabric",
+      "pos": [
+        1355,
+        1389
+      ]
+    },
+    {
+      "content": "ASP.NET Web API is a popular and powerful framework for building HTTP APIs on top of the .NET Framework.",
+      "pos": [
+        1391,
+        1495
+      ]
+    },
+    {
+      "content": "Head on over to <bpt id=\"p1\">[</bpt>www.asp.net/webapi<ept id=\"p1\">](http://www.asp.net/web-api/overview/getting-started-with-aspnet-web-api/tutorial-your-first-web-api)</ept> to learn more about Web API if you're not familiar with it already.",
+      "pos": [
+        1496,
+        1701
+      ]
+    },
+    {
+      "content": "Web API in Service Fabric is the same ASP.NET Web API you know and love.",
+      "pos": [
+        1703,
+        1775
+      ]
+    },
+    {
+      "content": "The difference is in how you <bpt id=\"p1\">*</bpt>host<ept id=\"p1\">*</ept> a Web API application (hint: you won't be using IIS).",
+      "pos": [
+        1776,
+        1865
+      ]
+    },
+    {
+      "content": "To better understand the difference, let's break it into two parts:",
+      "pos": [
+        1866,
+        1933
+      ]
+    },
+    {
+      "content": "The Web API application (your controllers, models, etc.)",
+      "pos": [
+        1939,
+        1995
+      ]
+    },
+    {
+      "content": "The host (the web server, usually IIS)",
+      "pos": [
+        2000,
+        2038
+      ]
+    },
+    {
+      "content": "The Web API application itself doesn't change here - it's no different from Web API applications you may have written in the past, and you should be able to simply move most of your application code right over.",
+      "pos": [
+        2040,
+        2250
+      ]
+    },
+    {
+      "content": "Hosting the application may be a little different from what you're used to if you're used to hosting on IIS.",
+      "pos": [
+        2251,
+        2359
+      ]
+    },
+    {
+      "content": "But before we get into the hosting part, let's start with the more familiar part: the Web API application.",
+      "pos": [
+        2360,
+        2466
+      ]
+    },
+    {
+      "content": "Set up a Web API application",
+      "pos": [
+        2472,
+        2500
+      ]
+    },
+    {
+      "content": "Start by creating a new application, with a single stateless service, in Visual Studio 2015:",
+      "pos": [
+        2502,
+        2594
+      ]
+    },
+    {
+      "content": "Create a new Service Fabric application",
+      "pos": [
+        2598,
+        2637
+      ]
+    },
+    {
+      "content": "Create a single stateless service",
+      "pos": [
+        2725,
+        2758
+      ]
+    },
+    {
+      "content": "This gives us an empty Stateless Service that will host the Web API application.",
+      "pos": [
+        2845,
+        2925
+      ]
+    },
+    {
+      "content": "We're going to set the application up from scratch to see how it's all put together.",
+      "pos": [
+        2926,
+        3010
+      ]
+    },
+    {
+      "content": "The first step is to pull in some NuGet packages for Web API.",
+      "pos": [
+        3012,
+        3073
+      ]
+    },
+    {
+      "content": "The package we want to use is <bpt id=\"p1\">**</bpt>Microsoft.AspNet.WebApi.OwinSelfHost<ept id=\"p1\">**</ept>.",
+      "pos": [
+        3074,
+        3145
+      ]
+    },
+    {
+      "content": "This package includes all the necessary Web API packages and the <bpt id=\"p1\">*</bpt>host<ept id=\"p1\">*</ept> packages - this will be important later.",
+      "pos": [
+        3146,
+        3258
+      ]
+    },
+    {
+      "content": "With the packages installed, we can begin building out the basic Web API project structure.",
+      "pos": [
+        3343,
+        3434
+      ]
+    },
+    {
+      "content": "If you've used  Web API, the project structure should look very familiar.",
+      "pos": [
+        3435,
+        3508
+      ]
+    },
+    {
+      "content": "Start by creating the basic Web API directories:",
+      "pos": [
+        3509,
+        3557
+      ]
+    },
+    {
+      "content": "App_Start",
+      "pos": [
+        3562,
+        3571
+      ]
+    },
+    {
+      "content": "Controllers",
+      "pos": [
+        3575,
+        3586
+      ]
+    },
+    {
+      "content": "Models",
+      "pos": [
+        3590,
+        3596
+      ]
+    },
+    {
+      "content": "Add the basic Web API configuration classes in the App_Start directory:",
+      "pos": [
+        3598,
+        3669
+      ]
+    },
+    {
+      "content": "FormatterConfig.cs",
+      "pos": [
+        3674,
+        3692
+      ]
+    },
+    {
+      "content": "RouteConfig.cs",
+      "pos": [
+        3934,
+        3948
+      ]
+    },
+    {
+      "content": "Add a default controller in the Controllers directory:",
+      "pos": [
+        4397,
+        4451
+      ]
+    },
+    {
+      "content": "DefaultController.cs",
+      "pos": [
+        4456,
+        4476
+      ]
+    },
+    {
+      "content": "Finally, add a Startup class at the project root to register the routing, formatters, and any other configuration setup.",
+      "pos": [
+        5200,
+        5320
+      ]
+    },
+    {
+      "content": "This is also where Web API plugs in to the <bpt id=\"p1\">*</bpt>host<ept id=\"p1\">*</ept>, which will be revisited again later.",
+      "pos": [
+        5321,
+        5408
+      ]
+    },
+    {
+      "content": "While setting up the Startup class, create an interface called <bpt id=\"p1\">*</bpt>IOwinAppBuilder<ept id=\"p1\">*</ept> for the Startup class that defines the Configuration method.",
+      "pos": [
+        5409,
+        5550
+      ]
+    },
+    {
+      "content": "Although not technically required for Web API to work, it will allow more flexible use of the Startup class later.",
+      "pos": [
+        5551,
+        5665
+      ]
+    },
+    {
+      "content": "Startup.cs",
+      "pos": [
+        5670,
+        5680
+      ]
+    },
+    {
+      "content": "IOwinAppBuilder.cs",
+      "pos": [
+        6131,
+        6149
+      ]
+    },
+    {
+      "content": "That's it for the application part.",
+      "pos": [
+        6307,
+        6342
+      ]
+    },
+    {
+      "content": "At this point we've just set up the basic Web API project layout.",
+      "pos": [
+        6343,
+        6408
+      ]
+    },
+    {
+      "content": "Compared to Web API projects you may have written in the past or to the basic Web API template, it shouldn't look much different so far.",
+      "pos": [
+        6409,
+        6545
+      ]
+    },
+    {
+      "content": "Your business logic goes in the controllers and models as usual.",
+      "pos": [
+        6546,
+        6610
+      ]
+    },
+    {
+      "content": "Now what do we do about hosting so we can actually run it?",
+      "pos": [
+        6612,
+        6670
+      ]
+    },
+    {
+      "content": "Service Hosting",
+      "pos": [
+        6676,
+        6691
+      ]
+    },
+    {
+      "content": "In Service Fabric, your service runs in a <bpt id=\"p1\">*</bpt>service host process<ept id=\"p1\">*</ept> - an executable that runs your service code.",
+      "pos": [
+        6693,
+        6802
+      ]
+    },
+    {
+      "content": "When writing a service using the Reliable Services API, and in fact in most cases when you're writing a service on Service Fabric in .NET, your service project just compiles to an .EXE that registers your service type and runs your code.",
+      "pos": [
+        6803,
+        7040
+      ]
+    },
+    {
+      "content": "In fact, if you open <bpt id=\"p1\">**</bpt>Program.cs<ept id=\"p1\">**</ept> in the stateless service project, you should see:",
+      "pos": [
+        7041,
+        7126
+      ]
+    },
+    {
+      "content": "If that looks suspiciously like the entry point to a console application, that's because it is:",
+      "pos": [
+        7642,
+        7737
+      ]
+    },
+    {
+      "pos": [
+        7834,
+        8027
+      ],
+      "content": "Details about the service host process and service registration is beyond the scope of this article, but it's important to know for now that <bpt id=\"p1\">**</bpt>your service code is running in its own process<ept id=\"p1\">**</ept>."
+    },
+    {
+      "content": "Self-hosting Web API with an OWIN host",
+      "pos": [
+        8032,
+        8070
+      ]
+    },
+    {
+      "content": "Given that your Web API application code is hosted in its own process, how do we hook it up to a web server?",
+      "pos": [
+        8072,
+        8180
+      ]
+    },
+    {
+      "content": "Enter <bpt id=\"p1\">[</bpt>OWIN<ept id=\"p1\">](http://owin.org/)</ept>.",
+      "pos": [
+        8181,
+        8212
+      ]
+    },
+    {
+      "content": "OWIN is simply a contract between .NET web applications and web servers.",
+      "pos": [
+        8213,
+        8285
+      ]
+    },
+    {
+      "content": "Traditionally with ASP.NET - up to MVC 5 - the web application was tightly coupled to IIS through System.Web.",
+      "pos": [
+        8286,
+        8395
+      ]
+    },
+    {
+      "content": "However, Web API implements OWIN, which allows you to write a web application that is decoupled from the web server that hosts it.",
+      "pos": [
+        8396,
+        8526
+      ]
+    },
+    {
+      "content": "This allows you to use a <bpt id=\"p1\">*</bpt>self-host<ept id=\"p1\">*</ept> OWIN web server that you can start in your own process, which fits perfectly in the Service Fabric hosting model we just described.",
+      "pos": [
+        8527,
+        8695
+      ]
+    },
+    {
+      "content": "In this article, we'll use Katana as the OWIN host for the Web API application.",
+      "pos": [
+        8697,
+        8776
+      ]
+    },
+    {
+      "content": "Katana is an open-source OWIN host implementation.",
+      "pos": [
+        8777,
+        8827
+      ]
+    },
+    {
+      "pos": [
+        8831,
+        9219
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> To learn more about Katana, head over to the <bpt id=\"p1\">[</bpt>Katana site<ept id=\"p1\">](http://www.asp.net/aspnet/overview/owin-and-katana/an-overview-of-project-katana)</ept>, and for a quick overview of how to use Katana to self-host Web API, check out this article on how to <bpt id=\"p2\">[</bpt>Use OWIN to Self-Host ASP.NET Web API 2<ept id=\"p2\">](http://www.asp.net/web-api/overview/hosting-aspnet-web-api/use-owin-to-self-host-web-api)</ept>."
+    },
+    {
+      "content": "Set up the web server",
+      "pos": [
+        9225,
+        9246
+      ]
+    },
+    {
+      "content": "The Reliable Services API provides two entry points for your business logic:",
+      "pos": [
+        9248,
+        9324
+      ]
+    },
+    {
+      "content": "An open-ended entry point method where you can begin executing any workload you want, intended mainly for long-running compute workloads:",
+      "pos": [
+        9329,
+        9466
+      ]
+    },
+    {
+      "content": "A communication entry point where you can plug in your communication stack of choice:",
+      "pos": [
+        9576,
+        9661
+      ]
+    },
+    {
+      "content": "The web server - and any other communication stack you may use in the future, such as WebSockets - should use the ICommunicationListener interface to correctly integrate with the system.",
+      "pos": [
+        9764,
+        9950
+      ]
+    },
+    {
+      "content": "The reasons for this will become more apparent in the following steps.",
+      "pos": [
+        9951,
+        10021
+      ]
+    },
+    {
+      "content": "First create a class called OwinCommunicationListener that implements ICommunicationListener:",
+      "pos": [
+        10023,
+        10116
+      ]
+    },
+    {
+      "content": "OwinCommunicationListener.cs:",
+      "pos": [
+        10121,
+        10150
+      ]
+    },
+    {
+      "content": "The ICommunicationListener interface provides 4 methods to manage a communication listener for your service:",
+      "pos": [
+        10873,
+        10981
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Initialize<ept id=\"p1\">**</ept>: this is typically where you set up the address that the service will be listening on.",
+      "pos": [
+        10986,
+        11087
+      ]
+    },
+    {
+      "content": "For the web server, this is where the URL is set up.",
+      "pos": [
+        11088,
+        11140
+      ]
+    },
+    {
+      "pos": [
+        11144,
+        11188
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>OpenAsync<ept id=\"p1\">**</ept>: start listening for requests."
+    },
+    {
+      "pos": [
+        11192,
+        11293
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>CloseAsync<ept id=\"p1\">**</ept>: stop listening for requests, finish any in-flight requests, and shut down gracefully."
+    },
+    {
+      "pos": [
+        11297,
+        11347
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Abort<ept id=\"p1\">**</ept>: cancel everything and stop immediately."
+    },
+    {
+      "content": "To get started, add private class members for a URL path prefix and the <bpt id=\"p1\">**</bpt>Startup<ept id=\"p1\">**</ept> class that was created earlier.",
+      "pos": [
+        11349,
+        11464
+      ]
+    },
+    {
+      "content": "These will be initialized through the constructor and used later when setting up the listening URL.",
+      "pos": [
+        11465,
+        11564
+      ]
+    },
+    {
+      "content": "Also add private class members to save the listening address and the server handle that are created during initialization and later when the server is started, respectively.",
+      "pos": [
+        11565,
+        11738
+      ]
+    },
+    {
+      "content": "Initialize",
+      "pos": [
+        12149,
+        12159
+      ]
+    },
+    {
+      "content": "The web server URL will be set up here.",
+      "pos": [
+        12161,
+        12200
+      ]
+    },
+    {
+      "content": "To do this, you need a couple pieces of information:",
+      "pos": [
+        12201,
+        12253
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>A URL path prefix<ept id=\"p1\">**</ept>.",
+      "pos": [
+        12258,
+        12280
+      ]
+    },
+    {
+      "content": "Although optional, it's good to set this up now so you can safely host multiple web services in your application.",
+      "pos": [
+        12281,
+        12394
+      ]
+    },
+    {
+      "pos": [
+        12398,
+        12409
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>A port<ept id=\"p1\">**</ept>."
+    },
+    {
+      "content": "Before we grab a port for the web server, it's important to understand that Service Fabric provides an application layer that acts as a buffer between your application and the underlying operating system that it runs on.",
+      "pos": [
+        12411,
+        12631
+      ]
+    },
+    {
+      "content": "As such, Service Fabric provides a way to configure <bpt id=\"p1\">*</bpt>endpoints<ept id=\"p1\">*</ept> for your services.",
+      "pos": [
+        12632,
+        12714
+      ]
+    },
+    {
+      "content": "Service Fabric takes care of making sure the endpoint is available for your service to use so that you don't have to configure it yourself with the underlying OS environment.",
+      "pos": [
+        12715,
+        12889
+      ]
+    },
+    {
+      "content": "This allows you to easily host your Service Fabric application in different environments without having to make any changes to your application (for example, you can host the same application in Azure or in your own data center).",
+      "pos": [
+        12890,
+        13119
+      ]
+    },
+    {
+      "content": "Configure an HTTP endpoint in PackageRoot\\ServiceManifest.xml:",
+      "pos": [
+        13121,
+        13183
+      ]
+    },
+    {
+      "content": "This step is important because the service host process runs under restricted credentials (Network Service on Windows), which means your service won't have access to set up an HTTP endpoint on its own.",
+      "pos": [
+        13340,
+        13541
+      ]
+    },
+    {
+      "content": "By using the endpoint configuration, Service Fabric knows to set up the proper ACL for the URL that the service will listen on while providing a standard place to configure endpoints.",
+      "pos": [
+        13542,
+        13725
+      ]
+    },
+    {
+      "content": "Back in OwinCommunicationListener.cs, get the endpoint information in the Initialize method to get the port.",
+      "pos": [
+        13727,
+        13835
+      ]
+    },
+    {
+      "content": "Create the URL that the service will listen on and save it to the class member variable created earlier.",
+      "pos": [
+        13836,
+        13940
+      ]
+    },
+    {
+      "content": "This will be used in OpenAsync to start the web server.",
+      "pos": [
+        13941,
+        13996
+      ]
+    },
+    {
+      "content": "Note that \"http://+\" is used here.",
+      "pos": [
+        14534,
+        14568
+      ]
+    },
+    {
+      "content": "This is to make sure the web server is listening on all available addresses, including localhost, FQDN, and the machine IP.",
+      "pos": [
+        14569,
+        14692
+      ]
+    },
+    {
+      "content": "OpenAsync",
+      "pos": [
+        14698,
+        14707
+      ]
+    },
+    {
+      "content": "OpenAsync is called by the platform after Initialize.",
+      "pos": [
+        14709,
+        14762
+      ]
+    },
+    {
+      "content": "This is where you use the address that was created in Initialize to open the web server.",
+      "pos": [
+        14763,
+        14851
+      ]
+    },
+    {
+      "content": "Implementing OpenAsync is one of the most important reasons why the web server (or any communication stack) is implemented as an ICommunicationListener rather than just opening it directly from RunAsync() in the Service.",
+      "pos": [
+        14853,
+        15073
+      ]
+    },
+    {
+      "content": "The return value from OpenAsync is the address that the web server is listening on.",
+      "pos": [
+        15074,
+        15157
+      ]
+    },
+    {
+      "content": "When this address is returned to the system, it registers the address with the service.",
+      "pos": [
+        15158,
+        15245
+      ]
+    },
+    {
+      "content": "Service Fabric provides an API that allows clients or other services to then ask for this address by service name.",
+      "pos": [
+        15246,
+        15360
+      ]
+    },
+    {
+      "content": "This is important because  the service address is not static as services are moved around in the cluster for resource balancing and availability purposes.",
+      "pos": [
+        15361,
+        15515
+      ]
+    },
+    {
+      "content": "This is the mechanism that allows clients to resolve the listening address for a service.",
+      "pos": [
+        15516,
+        15605
+      ]
+    },
+    {
+      "content": "With that in mind, OpenAsync starts the web server and return the address it's listening on.",
+      "pos": [
+        15607,
+        15699
+      ]
+    },
+    {
+      "content": "Note that it listens on \"http://+\", but before returning the address, the \"+\" is replaced with the IP or FQDN of the node it is currently on.",
+      "pos": [
+        15700,
+        15841
+      ]
+    },
+    {
+      "content": "The reason for this is that this address that is being returned by the method is what's registered with the system, and it's what clients and other service will see when they ask for the service's address.",
+      "pos": [
+        15842,
+        16047
+      ]
+    },
+    {
+      "content": "For clients to correctly connect to it, they need an actual IP or FQDN in the address.",
+      "pos": [
+        16048,
+        16134
+      ]
+    },
+    {
+      "content": "Note that this references the <bpt id=\"p1\">**</bpt>Startup<ept id=\"p1\">**</ept> class that was passed in to the OwinCommunicationListener in the constructor.",
+      "pos": [
+        16571,
+        16690
+      ]
+    },
+    {
+      "content": "This Startup instance is used by the web server to bootstrap the Web API application.",
+      "pos": [
+        16691,
+        16776
+      ]
+    },
+    {
+      "content": "The ServiceEventSource.Current.Message() line will appear in the diagnostics event window later when you run the application to let you know the web server has started successfully.",
+      "pos": [
+        16778,
+        16959
+      ]
+    },
+    {
+      "content": "CloseAsync and Abort",
+      "pos": [
+        16965,
+        16985
+      ]
+    },
+    {
+      "content": "Finally, implement both CloseAsync and Abort to stop the web server.",
+      "pos": [
+        16987,
+        17055
+      ]
+    },
+    {
+      "content": "The web server can be stopped by disposing the server handle that was created during OpenAsync.",
+      "pos": [
+        17056,
+        17151
+      ]
+    },
+    {
+      "content": "In this example implementation, both CloseAsync and Abort simply stop the web server.",
+      "pos": [
+        17581,
+        17666
+      ]
+    },
+    {
+      "content": "You may opt to perform a more gracefully coordinated shut down of the web server in CloseAsync; for example, waiting for in-flight requests to complete before returning.",
+      "pos": [
+        17667,
+        17836
+      ]
+    },
+    {
+      "content": "Start the web server",
+      "pos": [
+        17841,
+        17861
+      ]
+    },
+    {
+      "content": "You're now ready to create and return an instance of OwinCommunicationListener to start the web server.",
+      "pos": [
+        17863,
+        17966
+      ]
+    },
+    {
+      "content": "Back in the Service class (Service.cs), override the <bpt id=\"p1\">**</bpt>CreateCommunicationListener()<ept id=\"p1\">**</ept> method:",
+      "pos": [
+        17967,
+        18061
+      ]
+    },
+    {
+      "content": "This is where the Web API <bpt id=\"p1\">*</bpt>application<ept id=\"p1\">*</ept> and the OWIN <bpt id=\"p2\">*</bpt>host<ept id=\"p2\">*</ept> finally meet: The <bpt id=\"p3\">*</bpt>host<ept id=\"p3\">*</ept> (<bpt id=\"p4\">**</bpt>OwinCommunicationListener<ept id=\"p4\">**</ept>) is given an instance of the <bpt id=\"p5\">*</bpt>application<ept id=\"p5\">*</ept> (Web API via <bpt id=\"p6\">**</bpt>Startup<ept id=\"p6\">**</ept>), and Service Fabric manages its lifecycle.",
+      "pos": [
+        18220,
+        18447
+      ]
+    },
+    {
+      "content": "This same pattern can typically be followed with any communication stack.",
+      "pos": [
+        18448,
+        18521
+      ]
+    },
+    {
+      "content": "Putting it all together",
+      "pos": [
+        18526,
+        18549
+      ]
+    },
+    {
+      "content": "In this example, you don't need to do anything in the RunAsync() method, so that override can simply be removed.",
+      "pos": [
+        18551,
+        18663
+      ]
+    },
+    {
+      "content": "The final Service implementation should be very simple, as it only needs to create the communication listener:",
+      "pos": [
+        18665,
+        18775
+      ]
+    },
+    {
+      "content": "And the complete OwinCommunicationListener class:",
+      "pos": [
+        19149,
+        19198
+      ]
+    },
+    {
+      "content": "With all the pieces in place, your project should now look like a typical Web API application with the Reliable Services API entry points and an OWIN host:",
+      "pos": [
+        21607,
+        21762
+      ]
+    },
+    {
+      "content": "Run and connect through a web browser",
+      "pos": [
+        21862,
+        21899
+      ]
+    },
+    {
+      "pos": [
+        21901,
+        21994
+      ],
+      "content": "If you haven't done so, <bpt id=\"p1\">[</bpt>set up your development environment<ept id=\"p1\">](service-fabric-get-started.md)</ept>."
+    },
+    {
+      "content": "You can now build and deploy your service.",
+      "pos": [
+        21997,
+        22039
+      ]
+    },
+    {
+      "content": "Press <bpt id=\"p1\">**</bpt>F5<ept id=\"p1\">**</ept> in Visual Studio to build and deploy the application.",
+      "pos": [
+        22040,
+        22106
+      ]
+    },
+    {
+      "content": "In the Diagnostics Events window, you should see a message indicating the web server opened on <bpt id=\"p1\">**</bpt>http://localhost:80/api<ept id=\"p1\">**</ept>",
+      "pos": [
+        22107,
+        22229
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> If the port is already be open by another process on your machine, you may see an error here indicating the listener couldn't be opened.",
+      "pos": [
+        22323,
+        22472
+      ]
+    },
+    {
+      "content": "If that's the case, try using a different port in the Endpoint configuration in ServiceManifest.xml.",
+      "pos": [
+        22473,
+        22573
+      ]
+    },
+    {
+      "pos": [
+        22576,
+        22696
+      ],
+      "content": "Once the service is running, open a browser and navigate to <bpt id=\"p1\">[</bpt>http://localhost/api<ept id=\"p1\">](http://localhost/api)</ept> to test it out."
+    },
+    {
+      "content": "Scale it out",
+      "pos": [
+        22701,
+        22713
+      ]
+    },
+    {
+      "content": "Scaling out stateless web apps typically means adding more machines and spinning up the web app on them.",
+      "pos": [
+        22715,
+        22819
+      ]
+    },
+    {
+      "content": "Service Fabric's orchestration engine can do this for you whenever new nodes are added to a cluster.",
+      "pos": [
+        22820,
+        22920
+      ]
+    },
+    {
+      "content": "When creating instances of a stateless service, you can specify the number of instances you want to create.",
+      "pos": [
+        22921,
+        23028
+      ]
+    },
+    {
+      "content": "Service Fabric will place that number of instances on nodes in the cluster accordingly, making sure not to create more than one instance on any one node.",
+      "pos": [
+        23029,
+        23182
+      ]
+    },
+    {
+      "content": "You can also instruct Service Fabric to always create an instance on every node by specifying \"-1\" for the instance count.",
+      "pos": [
+        23183,
+        23305
+      ]
+    },
+    {
+      "content": "This guarantees that whenever you add nodes to scale out your cluster, an instance of your stateless service will be created on the new nodes.",
+      "pos": [
+        23306,
+        23448
+      ]
+    },
+    {
+      "content": "This value is a property of the service instance, so it is set when creating a service instance either through PowerShell:",
+      "pos": [
+        23449,
+        23571
+      ]
+    },
+    {
+      "content": "Or when defining a default service in a Visual Studio Stateless Service project:",
+      "pos": [
+        23813,
+        23893
+      ]
+    },
+    {
+      "pos": [
+        24117,
+        24275
+      ],
+      "content": "For more information on creating application and service instances, see <bpt id=\"p1\">[</bpt>how to deploy and remove applications<ept id=\"p1\">](service-fabric-deploy-remove-applications.md)</ept>."
+    },
+    {
+      "content": "ASP.NET 5",
+      "pos": [
+        24280,
+        24289
+      ]
+    },
+    {
+      "content": "In ASP.NET 5, the concept and programming model of separating the <bpt id=\"p1\">*</bpt>application<ept id=\"p1\">*</ept> from the <bpt id=\"p2\">*</bpt>host<ept id=\"p2\">*</ept> in web applications remains the same.",
+      "pos": [
+        24291,
+        24424
+      ]
+    },
+    {
+      "content": "It can also be applied to other forms of communication.",
+      "pos": [
+        24425,
+        24480
+      ]
+    },
+    {
+      "content": "In addition, although the <bpt id=\"p1\">*</bpt>host<ept id=\"p1\">*</ept> may differ in ASP.NET 5, the Web API <bpt id=\"p2\">*</bpt>application<ept id=\"p2\">*</ept> layer remains the same, which is where the bulk of application logic actually lives.",
+      "pos": [
+        24481,
+        24649
+      ]
+    },
+    {
+      "content": "Next Steps",
+      "pos": [
+        24654,
+        24664
+      ]
+    },
+    {
+      "content": "Debugging your Service Fabric Application in Visual Studio",
+      "pos": [
+        24667,
+        24725
+      ]
+    }
+  ],
+  "content": "<properties\n   pageTitle=\"Service Fabric Web API Services with OWIN self-host | Microsoft Azure\"\n   description=\"This Service Fabric article explains how to implement service communication using ASP.NET Web API with OWIN self-hosting in Reliable Services.\"\n   services=\"service-fabric\"\n   documentationCenter=\".net\"\n   authors=\"vturecek\"\n   manager=\"timlt\"\n   editor=\"\"/>\n\n<tags\n   ms.service=\"service-fabric\"\n   ms.devlang=\"dotnet\"\n   ms.topic=\"article\"\n   ms.tgt_pltfrm=\"na\"\n   ms.workload=\"required\"\n   ms.date=\"07/23/2015\"\n   ms.author=\"vturecek\"/>\n\n# Getting Started with Microsoft Azure Service Fabric Web API services with OWIN self-host\n\nService Fabric puts the power in your hands when deciding how you want your services to communicate with users and with each other. This tutorial focuses on implementing service communication using ASP.NET Web API with OWIN self-hosting in Service Fabric's *Reliable Services* API. We'll go in depth into the *Reliable Services* pluggable communication API and show you step-by-step how to set up a custom communication listener for you service with Web API used as an example. To see a complete example of a Web API communication listener, check out the [Service Fabric WebApplication sample on GitHub](https://github.com/Azure/servicefabric-samples/tree/master/samples/Services/VS2015/WebApplication).\n\n\n## Intro to Web API in Service Fabric\n\nASP.NET Web API is a popular and powerful framework for building HTTP APIs on top of the .NET Framework. Head on over to [www.asp.net/webapi](http://www.asp.net/web-api/overview/getting-started-with-aspnet-web-api/tutorial-your-first-web-api) to learn more about Web API if you're not familiar with it already.\n\nWeb API in Service Fabric is the same ASP.NET Web API you know and love. The difference is in how you *host* a Web API application (hint: you won't be using IIS). To better understand the difference, let's break it into two parts:\n\n 1. The Web API application (your controllers, models, etc.)\n 2. The host (the web server, usually IIS)\n\nThe Web API application itself doesn't change here - it's no different from Web API applications you may have written in the past, and you should be able to simply move most of your application code right over. Hosting the application may be a little different from what you're used to if you're used to hosting on IIS. But before we get into the hosting part, let's start with the more familiar part: the Web API application.\n\n\n## Set up a Web API application\n\nStart by creating a new application, with a single stateless service, in Visual Studio 2015:\n\n![Create a new Service Fabric application](media/service-fabric-reliable-services-communication-webapi/webapi-newproject.png)\n\n![Create a single stateless service](media/service-fabric-reliable-services-communication-webapi/webapi-newproject2.png)\n\nThis gives us an empty Stateless Service that will host the Web API application. We're going to set the application up from scratch to see how it's all put together.\n\nThe first step is to pull in some NuGet packages for Web API. The package we want to use is **Microsoft.AspNet.WebApi.OwinSelfHost**. This package includes all the necessary Web API packages and the *host* packages - this will be important later.\n\n![](media/service-fabric-reliable-services-communication-webapi/webapi-nuget.png)\n\nWith the packages installed, we can begin building out the basic Web API project structure. If you've used  Web API, the project structure should look very familiar. Start by creating the basic Web API directories:\n\n + App_Start\n + Controllers\n + Models\n\nAdd the basic Web API configuration classes in the App_Start directory:\n\n + FormatterConfig.cs\n\n```csharp\n\nnamespace WebApi\n{\n    using System.Net.Http.Formatting;\n\n    public static class FormatterConfig\n    {\n        public static void ConfigureFormatters(MediaTypeFormatterCollection formatters)\n        {\n        }\n    }\n}\n\n```\n\n + RouteConfig.cs\n\n```csharp\n\nnamespace WebApi\n{\n    using System.Web.Http;\n\n    public static class RouteConfig\n    {\n        public static void RegisterRoutes(HttpRouteCollection routes)\n        {\n            routes.MapHttpRoute(\n                    name: \"DefaultApi\",\n                    routeTemplate: \"api/{controller}/{id}\",\n                    defaults: new { controller = \"Default\", id = RouteParameter.Optional }\n                );\n        }\n    }\n}\n\n```\n\nAdd a default controller in the Controllers directory:\n\n + DefaultController.cs\n\n```csharp\n\nnamespace WebApi.Controllers\n{\n    using System.Collections.Generic;\n    using System.Web.Http;\n\n    public class DefaultController : ApiController\n    {\n        // GET api/values\n        public IEnumerable<string> Get()\n        {\n            return new string[] { \"value1\", \"value2\" };\n        }\n\n        // GET api/values/5\n        public string Get(int id)\n        {\n            return \"value\";\n        }\n\n        // POST api/values\n        public void Post([FromBody]string value)\n        {\n        }\n\n        // PUT api/values/5\n        public void Put(int id, [FromBody]string value)\n        {\n        }\n\n        // DELETE api/values/5\n        public void Delete(int id)\n        {\n        }\n    }\n}\n\n```\n\nFinally, add a Startup class at the project root to register the routing, formatters, and any other configuration setup. This is also where Web API plugs in to the *host*, which will be revisited again later. While setting up the Startup class, create an interface called *IOwinAppBuilder* for the Startup class that defines the Configuration method. Although not technically required for Web API to work, it will allow more flexible use of the Startup class later.\n\n + Startup.cs\n\n```csharp\n\nnamespace WebApi\n{\n    using Owin;\n    using System.Web.Http;\n\n    public class Startup : IOwinAppBuilder\n    {\n        public void Configuration(IAppBuilder appBuilder)\n        {\n            HttpConfiguration config = new HttpConfiguration();\n\n            FormatterConfig.ConfigureFormatters(config.Formatters);\n            RouteConfig.RegisterRoutes(config.Routes);\n\n            appBuilder.UseWebApi(config);\n        }\n    }\n}\n\n```\n\n + IOwinAppBuilder.cs\n\n```csharp\n\nnamespace WebApi\n{\n    using Owin;\n\n    public interface IOwinAppBuilder\n    {\n        void Configuration(IAppBuilder appBuilder);\n    }\n}\n\n```\n\nThat's it for the application part. At this point we've just set up the basic Web API project layout. Compared to Web API projects you may have written in the past or to the basic Web API template, it shouldn't look much different so far. Your business logic goes in the controllers and models as usual.\n\nNow what do we do about hosting so we can actually run it?\n\n\n## Service Hosting\n\nIn Service Fabric, your service runs in a *service host process* - an executable that runs your service code. When writing a service using the Reliable Services API, and in fact in most cases when you're writing a service on Service Fabric in .NET, your service project just compiles to an .EXE that registers your service type and runs your code. In fact, if you open **Program.cs** in the stateless service project, you should see:\n\n```csharp\n\npublic class Program\n{\n    public static void Main(string[] args)\n    {\n        try\n        {\n            using (FabricRuntime fabricRuntime = FabricRuntime.Create())\n            {\n                fabricRuntime.RegisterServiceType(Service.ServiceTypeName, typeof(Service));\n\n                Thread.Sleep(Timeout.Infinite);\n            }\n        }\n        catch (Exception e)\n        {\n            ServiceEventSource.Current.ServiceHostInitializationFailed(e);\n            throw;\n        }\n    }\n}\n\n```\n\nIf that looks suspiciously like the entry point to a console application, that's because it is:\n\n![](media/service-fabric-reliable-services-communication-webapi/webapi-projectproperties.png)\n\nDetails about the service host process and service registration is beyond the scope of this article, but it's important to know for now that **your service code is running in its own process**.\n\n## Self-hosting Web API with an OWIN host\n\nGiven that your Web API application code is hosted in its own process, how do we hook it up to a web server? Enter [OWIN](http://owin.org/). OWIN is simply a contract between .NET web applications and web servers. Traditionally with ASP.NET - up to MVC 5 - the web application was tightly coupled to IIS through System.Web. However, Web API implements OWIN, which allows you to write a web application that is decoupled from the web server that hosts it. This allows you to use a *self-host* OWIN web server that you can start in your own process, which fits perfectly in the Service Fabric hosting model we just described.\n\nIn this article, we'll use Katana as the OWIN host for the Web API application. Katana is an open-source OWIN host implementation.\n\n> [AZURE.NOTE] To learn more about Katana, head over to the [Katana site](http://www.asp.net/aspnet/overview/owin-and-katana/an-overview-of-project-katana), and for a quick overview of how to use Katana to self-host Web API, check out this article on how to [Use OWIN to Self-Host ASP.NET Web API 2](http://www.asp.net/web-api/overview/hosting-aspnet-web-api/use-owin-to-self-host-web-api).\n\n\n## Set up the web server\n\nThe Reliable Services API provides two entry points for your business logic:\n\n + An open-ended entry point method where you can begin executing any workload you want, intended mainly for long-running compute workloads:\n\n```csharp\n\nprotected override async Task RunAsync(CancellationToken cancellationToken)\n{\n    ...\n}\n\n```\n\n + A communication entry point where you can plug in your communication stack of choice:\n\n```csharp\n\nprotected override ICommunicationListener CreateCommunicationListener()\n{\n    ...\n}\n\n```\n\nThe web server - and any other communication stack you may use in the future, such as WebSockets - should use the ICommunicationListener interface to correctly integrate with the system. The reasons for this will become more apparent in the following steps.\n\nFirst create a class called OwinCommunicationListener that implements ICommunicationListener:\n\n + OwinCommunicationListener.cs:\n\n```csharp\n\nnamespace WebApi\n{\n    using System;\n    using System.Fabric;\n    using System.Fabric.Description;\n    using System.Globalization;\n    using System.Threading;\n    using System.Threading.Tasks;\n    using Microsoft.Owin.Hosting;\n    using Microsoft.ServiceFabric.Services;\n\n    public class OwinCommunicationListener : ICommunicationListener\n    {\n        public void Abort()\n        {\n        }\n\n        public Task CloseAsync(CancellationToken cancellationToken)\n        {\n        }\n\n        public void Initialize(ServiceInitializationParameters serviceInitializationParameters)\n        {\n        }\n\n        public Task<string> OpenAsync(CancellationToken cancellationToken)\n        {\n        }\n    }\n}\n\n```\n\nThe ICommunicationListener interface provides 4 methods to manage a communication listener for your service:\n\n + **Initialize**: this is typically where you set up the address that the service will be listening on. For the web server, this is where the URL is set up.\n + **OpenAsync**: start listening for requests.\n + **CloseAsync**: stop listening for requests, finish any in-flight requests, and shut down gracefully.\n + **Abort**: cancel everything and stop immediately.\n\nTo get started, add private class members for a URL path prefix and the **Startup** class that was created earlier. These will be initialized through the constructor and used later when setting up the listening URL. Also add private class members to save the listening address and the server handle that are created during initialization and later when the server is started, respectively.\n\n```csharp\n\npublic class OwinCommunicationListener : ICommunicationListener\n{\n    private readonly IOwinAppBuilder startup;\n    private readonly string appRoot;\n    private IDisposable serverHandle;\n    private string listeningAddress;\n\n    public OwinCommunicationListener(string appRoot, IOwinAppBuilder startup)\n    {\n        this.startup = startup;\n        this.appRoot = appRoot;\n    }\n\n    ...\n\n```\n\n### Initialize\n\nThe web server URL will be set up here. To do this, you need a couple pieces of information:\n\n + **A URL path prefix**. Although optional, it's good to set this up now so you can safely host multiple web services in your application.\n + **A port**.\n\nBefore we grab a port for the web server, it's important to understand that Service Fabric provides an application layer that acts as a buffer between your application and the underlying operating system that it runs on. As such, Service Fabric provides a way to configure *endpoints* for your services. Service Fabric takes care of making sure the endpoint is available for your service to use so that you don't have to configure it yourself with the underlying OS environment. This allows you to easily host your Service Fabric application in different environments without having to make any changes to your application (for example, you can host the same application in Azure or in your own data center).\n\nConfigure an HTTP endpoint in PackageRoot\\ServiceManifest.xml:\n\n```xml\n\n<Resources>\n    <Endpoints>\n        <Endpoint Name=\"ServiceEndpoint\" Type=\"Input\" Protocol=\"http\" Port=\"80\" />\n    </Endpoints>\n</Resources>\n\n```\n\nThis step is important because the service host process runs under restricted credentials (Network Service on Windows), which means your service won't have access to set up an HTTP endpoint on its own. By using the endpoint configuration, Service Fabric knows to set up the proper ACL for the URL that the service will listen on while providing a standard place to configure endpoints.\n\nBack in OwinCommunicationListener.cs, get the endpoint information in the Initialize method to get the port. Create the URL that the service will listen on and save it to the class member variable created earlier. This will be used in OpenAsync to start the web server.\n\n```csharp\n\npublic void Initialize(ServiceInitializationParameters serviceInitializationParameters)\n{\n    EndpointResourceDescription serviceEndpoint = serviceInitializationParameters.CodePackageActivationContext.GetEndpoint(\"ServiceEndpoint\");\n    int port = serviceEndpoint.Port;\n\n    this.listeningAddress = String.Format(\n        CultureInfo.InvariantCulture,\n        \"http://+:{0}/{1}\",\n        port,\n        String.IsNullOrWhiteSpace(this.appRoot)\n            ? String.Empty\n            : this.appRoot.TrimEnd('/') + '/');\n}\n\n```\n\nNote that \"http://+\" is used here. This is to make sure the web server is listening on all available addresses, including localhost, FQDN, and the machine IP.\n\n### OpenAsync\n\nOpenAsync is called by the platform after Initialize. This is where you use the address that was created in Initialize to open the web server.\n\nImplementing OpenAsync is one of the most important reasons why the web server (or any communication stack) is implemented as an ICommunicationListener rather than just opening it directly from RunAsync() in the Service. The return value from OpenAsync is the address that the web server is listening on. When this address is returned to the system, it registers the address with the service. Service Fabric provides an API that allows clients or other services to then ask for this address by service name. This is important because  the service address is not static as services are moved around in the cluster for resource balancing and availability purposes. This is the mechanism that allows clients to resolve the listening address for a service.\n\nWith that in mind, OpenAsync starts the web server and return the address it's listening on. Note that it listens on \"http://+\", but before returning the address, the \"+\" is replaced with the IP or FQDN of the node it is currently on. The reason for this is that this address that is being returned by the method is what's registered with the system, and it's what clients and other service will see when they ask for the service's address. For clients to correctly connect to it, they need an actual IP or FQDN in the address.\n\n```csharp\n\npublic Task<string> OpenAsync(CancellationToken cancellationToken)\n{\n    this.serverHandle = WebApp.Start(this.listeningAddress, appBuilder => this.startup.Configuration(appBuilder));\n\n    string resultAddress = this.listeningAddress.Replace(\"+\", FabricRuntime.GetNodeContext().IPAddressOrFQDN);\n\n    ServiceEventSource.Current.Message(\"Listening on {0}\", resultAddress);\n\n    return Task.FromResult(resultAddress);\n}\n\n```\n\nNote that this references the **Startup** class that was passed in to the OwinCommunicationListener in the constructor. This Startup instance is used by the web server to bootstrap the Web API application.\n\nThe ServiceEventSource.Current.Message() line will appear in the diagnostics event window later when you run the application to let you know the web server has started successfully.\n\n### CloseAsync and Abort\n\nFinally, implement both CloseAsync and Abort to stop the web server. The web server can be stopped by disposing the server handle that was created during OpenAsync.\n\n```csharp\n\npublic Task CloseAsync(CancellationToken cancellationToken)\n{\n    this.StopWebServer();\n\n    return Task.FromResult(true);\n}\n\npublic void Abort()\n{\n    this.StopWebServer();\n}\n\nprivate void StopWebServer()\n{\n    if (this.serverHandle != null)\n    {\n        try\n        {\n            this.serverHandle.Dispose();\n        }\n        catch (ObjectDisposedException)\n        {\n            // no-op\n        }\n    }\n}\n\n```\n\nIn this example implementation, both CloseAsync and Abort simply stop the web server. You may opt to perform a more gracefully coordinated shut down of the web server in CloseAsync; for example, waiting for in-flight requests to complete before returning.\n\n## Start the web server\n\nYou're now ready to create and return an instance of OwinCommunicationListener to start the web server. Back in the Service class (Service.cs), override the **CreateCommunicationListener()** method:\n\n```csharp\n\nprotected override ICommunicationListener CreateCommunicationListener()\n{\n    return new OwinCommunicationListener(\"api\", new Startup());\n}\n\n```\n\nThis is where the Web API *application* and the OWIN *host* finally meet: The *host* (**OwinCommunicationListener**) is given an instance of the *application* (Web API via **Startup**), and Service Fabric manages its lifecycle. This same pattern can typically be followed with any communication stack.\n\n## Putting it all together\n\nIn this example, you don't need to do anything in the RunAsync() method, so that override can simply be removed.\n\nThe final Service implementation should be very simple, as it only needs to create the communication listener:\n\n```csharp\n\nnamespace WebApi\n{\n    using Microsoft.ServiceFabric.Services;\n\n    public class Service : StatelessService\n    {\n        public const string ServiceTypeName = \"WebApiType\";\n\n        protected override ICommunicationListener CreateCommunicationListener()\n        {\n            return new OwinCommunicationListener(\"api\", new Startup());\n        }\n    }\n}\n\n```\n\nAnd the complete OwinCommunicationListener class:\n\n```csharp\n\nnamespace WebApi\n{\n    using System;\n    using System.Fabric;\n    using System.Fabric.Description;\n    using System.Globalization;\n    using System.Threading;\n    using System.Threading.Tasks;\n    using Microsoft.Owin.Hosting;\n    using Microsoft.ServiceFabric.Services;\n\n    public class OwinCommunicationListener : ICommunicationListener\n    {\n        private readonly IOwinAppBuilder startup;\n        private readonly string appRoot;\n        private IDisposable serverHandle;\n        private string listeningAddress;\n\n        public OwinCommunicationListener(string appRoot, IOwinAppBuilder startup)\n        {\n            this.startup = startup;\n            this.appRoot = appRoot;\n        }\n\n        public void Initialize(ServiceInitializationParameters serviceInitializationParameters)\n        {\n            EndpointResourceDescription serviceEndpoint = serviceInitializationParameters.CodePackageActivationContext.GetEndpoint(\"ServiceEndpoint\");\n            int port = serviceEndpoint.Port;\n\n            this.listeningAddress = String.Format(\n                CultureInfo.InvariantCulture,\n                \"http://+:{0}/{1}\",\n                port,\n                String.IsNullOrWhiteSpace(this.appRoot)\n                    ? String.Empty\n                    : this.appRoot.TrimEnd('/') + '/');\n        }\n\n        public Task<string> OpenAsync(CancellationToken cancellationToken)\n        {\n            this.serverHandle = WebApp.Start(this.listeningAddress, appBuilder => this.startup.Configuration(appBuilder));\n\n            string resultAddress = this.listeningAddress.Replace(\"+\", FabricRuntime.GetNodeContext().IPAddressOrFQDN);\n\n            ServiceEventSource.Current.Message(\"Listening on {0}\", resultAddress);\n\n            return Task.FromResult(resultAddress);\n        }\n\n        public Task CloseAsync(CancellationToken cancellationToken)\n        {\n            this.StopWebServer();\n\n            return Task.FromResult(true);\n        }\n\n        public void Abort()\n        {\n            this.StopWebServer();\n        }\n\n        private void StopWebServer()\n        {\n            if (this.serverHandle != null)\n            {\n                try\n                {\n                    this.serverHandle.Dispose();\n                }\n                catch (ObjectDisposedException)\n                {\n                    // no-op\n                }\n            }\n        }\n    }\n}\n\n```\n\nWith all the pieces in place, your project should now look like a typical Web API application with the Reliable Services API entry points and an OWIN host:\n\n\n![](media/service-fabric-reliable-services-communication-webapi/webapi-projectstructure.png)\n\n## Run and connect through a web browser\n\nIf you haven't done so, [set up your development environment](service-fabric-get-started.md).\n\n\nYou can now build and deploy your service. Press **F5** in Visual Studio to build and deploy the application. In the Diagnostics Events window, you should see a message indicating the web server opened on **http://localhost:80/api**\n\n\n![](media/service-fabric-reliable-services-communication-webapi/webapi-diagnostics.png)\n\n> [AZURE.NOTE] If the port is already be open by another process on your machine, you may see an error here indicating the listener couldn't be opened. If that's the case, try using a different port in the Endpoint configuration in ServiceManifest.xml.\n\n\nOnce the service is running, open a browser and navigate to [http://localhost/api](http://localhost/api) to test it out.\n\n## Scale it out\n\nScaling out stateless web apps typically means adding more machines and spinning up the web app on them. Service Fabric's orchestration engine can do this for you whenever new nodes are added to a cluster. When creating instances of a stateless service, you can specify the number of instances you want to create. Service Fabric will place that number of instances on nodes in the cluster accordingly, making sure not to create more than one instance on any one node. You can also instruct Service Fabric to always create an instance on every node by specifying \"-1\" for the instance count. This guarantees that whenever you add nodes to scale out your cluster, an instance of your stateless service will be created on the new nodes. This value is a property of the service instance, so it is set when creating a service instance either through PowerShell:\n\n```powershell\n\nNew-ServiceFabricService -ApplicationName \"fabric:/WebServiceApplication\" -ServiceName \"fabric:/WebServiceApplication/WebService\" -ServiceTypeName \"WebServiceType\" -Stateless -PartitionSchemeSingleton -InstanceCount -1\n\n```\n\nOr when defining a default service in a Visual Studio Stateless Service project:\n\n```xml\n\n<DefaultServices>\n  <Service Name=\"WebService\">\n    <StatelessService ServiceTypeName=\"WebServiceType\" InstanceCount=\"-1\">\n      <SingletonPartition />\n    </StatelessService>\n  </Service>\n</DefaultServices>\n\n```\n\nFor more information on creating application and service instances, see [how to deploy and remove applications](service-fabric-deploy-remove-applications.md).\n\n## ASP.NET 5\n\nIn ASP.NET 5, the concept and programming model of separating the *application* from the *host* in web applications remains the same. It can also be applied to other forms of communication. In addition, although the *host* may differ in ASP.NET 5, the Web API *application* layer remains the same, which is where the bulk of application logic actually lives.\n\n## Next Steps\n\n[Debugging your Service Fabric Application in Visual Studio](service-fabric-debugging-your-application.md)\n"
+}

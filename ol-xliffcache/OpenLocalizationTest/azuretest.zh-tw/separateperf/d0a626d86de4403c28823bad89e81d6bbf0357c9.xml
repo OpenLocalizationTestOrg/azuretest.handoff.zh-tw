@@ -1,0 +1,355 @@
+{
+  "nodes": [
+    {
+      "content": "Service Fabric Application Upgrade: Data Serialization",
+      "pos": [
+        26,
+        80
+      ]
+    },
+    {
+      "content": "Best practices for data serialization to ensure successful application upgrades.",
+      "pos": [
+        98,
+        178
+      ]
+    },
+    {
+      "content": "Service Fabric Application Upgrade: Data Serialization",
+      "pos": [
+        475,
+        529
+      ]
+    },
+    {
+      "content": "In a <bpt id=\"p1\">[</bpt>rolling application upgrade<ept id=\"p1\">](service-fabric-application-upgrade.md)</ept>, the upgrade is applied to a subset of nodes, one upgrade domain at a time.",
+      "pos": [
+        531,
+        680
+      ]
+    },
+    {
+      "content": "During this process, some upgrade domains will be on the newer version of your application, and some upgrade domains will be on the older version of your application.",
+      "pos": [
+        681,
+        847
+      ]
+    },
+    {
+      "content": "At this time, the new version of your application must be able to read the old version of your data, and the old version of your application must be able to read the new version of your data.",
+      "pos": [
+        848,
+        1039
+      ]
+    },
+    {
+      "content": "If the data format is not forwards and backwards compatible, the upgrade may fail or data may be lost.",
+      "pos": [
+        1040,
+        1142
+      ]
+    },
+    {
+      "content": "This article discusses what constitutes your data format and best practices for ensuring your data is forwards and backwards compatible.",
+      "pos": [
+        1143,
+        1279
+      ]
+    },
+    {
+      "content": "What makes up your data format?",
+      "pos": [
+        1285,
+        1316
+      ]
+    },
+    {
+      "content": "In Service Fabric, the data that is persisted and replicated comes from your C# classes.",
+      "pos": [
+        1318,
+        1406
+      ]
+    },
+    {
+      "content": "For applications using <bpt id=\"p1\">[</bpt>Reliable Collections<ept id=\"p1\">](service-fabric-reliable-services-reliable-collections.md)</ept>, that is the objects in the reliable dictionaries and queues.",
+      "pos": [
+        1407,
+        1572
+      ]
+    },
+    {
+      "content": "For applications using <bpt id=\"p1\">[</bpt>Stateful Reliable Actors<ept id=\"p1\">](service-fabric-reliable-actors-introduction.md)</ept>, that is the backing state for the actor.",
+      "pos": [
+        1573,
+        1712
+      ]
+    },
+    {
+      "content": "These C# classes must be serializable to be persisted and replicated.",
+      "pos": [
+        1713,
+        1782
+      ]
+    },
+    {
+      "content": "Therefore, the data format is defined by the fields and properties that are serialized, as well as how they are serialized.",
+      "pos": [
+        1783,
+        1906
+      ]
+    },
+    {
+      "content": "For example, in an <ph id=\"ph1\">`IReliableDictionary&lt;int, MyClass&gt;`</ph> the data is a serialized <ph id=\"ph2\">`int`</ph> and a serialized <ph id=\"ph3\">`MyClass`</ph>.",
+      "pos": [
+        1907,
+        2020
+      ]
+    },
+    {
+      "content": "Data format changes",
+      "pos": [
+        2026,
+        2045
+      ]
+    },
+    {
+      "content": "Since the data format is determined by C# classes, changes to the classes may cause a data format change.",
+      "pos": [
+        2047,
+        2152
+      ]
+    },
+    {
+      "content": "Care must be taken to ensure a rolling upgrade can handle the data format change.",
+      "pos": [
+        2153,
+        2234
+      ]
+    },
+    {
+      "content": "Examples that may cause data format changes:",
+      "pos": [
+        2235,
+        2279
+      ]
+    },
+    {
+      "content": "Adding or removing fields or properties",
+      "pos": [
+        2283,
+        2322
+      ]
+    },
+    {
+      "content": "Renaming fields or properties",
+      "pos": [
+        2325,
+        2354
+      ]
+    },
+    {
+      "content": "Changing the types of fields or properties",
+      "pos": [
+        2357,
+        2399
+      ]
+    },
+    {
+      "content": "Changing the class name or namespace",
+      "pos": [
+        2402,
+        2438
+      ]
+    },
+    {
+      "content": "Default serializer",
+      "pos": [
+        2444,
+        2462
+      ]
+    },
+    {
+      "content": "The serializer is generally responsible for reading the data and deserializing it into the current version, even if the data is in an older or <bpt id=\"p1\">*</bpt>newer<ept id=\"p1\">*</ept> version.",
+      "pos": [
+        2464,
+        2623
+      ]
+    },
+    {
+      "content": "The default serializer is the <bpt id=\"p1\">[</bpt>Data Contract serializer<ept id=\"p1\">](https://msdn.microsoft.com/library/ms733127.aspx)</ept>, which has well-defined versioning rules.",
+      "pos": [
+        2624,
+        2772
+      ]
+    },
+    {
+      "content": "Reliable Collections allows the serializer to be overridden, but Reliable Actors currently does not.",
+      "pos": [
+        2773,
+        2873
+      ]
+    },
+    {
+      "content": "The data serializer plays an important role in enabling rolling upgrades.",
+      "pos": [
+        2874,
+        2947
+      ]
+    },
+    {
+      "content": "The Data Contract Serializer is the serializer recommended for Service Fabric applications.",
+      "pos": [
+        2948,
+        3039
+      ]
+    },
+    {
+      "content": "How the data format affects rolling upgrade",
+      "pos": [
+        3045,
+        3088
+      ]
+    },
+    {
+      "pos": [
+        3090,
+        3221
+      ],
+      "content": "During a rolling upgrade, there are two main scenarios where the serializer may encounter an older or <bpt id=\"p1\">*</bpt>newer<ept id=\"p1\">*</ept> version of your data:"
+    },
+    {
+      "content": "After a node is upgraded and starts back up, the new serializer will load the data that was persisted to disk by the old version.",
+      "pos": [
+        3226,
+        3355
+      ]
+    },
+    {
+      "content": "During the rolling upgrade, the cluster may contain a mix of the old and new versions of your code.",
+      "pos": [
+        3359,
+        3458
+      ]
+    },
+    {
+      "content": "Since replicas may be placed in different upgrade domains, both the new and old version of your data may be encountered by the serializer (which itself may be the new or old version).",
+      "pos": [
+        3459,
+        3642
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> The \"new version\" and \"old version\" here refer to the version of your code that is running.",
+      "pos": [
+        3646,
+        3750
+      ]
+    },
+    {
+      "content": "The \"new serializer\" refers to the serializer code executing in the new version of your application.",
+      "pos": [
+        3751,
+        3851
+      ]
+    },
+    {
+      "content": "The \"new data\" refers to the serialized C# class from the new version of your application.",
+      "pos": [
+        3852,
+        3942
+      ]
+    },
+    {
+      "content": "The two versions of code and data format must be both forward and backward compatible.",
+      "pos": [
+        3944,
+        4030
+      ]
+    },
+    {
+      "content": "If they are not compatible, the rolling upgrade may fail or data may be lost.",
+      "pos": [
+        4031,
+        4108
+      ]
+    },
+    {
+      "content": "The rolling upgrade may fail because the code or serializer may throw exceptions or fault when encountering the other version.",
+      "pos": [
+        4109,
+        4235
+      ]
+    },
+    {
+      "content": "Data may be lost if, for example, a new property was added but the old serializer discards it during deserialization.",
+      "pos": [
+        4236,
+        4353
+      ]
+    },
+    {
+      "content": "Data Contract",
+      "pos": [
+        4359,
+        4372
+      ]
+    },
+    {
+      "content": "Data Contract is the recommended solution for ensuring your data is compatible.",
+      "pos": [
+        4374,
+        4453
+      ]
+    },
+    {
+      "content": "It has well-defined versioning rules for adding, removing, and changing fields.",
+      "pos": [
+        4454,
+        4533
+      ]
+    },
+    {
+      "content": "It also has support for dealing with unknown fields, hooking into the serialization and deserialization process, and for class inheritance.",
+      "pos": [
+        4534,
+        4673
+      ]
+    },
+    {
+      "content": "For more information, see <bpt id=\"p1\">[</bpt>Using Data Contract<ept id=\"p1\">](https://msdn.microsoft.com/library/ms733127.aspx)</ept>.",
+      "pos": [
+        4674,
+        4772
+      ]
+    },
+    {
+      "content": "Next steps",
+      "pos": [
+        4778,
+        4788
+      ]
+    },
+    {
+      "content": "Upgrade Tutorial",
+      "pos": [
+        4791,
+        4807
+      ]
+    },
+    {
+      "content": "Upgrade Parameters",
+      "pos": [
+        4859,
+        4877
+      ]
+    },
+    {
+      "content": "Advanced Topics",
+      "pos": [
+        4931,
+        4946
+      ]
+    }
+  ],
+  "content": "<properties\n   pageTitle=\"Service Fabric Application Upgrade: Data Serialization\"\n   description=\"Best practices for data serialization to ensure successful application upgrades.\"\n   services=\"service-fabric\"\n   documentationCenter=\".net\"\n   authors=\"jessebenson\"\n   manager=\"timlt\"\n   editor=\"\"/>\n\n<tags\n   ms.service=\"service-fabric\"\n   ms.devlang=\"dotnet\"\n   ms.topic=\"article\"\n   ms.tgt_pltfrm=\"NA\"\n   ms.workload=\"NA\"\n   ms.date=\"08/05/2015\"\n   ms.author=\"jesseb\"/>\n\n\n# Service Fabric Application Upgrade: Data Serialization\n\nIn a [rolling application upgrade](service-fabric-application-upgrade.md), the upgrade is applied to a subset of nodes, one upgrade domain at a time. During this process, some upgrade domains will be on the newer version of your application, and some upgrade domains will be on the older version of your application. At this time, the new version of your application must be able to read the old version of your data, and the old version of your application must be able to read the new version of your data. If the data format is not forwards and backwards compatible, the upgrade may fail or data may be lost. This article discusses what constitutes your data format and best practices for ensuring your data is forwards and backwards compatible.\n\n\n## What makes up your data format?\n\nIn Service Fabric, the data that is persisted and replicated comes from your C# classes. For applications using [Reliable Collections](service-fabric-reliable-services-reliable-collections.md), that is the objects in the reliable dictionaries and queues. For applications using [Stateful Reliable Actors](service-fabric-reliable-actors-introduction.md), that is the backing state for the actor. These C# classes must be serializable to be persisted and replicated. Therefore, the data format is defined by the fields and properties that are serialized, as well as how they are serialized. For example, in an `IReliableDictionary<int, MyClass>` the data is a serialized `int` and a serialized `MyClass`.\n\n### Data format changes\n\nSince the data format is determined by C# classes, changes to the classes may cause a data format change. Care must be taken to ensure a rolling upgrade can handle the data format change. Examples that may cause data format changes:\n\n- Adding or removing fields or properties\n- Renaming fields or properties\n- Changing the types of fields or properties\n- Changing the class name or namespace\n\n### Default serializer\n\nThe serializer is generally responsible for reading the data and deserializing it into the current version, even if the data is in an older or *newer* version. The default serializer is the [Data Contract serializer](https://msdn.microsoft.com/library/ms733127.aspx), which has well-defined versioning rules. Reliable Collections allows the serializer to be overridden, but Reliable Actors currently does not. The data serializer plays an important role in enabling rolling upgrades. The Data Contract Serializer is the serializer recommended for Service Fabric applications.\n\n\n## How the data format affects rolling upgrade\n\nDuring a rolling upgrade, there are two main scenarios where the serializer may encounter an older or *newer* version of your data:\n\n1. After a node is upgraded and starts back up, the new serializer will load the data that was persisted to disk by the old version.\n2. During the rolling upgrade, the cluster may contain a mix of the old and new versions of your code. Since replicas may be placed in different upgrade domains, both the new and old version of your data may be encountered by the serializer (which itself may be the new or old version).\n\n> [AZURE.NOTE] The \"new version\" and \"old version\" here refer to the version of your code that is running. The \"new serializer\" refers to the serializer code executing in the new version of your application. The \"new data\" refers to the serialized C# class from the new version of your application.\n\nThe two versions of code and data format must be both forward and backward compatible. If they are not compatible, the rolling upgrade may fail or data may be lost. The rolling upgrade may fail because the code or serializer may throw exceptions or fault when encountering the other version. Data may be lost if, for example, a new property was added but the old serializer discards it during deserialization.\n\n\n## Data Contract\n\nData Contract is the recommended solution for ensuring your data is compatible. It has well-defined versioning rules for adding, removing, and changing fields. It also has support for dealing with unknown fields, hooking into the serialization and deserialization process, and for class inheritance. For more information, see [Using Data Contract](https://msdn.microsoft.com/library/ms733127.aspx).\n\n\n## Next steps\n\n[Upgrade Tutorial](service-fabric-application-upgrade-tutorial.md)\n\n[Upgrade Parameters](service-fabric-application-upgrade-parameters.md)\n\n[Advanced Topics](service-fabric-application-upgrade-advanced.md)\n"
+}

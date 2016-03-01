@@ -1,0 +1,628 @@
+{
+  "nodes": [
+    {
+      "content": "Multi-tenant applications with elastic database tools and row-level security",
+      "pos": [
+        118,
+        194
+      ]
+    },
+    {
+      "content": "Learn how to use elastic database tools together with row-level security to build an application with a highly scalable data tier on Azure SQL Database that supports multi-tenant shards.",
+      "pos": [
+        214,
+        400
+      ]
+    },
+    {
+      "content": "Multi-tenant applications with elastic database tools and row-level security",
+      "pos": [
+        809,
+        885
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt>Elastic database tools<ept id=\"p1\">](sql-database-elastic-scale-get-started.md)</ept> and <bpt id=\"p2\">[</bpt>row-level security (RLS)<ept id=\"p2\">](https://msdn.microsoft.com/library/dn765131)</ept> offer a powerful set of capabilities for flexibly and efficiently scaling the data tier of a multi-tenant application with Azure SQL Database.",
+      "pos": [
+        888,
+        1174
+      ]
+    },
+    {
+      "content": "This article illustrates how to use these technologies together to build an application with a highly scalable data tier that supports multi-tenant shards, using <bpt id=\"p1\">**</bpt>ADO.NET SqlClient<ept id=\"p1\">**</ept> and/or <bpt id=\"p2\">**</bpt>Entity Framework<ept id=\"p2\">**</ept>.",
+      "pos": [
+        1175,
+        1387
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Elastic database tools<ept id=\"p1\">**</ept> enables developers to scale out the data tier of an application via industry-standard sharding practices using a set of .NET libraries and Azure service templates.",
+      "pos": [
+        1392,
+        1582
+      ]
+    },
+    {
+      "content": "Managing shards with using the Elastic Database Client Library helps automate and streamline many of the infrastructural tasks typically associated with sharding.",
+      "pos": [
+        1583,
+        1745
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Row-level security<ept id=\"p1\">**</ept> enables developers to store data for multiple tenants in the same database using security policies to filter out rows that do not belong to the tenant executing a query.",
+      "pos": [
+        1750,
+        1942
+      ]
+    },
+    {
+      "content": "Centralizing access logic with RLS inside the database, rather than in the application, simplifies maintenance and reduces the risk of error as an application’s codebase grows.",
+      "pos": [
+        1943,
+        2119
+      ]
+    },
+    {
+      "content": "RLS requires the latest <bpt id=\"p1\">[</bpt>Azure SQL Database update (V12)<ept id=\"p1\">](sql-database-preview-whats-new.md)</ept>.",
+      "pos": [
+        2120,
+        2213
+      ]
+    },
+    {
+      "content": "Using these features together, an application can benefit from cost savings and efficiency gains by storing data for multiple tenants in the same shard database.",
+      "pos": [
+        2216,
+        2377
+      ]
+    },
+    {
+      "content": "At the same time, an application still has the flexibility to offer isolated, single-tenant shards for “premium” tenants who require stricter performance guarantees since multi-tenant shards do not guarantee equal resource distribution among tenants.",
+      "pos": [
+        2378,
+        2628
+      ]
+    },
+    {
+      "content": "In short, the elastic database client library’s <bpt id=\"p1\">[</bpt>data dependent routing<ept id=\"p1\">](sql-database-elastic-scale-data-dependent-routing.md)</ept> APIs automatically connect tenants to the correct shard database containing their sharding key (generally a “TenantId”).",
+      "pos": [
+        2632,
+        2879
+      ]
+    },
+    {
+      "content": "Once connected, an RLS security policy within the database ensures that tenants can only access rows that contain their TenantId.",
+      "pos": [
+        2880,
+        3009
+      ]
+    },
+    {
+      "content": "It is assumed that all tables contain a TenantId column to indicate which rows belong to each tenant.",
+      "pos": [
+        3010,
+        3111
+      ]
+    },
+    {
+      "content": "![Blogging app architecture][1]",
+      "pos": [
+        3114,
+        3145
+      ]
+    },
+    {
+      "content": "Download the sample project",
+      "pos": [
+        3150,
+        3177
+      ]
+    },
+    {
+      "content": "Prerequisites",
+      "pos": [
+        3183,
+        3196
+      ]
+    },
+    {
+      "content": "Use Visual Studio (2012 or higher)",
+      "pos": [
+        3199,
+        3233
+      ]
+    },
+    {
+      "content": "Create three Azure SQL Databases",
+      "pos": [
+        3237,
+        3269
+      ]
+    },
+    {
+      "pos": [
+        3273,
+        3393
+      ],
+      "content": "Download sample project: <bpt id=\"p1\">[</bpt>Elastic DB Tools for Azure SQL - Multi-Tenant Shards<ept id=\"p1\">](http://go.microsoft.com/?linkid=9888163)</ept>"
+    },
+    {
+      "pos": [
+        3398,
+        3475
+      ],
+      "content": "Fill in the information for your databases at the beginning of <bpt id=\"p1\">**</bpt>Program.cs<ept id=\"p1\">**</ept>"
+    },
+    {
+      "content": "This project extends the one described in <bpt id=\"p1\">[</bpt>Elastic DB Tools for Azure SQL - Entity Framework Integration<ept id=\"p1\">](sql-database-elastic-scale-use-entity-framework-applications-visual-studio.md)</ept> by adding support for multi-tenant shard databases.",
+      "pos": [
+        3478,
+        3714
+      ]
+    },
+    {
+      "content": "It builds a simple console application for creating blogs and posts, with four tenants and two multi-tenant shard databases as illustrated in the above diagram.",
+      "pos": [
+        3715,
+        3875
+      ]
+    },
+    {
+      "content": "Build and run the application.",
+      "pos": [
+        3878,
+        3908
+      ]
+    },
+    {
+      "content": "This will bootstrap the elastic database tools’ shard map manager and run the following tests:",
+      "pos": [
+        3909,
+        4003
+      ]
+    },
+    {
+      "content": "Using Entity Framework and LINQ, create a new blog and then display all blogs for each tenant",
+      "pos": [
+        4009,
+        4102
+      ]
+    },
+    {
+      "content": "Using ADO.NET SqlClient, display all blogs for a tenant",
+      "pos": [
+        4106,
+        4161
+      ]
+    },
+    {
+      "content": "Try to insert a blog for the wrong tenant to verify that an error is thrown",
+      "pos": [
+        4165,
+        4240
+      ]
+    },
+    {
+      "content": "Notice that because RLS has not yet been enabled in the shard databases, each of these tests reveals a problem: tenants are able to see blogs that do not belong to them, and the application is not prevented from inserting a blog for the wrong tenant.",
+      "pos": [
+        4244,
+        4494
+      ]
+    },
+    {
+      "content": "The remainder of this article describes how to resolve these problems by enforcing tenant isolation with RLS.",
+      "pos": [
+        4495,
+        4604
+      ]
+    },
+    {
+      "content": "There are two steps:",
+      "pos": [
+        4605,
+        4625
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Application tier<ept id=\"p1\">**</ept>: Modify the application code to always set CONTEXT_INFO to the current TenantId after opening a connection.",
+      "pos": [
+        4631,
+        4759
+      ]
+    },
+    {
+      "content": "The sample project has already done this.",
+      "pos": [
+        4760,
+        4801
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Data tier<ept id=\"p1\">**</ept>: Create an RLS security policy in each shard database to filter rows based on the value of CONTEXT_INFO.",
+      "pos": [
+        4806,
+        4924
+      ]
+    },
+    {
+      "content": "You will need to do this for each of your shard databases, otherwise rows in multi-tenant shards will not be filtered.",
+      "pos": [
+        4925,
+        5043
+      ]
+    },
+    {
+      "content": "Step 1) Application tier: Set CONTEXT_INFO to TenantId",
+      "pos": [
+        5050,
+        5104
+      ]
+    },
+    {
+      "content": "After connecting to a shard database using the elastic database client library’s data dependent routing APIs, the application still needs to tell the database which TenantId is using that connection so that an RLS security policy can filter out rows belonging to other tenants.",
+      "pos": [
+        5106,
+        5383
+      ]
+    },
+    {
+      "content": "The recommended way to pass this information is to set <bpt id=\"p1\">[</bpt>CONTEXT_INFO<ept id=\"p1\">](https://msdn.microsoft.com/library/ms180125)</ept> to the current TenantId for that connection.",
+      "pos": [
+        5384,
+        5543
+      ]
+    },
+    {
+      "content": "Note that on Azure SQL Database, CONTEXT_INFO is pre-populated with a session-specific GUID, so you <bpt id=\"p1\">*</bpt>must<ept id=\"p1\">*</ept> set CONTEXT_INFO to the correct TenantId before executing any queries on a new connection to ensure that no rows are inadvertently leaked.",
+      "pos": [
+        5544,
+        5789
+      ]
+    },
+    {
+      "content": "Entity Framework",
+      "pos": [
+        5795,
+        5811
+      ]
+    },
+    {
+      "content": "For applications using Entity Framework, the easiest approach is to set CONTEXT_INFO within the ElasticScaleContext override described in <bpt id=\"p1\">[</bpt>Data Dependent Routing using EF DbContext<ept id=\"p1\">](sql-database-elastic-scale-use-entity-framework-applications-visual-studio.md/#data-dependent-routing-using-ef-dbcontext)</ept>.",
+      "pos": [
+        5813,
+        6117
+      ]
+    },
+    {
+      "content": "Before returning the connection brokered through data dependent routing, simply create and execute a SqlCommand that sets CONTEXT_INFO to the shardingKey (TenantId) specified for that connection.",
+      "pos": [
+        6118,
+        6313
+      ]
+    },
+    {
+      "content": "This way, you only need to write code once to set CONTEXT_INFO.",
+      "pos": [
+        6314,
+        6377
+      ]
+    },
+    {
+      "content": "Now CONTEXT_INFO is automatically set to the specified TenantId whenever ElasticScaleContext is invoked:",
+      "pos": [
+        7866,
+        7970
+      ]
+    },
+    {
+      "content": "ADO.NET SqlClient",
+      "pos": [
+        8498,
+        8515
+      ]
+    },
+    {
+      "content": "For applications using ADO.NET SqlClient, the recommended approach is to create a wrapper function around ShardMap.OpenConnectionForKey() that automatically sets CONTEXT_INFO to the correct TenantId before returning a connection.",
+      "pos": [
+        8518,
+        8747
+      ]
+    },
+    {
+      "content": "To ensure that CONTEXT_INFO is always set properly, you should only open connections using this wrapper function.",
+      "pos": [
+        8748,
+        8861
+      ]
+    },
+    {
+      "content": "Step 2) Data tier: Create row-level security policy and constraints",
+      "pos": [
+        10622,
+        10689
+      ]
+    },
+    {
+      "content": "Create a security policy to filter SELECT, UPDATE, and DELETE queries",
+      "pos": [
+        10696,
+        10765
+      ]
+    },
+    {
+      "content": "Now that the application is setting CONTEXT_INFO to the current TenantId before querying, an RLS security policy can filter queries and exclude rows that have a different TenantId.",
+      "pos": [
+        10768,
+        10948
+      ]
+    },
+    {
+      "content": "RLS is implemented in T-SQL: a user-defined predicate function defines the filtering logic, and a security policy binds this function to any number of tables.",
+      "pos": [
+        10952,
+        11110
+      ]
+    },
+    {
+      "content": "For this project, the predicate function will simply verify that the application (rather than some other SQL user) is connected to the database, and that the value of CONTEXT_INFO matches the TenantId of a given row.",
+      "pos": [
+        11111,
+        11327
+      ]
+    },
+    {
+      "content": "Rows that meet these conditions will be allowed through the filter for SELECT, UPDATE, and DELETE queries.",
+      "pos": [
+        11328,
+        11434
+      ]
+    },
+    {
+      "content": "If CONTEXT_INFO has not been set, no rows will be returned.",
+      "pos": [
+        11435,
+        11494
+      ]
+    },
+    {
+      "pos": [
+        11497,
+        11795
+      ],
+      "content": "To enable RLS, execute the following T-SQL on all shards using either Visual Studio (SSDT), SSMS, or the PowerShell script included in the project (or if you are using <bpt id=\"p1\">[</bpt>Elastic Database Jobs<ept id=\"p1\">](sql-database-elastic-jobs-overview.md)</ept>, you can use it to automate execution of this T-SQL on all shards):"
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.TIP]</ph> For more complex projects that need to add the predicate function on hundreds of tables, you can use a helper stored procedure that automatically generates a security policy adding a predicate on all tables in a schema.",
+      "pos": [
+        12517,
+        12748
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt>Apply Row-Level Security to all tables – helper script (blog)<ept id=\"p1\">](http://blogs.msdn.com/b/sqlsecurity/archive/2015/03/31/apply-row-level-security-to-all-tables-helper-script)</ept>.",
+      "pos": [
+        12749,
+        12926
+      ]
+    },
+    {
+      "content": "If you add a new table later on, simply ALTER the security policy and add a filter predicate on the new table:",
+      "pos": [
+        12930,
+        13040
+      ]
+    },
+    {
+      "content": "Now if you run the sample application again, tenants will not be able to see rows that do not belong to them.",
+      "pos": [
+        13189,
+        13298
+      ]
+    },
+    {
+      "content": "Add check constraints to block wrong-tenant INSERTs and UPDATEs",
+      "pos": [
+        13305,
+        13368
+      ]
+    },
+    {
+      "content": "At present, RLS security policies will not prevent the application from accidentally inserting rows for the wrong TenantId, or updating the TenantId of a visible row to be a new value.",
+      "pos": [
+        13370,
+        13554
+      ]
+    },
+    {
+      "content": "For some applications, such as read-only reporting apps, this is not a problem.",
+      "pos": [
+        13555,
+        13634
+      ]
+    },
+    {
+      "content": "However, since this application allows tenants to insert new blogs, it is worthwhile to create an additional safeguard that throws an error if the application code mistakenly tries to insert or update rows such that violate the filter predicate.",
+      "pos": [
+        13635,
+        13880
+      ]
+    },
+    {
+      "content": "As described in <bpt id=\"p1\">[</bpt>Row-Level Security: Blocking unauthorized INSERTs (blog)<ept id=\"p1\">](http://blogs.msdn.com/b/sqlsecurity/archive/2015/03/23/row-level-security-blocking-unauthorized-inserts)</ept>, the recommended solution is to create a check constraint on each table to enforce the same RLS filter predicate for insert and update operations.",
+      "pos": [
+        13882,
+        14208
+      ]
+    },
+    {
+      "content": "To add check constraints, execute the following T-SQL on all shards, using SSMS, SSDT, or the included PowerShell script (or Elastic Database Jobs) as described above:",
+      "pos": [
+        14211,
+        14378
+      ]
+    },
+    {
+      "content": "Now the application cannot insert rows that belong to tenants other than the one currently connected to the shard database.",
+      "pos": [
+        15161,
+        15284
+      ]
+    },
+    {
+      "content": "Likewise the application cannot update visible rows to have a different TenantId.",
+      "pos": [
+        15285,
+        15366
+      ]
+    },
+    {
+      "content": "If the application attempts to do either, a DbUpdateException will be raised.",
+      "pos": [
+        15367,
+        15444
+      ]
+    },
+    {
+      "content": "Add default constraints to automatically populate TenantId for INSERTs",
+      "pos": [
+        15452,
+        15522
+      ]
+    },
+    {
+      "content": "In addition to using check constraints to block wrong-tenant inserts, you can put a default constraint on each table to automatically populate the TenantId with the current value of CONTEXT_INFO when inserting rows.",
+      "pos": [
+        15525,
+        15740
+      ]
+    },
+    {
+      "content": "For example:",
+      "pos": [
+        15741,
+        15753
+      ]
+    },
+    {
+      "content": "Now the application does not need to specify a TenantId when inserting rows:",
+      "pos": [
+        16161,
+        16237
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> If you use default constraints for an Entity Framework project, it is recommended that you do NOT include the TenantId column in your EF data model.",
+      "pos": [
+        16598,
+        16759
+      ]
+    },
+    {
+      "content": "This is because Entity Framework queries automatically supply default values that will override the default constraints created in T-SQL that use CONTEXT_INFO.",
+      "pos": [
+        16760,
+        16919
+      ]
+    },
+    {
+      "content": "To use default constraints in the sample project, for instance, you should remove TenantId from DataClasses.cs (and run Add-Migration in the Package Manager Console) and use T-SQL to ensure that the field only exists in the database tables.",
+      "pos": [
+        16920,
+        17160
+      ]
+    },
+    {
+      "content": "This way, EF will not automatically supply incorrect default values when inserting data.",
+      "pos": [
+        17161,
+        17249
+      ]
+    },
+    {
+      "content": "(Optional) Enable a \"superuser\" to access all rows",
+      "pos": [
+        17256,
+        17306
+      ]
+    },
+    {
+      "content": "Some applications may want to create a \"superuser\" who can access all rows, for instance, in order to enable reporting across all tenants on all shards, or to perform Split/Merge operations on shards that involve moving tenant rows between databases.",
+      "pos": [
+        17307,
+        17557
+      ]
+    },
+    {
+      "content": "To enable this, you should create a new SQL user (\"superuser\" in this example) in each shard database.",
+      "pos": [
+        17558,
+        17660
+      ]
+    },
+    {
+      "content": "Then alter the security policy with a new predicate function that allows this user to access all rows:",
+      "pos": [
+        17661,
+        17763
+      ]
+    },
+    {
+      "content": "Maintenance",
+      "pos": [
+        18603,
+        18614
+      ]
+    },
+    {
+      "pos": [
+        18619,
+        18792
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Adding new shards<ept id=\"p1\">**</ept>: You must execute the T-SQL script to enable RLS (and add check constraints) on any new shards, otherwise queries on these shards will not be filtered."
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Adding new tables<ept id=\"p1\">**</ept>: You must add a filter predicate to the security policy on all shards whenever a new table is created, otherwise queries on the new table will not be filtered.",
+      "pos": [
+        18796,
+        18977
+      ]
+    },
+    {
+      "content": "This can be automated using a DDL trigger, as described in <bpt id=\"p1\">[</bpt>Apply Row-Level Security automatically to newly created tables (blog)<ept id=\"p1\">](http://blogs.msdn.com/b/sqlsecurity/archive/2015/05/22/apply-row-level-security-automatically-to-newly-created-tables.aspx)</ept>.",
+      "pos": [
+        18978,
+        19233
+      ]
+    },
+    {
+      "content": "Summary",
+      "pos": [
+        19239,
+        19246
+      ]
+    },
+    {
+      "content": "Elastic database tools and row-level security can be used together to scale out an application’s data tier with support for both multi-tenant and single-tenant shards.",
+      "pos": [
+        19249,
+        19416
+      ]
+    },
+    {
+      "content": "Multi-tenant shards can be used to store data more efficiently (particularly in cases where a large number of tenants have only a few rows of data), while single-tenant shards can be used to support premium tenants with stricter performance and isolation requirements.",
+      "pos": [
+        19417,
+        19685
+      ]
+    },
+    {
+      "content": "For more information, see the <bpt id=\"p1\">[</bpt>Elastic Database Tools Documentation Map<ept id=\"p1\">](sql-database-elastic-scale-documentation-map.md)</ept> or the <bpt id=\"p2\">[</bpt>Row-Level Security reference<ept id=\"p2\">](https://msdn.microsoft.com/library/dn765131)</ept> on MSDN.",
+      "pos": [
+        19687,
+        19900
+      ]
+    }
+  ],
+  "content": "<properties \n    title=\"Multi-tenant applications with elastic database tools and row-level security\" \n    pageTitle=\"Multi-tenant applications with elastic database tools and row-level security\" \n    description=\"Learn how to use elastic database tools together with row-level security to build an application with a highly scalable data tier on Azure SQL Database that supports multi-tenant shards.\" \n    metaKeywords=\"azure sql database elastic tools multi tenant row level security rls\" \n    services=\"sql-database\" documentationCenter=\"\"  \n    manager=\"jeffreyg\" \n    authors=\"tmullaney\"/>\n\n<tags \n    ms.service=\"sql-database\" \n    ms.workload=\"sql-database\" \n    ms.tgt_pltfrm=\"na\" \n    ms.devlang=\"na\" \n    ms.topic=\"article\" \n    ms.date=\"08/19/2015\" \n    ms.author=\"thmullan;torsteng;sidneyh\" />\n\n# Multi-tenant applications with elastic database tools and row-level security \n\n[Elastic database tools](sql-database-elastic-scale-get-started.md) and [row-level security (RLS)](https://msdn.microsoft.com/library/dn765131) offer a powerful set of capabilities for flexibly and efficiently scaling the data tier of a multi-tenant application with Azure SQL Database. This article illustrates how to use these technologies together to build an application with a highly scalable data tier that supports multi-tenant shards, using **ADO.NET SqlClient** and/or **Entity Framework**. \n\n* **Elastic database tools** enables developers to scale out the data tier of an application via industry-standard sharding practices using a set of .NET libraries and Azure service templates. Managing shards with using the Elastic Database Client Library helps automate and streamline many of the infrastructural tasks typically associated with sharding. \n\n* **Row-level security** enables developers to store data for multiple tenants in the same database using security policies to filter out rows that do not belong to the tenant executing a query. Centralizing access logic with RLS inside the database, rather than in the application, simplifies maintenance and reduces the risk of error as an application’s codebase grows. RLS requires the latest [Azure SQL Database update (V12)](sql-database-preview-whats-new.md). \n\nUsing these features together, an application can benefit from cost savings and efficiency gains by storing data for multiple tenants in the same shard database. At the same time, an application still has the flexibility to offer isolated, single-tenant shards for “premium” tenants who require stricter performance guarantees since multi-tenant shards do not guarantee equal resource distribution among tenants.  \n\nIn short, the elastic database client library’s [data dependent routing](sql-database-elastic-scale-data-dependent-routing.md) APIs automatically connect tenants to the correct shard database containing their sharding key (generally a “TenantId”). Once connected, an RLS security policy within the database ensures that tenants can only access rows that contain their TenantId. It is assumed that all tables contain a TenantId column to indicate which rows belong to each tenant. \n\n![Blogging app architecture][1]\n\n## Download the sample project\n\n### Prerequisites\n* Use Visual Studio (2012 or higher) \n* Create three Azure SQL Databases \n* Download sample project: [Elastic DB Tools for Azure SQL - Multi-Tenant Shards](http://go.microsoft.com/?linkid=9888163)\n  * Fill in the information for your databases at the beginning of **Program.cs** \n\nThis project extends the one described in [Elastic DB Tools for Azure SQL - Entity Framework Integration](sql-database-elastic-scale-use-entity-framework-applications-visual-studio.md) by adding support for multi-tenant shard databases. It builds a simple console application for creating blogs and posts, with four tenants and two multi-tenant shard databases as illustrated in the above diagram. \n\nBuild and run the application. This will bootstrap the elastic database tools’ shard map manager and run the following tests: \n\n1. Using Entity Framework and LINQ, create a new blog and then display all blogs for each tenant\n2. Using ADO.NET SqlClient, display all blogs for a tenant\n3. Try to insert a blog for the wrong tenant to verify that an error is thrown  \n\nNotice that because RLS has not yet been enabled in the shard databases, each of these tests reveals a problem: tenants are able to see blogs that do not belong to them, and the application is not prevented from inserting a blog for the wrong tenant. The remainder of this article describes how to resolve these problems by enforcing tenant isolation with RLS. There are two steps: \n\n1. **Application tier**: Modify the application code to always set CONTEXT_INFO to the current TenantId after opening a connection. The sample project has already done this. \n2. **Data tier**: Create an RLS security policy in each shard database to filter rows based on the value of CONTEXT_INFO. You will need to do this for each of your shard databases, otherwise rows in multi-tenant shards will not be filtered. \n\n\n## Step 1) Application tier: Set CONTEXT_INFO to TenantId\n\nAfter connecting to a shard database using the elastic database client library’s data dependent routing APIs, the application still needs to tell the database which TenantId is using that connection so that an RLS security policy can filter out rows belonging to other tenants. The recommended way to pass this information is to set [CONTEXT_INFO](https://msdn.microsoft.com/library/ms180125) to the current TenantId for that connection. Note that on Azure SQL Database, CONTEXT_INFO is pre-populated with a session-specific GUID, so you *must* set CONTEXT_INFO to the correct TenantId before executing any queries on a new connection to ensure that no rows are inadvertently leaked.\n\n### Entity Framework\n\nFor applications using Entity Framework, the easiest approach is to set CONTEXT_INFO within the ElasticScaleContext override described in [Data Dependent Routing using EF DbContext](sql-database-elastic-scale-use-entity-framework-applications-visual-studio.md/#data-dependent-routing-using-ef-dbcontext). Before returning the connection brokered through data dependent routing, simply create and execute a SqlCommand that sets CONTEXT_INFO to the shardingKey (TenantId) specified for that connection. This way, you only need to write code once to set CONTEXT_INFO. \n\n```\n// ElasticScaleContext.cs \n// ... \n// C'tor for data dependent routing. This call will open a validated connection routed to the proper \n// shard by the shard map manager. Note that the base class c'tor call will fail for an open connection \n// if migrations need to be done and SQL credentials are used. This is the reason for the  \n// separation of c'tors into the DDR case (this c'tor) and the internal c'tor for new shards. \npublic ElasticScaleContext(ShardMap shardMap, T shardingKey, string connectionStr)\n    : base(OpenDDRConnection(shardMap, shardingKey, connectionStr), true /* contextOwnsConnection */)\n{\n}\n\npublic static SqlConnection OpenDDRConnection(ShardMap shardMap, T shardingKey, string connectionStr)\n{\n    // No initialization\n    Database.SetInitializer<ElasticScaleContext<T>>(null);\n\n    // Ask shard map to broker a validated connection for the given key\n    SqlConnection conn = null;\n    try\n    {\n        conn = shardMap.OpenConnectionForKey(shardingKey, connectionStr, ConnectionOptions.Validate);\n\n        // Set CONTEXT_INFO to shardingKey to enable Row-Level Security filtering\n        SqlCommand cmd = conn.CreateCommand();\n        cmd.CommandText = @\"SET CONTEXT_INFO @shardingKey\";\n        cmd.Parameters.AddWithValue(\"@shardingKey\", shardingKey);\n        cmd.ExecuteNonQuery();\n\n        return conn;\n    }\n    catch (Exception)\n    {\n        if (conn != null)\n        {\n            conn.Dispose();\n        }\n\n        throw;\n    }\n} \n// ... \n```\n\nNow CONTEXT_INFO is automatically set to the specified TenantId whenever ElasticScaleContext is invoked: \n\n```\n// Program.cs \nSqlDatabaseUtils.SqlRetryPolicy.ExecuteAction(() => \n{   \n    using (var db = new ElasticScaleContext<int>(sharding.ShardMap, tenantId, connStrBldr.ConnectionString))   \n    {     \n        var query = from b in db.Blogs\n                    orderby b.Name\n                    select b;\n        \n        Console.WriteLine(\"All blogs for TenantId {0}:\", tenantId);     \n        foreach (var item in query)     \n        {       \n            Console.WriteLine(item.Name);     \n        }   \n    } \n}); \n```\n\n### ADO.NET SqlClient \n\nFor applications using ADO.NET SqlClient, the recommended approach is to create a wrapper function around ShardMap.OpenConnectionForKey() that automatically sets CONTEXT_INFO to the correct TenantId before returning a connection. To ensure that CONTEXT_INFO is always set properly, you should only open connections using this wrapper function. \n\n```\n// Program.cs\n// ...\n\n// Wrapper function for ShardMap.OpenConnectionForKey() that automatically sets CONTEXT_INFO to the correct\n// tenantId before returning a connection. As a best practice, you should only open connections using this \n// method to ensure that CONTEXT_INFO is always set before executing a query.\npublic static SqlConnection OpenConnectionForTenant(ShardMap shardMap, int tenantId, string connectionStr)\n{\n    SqlConnection conn = null;\n    try\n    {\n        // Ask shard map to broker a validated connection for the given key\n        conn = shardMap.OpenConnectionForKey(tenantId, connectionStr, ConnectionOptions.Validate);\n\n        // Set CONTEXT_INFO to shardingKey to enable Row-Level Security filtering\n        SqlCommand cmd = conn.CreateCommand();\n        cmd.CommandText = @\"SET CONTEXT_INFO @shardingKey\";\n        cmd.Parameters.AddWithValue(\"@shardingKey\", tenantId);\n        cmd.ExecuteNonQuery();\n\n        return conn;\n    }\n    catch (Exception)\n    {\n        if (conn != null)\n        {\n            conn.Dispose();\n        }\n\n        throw;\n    }\n}\n\n// ...\n\n// Example query via ADO.NET SqlClient\n// If row-level security is enabled, only Tenant 4's blogs will be listed\nSqlDatabaseUtils.SqlRetryPolicy.ExecuteAction(() =>\n{\n    using (SqlConnection conn = OpenConnectionForTenant(sharding.ShardMap, tenantId4, connStrBldr.ConnectionString))\n    {\n        SqlCommand cmd = conn.CreateCommand();\n        cmd.CommandText = @\"SELECT * FROM Blogs\";\n\n        Console.WriteLine(\"--\\nAll blogs for TenantId {0} (using ADO.NET SqlClient):\", tenantId4);\n        SqlDataReader reader = cmd.ExecuteReader();\n        while (reader.Read())\n        {\n            Console.WriteLine(\"{0}\", reader[\"Name\"]);\n        }\n    }\n});\n\n```\n\n## Step 2) Data tier: Create row-level security policy and constraints \n\n### Create a security policy to filter SELECT, UPDATE, and DELETE queries \n\nNow that the application is setting CONTEXT_INFO to the current TenantId before querying, an RLS security policy can filter queries and exclude rows that have a different TenantId.  \n\nRLS is implemented in T-SQL: a user-defined predicate function defines the filtering logic, and a security policy binds this function to any number of tables. For this project, the predicate function will simply verify that the application (rather than some other SQL user) is connected to the database, and that the value of CONTEXT_INFO matches the TenantId of a given row. Rows that meet these conditions will be allowed through the filter for SELECT, UPDATE, and DELETE queries. If CONTEXT_INFO has not been set, no rows will be returned. \n\nTo enable RLS, execute the following T-SQL on all shards using either Visual Studio (SSDT), SSMS, or the PowerShell script included in the project (or if you are using [Elastic Database Jobs](sql-database-elastic-jobs-overview.md), you can use it to automate execution of this T-SQL on all shards): \n\n```\nCREATE SCHEMA rls -- separate schema to organize RLS objects \nGO\n\nCREATE FUNCTION rls.fn_tenantAccessPredicate(@TenantId int)     \n    RETURNS TABLE     \n    WITH SCHEMABINDING\nAS\n    RETURN SELECT 1 AS fn_accessResult          \n        WHERE DATABASE_PRINCIPAL_ID() = DATABASE_PRINCIPAL_ID('dbo') -- the user in your application’s connection string (dbo is only for demo purposes!)         \n        AND CONVERT(int, CONVERT(varbinary(4), CONTEXT_INFO())) = @TenantId -- @TenantId (int) is 4 bytes \nGO\n\nCREATE SECURITY POLICY rls.tenantAccessPolicy\n    ADD FILTER PREDICATE rls.fn_tenantAccessPredicate(TenantId) ON dbo.Blogs,\n    ADD FILTER PREDICATE rls.fn_tenantAccessPredicate(TenantId) ON dbo.Posts\nGO \n```\n\n> [AZURE.TIP] For more complex projects that need to add the predicate function on hundreds of tables, you can use a helper stored procedure that automatically generates a security policy adding a predicate on all tables in a schema. See [Apply Row-Level Security to all tables – helper script (blog)](http://blogs.msdn.com/b/sqlsecurity/archive/2015/03/31/apply-row-level-security-to-all-tables-helper-script).  \n\nIf you add a new table later on, simply ALTER the security policy and add a filter predicate on the new table: \n\n```\nALTER SECURITY POLICY rls.tenantAccessPolicy     \n    ADD FILTER PREDICATE rls.fn_tenantAccessPredicate(TenantId) ON dbo.MyNewTable \nGO \n```\n\nNow if you run the sample application again, tenants will not be able to see rows that do not belong to them. \n\n### Add check constraints to block wrong-tenant INSERTs and UPDATEs\n\nAt present, RLS security policies will not prevent the application from accidentally inserting rows for the wrong TenantId, or updating the TenantId of a visible row to be a new value. For some applications, such as read-only reporting apps, this is not a problem. However, since this application allows tenants to insert new blogs, it is worthwhile to create an additional safeguard that throws an error if the application code mistakenly tries to insert or update rows such that violate the filter predicate.  As described in [Row-Level Security: Blocking unauthorized INSERTs (blog)](http://blogs.msdn.com/b/sqlsecurity/archive/2015/03/23/row-level-security-blocking-unauthorized-inserts), the recommended solution is to create a check constraint on each table to enforce the same RLS filter predicate for insert and update operations. \n\nTo add check constraints, execute the following T-SQL on all shards, using SSMS, SSDT, or the included PowerShell script (or Elastic Database Jobs) as described above: \n\n```\n-- Create a scalar version of the predicate function for use in check constraints \nCREATE FUNCTION rls.fn_tenantAccessPredicateScalar(@TenantId int)     \n    RETURNS bit \nAS     \n    BEGIN     \n        IF EXISTS( SELECT 1 FROM rls.fn_tenantAccessPredicate(@TenantId) )         \n            RETURN 1     \n        RETURN 0 \n    END \nGO \n\n-- Add the function as a check constraint on all sharded tables \nALTER TABLE Blogs     \n    WITH NOCHECK -- don't check data already in table     \n    ADD CONSTRAINT chk_blocking_Blogs -- needs a unique name     \n    CHECK( rls.fn_tenantAccessPredicateScalar(TenantId) = 1 ) \nGO\n\nALTER TABLE Posts     \n    WITH NOCHECK     \n    ADD CONSTRAINT chk_blocking_Posts     \n    CHECK( rls.fn_tenantAccessPredicateScalar(TenantId) = 1 ) \nGO \n```\n\nNow the application cannot insert rows that belong to tenants other than the one currently connected to the shard database. Likewise the application cannot update visible rows to have a different TenantId. If the application attempts to do either, a DbUpdateException will be raised. \n\n\n### Add default constraints to automatically populate TenantId for INSERTs \n\nIn addition to using check constraints to block wrong-tenant inserts, you can put a default constraint on each table to automatically populate the TenantId with the current value of CONTEXT_INFO when inserting rows. For example: \n\n```\n-- Create default constraints to auto-populate TenantId with the value of CONTEXT_INFO for inserts \nALTER TABLE Blogs     \n    ADD CONSTRAINT df_TenantId_Blogs      \n    DEFAULT CONVERT(int, CONVERT(varbinary(4), CONTEXT_INFO())) FOR TenantId \nGO\n\nALTER TABLE Posts     \n    ADD CONSTRAINT df_TenantId_Posts      \n    DEFAULT CONVERT(int, CONVERT(varbinary(4), CONTEXT_INFO())) FOR TenantId \nGO \n```\n\nNow the application does not need to specify a TenantId when inserting rows: \n\n```\nSqlDatabaseUtils.SqlRetryPolicy.ExecuteAction(() => \n{   \n    using (var db = new ElasticScaleContext<int>(sharding.ShardMap, tenantId, connStrBldr.ConnectionString))\n    {\n        var blog = new Blog { Name = name }; // default constraint sets TenantId automatically     \n        db.Blogs.Add(blog);     \n        db.SaveChanges();   \n    } \n}); \n```\n\n> [AZURE.NOTE] If you use default constraints for an Entity Framework project, it is recommended that you do NOT include the TenantId column in your EF data model. This is because Entity Framework queries automatically supply default values that will override the default constraints created in T-SQL that use CONTEXT_INFO. To use default constraints in the sample project, for instance, you should remove TenantId from DataClasses.cs (and run Add-Migration in the Package Manager Console) and use T-SQL to ensure that the field only exists in the database tables. This way, EF will not automatically supply incorrect default values when inserting data. \n\n### (Optional) Enable a \"superuser\" to access all rows\nSome applications may want to create a \"superuser\" who can access all rows, for instance, in order to enable reporting across all tenants on all shards, or to perform Split/Merge operations on shards that involve moving tenant rows between databases. To enable this, you should create a new SQL user (\"superuser\" in this example) in each shard database. Then alter the security policy with a new predicate function that allows this user to access all rows:\n\n```\n-- New predicate function that adds superuser logic\nCREATE FUNCTION rls.fn_tenantAccessPredicateWithSuperUser(@TenantId int)\n    RETURNS TABLE\n    WITH SCHEMABINDING\nAS\n    RETURN SELECT 1 AS fn_accessResult \n        WHERE \n        (\n            DATABASE_PRINCIPAL_ID() = DATABASE_PRINCIPAL_ID('dbo') -- note, should not be dbo!\n            AND CONVERT(int, CONVERT(varbinary(4), CONTEXT_INFO())) = @TenantId\n        ) \n        OR\n        (\n            DATABASE_PRINCIPAL_ID() = DATABASE_PRINCIPAL_ID('superuser')\n        )\nGO\n\n-- Atomically swap in the new predicate function on each table\nALTER SECURITY POLICY rls.tenantAccessPolicy\n    ALTER FILTER PREDICATE rls.fn_tenantAccessPredicateWithSuperUser(TenantId) ON dbo.Blogs,\n    ALTER FILTER PREDICATE rls.fn_tenantAccessPredicateWithSuperUser(TenantId) ON dbo.Posts\nGO\n```\n\n\n### Maintenance \n\n* **Adding new shards**: You must execute the T-SQL script to enable RLS (and add check constraints) on any new shards, otherwise queries on these shards will not be filtered.\n\n* **Adding new tables**: You must add a filter predicate to the security policy on all shards whenever a new table is created, otherwise queries on the new table will not be filtered. This can be automated using a DDL trigger, as described in [Apply Row-Level Security automatically to newly created tables (blog)](http://blogs.msdn.com/b/sqlsecurity/archive/2015/05/22/apply-row-level-security-automatically-to-newly-created-tables.aspx).\n\n\n## Summary \n\nElastic database tools and row-level security can be used together to scale out an application’s data tier with support for both multi-tenant and single-tenant shards. Multi-tenant shards can be used to store data more efficiently (particularly in cases where a large number of tenants have only a few rows of data), while single-tenant shards can be used to support premium tenants with stricter performance and isolation requirements.  For more information, see the [Elastic Database Tools Documentation Map](sql-database-elastic-scale-documentation-map.md) or the [Row-Level Security reference](https://msdn.microsoft.com/library/dn765131) on MSDN. \n\n\n[AZURE.INCLUDE [elastic-scale-include](../../includes/elastic-scale-include.md)]\n\n<!--Image references-->\n[1]: ./media/sql-database-elastic-tools-multi-tenant-row-level-security/blogging-app.png\n<!--anchors-->\n\n \n"
+}

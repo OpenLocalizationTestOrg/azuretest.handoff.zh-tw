@@ -1,0 +1,1615 @@
+{
+  "nodes": [
+    {
+      "content": "Configuring Oracle Data Guard for Azure",
+      "pos": [
+        71,
+        110
+      ]
+    },
+    {
+      "content": "Step through a tutorial for setting up and implementing Oracle Data Guard on Azure Virtual Machines for high availability and disaster recovery.",
+      "pos": [
+        125,
+        269
+      ]
+    },
+    {
+      "content": "Configuring Oracle Data Guard for Azure",
+      "pos": [
+        511,
+        550
+      ]
+    },
+    {
+      "content": "This tutorial demonstrates how to setup and implement Oracle Data Guard in Azure Virtual Machines environment for high availability and disaster recovery.",
+      "pos": [
+        551,
+        705
+      ]
+    },
+    {
+      "content": "The tutorial focuses on one way replication for non-RAC Oracle databases.",
+      "pos": [
+        706,
+        779
+      ]
+    },
+    {
+      "content": "Oracle Data Guard supports data protection and disaster recovery for Oracle Database.",
+      "pos": [
+        781,
+        866
+      ]
+    },
+    {
+      "content": "It is a simple, high-performance, drop-in solution for disaster recovery, data protection, and high availability for the entire Oracle database.",
+      "pos": [
+        867,
+        1011
+      ]
+    },
+    {
+      "content": "This tutorial assumes that you already have theoretical and practical knowledge on Oracle Database High Availability and Disaster Recovery concepts.",
+      "pos": [
+        1013,
+        1161
+      ]
+    },
+    {
+      "content": "For information, see the <bpt id=\"p1\">[</bpt>Oracle web site<ept id=\"p1\">](http://www.oracle.com/technetwork/database/features/availability/index.html)</ept> and also the <bpt id=\"p2\">[</bpt>Oracle Data Guard Concepts and Administration Guide<ept id=\"p2\">](http://docs.oracle.com/cd/E11882_01/server.112/e17022/create_ps.htm)</ept>.",
+      "pos": [
+        1162,
+        1418
+      ]
+    },
+    {
+      "content": "In addition, the tutorial assumes that you have already implemented the following prerequisites:",
+      "pos": [
+        1420,
+        1516
+      ]
+    },
+    {
+      "content": "You’ve already reviewed the High Availability and Disaster Recovery Considerations section in the <bpt id=\"p1\">[</bpt>Oracle Virtual Machine images - Miscellaneous Considerations<ept id=\"p1\">](virtual-machines-miscellaneous-considerations-oracle-virtual-machine-images.md)</ept> topic.",
+      "pos": [
+        1520,
+        1767
+      ]
+    },
+    {
+      "content": "Note that Azure supports standalone Oracle Database instances but not Oracle Real Application Clusters (Oracle RAC) currently.",
+      "pos": [
+        1768,
+        1894
+      ]
+    },
+    {
+      "content": "You have created two Virtual Machines (VMs) in Azure using the same platform provided Oracle Enterprise Edition image on Windows Server.",
+      "pos": [
+        1898,
+        2034
+      ]
+    },
+    {
+      "content": "For information, see <bpt id=\"p1\">[</bpt>Creating an Oracle Database 12c Virtual Machine in Azure<ept id=\"p1\">](virtual-machines-creating-oracle-webLogic-server-12c-virtual-machine.md)</ept> and <bpt id=\"p2\">[</bpt>Azure Virtual Machines<ept id=\"p2\">](http://azure.microsoft.com/documentation/services/virtual-machines/)</ept>.",
+      "pos": [
+        2035,
+        2286
+      ]
+    },
+    {
+      "content": "Make sure that the Virtual Machines are in the <bpt id=\"p1\">[</bpt>same cloud service<ept id=\"p1\">](virtual-machines-load-balance.md)</ept> and in the same <bpt id=\"p2\">[</bpt>Virtual Network<ept id=\"p2\">](azure.microsoft.com/documentation/services/virtual-network/)</ept> to ensure they can access each other over the persistent private IP address.",
+      "pos": [
+        2287,
+        2560
+      ]
+    },
+    {
+      "content": "Additionally, it is recommended to place the VMs in the same <bpt id=\"p1\">[</bpt>availability set<ept id=\"p1\">](virtual-machines-manage-availability.md)</ept> to allow Azure to place them into separate fault domains and upgrade domains.",
+      "pos": [
+        2561,
+        2759
+      ]
+    },
+    {
+      "content": "Note that Oracle Data Guard is only available with Oracle Database Enterprise Edition.",
+      "pos": [
+        2760,
+        2846
+      ]
+    },
+    {
+      "content": "Each machine must have at least 2 GB of memory and 5 GB of disk space.",
+      "pos": [
+        2847,
+        2917
+      ]
+    },
+    {
+      "content": "For the most up-to-date information on the platform provided VM sizes, see <bpt id=\"p1\">[</bpt>Virtual Machine Sizes for Azure<ept id=\"p1\">](http://msdn.microsoft.com/en-us/library/dn197896.aspx)</ept>.",
+      "pos": [
+        2918,
+        3082
+      ]
+    },
+    {
+      "content": "If you need additional disk volume for your VMs, you can attach additional disks.",
+      "pos": [
+        3083,
+        3164
+      ]
+    },
+    {
+      "content": "For information, see <bpt id=\"p1\">[</bpt>How to Attach a Data Disk to a Virtual Machine<ept id=\"p1\">](storage-windows-attach-disk.md)</ept>.",
+      "pos": [
+        3165,
+        3267
+      ]
+    },
+    {
+      "content": "You’ve set the Virtual Machine names as “Machine1” for the primary VM and “Machine2” for the standby VM at the Azure Portal.",
+      "pos": [
+        3271,
+        3395
+      ]
+    },
+    {
+      "pos": [
+        3399,
+        3608
+      ],
+      "content": "You’ve set the <bpt id=\"p1\">**</bpt>ORACLE_HOME<ept id=\"p1\">**</ept> environment variable to point to the same oracle root installation path in the primary and standby Virtual Machines, such as <ph id=\"ph1\">`C:\\OracleDatabase\\product\\11.2.0\\dbhome_1\\database`</ph>."
+    },
+    {
+      "pos": [
+        3612,
+        3727
+      ],
+      "content": "You log on to your Windows server as a member of the <bpt id=\"p1\">**</bpt>Administrators<ept id=\"p1\">**</ept> group or a member of the <bpt id=\"p2\">**</bpt>ORA_DBA<ept id=\"p2\">**</ept> group."
+    },
+    {
+      "content": "In this tutorial, you will:",
+      "pos": [
+        3729,
+        3756
+      ]
+    },
+    {
+      "content": "Implement the physical standby database environment",
+      "pos": [
+        3758,
+        3809
+      ]
+    },
+    {
+      "content": "Create a primary database",
+      "pos": [
+        3814,
+        3839
+      ]
+    },
+    {
+      "content": "Prepare the primary database for standby database creation",
+      "pos": [
+        3844,
+        3902
+      ]
+    },
+    {
+      "content": "Enable forced logging",
+      "pos": [
+        3911,
+        3932
+      ]
+    },
+    {
+      "content": "Create a password file",
+      "pos": [
+        3941,
+        3963
+      ]
+    },
+    {
+      "content": "Configure a standby redo log",
+      "pos": [
+        3972,
+        4000
+      ]
+    },
+    {
+      "content": "Enable Archiving",
+      "pos": [
+        4009,
+        4025
+      ]
+    },
+    {
+      "content": "Set primary database initialization parameters",
+      "pos": [
+        4034,
+        4080
+      ]
+    },
+    {
+      "content": "Create a physical standby database",
+      "pos": [
+        4082,
+        4116
+      ]
+    },
+    {
+      "content": "Prepare an initialization parameter file for standby database",
+      "pos": [
+        4121,
+        4182
+      ]
+    },
+    {
+      "content": "Configure the listener and tnsnames to support the database on primary and standby machines",
+      "pos": [
+        4187,
+        4278
+      ]
+    },
+    {
+      "content": "Configure listener.ora on both servers to hold entries for both databases",
+      "pos": [
+        4287,
+        4360
+      ]
+    },
+    {
+      "content": "Configure tnsnames.ora on the primary and standby Virtual Machines to hold entries for both primary and standby databases",
+      "pos": [
+        4369,
+        4490
+      ]
+    },
+    {
+      "content": "Start the listener and check tnsping on both Virtual Machines to both services.",
+      "pos": [
+        4499,
+        4578
+      ]
+    },
+    {
+      "content": "Startup the standby instance in nomount state",
+      "pos": [
+        4583,
+        4628
+      ]
+    },
+    {
+      "content": "Use RMAN to clone the database and to create a standby database",
+      "pos": [
+        4633,
+        4696
+      ]
+    },
+    {
+      "content": "Start the physical standby database in managed recovery mode",
+      "pos": [
+        4701,
+        4761
+      ]
+    },
+    {
+      "content": "Verify the physical standby database",
+      "pos": [
+        4766,
+        4802
+      ]
+    },
+    {
+      "pos": [
+        4806,
+        4922
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.IMPORTANT]</ph> This tutorial has been setup and tested against the following hardware and software configuration:"
+    },
+    {
+      "content": "Primary Database",
+      "pos": [
+        4953,
+        4969
+      ]
+    },
+    {
+      "content": "Standby Database",
+      "pos": [
+        4997,
+        5013
+      ]
+    },
+    {
+      "content": "Oracle Release",
+      "pos": [
+        5158,
+        5172
+      ]
+    },
+    {
+      "content": "Oracle11g Enterprise Release (11.2.0.4.0)",
+      "pos": [
+        5179,
+        5220
+      ]
+    },
+    {
+      "content": "Oracle11g Enterprise Release (11.2.0.4.0)",
+      "pos": [
+        5223,
+        5264
+      ]
+    },
+    {
+      "content": "Machine Name",
+      "pos": [
+        5272,
+        5284
+      ]
+    },
+    {
+      "content": "Machine1",
+      "pos": [
+        5293,
+        5301
+      ]
+    },
+    {
+      "content": "Machine2",
+      "pos": [
+        5337,
+        5345
+      ]
+    },
+    {
+      "content": "Operating System",
+      "pos": [
+        5386,
+        5402
+      ]
+    },
+    {
+      "content": "Windows 2008 R2",
+      "pos": [
+        5407,
+        5422
+      ]
+    },
+    {
+      "content": "Windows 2008 R2",
+      "pos": [
+        5451,
+        5466
+      ]
+    },
+    {
+      "content": "Oracle SID",
+      "pos": [
+        5500,
+        5510
+      ]
+    },
+    {
+      "content": "TEST",
+      "pos": [
+        5521,
+        5525
+      ]
+    },
+    {
+      "content": "TEST\\_STBY",
+      "pos": [
+        5565,
+        5575
+      ]
+    },
+    {
+      "content": "Memory",
+      "pos": [
+        5614,
+        5620
+      ]
+    },
+    {
+      "content": "Min 2 GB",
+      "pos": [
+        5635,
+        5643
+      ]
+    },
+    {
+      "content": "Min 2 GB",
+      "pos": [
+        5679,
+        5687
+      ]
+    },
+    {
+      "content": "Disk Space",
+      "pos": [
+        5728,
+        5738
+      ]
+    },
+    {
+      "content": "Min 5 GB",
+      "pos": [
+        5749,
+        5757
+      ]
+    },
+    {
+      "content": "Min 5 GB",
+      "pos": [
+        5793,
+        5801
+      ]
+    },
+    {
+      "content": "For subsequent releases of Oracle Database and Oracle Data Guard, there might be some additional changes that you need to implement.",
+      "pos": [
+        5838,
+        5970
+      ]
+    },
+    {
+      "content": "For the most up-to-date version specific information, see <bpt id=\"p1\">[</bpt>Data Guard<ept id=\"p1\">](http://www.oracle.com/technetwork/database/features/availability/data-guard-documentation-152848.html)</ept> and <bpt id=\"p2\">[</bpt>Oracle Database<ept id=\"p2\">](http://www.oracle.com/us/corporate/features/database-12c/index.html)</ept> documentation at Oracle web site.",
+      "pos": [
+        5971,
+        6269
+      ]
+    },
+    {
+      "content": "Implement the physical standby database environment",
+      "pos": [
+        6273,
+        6324
+      ]
+    },
+    {
+      "content": "1. Create a primary database",
+      "pos": [
+        6329,
+        6357
+      ]
+    },
+    {
+      "content": "Create a primary database “TEST” in the primary Virtual Machine.",
+      "pos": [
+        6361,
+        6425
+      ]
+    },
+    {
+      "content": "For information, see Creating and Configuring an Oracle Database.",
+      "pos": [
+        6426,
+        6491
+      ]
+    },
+    {
+      "content": "Connect to your database as the SYS user with SYSDBA role in the SQL*Plus command prompt and run the following statement to see the name of your database:",
+      "pos": [
+        6494,
+        6648
+      ]
+    },
+    {
+      "content": "Next, query the names of the database files from the dba_data_files system view:",
+      "pos": [
+        6808,
+        6888
+      ]
+    },
+    {
+      "content": "2. Prepare the primary database for standby database creation",
+      "pos": [
+        7294,
+        7355
+      ]
+    },
+    {
+      "content": "Before creating a standby database, it’s recommended that you ensure the primary database is configured properly.",
+      "pos": [
+        7357,
+        7470
+      ]
+    },
+    {
+      "content": "The following is a list of steps that you need to perform:",
+      "pos": [
+        7471,
+        7529
+      ]
+    },
+    {
+      "content": "Enable forced logging",
+      "pos": [
+        7534,
+        7555
+      ]
+    },
+    {
+      "content": "Create a password file",
+      "pos": [
+        7559,
+        7581
+      ]
+    },
+    {
+      "content": "Configure a standby redo log",
+      "pos": [
+        7585,
+        7613
+      ]
+    },
+    {
+      "content": "Enable Archiving",
+      "pos": [
+        7617,
+        7633
+      ]
+    },
+    {
+      "content": "Set primary database initialization parameters",
+      "pos": [
+        7637,
+        7683
+      ]
+    },
+    {
+      "content": "Enable forced logging",
+      "pos": [
+        7690,
+        7711
+      ]
+    },
+    {
+      "content": "In order to implement a Standby Database, we need to enable 'Forced Logging' in the primary database.",
+      "pos": [
+        7713,
+        7814
+      ]
+    },
+    {
+      "content": "This option ensures that even in the event that a 'nologging' operation is done, force logging takes precedence and all operations are logged into the redo logs.",
+      "pos": [
+        7815,
+        7976
+      ]
+    },
+    {
+      "content": "Therefore, we make sure that everything in the primary database is logged and replication to the standby includes all operations in the primary database.",
+      "pos": [
+        7977,
+        8130
+      ]
+    },
+    {
+      "content": "Run the alter database statement to enable force logging:",
+      "pos": [
+        8131,
+        8188
+      ]
+    },
+    {
+      "content": "Create a password file",
+      "pos": [
+        8258,
+        8280
+      ]
+    },
+    {
+      "content": "To be able to ship and apply archived logs from the Primary server to the Standby server, the sys password must be identical on both primary and standby servers.",
+      "pos": [
+        8282,
+        8443
+      ]
+    },
+    {
+      "content": "That’s why you create a password file on the primary database and copy it to the Standby server.",
+      "pos": [
+        8444,
+        8540
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.IMPORTANT]</ph> When using Oracle Database 12c, there is a new user, <bpt id=\"p1\">**</bpt>SYSDG<ept id=\"p1\">**</ept>, which you can use to administer Oracle Data Guard.",
+      "pos": [
+        8543,
+        8675
+      ]
+    },
+    {
+      "content": "For more information, see <bpt id=\"p1\">[</bpt>Changes in Oracle Database 12c Release<ept id=\"p1\">](http://docs.oracle.com/cd/E16655_01/server.121/e10638/release_changes.htm)</ept>.",
+      "pos": [
+        8676,
+        8818
+      ]
+    },
+    {
+      "content": "In addition, make sure that the ORACLE\\_HOME environment is already defined in Machine1.",
+      "pos": [
+        8820,
+        8908
+      ]
+    },
+    {
+      "content": "If not, define it as an environment variable using the Environment Variables dialog box.",
+      "pos": [
+        8909,
+        8997
+      ]
+    },
+    {
+      "content": "To access this dialog box, start the <bpt id=\"p1\">**</bpt>System<ept id=\"p1\">**</ept> utility by double-clicking the System icon in the <bpt id=\"p2\">**</bpt>Control Panel<ept id=\"p2\">**</ept>; then click the <bpt id=\"p3\">**</bpt>Advanced<ept id=\"p3\">**</ept> tab and choose <bpt id=\"p4\">**</bpt>Environment Variables<ept id=\"p4\">**</ept>.",
+      "pos": [
+        8998,
+        9184
+      ]
+    },
+    {
+      "content": "Click the <bpt id=\"p1\">**</bpt>New<ept id=\"p1\">**</ept> button under the <bpt id=\"p2\">**</bpt>System Variables<ept id=\"p2\">**</ept> to set the environment variables.",
+      "pos": [
+        9185,
+        9274
+      ]
+    },
+    {
+      "content": "After setting up the environment variables, close the existing Windows command prompt and open up a new one.",
+      "pos": [
+        9275,
+        9383
+      ]
+    },
+    {
+      "content": "Run the following statement to switch to the Oracle\\_Home directory, such as C:\\\\OracleDatabase\\\\product\\\\11.2.0\\\\dbhome\\_1\\\\database.",
+      "pos": [
+        9385,
+        9519
+      ]
+    },
+    {
+      "content": "Then, create a password file using the password file creation utility, <bpt id=\"p1\">[</bpt>ORAPWD<ept id=\"p1\">](http://docs.oracle.com/cd/B28359_01/server.111/b28310/dba007.htm)</ept>.",
+      "pos": [
+        9552,
+        9698
+      ]
+    },
+    {
+      "content": "In the same Windows command prompt in Machine1, run the following command by setting the password value as the password of <bpt id=\"p1\">**</bpt>SYS<ept id=\"p1\">**</ept>:",
+      "pos": [
+        9699,
+        9830
+      ]
+    },
+    {
+      "content": "This command creates a password file, named as PWDTEST.ora, in the ORACLE\\_HOME\\\\database directory.",
+      "pos": [
+        9887,
+        9987
+      ]
+    },
+    {
+      "content": "You should copy this file to %ORACLE\\_HOME%\\\\database directory in Machine2 manually.",
+      "pos": [
+        9988,
+        10073
+      ]
+    },
+    {
+      "content": "Configure a standby redo log",
+      "pos": [
+        10080,
+        10108
+      ]
+    },
+    {
+      "content": "Then, you need to configure a Standby Redo Log so that the primary can correctly receive the redo when it becomes a standby.",
+      "pos": [
+        10110,
+        10234
+      ]
+    },
+    {
+      "content": "Pre-creating them here also allows the standby redo logs to be automatically created on the standby.",
+      "pos": [
+        10235,
+        10335
+      ]
+    },
+    {
+      "content": "It is important to configure the Standby Redo Logs (SRL) with the same size as the online redo logs.",
+      "pos": [
+        10336,
+        10436
+      ]
+    },
+    {
+      "content": "The size of the current standby redo log files must exactly match the size of the current primary database online redo log files.",
+      "pos": [
+        10437,
+        10566
+      ]
+    },
+    {
+      "content": "Run the following statement in the SQL\\*PLUS command prompt in Machine1.",
+      "pos": [
+        10568,
+        10640
+      ]
+    },
+    {
+      "content": "The v$logfile is a system view that contains information about redo log files.",
+      "pos": [
+        10641,
+        10719
+      ]
+    },
+    {
+      "content": "Note that 52428800 is 50 megabytes.",
+      "pos": [
+        11365,
+        11400
+      ]
+    },
+    {
+      "content": "Then, in the SQL\\*Plus window, run the following statements to add a new standby redo log file group to a standby database and specify a number that identifies the group using the GROUP clause.",
+      "pos": [
+        11402,
+        11595
+      ]
+    },
+    {
+      "content": "Using group numbers can make administering standby redo log file groups easier:",
+      "pos": [
+        11596,
+        11675
+      ]
+    },
+    {
+      "content": "Next, run the following system view to list information about redo log files.",
+      "pos": [
+        12047,
+        12124
+      ]
+    },
+    {
+      "content": "This operation also verifies that the standby redo log file groups were created:",
+      "pos": [
+        12125,
+        12205
+      ]
+    },
+    {
+      "content": "Enable Archiving",
+      "pos": [
+        12750,
+        12766
+      ]
+    },
+    {
+      "content": "Then, enable archiving by running the following statements to put the primary database in ARCHIVELOG mode and enable automatic archiving.",
+      "pos": [
+        12768,
+        12905
+      ]
+    },
+    {
+      "content": "You can enable archive log mode by mounting the database and then executing the archivelog command.",
+      "pos": [
+        12906,
+        13005
+      ]
+    },
+    {
+      "content": "First, log in as sysdba.",
+      "pos": [
+        13007,
+        13031
+      ]
+    },
+    {
+      "content": "In the Windows command prompt, run:",
+      "pos": [
+        13032,
+        13067
+      ]
+    },
+    {
+      "content": "Then, shutdown the database in the SQL\\*Plus command prompt:",
+      "pos": [
+        13118,
+        13178
+      ]
+    },
+    {
+      "content": "Then, execute the startup mount command to mount the database.",
+      "pos": [
+        13287,
+        13349
+      ]
+    },
+    {
+      "content": "This ensures that Oracle associates the instance with the specified database.",
+      "pos": [
+        13350,
+        13427
+      ]
+    },
+    {
+      "content": "Then, run:",
+      "pos": [
+        13735,
+        13745
+      ]
+    },
+    {
+      "content": "Then, run the Alter database statement with the Open clause to make the database available for normal use:",
+      "pos": [
+        13807,
+        13913
+      ]
+    },
+    {
+      "content": "Set primary database initialization parameters",
+      "pos": [
+        13978,
+        14024
+      ]
+    },
+    {
+      "content": "To configure the Data Guard, you need to create and configure the standby parameters on a regular pfile (text initialization parameter file) first.",
+      "pos": [
+        14026,
+        14173
+      ]
+    },
+    {
+      "content": "When the pfile is ready, you need to convert it to a server parameter file (SPFILE).",
+      "pos": [
+        14174,
+        14258
+      ]
+    },
+    {
+      "content": "You can control the Data Guard environment using the parameters in the INIT.ORA file.",
+      "pos": [
+        14260,
+        14345
+      ]
+    },
+    {
+      "content": "When following this tutorial, you need to update the Primary database INIT.ORA so that it can hold both roles: Primary or Standby.",
+      "pos": [
+        14346,
+        14476
+      ]
+    },
+    {
+      "content": "Next, you need to edit the pfile to add the standby parameters.",
+      "pos": [
+        14532,
+        14595
+      ]
+    },
+    {
+      "content": "To do this, open the INITTEST.ORA file in the location of %ORACLE\\_HOME%\\\\database.",
+      "pos": [
+        14596,
+        14679
+      ]
+    },
+    {
+      "content": "Next, append the following statements to the INITTEST.ora file.",
+      "pos": [
+        14680,
+        14743
+      ]
+    },
+    {
+      "content": "Note that the naming convention for your INIT.ORA file is INIT\\&lt;YourDatabaseName\\&gt;.ORA.",
+      "pos": [
+        14744,
+        14831
+      ]
+    },
+    {
+      "content": "The previous statement block includes three important setup items:",
+      "pos": [
+        15727,
+        15793
+      ]
+    },
+    {
+      "pos": [
+        15798,
+        15881
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>LOG_ARCHIVE_CONFIG...:<ept id=\"p1\">**</ept> You define the unique database ids using this statement."
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>LOG_ARCHIVE_DEST_1...:<ept id=\"p1\">**</ept> You define the local archive folder location using this statement.",
+      "pos": [
+        15886,
+        15979
+      ]
+    },
+    {
+      "content": "We recommend that you create a new directory for your database’s archiving needs and specify the local archive location using this statement explicitly rather than using Oracle’s default folder %ORACLE_HOME%\\database\\archive.",
+      "pos": [
+        15980,
+        16205
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>LOG_ARCHIVE_DEST_2 .... LGWR ASYNC...:<ept id=\"p1\">**</ept> You define an asynchronous log writer process (LGWR) to collect transaction redo data and transmit it to standby destinations.",
+      "pos": [
+        16210,
+        16379
+      ]
+    },
+    {
+      "content": "Here, the DB_UNIQUE_NAME specifies a unique name for the database at the destination standby server.",
+      "pos": [
+        16380,
+        16480
+      ]
+    },
+    {
+      "content": "Once the new parameter file is ready, you need to create the spfile from it.",
+      "pos": [
+        16482,
+        16558
+      ]
+    },
+    {
+      "content": "First, shutdown the database:",
+      "pos": [
+        16560,
+        16589
+      ]
+    },
+    {
+      "content": "Next, run startup nomount command as follows:",
+      "pos": [
+        16713,
+        16758
+      ]
+    },
+    {
+      "content": "Now, create a spfile:",
+      "pos": [
+        17118,
+        17139
+      ]
+    },
+    {
+      "content": "Then, shutdown the database:",
+      "pos": [
+        17261,
+        17289
+      ]
+    },
+    {
+      "content": "Then, use the startup command to start an instance:",
+      "pos": [
+        17362,
+        17413
+      ]
+    },
+    {
+      "content": "Create a physical standby database",
+      "pos": [
+        17738,
+        17772
+      ]
+    },
+    {
+      "content": "This section focuses on the steps that you must perform in Machine2 to prepare the physical standby database.",
+      "pos": [
+        17773,
+        17882
+      ]
+    },
+    {
+      "content": "First, you need to remote desktop to Machine2 via the Azure Portal.",
+      "pos": [
+        17884,
+        17951
+      ]
+    },
+    {
+      "content": "Then, on the Standby Server (Machine2), create all the necessary folders for the standby database, such as C:\\\\\\&lt;YourLocalFolder\\&gt;\\\\TEST.",
+      "pos": [
+        17953,
+        18090
+      ]
+    },
+    {
+      "content": "While following this tutorial, make sure that the folder structure matches the folder structure on Machine1 to keep all the necessary files, such as controlfile, datafiles, redologfiles, udump, bdump and cdump files.",
+      "pos": [
+        18091,
+        18307
+      ]
+    },
+    {
+      "content": "In addition, define the ORACLE\\_HOME and ORACLE\\_BASE environment variables in Machine2.",
+      "pos": [
+        18308,
+        18396
+      ]
+    },
+    {
+      "content": "If not, define them as an environment variable using the Environment Variables dialog box.",
+      "pos": [
+        18397,
+        18487
+      ]
+    },
+    {
+      "content": "To access this dialog box, start the <bpt id=\"p1\">**</bpt>System<ept id=\"p1\">**</ept> utility by double-clicking the System icon in the <bpt id=\"p2\">**</bpt>Control Panel<ept id=\"p2\">**</ept>; then click the <bpt id=\"p3\">**</bpt>Advanced<ept id=\"p3\">**</ept> tab and choose <bpt id=\"p4\">**</bpt>Environment Variables<ept id=\"p4\">**</ept>.",
+      "pos": [
+        18488,
+        18674
+      ]
+    },
+    {
+      "content": "Click the <bpt id=\"p1\">**</bpt>New<ept id=\"p1\">**</ept> button under the <bpt id=\"p2\">**</bpt>System Variables<ept id=\"p2\">**</ept> to set the environment variables.",
+      "pos": [
+        18675,
+        18764
+      ]
+    },
+    {
+      "content": "After setting up the environment variables, you need to close the existing Windows command prompt and open up a new one to see the changes.",
+      "pos": [
+        18765,
+        18904
+      ]
+    },
+    {
+      "content": "Next, follow these steps:",
+      "pos": [
+        18906,
+        18931
+      ]
+    },
+    {
+      "content": "Prepare an initialization parameter file for standby database",
+      "pos": [
+        18936,
+        18997
+      ]
+    },
+    {
+      "content": "Configure the listener and tnsnames to support the database on primary and standby machines",
+      "pos": [
+        19002,
+        19093
+      ]
+    },
+    {
+      "content": "Configure listener.ora on both servers to hold entries for both databases",
+      "pos": [
+        19102,
+        19175
+      ]
+    },
+    {
+      "content": "Configure tnsnames.ora on the primary and standby Virtual Machines to hold entries for both primary and standby databases",
+      "pos": [
+        19184,
+        19305
+      ]
+    },
+    {
+      "content": "Start the listener and check tnsping on both Virtual Machines to both services.",
+      "pos": [
+        19314,
+        19393
+      ]
+    },
+    {
+      "content": "Startup the standby instance in nomount state",
+      "pos": [
+        19398,
+        19443
+      ]
+    },
+    {
+      "content": "Use RMAN to clone the database and to create a standby database",
+      "pos": [
+        19448,
+        19511
+      ]
+    },
+    {
+      "content": "Start the physical standby database in managed recovery mode",
+      "pos": [
+        19516,
+        19576
+      ]
+    },
+    {
+      "content": "Verify the physical standby database",
+      "pos": [
+        19581,
+        19617
+      ]
+    },
+    {
+      "content": "1. Prepare an initialization parameter file for standby database",
+      "pos": [
+        19623,
+        19687
+      ]
+    },
+    {
+      "content": "This section demonstrates how to prepare an initialization parameter file for the standby database.",
+      "pos": [
+        19689,
+        19788
+      ]
+    },
+    {
+      "content": "To do this, first copy the INITTEST.ORA file from Machine 1 to Machine2 manually.",
+      "pos": [
+        19789,
+        19870
+      ]
+    },
+    {
+      "content": "You should be able to see the INITTEST.ORA file in the %ORACLE\\_HOME%\\\\database folder in both machines.",
+      "pos": [
+        19871,
+        19975
+      ]
+    },
+    {
+      "content": "Then, modify the INITTEST.ora file in Machine2 to set it up for the standby role as specified below:",
+      "pos": [
+        19976,
+        20076
+      ]
+    },
+    {
+      "content": "The previous statement block includes two important setup items:",
+      "pos": [
+        20738,
+        20802
+      ]
+    },
+    {
+      "pos": [
+        20808,
+        20923
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>\\*.LOG_ARCHIVE_DEST_1:<ept id=\"p1\">**</ept> You need to create the c:\\OracleDatabase\\TEST_STBY\\archives folder in Machine2 manually."
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>\\*.LOG_ARCHIVE_DEST_2:<ept id=\"p1\">**</ept> This is an optional step.",
+      "pos": [
+        20928,
+        20980
+      ]
+    },
+    {
+      "content": "You set this as it might be needed when the primary machine is in maintenance and the standby machine becomes a primary database.",
+      "pos": [
+        20981,
+        21110
+      ]
+    },
+    {
+      "content": "Then, you need to start the standby instance.",
+      "pos": [
+        21112,
+        21157
+      ]
+    },
+    {
+      "content": "On the standby database server, enter the following command at a Windows command prompt to create an Oracle instance by creating a new Windows service:",
+      "pos": [
+        21158,
+        21309
+      ]
+    },
+    {
+      "content": "Note that the <bpt id=\"p1\">**</bpt>Oradim<ept id=\"p1\">**</ept> command creates an Oracle instance but does not start it.",
+      "pos": [
+        21362,
+        21444
+      ]
+    },
+    {
+      "content": "You can find it in the C:\\\\OracleDatabase\\\\product\\\\11.2.0\\\\dbhome\\_1\\\\BIN directory.",
+      "pos": [
+        21445,
+        21530
+      ]
+    },
+    {
+      "content": "Configure the listener and tnsnames to support the database on primary and standby machines",
+      "pos": [
+        21534,
+        21625
+      ]
+    },
+    {
+      "content": "Before you create a standby database, you need to make sure that the primary and standby databases in your configuration can talk to each other.",
+      "pos": [
+        21626,
+        21770
+      ]
+    },
+    {
+      "content": "To do this, you need to configure both the listener and TNSNames either manually or by using the network configuration utility NETCA.",
+      "pos": [
+        21771,
+        21904
+      ]
+    },
+    {
+      "content": "This is a mandatory task when you use the Recovery Manager utility (RMAN).",
+      "pos": [
+        21905,
+        21979
+      ]
+    },
+    {
+      "content": "Configure listener.ora on both servers to hold entries for both databases",
+      "pos": [
+        21985,
+        22058
+      ]
+    },
+    {
+      "content": "Remote desktop to Machine1 and edit the listener.ora file as specified below.",
+      "pos": [
+        22060,
+        22137
+      ]
+    },
+    {
+      "content": "When you edit the listener.ora file, always make sure that the opening and closing parenthesis line up in the same column.",
+      "pos": [
+        22138,
+        22260
+      ]
+    },
+    {
+      "content": "You can find the listener.ora file in the following folder: c:\\\\OracleDatabase\\\\product\\\\11.2.0\\\\dbhome\\_1\\\\NETWORK\\\\ADMIN\\\\.",
+      "pos": [
+        22261,
+        22386
+      ]
+    },
+    {
+      "content": "Next, remote desktop to Machine2 and edit the listener.ora file as follows:",
+      "pos": [
+        23080,
+        23155
+      ]
+    },
+    {
+      "content": "listener.ora Network Configuration File: C:\\OracleDatabase\\product\\11.2.0\\dbhome_1\\network\\admin\\listener.ora",
+      "pos": [
+        23162,
+        23271
+      ]
+    },
+    {
+      "content": "Configure tnsnames.ora on the primary and standby Virtual Machines to hold entries for both primary and standby databases",
+      "pos": [
+        23858,
+        23979
+      ]
+    },
+    {
+      "content": "Remote desktop to Machine1 and edit the tnsnames.ora file as specified below.",
+      "pos": [
+        23981,
+        24058
+      ]
+    },
+    {
+      "content": "You can find the tnsnames.ora file in the following folder: c:\\\\OracleDatabase\\\\product\\\\11.2.0\\\\dbhome\\_1\\\\NETWORK\\\\ADMIN\\\\.",
+      "pos": [
+        24059,
+        24184
+      ]
+    },
+    {
+      "content": "Remote desktop to Machine2 and edit the tnsnames.ora file as follows:",
+      "pos": [
+        24620,
+        24689
+      ]
+    },
+    {
+      "content": "Start the listener and check tnsping on both Virtual Machines to both services.",
+      "pos": [
+        25134,
+        25213
+      ]
+    },
+    {
+      "content": "Open up a new Windows command prompt in both primary and standby Virtual Machines and run the following statements:",
+      "pos": [
+        25215,
+        25330
+      ]
+    },
+    {
+      "content": "Startup the standby instance in nomount state",
+      "pos": [
+        26390,
+        26435
+      ]
+    },
+    {
+      "content": "You need to set up the environment to support the standby database on the standby Virtual Machine (MACHINE2).",
+      "pos": [
+        26436,
+        26545
+      ]
+    },
+    {
+      "content": "First, copy the password file from the primary machine (Machine1) to the standby machine (Machine2) manually.",
+      "pos": [
+        26547,
+        26656
+      ]
+    },
+    {
+      "content": "This is necessary as the <bpt id=\"p1\">**</bpt>sys<ept id=\"p1\">**</ept> password must be identical on both machines.",
+      "pos": [
+        26657,
+        26734
+      ]
+    },
+    {
+      "content": "Then, open the Windows command prompt in Machine2, and setup the environment variables to point to the Standby database as follows:",
+      "pos": [
+        26736,
+        26867
+      ]
+    },
+    {
+      "content": "Next, start the Standby database in nomount state and then generate an spfile.",
+      "pos": [
+        26961,
+        27039
+      ]
+    },
+    {
+      "content": "Start the database:",
+      "pos": [
+        27041,
+        27060
+      ]
+    },
+    {
+      "content": "Use RMAN to clone the database and to create a standby database",
+      "pos": [
+        27387,
+        27450
+      ]
+    },
+    {
+      "content": "You can use the Recovery Manager utility (RMAN) to take any backup copy of the primary database to create the physical standby database.",
+      "pos": [
+        27451,
+        27587
+      ]
+    },
+    {
+      "content": "Remote desktop to the standby Virtual Machine (MACHINE2) and run the RMAN utility by specifying a full connection string for both the TARGET (primary database, Machine1) and AUXILLARY (standby database, Machine2) instances.",
+      "pos": [
+        27589,
+        27812
+      ]
+    },
+    {
+      "pos": [
+        27815,
+        27938
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.IMPORTANT]</ph> Do not use the operating system authentication as there is no database in the standby server machine yet."
+    },
+    {
+      "content": "Start the physical standby database in managed recovery mode",
+      "pos": [
+        28141,
+        28201
+      ]
+    },
+    {
+      "content": "This tutorial demonstrates how to create a physical standby database.",
+      "pos": [
+        28202,
+        28271
+      ]
+    },
+    {
+      "content": "For information on creating a logical standby database, see the Oracle documentation.",
+      "pos": [
+        28272,
+        28357
+      ]
+    },
+    {
+      "content": "Open up SQL\\*Plus command prompt and enable the Data Guard on the standby Virtual Machine or server (MACHINE2) as follows:",
+      "pos": [
+        28359,
+        28481
+      ]
+    },
+    {
+      "content": "When you open the standby database in <bpt id=\"p1\">**</bpt>MOUNT<ept id=\"p1\">**</ept> mode, the archive log shipping continues and the managed recovery process continues log applying on the standby database.",
+      "pos": [
+        28604,
+        28773
+      ]
+    },
+    {
+      "content": "This ensures that the standby database remains up-to-date with the primary database.",
+      "pos": [
+        28774,
+        28858
+      ]
+    },
+    {
+      "content": "Note that the standby database cannot be accessible for reporting purposes during this time.",
+      "pos": [
+        28859,
+        28951
+      ]
+    },
+    {
+      "content": "When you open the standby database in <bpt id=\"p1\">**</bpt>READ ONLY<ept id=\"p1\">**</ept> mode, the archive log shipping continues.",
+      "pos": [
+        28953,
+        29046
+      ]
+    },
+    {
+      "content": "But the managed recovery process stops.",
+      "pos": [
+        29047,
+        29086
+      ]
+    },
+    {
+      "content": "This causes the standby database to become increasingly out of date until the managed recovery process is resumed.",
+      "pos": [
+        29087,
+        29201
+      ]
+    },
+    {
+      "content": "You can access the standby database for reporting purposes during this time but data may not reflect the latest changes.",
+      "pos": [
+        29202,
+        29322
+      ]
+    },
+    {
+      "content": "In general, we recommend that you keep the standby database in <bpt id=\"p1\">**</bpt>MOUNT<ept id=\"p1\">**</ept> mode to keep the data in the standby database up-to-date in case of failure of the primary database.",
+      "pos": [
+        29324,
+        29497
+      ]
+    },
+    {
+      "content": "However, you can keep the standby database in <bpt id=\"p1\">**</bpt>READ ONLY<ept id=\"p1\">**</ept> mode for reporting purposes depending on your application’s requirements.",
+      "pos": [
+        29498,
+        29631
+      ]
+    },
+    {
+      "content": "The following steps demonstrate how to enable the Data Guard in read-only mode using SQL\\*Plus:",
+      "pos": [
+        29632,
+        29727
+      ]
+    },
+    {
+      "content": "Verify the physical standby database",
+      "pos": [
+        29811,
+        29847
+      ]
+    },
+    {
+      "content": "This section demonstrates how to verify the high availability configuration as an administrator.",
+      "pos": [
+        29848,
+        29944
+      ]
+    },
+    {
+      "content": "Open up SQL\\*Plus command prompt window and check archived redo log on the Standby Virtual Machine (Machine2):",
+      "pos": [
+        29946,
+        30056
+      ]
+    },
+    {
+      "content": "Open up SQL*Plus command prompt window and switch logfiles on the Primary machine (Machine1):",
+      "pos": [
+        30886,
+        30979
+      ]
+    },
+    {
+      "content": "Check archived redo log on the Standby Virtual Machine (Machine2):",
+      "pos": [
+        31338,
+        31404
+      ]
+    },
+    {
+      "content": "Check for any gap on the Standby Virtual Machine (Machine2):",
+      "pos": [
+        31954,
+        32014
+      ]
+    },
+    {
+      "content": "Another verification method could be to failover to the standby database and then test if it is possible to failback to the primary database.",
+      "pos": [
+        32077,
+        32218
+      ]
+    },
+    {
+      "content": "To activate the standby database as a primary database, use the following statements:",
+      "pos": [
+        32219,
+        32304
+      ]
+    },
+    {
+      "content": "If you have not enabled flashback on the original primary database, it’s recommended that you drop the original primary database and recreate as a standby database.",
+      "pos": [
+        32423,
+        32587
+      ]
+    },
+    {
+      "content": "We recommend that you enable flashback database on the primary and the standby databases.",
+      "pos": [
+        32589,
+        32678
+      ]
+    },
+    {
+      "content": "When a failover happens, the primary database can be flashed back to the time before the failover and quickly converted to a standby database.",
+      "pos": [
+        32679,
+        32821
+      ]
+    },
+    {
+      "content": "Additional Resources",
+      "pos": [
+        32825,
+        32845
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt>Oracle Virtual Machine images for Azure<ept id=\"p1\">](virtual-machines-oracle-list-oracle-virtual-machine-images.md)</ept>",
+      "pos": [
+        32846,
+        32950
+      ]
+    }
+  ],
+  "content": "<properties title=\"Configuring Oracle Data Guard for Azure\" pageTitle=\"Configuring Oracle Data Guard for Azure\" description=\"Step through a tutorial for setting up and implementing Oracle Data Guard on Azure Virtual Machines for high availability and disaster recovery.\" services=\"virtual-machines\" authors=\"bbenz\" documentationCenter=\"\"/>\n<tags ms.service=\"virtual-machines\" ms.devlang=\"na\" ms.topic=\"article\" ms.tgt_pltfrm=\"na\" ms.workload=\"infrastructure-services\" ms.date=\"06/22/2015\" ms.author=\"bbenz\" />\n#Configuring Oracle Data Guard for Azure\nThis tutorial demonstrates how to setup and implement Oracle Data Guard in Azure Virtual Machines environment for high availability and disaster recovery. The tutorial focuses on one way replication for non-RAC Oracle databases.\n\nOracle Data Guard supports data protection and disaster recovery for Oracle Database. It is a simple, high-performance, drop-in solution for disaster recovery, data protection, and high availability for the entire Oracle database.\n\nThis tutorial assumes that you already have theoretical and practical knowledge on Oracle Database High Availability and Disaster Recovery concepts. For information, see the [Oracle web site](http://www.oracle.com/technetwork/database/features/availability/index.html) and also the [Oracle Data Guard Concepts and Administration Guide](http://docs.oracle.com/cd/E11882_01/server.112/e17022/create_ps.htm).\n\nIn addition, the tutorial assumes that you have already implemented the following prerequisites:\n\n- You’ve already reviewed the High Availability and Disaster Recovery Considerations section in the [Oracle Virtual Machine images - Miscellaneous Considerations](virtual-machines-miscellaneous-considerations-oracle-virtual-machine-images.md) topic. Note that Azure supports standalone Oracle Database instances but not Oracle Real Application Clusters (Oracle RAC) currently.\n\n- You have created two Virtual Machines (VMs) in Azure using the same platform provided Oracle Enterprise Edition image on Windows Server. For information, see [Creating an Oracle Database 12c Virtual Machine in Azure](virtual-machines-creating-oracle-webLogic-server-12c-virtual-machine.md) and [Azure Virtual Machines](http://azure.microsoft.com/documentation/services/virtual-machines/). Make sure that the Virtual Machines are in the [same cloud service](virtual-machines-load-balance.md) and in the same [Virtual Network](azure.microsoft.com/documentation/services/virtual-network/) to ensure they can access each other over the persistent private IP address. Additionally, it is recommended to place the VMs in the same [availability set](virtual-machines-manage-availability.md) to allow Azure to place them into separate fault domains and upgrade domains. Note that Oracle Data Guard is only available with Oracle Database Enterprise Edition. Each machine must have at least 2 GB of memory and 5 GB of disk space. For the most up-to-date information on the platform provided VM sizes, see [Virtual Machine Sizes for Azure](http://msdn.microsoft.com/en-us/library/dn197896.aspx). If you need additional disk volume for your VMs, you can attach additional disks. For information, see [How to Attach a Data Disk to a Virtual Machine](storage-windows-attach-disk.md).\n\n- You’ve set the Virtual Machine names as “Machine1” for the primary VM and “Machine2” for the standby VM at the Azure Portal.\n\n- You’ve set the **ORACLE_HOME** environment variable to point to the same oracle root installation path in the primary and standby Virtual Machines, such as `C:\\OracleDatabase\\product\\11.2.0\\dbhome_1\\database`.\n\n- You log on to your Windows server as a member of the **Administrators** group or a member of the **ORA_DBA** group.\n\nIn this tutorial, you will:\n\nImplement the physical standby database environment\n\n1. Create a primary database\n\n2. Prepare the primary database for standby database creation\n\n    1. Enable forced logging\n\n    2. Create a password file\n\n    3. Configure a standby redo log\n\n    4. Enable Archiving\n\n    5. Set primary database initialization parameters\n\nCreate a physical standby database\n\n1. Prepare an initialization parameter file for standby database\n\n2. Configure the listener and tnsnames to support the database on primary and standby machines\n\n    1. Configure listener.ora on both servers to hold entries for both databases\n\n    2. Configure tnsnames.ora on the primary and standby Virtual Machines to hold entries for both primary and standby databases\n\n    3. Start the listener and check tnsping on both Virtual Machines to both services.\n\n3. Startup the standby instance in nomount state\n\n4. Use RMAN to clone the database and to create a standby database\n\n5. Start the physical standby database in managed recovery mode\n\n6. Verify the physical standby database\n\n> [AZURE.IMPORTANT] This tutorial has been setup and tested against the following hardware and software configuration:\n>\n>|                      | **Primary Database**                      | **Standby Database**                      |\n>|----------------------|-------------------------------------------|-------------------------------------------|\n>| **Oracle Release**   | Oracle11g Enterprise Release (11.2.0.4.0) | Oracle11g Enterprise Release (11.2.0.4.0) |\n>| **Machine Name**     | Machine1                                  | Machine2                                  |\n>| **Operating System** | Windows 2008 R2                           | Windows 2008 R2                           |\n>| **Oracle SID**       | TEST                                      | TEST\\_STBY                                |\n>| **Memory**           | Min 2 GB                                  | Min 2 GB                                  |\n>| **Disk Space**       | Min 5 GB                                  | Min 5 GB                                  |\n\nFor subsequent releases of Oracle Database and Oracle Data Guard, there might be some additional changes that you need to implement. For the most up-to-date version specific information, see [Data Guard](http://www.oracle.com/technetwork/database/features/availability/data-guard-documentation-152848.html) and [Oracle Database](http://www.oracle.com/us/corporate/features/database-12c/index.html) documentation at Oracle web site.\n\n##Implement the physical standby database environment\n### 1. Create a primary database\n\n- Create a primary database “TEST” in the primary Virtual Machine. For information, see Creating and Configuring an Oracle Database.\n- Connect to your database as the SYS user with SYSDBA role in the SQL*Plus command prompt and run the following statement to see the name of your database:\n\n        SQL> select name from v$database;\n        \n        The result will display like the following:\n        \n        NAME\n        ---------\n        TEST\n- Next, query the names of the database files from the dba_data_files system view:\n\n        SQL> select file_name from dba_data_files; \n        FILE_NAME \n        ------------------------------------------------------------------------------- \n        C:\\ <YourLocalFolder>\\TEST\\USERS01.DBF\n        C:\\ <YourLocalFolder>\\TEST\\UNDOTBS01.DBF\n        C:\\ <YourLocalFolder>\\TEST\\SYSAUX01.DBF\n        C:\\<YourLocalFolder>\\TEST\\SYSTEM01.DBF\n        C:\\<YourLocalFolder>\\TEST\\EXAMPLE01.DBF\n\n### 2. Prepare the primary database for standby database creation\n\nBefore creating a standby database, it’s recommended that you ensure the primary database is configured properly. The following is a list of steps that you need to perform:\n\n1. Enable forced logging\n2. Create a password file\n3. Configure a standby redo log\n4. Enable Archiving\n5. Set primary database initialization parameters\n\n#### Enable forced logging\n\nIn order to implement a Standby Database, we need to enable 'Forced Logging' in the primary database. This option ensures that even in the event that a 'nologging' operation is done, force logging takes precedence and all operations are logged into the redo logs. Therefore, we make sure that everything in the primary database is logged and replication to the standby includes all operations in the primary database. Run the alter database statement to enable force logging:\n\n    SQL> ALTER DATABASE FORCE LOGGING;\n\n    Database altered.\n\n#### Create a password file\n\nTo be able to ship and apply archived logs from the Primary server to the Standby server, the sys password must be identical on both primary and standby servers. That’s why you create a password file on the primary database and copy it to the Standby server.\n\n>[AZURE.IMPORTANT] When using Oracle Database 12c, there is a new user, **SYSDG**, which you can use to administer Oracle Data Guard. For more information, see [Changes in Oracle Database 12c Release](http://docs.oracle.com/cd/E16655_01/server.121/e10638/release_changes.htm).\n\nIn addition, make sure that the ORACLE\\_HOME environment is already defined in Machine1. If not, define it as an environment variable using the Environment Variables dialog box. To access this dialog box, start the **System** utility by double-clicking the System icon in the **Control Panel**; then click the **Advanced** tab and choose **Environment Variables**. Click the **New** button under the **System Variables** to set the environment variables. After setting up the environment variables, close the existing Windows command prompt and open up a new one.\n\nRun the following statement to switch to the Oracle\\_Home directory, such as C:\\\\OracleDatabase\\\\product\\\\11.2.0\\\\dbhome\\_1\\\\database.\n\n    cd %ORACLE_HOME%\\database\n\nThen, create a password file using the password file creation utility, [ORAPWD](http://docs.oracle.com/cd/B28359_01/server.111/b28310/dba007.htm). In the same Windows command prompt in Machine1, run the following command by setting the password value as the password of **SYS**:\n\n    ORAPWD FILE=PWDTEST.ora PASSWORD=password FORCE=y\n\nThis command creates a password file, named as PWDTEST.ora, in the ORACLE\\_HOME\\\\database directory. You should copy this file to %ORACLE\\_HOME%\\\\database directory in Machine2 manually.\n\n#### Configure a standby redo log\n\nThen, you need to configure a Standby Redo Log so that the primary can correctly receive the redo when it becomes a standby. Pre-creating them here also allows the standby redo logs to be automatically created on the standby. It is important to configure the Standby Redo Logs (SRL) with the same size as the online redo logs. The size of the current standby redo log files must exactly match the size of the current primary database online redo log files.\n\nRun the following statement in the SQL\\*PLUS command prompt in Machine1. The v$logfile is a system view that contains information about redo log files.\n\n    SQL> select * from v$logfile;\n    GROUP# STATUS  TYPE    MEMBER                                                       IS_\n    ---------- ------- ------- ------------------------------------------------------------ ---\n    3         ONLINE  C:\\<YourLocalFolder>\\TEST\\REDO03.LOG               NO\n    2         ONLINE  C:\\<YourLocalFolder>\\TEST\\REDO02.LOG               NO\n    1         ONLINE  C:\\<YourLocalFolder>\\TEST\\REDO01.LOG               NO\n    Next, query the v$log system view, displays log file information from the control file. \n    SQL> select bytes from v$log; \n    BYTES\n    ----------\n    52428800\n    52428800\n    52428800\n\n\nNote that 52428800 is 50 megabytes.\n\nThen, in the SQL\\*Plus window, run the following statements to add a new standby redo log file group to a standby database and specify a number that identifies the group using the GROUP clause. Using group numbers can make administering standby redo log file groups easier:\n\n    SQL> ALTER DATABASE ADD STANDBY LOGFILE GROUP 4 'C:\\<YourLocalFolder>\\TEST\\REDO04.LOG' SIZE 50M;\n    Database altered.\n    SQL> ALTER DATABASE ADD STANDBY LOGFILE GROUP 5 'C:\\<YourLocalFolder>\\TEST\\REDO05.LOG' SIZE 50M;\n    Database altered.\n    SQL> ALTER DATABASE ADD STANDBY LOGFILE GROUP 6 'C:\\<YourLocalFolder>\\TEST\\REDO06.LOG' SIZE 50M;\n    Database altered.\n\nNext, run the following system view to list information about redo log files. This operation also verifies that the standby redo log file groups were created:\n\n    SQL> select * from v$logfile;\n    GROUP# STATUS  TYPE MEMBER IS_\n    ---------- ------- ------- --------------------------------------------- ---\n    3         ONLINE C:\\<YourLocalFolder>\\TEST\\REDO03.LOG NO\n    2         ONLINE C:\\<YourLocalFolder>\\TEST\\REDO02.LOG NO\n    1         ONLINE C:\\<YourLocalFolder>\\TEST\\REDO01.LOG NO\n    4         STANDBY C:\\<YourLocalFolder>\\TEST\\REDO04.LOG\n    5         STANDBY C:\\<YourLocalFolder>\\TEST\\REDO05.LOG NO\n    6         STANDBY C:\\<YourLocalFolder>\\TEST\\REDO06.LOG NO\n    6 rows selected.\n\n#### Enable Archiving\n\nThen, enable archiving by running the following statements to put the primary database in ARCHIVELOG mode and enable automatic archiving. You can enable archive log mode by mounting the database and then executing the archivelog command.\n\nFirst, log in as sysdba. In the Windows command prompt, run:\n\n    sqlplus /nolog\n    \n    connect / as sysdba\n\nThen, shutdown the database in the SQL\\*Plus command prompt:\n\n    SQL> shutdown immediate;\n    Database closed.\n    Database dismounted.\n    ORACLE instance shut down.\n\nThen, execute the startup mount command to mount the database. This ensures that Oracle associates the instance with the specified database.\n\n    SQL> startup mount;\n    ORACLE instance started.\n    Total System Global Area 1503199232 bytes\n    Fixed Size                  2281416 bytes\n    Variable Size             922746936 bytes\n    Database Buffers          570425344 bytes\n    Redo Buffers                7745536 bytes\n    Database mounted.\n\nThen, run:\n\n    SQL> alter database archivelog; \n    Database altered.\n\nThen, run the Alter database statement with the Open clause to make the database available for normal use:\n\n    SQL> alter database open;\n    \n    Database altered.\n\n#### Set primary database initialization parameters\n\nTo configure the Data Guard, you need to create and configure the standby parameters on a regular pfile (text initialization parameter file) first. When the pfile is ready, you need to convert it to a server parameter file (SPFILE).\n\nYou can control the Data Guard environment using the parameters in the INIT.ORA file. When following this tutorial, you need to update the Primary database INIT.ORA so that it can hold both roles: Primary or Standby.\n\n    SQL> create pfile from spfile;\n    File created.\n\nNext, you need to edit the pfile to add the standby parameters. To do this, open the INITTEST.ORA file in the location of %ORACLE\\_HOME%\\\\database. Next, append the following statements to the INITTEST.ora file. Note that the naming convention for your INIT.ORA file is INIT\\<YourDatabaseName\\>.ORA.\n    \n    db_name='TEST' \n    db_unique_name='TEST' \n    LOG_ARCHIVE_CONFIG='DG_CONFIG=(TEST,TEST_STBY)'\n    LOG_ARCHIVE_DEST_1= 'LOCATION=C:\\OracleDatabase\\archive   VALID_FOR=(ALL_LOGFILES,ALL_ROLES) DB_UNIQUE_NAME=TEST'\n    LOG_ARCHIVE_DEST_2= 'SERVICE=TEST_STBY LGWR ASYNC VALID_FOR=(ONLINE_LOGFILES,PRIMARY_ROLE) DB_UNIQUE_NAME=TEST_STBY'\n    LOG_ARCHIVE_DEST_STATE_1=ENABLE\n    LOG_ARCHIVE_DEST_STATE_2=ENABLE \n    REMOTE_LOGIN_PASSWORDFILE=EXCLUSIVE \n    LOG_ARCHIVE_FORMAT=%t_%s_%r.arc \n    LOG_ARCHIVE_MAX_PROCESSES=30\n    # Standby role parameters --------------------------------------------------------------------\n    fal_server=TEST_STBY\n    fal_client=TEST\n    standby_file_management=auto\n    db_file_name_convert='TEST_STBY','TEST'\n    log_file_name_convert='TEST_STBY','TEST'\n    # ---------------------------------------------------------------------------------------------\n\n\nThe previous statement block includes three important setup items:\n-   **LOG_ARCHIVE_CONFIG...:** You define the unique database ids using this statement.\n-   **LOG_ARCHIVE_DEST_1...:** You define the local archive folder location using this statement. We recommend that you create a new directory for your database’s archiving needs and specify the local archive location using this statement explicitly rather than using Oracle’s default folder %ORACLE_HOME%\\database\\archive.\n-   **LOG_ARCHIVE_DEST_2 .... LGWR ASYNC...:** You define an asynchronous log writer process (LGWR) to collect transaction redo data and transmit it to standby destinations. Here, the DB_UNIQUE_NAME specifies a unique name for the database at the destination standby server.\n\nOnce the new parameter file is ready, you need to create the spfile from it.\n\nFirst, shutdown the database:\n\n    SQL> shutdown immediate;\n    \n    Database closed.\n    \n    Database dismounted.\n    \n    ORACLE instance shut down.\n\nNext, run startup nomount command as follows:\n\n    SQL> startup nomount pfile='c:\\OracleDatabase\\product\\11.2.0\\dbhome_1\\database\\initTEST.ora';\n    ORACLE instance started.\n    Total System Global Area 1503199232 bytes\n    Fixed Size                  2281416 bytes\n    Variable Size             922746936 bytes\n    Database Buffers          570425344 bytes\n    Redo Buffers                7745536 bytes\n\nNow, create a spfile:\n\n    SQL>create spfile frompfile='c:\\OracleDatabase\\product\\11.2.0\\dbhome\\_1\\database\\initTEST.ora';\n\n    File created.\n\nThen, shutdown the database:\n\n    SQL> shutdown immediate;\n    \n    ORA-01507: database not mounted\n\nThen, use the startup command to start an instance:\n\n    SQL> startup;\n    ORACLE instance started.\n    Total System Global Area 1503199232 bytes\n    Fixed Size                  2281416 bytes\n    Variable Size             922746936 bytes\n    Database Buffers          570425344 bytes\n    Redo Buffers                7745536 bytes\n    Database mounted.\n    Database opened.\n\n##Create a physical standby database\nThis section focuses on the steps that you must perform in Machine2 to prepare the physical standby database.\n\nFirst, you need to remote desktop to Machine2 via the Azure Portal.\n\nThen, on the Standby Server (Machine2), create all the necessary folders for the standby database, such as C:\\\\\\<YourLocalFolder\\>\\\\TEST. While following this tutorial, make sure that the folder structure matches the folder structure on Machine1 to keep all the necessary files, such as controlfile, datafiles, redologfiles, udump, bdump and cdump files. In addition, define the ORACLE\\_HOME and ORACLE\\_BASE environment variables in Machine2. If not, define them as an environment variable using the Environment Variables dialog box. To access this dialog box, start the **System** utility by double-clicking the System icon in the **Control Panel**; then click the **Advanced** tab and choose **Environment Variables**. Click the **New** button under the **System Variables** to set the environment variables. After setting up the environment variables, you need to close the existing Windows command prompt and open up a new one to see the changes.\n\nNext, follow these steps:\n\n1. Prepare an initialization parameter file for standby database\n\n2. Configure the listener and tnsnames to support the database on primary and standby machines\n\n    1. Configure listener.ora on both servers to hold entries for both databases\n\n    2. Configure tnsnames.ora on the primary and standby Virtual Machines to hold entries for both primary and standby databases\n\n    3. Start the listener and check tnsping on both Virtual Machines to both services.\n\n3. Startup the standby instance in nomount state\n\n4. Use RMAN to clone the database and to create a standby database\n\n5. Start the physical standby database in managed recovery mode\n\n6. Verify the physical standby database\n\n### 1. Prepare an initialization parameter file for standby database\n\nThis section demonstrates how to prepare an initialization parameter file for the standby database. To do this, first copy the INITTEST.ORA file from Machine 1 to Machine2 manually. You should be able to see the INITTEST.ORA file in the %ORACLE\\_HOME%\\\\database folder in both machines. Then, modify the INITTEST.ora file in Machine2 to set it up for the standby role as specified below:\n    \n    db_name='TEST'\n    db_unique_name='TEST_STBY'\n    db_create_file_dest='c:\\OracleDatabase\\oradata\\test_stby’\n    db_file_name_convert=’TEST’,’TEST_STBY’\n    log_file_name_convert='TEST','TEST_STBY'\n    \n    \n    job_queue_processes=10\n    LOG_ARCHIVE_CONFIG='DG_CONFIG=(TEST,TEST_STBY)'\n    LOG_ARCHIVE_DEST_1='LOCATION=c:\\OracleDatabase\\TEST_STBY\\archives VALID_FOR=(ALL_LOGFILES,ALL_ROLES) DB_UNIQUE_NAME=’TEST'\n    LOG_ARCHIVE_DEST_2='SERVICE=TEST LGWR ASYNC VALID_FOR=(ONLINE_LOGFILES,PRIMARY_ROLE) \n    LOG_ARCHIVE_DEST_STATE_1='ENABLE'\n    LOG_ARCHIVE_DEST_STATE_2='ENABLE'\n    LOG_ARCHIVE_FORMAT='%t_%s_%r.arc'\n    LOG_ARCHIVE_MAX_PROCESSES=30\n\n\nThe previous statement block includes two important setup items:\n\n-   **\\*.LOG_ARCHIVE_DEST_1:** You need to create the c:\\OracleDatabase\\TEST_STBY\\archives folder in Machine2 manually.\n-   **\\*.LOG_ARCHIVE_DEST_2:** This is an optional step. You set this as it might be needed when the primary machine is in maintenance and the standby machine becomes a primary database.\n\nThen, you need to start the standby instance. On the standby database server, enter the following command at a Windows command prompt to create an Oracle instance by creating a new Windows service:\n\n    oradim -NEW -SID TEST\\_STBY -STARTMODE MANUAL\n\nNote that the **Oradim** command creates an Oracle instance but does not start it. You can find it in the C:\\\\OracleDatabase\\\\product\\\\11.2.0\\\\dbhome\\_1\\\\BIN directory.\n\n##Configure the listener and tnsnames to support the database on primary and standby machines\nBefore you create a standby database, you need to make sure that the primary and standby databases in your configuration can talk to each other. To do this, you need to configure both the listener and TNSNames either manually or by using the network configuration utility NETCA. This is a mandatory task when you use the Recovery Manager utility (RMAN).\n\n### Configure listener.ora on both servers to hold entries for both databases\n\nRemote desktop to Machine1 and edit the listener.ora file as specified below. When you edit the listener.ora file, always make sure that the opening and closing parenthesis line up in the same column. You can find the listener.ora file in the following folder: c:\\\\OracleDatabase\\\\product\\\\11.2.0\\\\dbhome\\_1\\\\NETWORK\\\\ADMIN\\\\.\n\n    # listener.ora Network Configuration File: C:\\OracleDatabase\\product\\11.2.0\\dbhome_1\\network\\admin\\listener.ora\n    \n    # Generated by Oracle configuration tools.\n    \n    SID_LIST_LISTENER =\n      (SID_LIST =\n        (SID_DESC =\n          (SID_NAME = test)\n          (ORACLE_HOME = C:\\OracleDatabase\\product\\11.2.0\\dbhome_1)\n          (PROGRAM = extproc)\n          (ENVS = \"EXTPROC_DLLS=ONLY:C:\\OracleDatabase\\product\\11.2.0\\dbhome_1\\bin\\oraclr11.dll\")\n        )\n      )\n    \n    LISTENER =\n      (DESCRIPTION_LIST =\n        (DESCRIPTION =\n          (ADDRESS = (PROTOCOL = TCP)(HOST = MACHINE1)(PORT = 1521))\n          (ADDRESS = (PROTOCOL = IPC)(KEY = EXTPROC1521))\n        )\n      )\n\nNext, remote desktop to Machine2 and edit the listener.ora file as follows:\n    # listener.ora Network Configuration File: C:\\OracleDatabase\\product\\11.2.0\\dbhome_1\\network\\admin\\listener.ora\n    \n    # Generated by Oracle configuration tools.\n    \n    SID_LIST_LISTENER =\n      (SID_LIST =\n        (SID_DESC =\n          (SID_NAME = test_stby)\n          (ORACLE_HOME = C:\\OracleDatabase\\product\\11.2.0\\dbhome_1)\n          (PROGRAM = extproc)\n          (ENVS = \"EXTPROC_DLLS=ONLY:C:\\OracleDatabase\\product\\11.2.0\\dbhome_1\\bin\\oraclr11.dll\")\n        )\n      )\n    \n    LISTENER =\n      (DESCRIPTION_LIST =\n        (DESCRIPTION =\n          (ADDRESS = (PROTOCOL = TCP)(HOST = MACHINE2)(PORT = 1521))\n          (ADDRESS = (PROTOCOL = IPC)(KEY = EXTPROC1521))\n        )\n      )\n\n\n### Configure tnsnames.ora on the primary and standby Virtual Machines to hold entries for both primary and standby databases\n\nRemote desktop to Machine1 and edit the tnsnames.ora file as specified below. You can find the tnsnames.ora file in the following folder: c:\\\\OracleDatabase\\\\product\\\\11.2.0\\\\dbhome\\_1\\\\NETWORK\\\\ADMIN\\\\.\n\n    TEST =\n      (DESCRIPTION =\n        (ADDRESS_LIST =\n          (ADDRESS = (PROTOCOL = TCP)(HOST = MACHINE1)(PORT = 1521))\n        )\n        (CONNECT_DATA =\n          (SERVICE_NAME = test)\n        )\n      )\n    \n    TEST_STBY =\n      (DESCRIPTION =\n        (ADDRESS_LIST =\n          (ADDRESS = (PROTOCOL = TCP)(HOST = MACHINE2)(PORT = 1521))\n        )\n        (CONNECT_DATA =\n          (SERVICE_NAME = test_stby)\n        )\n      )\n\nRemote desktop to Machine2 and edit the tnsnames.ora file as follows:\n    \n    TEST =\n      (DESCRIPTION =\n        (ADDRESS_LIST =\n          (ADDRESS = (PROTOCOL = TCP)(HOST = MACHINE1)(PORT = 1521))\n        )\n        (CONNECT_DATA =\n          (SERVICE_NAME = test)\n        )\n      )\n    \n    TEST_STBY =\n      (DESCRIPTION =\n        (ADDRESS_LIST =\n          (ADDRESS = (PROTOCOL = TCP)(HOST = MACHINE2)(PORT = 1521))\n        )\n        (CONNECT_DATA =\n          (SERVICE_NAME = test_stby)\n        )\n      )\n\n\n### Start the listener and check tnsping on both Virtual Machines to both services.\n\nOpen up a new Windows command prompt in both primary and standby Virtual Machines and run the following statements:\n\n    C:\\Users\\DBAdmin>tnsping test\n    \n    TNS Ping Utility for 64-bit Windows: Version 11.2.0.1.0 - Production on 14-NOV-2013 06:29:08\n    Copyright (c) 1997, 2010, Oracle.  All rights reserved.\n    Used parameter files:\n    C:\\OracleDatabase\\product\\11.2.0\\dbhome_1\\network\\admin\\sqlnet.ora\n    Used TNSNAMES adapter to resolve the alias\n    Attempting to contact (DESCRIPTION = (ADDRESS_LIST = (ADDRESS = (PROTOCOL = TCP)(HOST = MACHINE1)(PORT = 1521))) (CONNECT_DATA = (SER\n    VICE_NAME = test)))\n    OK (0 msec)\n    \n\n    C:\\Users\\DBAdmin>tnsping test_stby\n    \n    TNS Ping Utility for 64-bit Windows: Version 11.2.0.1.0 - Production on 14-NOV-2013 06:29:16\n    Copyright (c) 1997, 2010, Oracle.  All rights reserved.\n    Used parameter files:\n    C:\\OracleDatabase\\product\\11.2.0\\dbhome_1\\network\\admin\\sqlnet.ora\n    Used TNSNAMES adapter to resolve the alias\n    Attempting to contact (DESCRIPTION = (ADDRESS_LIST = (ADDRESS = (PROTOCOL = TCP)(HOST = MACHINE2)(PORT = 1521))) (CONNECT_DATA = (SER\n    VICE_NAME = test_stby)))\n    OK (260 msec)\n\n\n##Startup the standby instance in nomount state\nYou need to set up the environment to support the standby database on the standby Virtual Machine (MACHINE2).\n\nFirst, copy the password file from the primary machine (Machine1) to the standby machine (Machine2) manually. This is necessary as the **sys** password must be identical on both machines.\n\nThen, open the Windows command prompt in Machine2, and setup the environment variables to point to the Standby database as follows:\n\n    SET ORACLE_HOME=C:\\OracleDatabase\\product\\11.2.0\\dbhome_1\n    SET ORACLE_SID=TEST_STBY\n\nNext, start the Standby database in nomount state and then generate an spfile.\n\nStart the database:\n\n    SQL>shutdown immediate;\n    \n    SQL>startup nomount\n    ORACLE instance started.\n    \n    Total System Global Area  747417600 bytes\n    Fixed Size                  2179496 bytes\n    Variable Size             473960024 bytes\n    Database Buffers          264241152 bytes\n    Redo Buffers                7036928 bytes\n\n\n##Use RMAN to clone the database and to create a standby database\nYou can use the Recovery Manager utility (RMAN) to take any backup copy of the primary database to create the physical standby database.\n\nRemote desktop to the standby Virtual Machine (MACHINE2) and run the RMAN utility by specifying a full connection string for both the TARGET (primary database, Machine1) and AUXILLARY (standby database, Machine2) instances.\n\n>[AZURE.IMPORTANT] Do not use the operating system authentication as there is no database in the standby server machine yet.\n\n    C:\\> RMAN TARGET sys/password@test AUXILIARY sys/password@test_STBY\n    \n    RMAN>DUPLICATE TARGET DATABASE\n      FOR STANDBY\n      FROM ACTIVE DATABASE\n      DORECOVER\n        NOFILENAMECHECK;\n\n##Start the physical standby database in managed recovery mode\nThis tutorial demonstrates how to create a physical standby database. For information on creating a logical standby database, see the Oracle documentation.\n\nOpen up SQL\\*Plus command prompt and enable the Data Guard on the standby Virtual Machine or server (MACHINE2) as follows:\n\n    SHUTDOWN IMMEDIATE;\n    STARTUP MOUNT;\n    ALTER DATABASE RECOVER MANAGED STANDBY DATABASE DISCONNECT FROM SESSION;\n\nWhen you open the standby database in **MOUNT** mode, the archive log shipping continues and the managed recovery process continues log applying on the standby database. This ensures that the standby database remains up-to-date with the primary database. Note that the standby database cannot be accessible for reporting purposes during this time.\n\nWhen you open the standby database in **READ ONLY** mode, the archive log shipping continues. But the managed recovery process stops. This causes the standby database to become increasingly out of date until the managed recovery process is resumed. You can access the standby database for reporting purposes during this time but data may not reflect the latest changes.\n\nIn general, we recommend that you keep the standby database in **MOUNT** mode to keep the data in the standby database up-to-date in case of failure of the primary database. However, you can keep the standby database in **READ ONLY** mode for reporting purposes depending on your application’s requirements. The following steps demonstrate how to enable the Data Guard in read-only mode using SQL\\*Plus:\n\n    SHUTDOWN IMMEDIATE;\n    STARTUP MOUNT;\n    ALTER DATABASE OPEN READ ONLY;\n\n\n##Verify the physical standby database\nThis section demonstrates how to verify the high availability configuration as an administrator.\n\nOpen up SQL\\*Plus command prompt window and check archived redo log on the Standby Virtual Machine (Machine2):\n\n    SQL> show parameters db_unique_name;\n    \n    NAME                                TYPE       VALUE\n    ------------------------------------ ----------- ------------------------------\n    db_unique_name                      string     TEST_STBY\n    \n    SQL> SELECT NAME FROM V$DATABASE\n    \n    SQL> SELECT SEQUENCE#, FIRST_TIME, NEXT_TIME, APPLIED FROM V$ARCHIVED_LOG ORDER BY SEQUENCE#;\n    \n    SEQUENCE# FIRST_TIM NEXT_TIM APPLIED\n    ----------------  ---------------  --------------- ------------\n    45                    23-FEB-14   23-FEB-14   YES\n    45                    23-FEB-14   23-FEB-14   NO\n    46                    23-FEB-14   23-FEB-14   NO\n    46                    23-FEB-14   23-FEB-14   YES\n    47                    23-FEB-14   23-FEB-14   NO\n    47                    23-FEB-14   23-FEB-14   NO\n\nOpen up SQL*Plus command prompt window and switch logfiles on the Primary machine (Machine1):\n\n    SQL> alter system switch logfile; \n    System altered.\n    \n    SQL> archive log list\n    Database log mode              Archive Mode\n    Automatic archival             Enabled\n    Archive destination            C:\\OracleDatabase\\archive\n    Oldest online log sequence     69\n    Next log sequence to archive   71\n    Current log sequence           71\n\nCheck archived redo log on the Standby Virtual Machine (Machine2):\n\n    SQL> SELECT SEQUENCE#, FIRST_TIME, NEXT_TIME, APPLIED FROM V$ARCHIVED_LOG ORDER BY SEQUENCE#;\n    \n    SEQUENCE# FIRST_TIM NEXT_TIM APPLIED\n    ----------------  ---------------  --------------- ------------\n    45                    23-FEB-14   23-FEB-14   YES\n    46                    23-FEB-14   23-FEB-14   YES\n    47                    23-FEB-14   23-FEB-14   YES\n    48                    23-FEB-14   23-FEB-14   YES\n    \n    49                    23-FEB-14   23-FEB-14   YES\n    50                    23-FEB-14   23-FEB-14   IN-MEMORY\n\nCheck for any gap on the Standby Virtual Machine (Machine2):\n\n    SQL> SELECT * FROM V$ARCHIVE_GAP;\n    no rows selected.\n\nAnother verification method could be to failover to the standby database and then test if it is possible to failback to the primary database. To activate the standby database as a primary database, use the following statements:\n\n    SQL> ALTER DATABASE RECOVER MANAGED STANDBY DATABASE FINISH;\n    SQL> ALTER DATABASE ACTIVATE STANDBY DATABASE;\n\nIf you have not enabled flashback on the original primary database, it’s recommended that you drop the original primary database and recreate as a standby database.\n\nWe recommend that you enable flashback database on the primary and the standby databases. When a failover happens, the primary database can be flashed back to the time before the failover and quickly converted to a standby database.\n\n##Additional Resources\n[Oracle Virtual Machine images for Azure](virtual-machines-oracle-list-oracle-virtual-machine-images.md)"
+}

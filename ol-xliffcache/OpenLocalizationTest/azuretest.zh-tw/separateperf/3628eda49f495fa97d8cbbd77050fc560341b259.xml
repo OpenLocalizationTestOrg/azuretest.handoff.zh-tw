@@ -1,0 +1,1021 @@
+{
+  "nodes": [
+    {
+      "content": "Query data from HDFS-compatible Blob storage | Microsoft Azure",
+      "pos": [
+        27,
+        89
+      ]
+    },
+    {
+      "content": "HDInsight uses Blob storage as the big data store for HDFS.",
+      "pos": [
+        108,
+        167
+      ]
+    },
+    {
+      "content": "Learn how to query data from Blob storage and store results of your analysis.",
+      "pos": [
+        168,
+        245
+      ]
+    },
+    {
+      "content": "Use HDFS-compatible Azure Blob storage with Hadoop in HDInsight",
+      "pos": [
+        645,
+        708
+      ]
+    },
+    {
+      "content": "In this tutorial, learn how to use low-cost Azure Blob storage with HDInsight, create Azure storage account and Blob storage container, and then address the data inside.",
+      "pos": [
+        710,
+        879
+      ]
+    },
+    {
+      "content": "Azure Blob storage is a robust, general-purpose storage solution that integrates seamlessly with HDInsight.",
+      "pos": [
+        881,
+        988
+      ]
+    },
+    {
+      "content": "Through a Hadoop distributed file system (HDFS) interface, the full set of components in HDInsight can operate directly on structured or unstructured data in Blob storage.",
+      "pos": [
+        989,
+        1160
+      ]
+    },
+    {
+      "content": "Storing data in Blob storage enables you to safely delete the HDInsight clusters that are used for computation without losing user data.",
+      "pos": [
+        1162,
+        1298
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph>  The <bpt id=\"p1\">*</bpt>asv://<ept id=\"p1\">*</ept> syntax is not supported in HDInsight version 3.0 clusters.",
+      "pos": [
+        1302,
+        1387
+      ]
+    },
+    {
+      "content": "This means that any jobs submitted to an HDInsight version 3.0 cluster that explicitly use the <bpt id=\"p1\">*</bpt>asv://<ept id=\"p1\">*</ept> syntax will fail.",
+      "pos": [
+        1388,
+        1509
+      ]
+    },
+    {
+      "content": "The <bpt id=\"p1\">*</bpt>wasb://<ept id=\"p1\">*</ept> syntax should be used instead.",
+      "pos": [
+        1510,
+        1554
+      ]
+    },
+    {
+      "content": "Also, jobs submitted to any HDInsight version 3.0 clusters that are created with an existing metastore that contains explicit references to resources that use the asv:// syntax will fail.",
+      "pos": [
+        1555,
+        1742
+      ]
+    },
+    {
+      "content": "These metastores need to be re-created using the wasb:// syntax to address resources.",
+      "pos": [
+        1743,
+        1828
+      ]
+    },
+    {
+      "content": "HDInsight currently only supports block blobs.",
+      "pos": [
+        1832,
+        1878
+      ]
+    },
+    {
+      "content": "Most HDFS commands (for example, <ph id=\"ph1\">&lt;b&gt;</ph>ls<ph id=\"ph2\">&lt;/b&gt;</ph>, <ph id=\"ph3\">&lt;b&gt;</ph>copyFromLocal<ph id=\"ph4\">&lt;/b&gt;</ph> and <ph id=\"ph5\">&lt;b&gt;</ph>mkdir<ph id=\"ph6\">&lt;/b&gt;</ph>) still work as expected.",
+      "pos": [
+        1882,
+        1988
+      ]
+    },
+    {
+      "content": "Only the commands that are specific to the native HDFS implementation (which is referred to as DFS), such as <ph id=\"ph1\">&lt;b&gt;</ph>fschk<ph id=\"ph2\">&lt;/b&gt;</ph> and <ph id=\"ph3\">&lt;b&gt;</ph>dfsadmin<ph id=\"ph4\">&lt;/b&gt;</ph>, will show different behavior in Azure Blob storage.",
+      "pos": [
+        1989,
+        2183
+      ]
+    },
+    {
+      "pos": [
+        2185,
+        2353
+      ],
+      "content": "For information about provisioning an HDInsight cluster, see <bpt id=\"p1\">[</bpt>Get Started with HDInsight<ept id=\"p1\">][hdinsight-get-started]</ept> or <bpt id=\"p2\">[</bpt>Provision HDInsight clusters<ept id=\"p2\">][hdinsight-provision]</ept>."
+    },
+    {
+      "pos": [
+        2359,
+        2414
+      ],
+      "content": "<ph id=\"ph1\">&lt;a id=\"architecture\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>HDInsight storage architecture"
+    },
+    {
+      "content": "The following diagram provides an abstract view of the HDInsight storage architecture:",
+      "pos": [
+        2415,
+        2501
+      ]
+    },
+    {
+      "content": "Hadoop clusters use the HDFS API to access and store structured and unstructured data in Blob storage.",
+      "pos": [
+        2505,
+        2607
+      ]
+    },
+    {
+      "content": "HDInsight provides access to the distributed file system that is locally attached to the compute nodes.",
+      "pos": [
+        2704,
+        2807
+      ]
+    },
+    {
+      "content": "This file system can be accessed by using the fully qualified URI, for example:",
+      "pos": [
+        2808,
+        2887
+      ]
+    },
+    {
+      "content": "In addition, HDInsight provides the ability to access data that is stored in Azure Blob storage.",
+      "pos": [
+        2923,
+        3019
+      ]
+    },
+    {
+      "content": "The syntax is:",
+      "pos": [
+        3020,
+        3034
+      ]
+    },
+    {
+      "content": "Hadoop supports a notion of the default file system.",
+      "pos": [
+        3111,
+        3163
+      ]
+    },
+    {
+      "content": "The default file system implies a default scheme and authority.",
+      "pos": [
+        3164,
+        3227
+      ]
+    },
+    {
+      "content": "It can also be used to resolve relative paths.",
+      "pos": [
+        3228,
+        3274
+      ]
+    },
+    {
+      "content": "During the HDInsight provisioning process, an Azure Storage account and a specific Azure Blob storage container from that account is designated as the default file system.",
+      "pos": [
+        3275,
+        3446
+      ]
+    },
+    {
+      "content": "In addition to this storage account, you can add additional storage accounts from the same Azure subscription or different Azure subscriptions during the provisioning process.",
+      "pos": [
+        3448,
+        3623
+      ]
+    },
+    {
+      "content": "For instructions about adding additional storage accounts, see <bpt id=\"p1\">[</bpt>Provision HDInsight clusters<ept id=\"p1\">][hdinsight-provision]</ept>.",
+      "pos": [
+        3624,
+        3739
+      ]
+    },
+    {
+      "pos": [
+        3743,
+        3955
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Containers in the storage accounts that are connected to a cluster:<ept id=\"p1\">**</ept> Because the account name and key are associated with the cluster during provisioning, you have full access to the blobs in those containers."
+    },
+    {
+      "pos": [
+        3959,
+        4115
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Public containers or public blobs in storage accounts that are NOT connected to a cluster:<ept id=\"p1\">**</ept> You have read-only permission to the blobs in the containers."
+    },
+    {
+      "pos": [
+        4123,
+        4482
+      ],
+      "content": "[AZURE.NOTE]\nPublic containers allow you to get a list of all blobs that are available in that container and get container metadata. Public blobs allow you to access the blobs only if you know the exact URL. For more information, see <a href=\"http://msdn.microsoft.com/library/windowsazure/dd179354.aspx\">Restrict access to containers and blobs</a>.",
+      "leadings": [
+        "",
+        "        > "
+      ],
+      "nodes": [
+        {
+          "content": "Public containers allow you to get a list of all blobs that are available in that container and get container metadata. Public blobs allow you to access the blobs only if you know the exact URL. For more information, see <a href=\"http://msdn.microsoft.com/library/windowsazure/dd179354.aspx\">Restrict access to containers and blobs</a>.",
+          "pos": [
+            13,
+            349
+          ],
+          "nodes": [
+            {
+              "content": "Public containers allow you to get a list of all blobs that are available in that container and get container metadata.",
+              "pos": [
+                0,
+                119
+              ]
+            },
+            {
+              "content": "Public blobs allow you to access the blobs only if you know the exact URL.",
+              "pos": [
+                120,
+                194
+              ]
+            },
+            {
+              "content": "For more information, see <ph id=\"ph1\">&lt;a href=\"http://msdn.microsoft.com/library/windowsazure/dd179354.aspx\"&gt;</ph>Restrict access to containers and blobs<ph id=\"ph2\">&lt;/a&gt;</ph>.",
+              "pos": [
+                195,
+                336
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Private containers in storage accounts that are NOT connected to a cluster:<ept id=\"p1\">**</ept> You can't access the blobs in the containers unless you define the storage account when you submit the WebHCat jobs.",
+      "pos": [
+        4486,
+        4682
+      ]
+    },
+    {
+      "content": "This is explained later in this article.",
+      "pos": [
+        4683,
+        4723
+      ]
+    },
+    {
+      "content": "The storage accounts that are defined in the provisioning process and their keys are stored in %HADOOP_HOME%/conf/core-site.xml on the cluster nodes.",
+      "pos": [
+        4726,
+        4875
+      ]
+    },
+    {
+      "content": "The default behavior of HDInsight is to use the storage accounts defined in the core-site.xml file.",
+      "pos": [
+        4876,
+        4975
+      ]
+    },
+    {
+      "content": "It is not recommended to edit the core-site.xml file because the cluster head node(master) may be reimaged or migrated at any time, and any changes to those files will be lost.",
+      "pos": [
+        4976,
+        5152
+      ]
+    },
+    {
+      "content": "Multiple WebHCat jobs, including Hive, MapReduce, Hadoop streaming, and Pig, can carry a description of storage accounts and metadata with them.",
+      "pos": [
+        5154,
+        5298
+      ]
+    },
+    {
+      "content": "(This currently works for Pig with storage accounts, but not for metadata.) In the <bpt id=\"p1\">[</bpt>Access blobs using Azure PowerShell<ept id=\"p1\">](#powershell)</ept> section of this article, there is a sample of this feature.",
+      "pos": [
+        5299,
+        5492
+      ]
+    },
+    {
+      "content": "For more information, see <bpt id=\"p1\">[</bpt>Using an HDInsight Cluster with Alternate Storage Accounts and Metastores<ept id=\"p1\">](http://social.technet.microsoft.com/wiki/contents/articles/23256.using-an-hdinsight-cluster-with-alternate-storage-accounts-and-metastores.aspx)</ept>.",
+      "pos": [
+        5493,
+        5740
+      ]
+    },
+    {
+      "content": "Blob storage can be used for structured and unstructured data.",
+      "pos": [
+        5742,
+        5804
+      ]
+    },
+    {
+      "content": "Blob storage containers store data as key/value pairs, and there is no directory hierarchy.",
+      "pos": [
+        5805,
+        5896
+      ]
+    },
+    {
+      "content": "However the slash character ( / ) can be used within the key name to make it appear as if a file is stored within a directory structure.",
+      "pos": [
+        5897,
+        6033
+      ]
+    },
+    {
+      "content": "For example, a blob's key may be <bpt id=\"p1\">*</bpt>input/log1.txt<ept id=\"p1\">*</ept>.",
+      "pos": [
+        6034,
+        6084
+      ]
+    },
+    {
+      "content": "No actual <bpt id=\"p1\">*</bpt>input<ept id=\"p1\">*</ept> directory exists, but due to the presence of the slash character in the key name, it has the appearance of a file path.",
+      "pos": [
+        6085,
+        6222
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">&lt;a id=\"benefits\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Benefits of Blob storage",
+      "pos": [
+        6227,
+        6272
+      ]
+    },
+    {
+      "content": "The implied performance cost of not co-locating compute clusters and storage resources is mitigated by the way the compute clusters are provisioned close to the storage account resources inside the Azure datacenter, where the high-speed network makes it very efficient for the compute nodes to access the data inside Azure Blob storage.",
+      "pos": [
+        6273,
+        6609
+      ]
+    },
+    {
+      "content": "There are several benefits associated with storing the data in Azure Blob storage instead of HDFS:",
+      "pos": [
+        6611,
+        6709
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Data reuse and sharing:<ept id=\"p1\">**</ept> The data in HDFS is located inside the compute cluster.",
+      "pos": [
+        6713,
+        6796
+      ]
+    },
+    {
+      "content": "Only the applications that have access to the compute cluster can use the data by using HDFS APIs.",
+      "pos": [
+        6797,
+        6895
+      ]
+    },
+    {
+      "content": "The data in Azure Blob storage can be accessed either through the HDFS APIs or through the <bpt id=\"p1\">[</bpt>Blob Storage REST APIs<ept id=\"p1\">][blob-storage-restAPI]</ept>.",
+      "pos": [
+        6896,
+        7034
+      ]
+    },
+    {
+      "content": "Thus, a larger set of applications (including other HDInsight clusters) and tools can be used to produce and consume the data.",
+      "pos": [
+        7035,
+        7161
+      ]
+    },
+    {
+      "pos": [
+        7164,
+        7317
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Data archiving:<ept id=\"p1\">**</ept> Storing data in Azure Blob storage enables the HDInsight clusters used for computation to be safely deleted without losing user data."
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Data storage cost:<ept id=\"p1\">**</ept> Storing data in DFS for the long term is more costly than storing the data in Azure Blob storage because the cost of a compute cluster is higher than the cost of an Azure Blob storage container.",
+      "pos": [
+        7320,
+        7537
+      ]
+    },
+    {
+      "content": "In addition, because the data does not have to be reloaded for every compute cluster generation, you are also saving data loading costs.",
+      "pos": [
+        7538,
+        7674
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Elastic scale-out:<ept id=\"p1\">**</ept> Although HDFS provides you with a scaled-out file system, the scale is determined by the number of nodes that you provision for your cluster.",
+      "pos": [
+        7677,
+        7841
+      ]
+    },
+    {
+      "content": "Changing the scale can become a more complicated process than relying on the elastic scaling capabilities that you get automatically in Azure  Blob storage.",
+      "pos": [
+        7842,
+        7998
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Geo-replication:<ept id=\"p1\">**</ept> Your Azure Blob storage containers can be geo-replicated.",
+      "pos": [
+        8001,
+        8079
+      ]
+    },
+    {
+      "content": "Although this gives you geographic recovery and data redundancy, a failover to the geo-replicated location severely impacts your performance, and it may incur additional costs.",
+      "pos": [
+        8080,
+        8256
+      ]
+    },
+    {
+      "content": "So our recommendation is to choose the geo-replication wisely and only if the value of the data is worth the additional cost.",
+      "pos": [
+        8257,
+        8382
+      ]
+    },
+    {
+      "content": "Certain MapReduce jobs and packages may create intermediate results that you don't really want to store in Azure Blob storage.",
+      "pos": [
+        8384,
+        8510
+      ]
+    },
+    {
+      "content": "In that case, you can elect to store the data in the local HDFS.",
+      "pos": [
+        8511,
+        8575
+      ]
+    },
+    {
+      "content": "In fact, HDInsight uses DFS for several of these intermediate results in Hive jobs and other processes.",
+      "pos": [
+        8576,
+        8679
+      ]
+    },
+    {
+      "pos": [
+        8686,
+        8742
+      ],
+      "content": "<ph id=\"ph1\">&lt;a id=\"preparingblobstorage\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Create a blob container"
+    },
+    {
+      "content": "To use blobs, you first create an <bpt id=\"p1\">[</bpt>Azure Storage account<ept id=\"p1\">][azure-storage-create]</ept>.",
+      "pos": [
+        8744,
+        8824
+      ]
+    },
+    {
+      "content": "As part of this, you specify an Azure datacenter that will store the objects you create using this account.",
+      "pos": [
+        8825,
+        8932
+      ]
+    },
+    {
+      "content": "The cluster and the storage account must be hosted in the same datacenter.",
+      "pos": [
+        8933,
+        9007
+      ]
+    },
+    {
+      "content": "The Hive metastore SQL Server database and Oozie metastore SQL Server database must also be located in the same datacenter.",
+      "pos": [
+        9008,
+        9131
+      ]
+    },
+    {
+      "content": "Wherever it lives, each blob you create belongs to a container in your Azure Storage account.",
+      "pos": [
+        9133,
+        9226
+      ]
+    },
+    {
+      "content": "This container may be an existing blob that was created outside of HDInsight, or it may be a container that is created for an HDInsight cluster.",
+      "pos": [
+        9227,
+        9371
+      ]
+    },
+    {
+      "content": "Don't share a default storage container with multiple HDInsight clusters.",
+      "pos": [
+        9373,
+        9446
+      ]
+    },
+    {
+      "content": "If you need to use a shared container to provide access to data for multiple HDInsight clusters then you should add it as an additional storage account in the cluster configuration.",
+      "pos": [
+        9447,
+        9628
+      ]
+    },
+    {
+      "content": "For more information, see <bpt id=\"p1\">[</bpt>Provision HDInsight clusters<ept id=\"p1\">][hdinsight-provision]</ept>.",
+      "pos": [
+        9629,
+        9707
+      ]
+    },
+    {
+      "content": "However you can reuse a default storage container after the original HDInsight cluster has been deleted.",
+      "pos": [
+        9708,
+        9812
+      ]
+    },
+    {
+      "content": "For HBase clusters, you can actually retain the HBase table schema and data by provision a new HBase cluster using the default blob storage container that is used by an HBase cluster that has been deleted.",
+      "pos": [
+        9813,
+        10018
+      ]
+    },
+    {
+      "content": "Using the Azure preview portal",
+      "pos": [
+        10025,
+        10055
+      ]
+    },
+    {
+      "content": "When provisioning an HDInsight cluster from the preview portal, you have the options to use an existing storage account or create a new storage account:",
+      "pos": [
+        10057,
+        10209
+      ]
+    },
+    {
+      "content": "hdinsight hadoop provision data source",
+      "pos": [
+        10213,
+        10251
+      ]
+    },
+    {
+      "content": "Using Azure CLI",
+      "pos": [
+        10336,
+        10351
+      ]
+    },
+    {
+      "pos": [
+        10353,
+        10493
+      ],
+      "content": "If you have <bpt id=\"p1\">[</bpt>installed and configured the Azure CLI<ept id=\"p1\">](../xplat-cli.md)</ept>, the following command can be used to a storage account and container."
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> The <ph id=\"ph2\">`--type`</ph> parameter indicates how the storage account will be replicated.",
+      "pos": [
+        10563,
+        10652
+      ]
+    },
+    {
+      "content": "For more information, see <bpt id=\"p1\">[</bpt>Azure Storage Replication<ept id=\"p1\">](../storage-redundancy.md)</ept>",
+      "pos": [
+        10653,
+        10732
+      ]
+    },
+    {
+      "content": "You will be prompted to specify the geographic region that the storage account will be located in.",
+      "pos": [
+        10734,
+        10832
+      ]
+    },
+    {
+      "content": "You should create the storage account in the same region that you plan on creating your HDInsight cluster.",
+      "pos": [
+        10833,
+        10939
+      ]
+    },
+    {
+      "content": "Once the storage account is created, use the following command to retrieve the storage account keys:",
+      "pos": [
+        10941,
+        11041
+      ]
+    },
+    {
+      "content": "To create a container, use the following command:",
+      "pos": [
+        11101,
+        11150
+      ]
+    },
+    {
+      "content": "Using Azure PowerShell",
+      "pos": [
+        11278,
+        11300
+      ]
+    },
+    {
+      "pos": [
+        11302,
+        11475
+      ],
+      "content": "If you <bpt id=\"p1\">[</bpt>installed and configured Azure PowerShell<ept id=\"p1\">][powershell-install]</ept>, you can use the following from the Azure PowerShell prompt to create a storage account and container:"
+    },
+    {
+      "pos": [
+        12335,
+        12387
+      ],
+      "content": "<ph id=\"ph1\">&lt;a id=\"addressing\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Address files in Blob storage"
+    },
+    {
+      "content": "The URI scheme for accessing files in Blob storage from HDInsight is:",
+      "pos": [
+        12389,
+        12458
+      ]
+    },
+    {
+      "pos": [
+        12555,
+        12715
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> The syntax for addressing the files on the storage emulator (running on HDInsight emulator) is <ph id=\"ph2\">&lt;i&gt;</ph>wasb://&amp;lt;ContainerName&amp;gt;@storageemulator<ph id=\"ph3\">&lt;/i&gt;</ph>."
+    },
+    {
+      "content": "The URI scheme provides unencrypted access (with the <bpt id=\"p1\">*</bpt>wasb:<ept id=\"p1\">*</ept> prefix) and SSL encrypted access (with <bpt id=\"p2\">*</bpt>wasbs<ept id=\"p2\">*</ept>).",
+      "pos": [
+        12719,
+        12828
+      ]
+    },
+    {
+      "content": "We recommend using <bpt id=\"p1\">*</bpt>wasbs<ept id=\"p1\">*</ept> wherever possible, even when accessing data that lives inside the same datacenter in Azure.",
+      "pos": [
+        12829,
+        12947
+      ]
+    },
+    {
+      "content": "The &amp;lt;BlobStorageContainerName&amp;gt; identifies the name of the container in Azure Blob storage.",
+      "pos": [
+        12949,
+        13045
+      ]
+    },
+    {
+      "content": "The &amp;lt;StorageAccountName&amp;gt; identifies the Azure Storage account name.",
+      "pos": [
+        13046,
+        13119
+      ]
+    },
+    {
+      "content": "A fully qualified domain name (FQDN) is required.",
+      "pos": [
+        13120,
+        13169
+      ]
+    },
+    {
+      "content": "If neither &amp;lt;BlobStorageContainerName&amp;gt; nor &amp;lt;StorageAccountName&amp;gt; has been specified, the default file system is used.",
+      "pos": [
+        13171,
+        13298
+      ]
+    },
+    {
+      "content": "For the files on the default file system, you can use a relative path or an absolute path.",
+      "pos": [
+        13299,
+        13389
+      ]
+    },
+    {
+      "content": "For example, the <bpt id=\"p1\">*</bpt>hadoop-mapreduce-examples.jar<ept id=\"p1\">*</ept> file that comes with HDInsight clusters can be referred to by using one of the following:",
+      "pos": [
+        13390,
+        13528
+      ]
+    },
+    {
+      "pos": [
+        13734,
+        13834
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> The file name is <ph id=\"ph2\">&lt;i&gt;</ph>hadoop-examples.jar<ph id=\"ph3\">&lt;/i&gt;</ph> in HDInsight versions 2.1 and 1.6 clusters."
+    },
+    {
+      "content": "The &amp;lt;path&amp;gt; is the file or directory HDFS path name.",
+      "pos": [
+        13837,
+        13894
+      ]
+    },
+    {
+      "content": "Because containers in Azure Blob storage are simply key-value stores, there is no true hierarchical file system.",
+      "pos": [
+        13895,
+        14007
+      ]
+    },
+    {
+      "content": "A slash character ( / ) inside a blob key is interpreted as a directory separator.",
+      "pos": [
+        14008,
+        14090
+      ]
+    },
+    {
+      "content": "For example, the blob name for <bpt id=\"p1\">*</bpt>hadoop-mapreduce-examples.jar<ept id=\"p1\">*</ept> is:",
+      "pos": [
+        14091,
+        14157
+      ]
+    },
+    {
+      "pos": [
+        14209,
+        14409
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> When working with blobs outside of HDInsight, most utilities do not recognize the WASB format and instead expect a basic path format, such as <ph id=\"ph2\">`example/jars/hadoop-mapreduce-examples.jar`</ph>."
+    },
+    {
+      "pos": [
+        14414,
+        14462
+      ],
+      "content": "<ph id=\"ph1\">&lt;a id=\"azurecli\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Access blobs with Azure CLI"
+    },
+    {
+      "content": "Use the following command to list the blob-related commands:",
+      "pos": [
+        14464,
+        14524
+      ]
+    },
+    {
+      "content": "Example of using Azure CLI to upload a file",
+      "pos": [
+        14552,
+        14595
+      ]
+    },
+    {
+      "content": "Example of using Azure CLI to download a file",
+      "pos": [
+        14746,
+        14791
+      ]
+    },
+    {
+      "content": "Example of using Azure CLI to delete a file",
+      "pos": [
+        14949,
+        14992
+      ]
+    },
+    {
+      "content": "Example of using Azure CLI to list files",
+      "pos": [
+        15126,
+        15166
+      ]
+    },
+    {
+      "pos": [
+        15306,
+        15363
+      ],
+      "content": "<ph id=\"ph1\">&lt;a id=\"powershell\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Access blobs with Azure PowerShell"
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> The commands in this section provide a basic example of using PowerShell to access data stored in blobs.",
+      "pos": [
+        15367,
+        15484
+      ]
+    },
+    {
+      "content": "For a more full-featured example that is customized for working with HDInsight, see the <bpt id=\"p1\">[</bpt>HDInsight Tools<ept id=\"p1\">](https://github.com/Blackmist/hdinsight-tools)</ept>.",
+      "pos": [
+        15485,
+        15637
+      ]
+    },
+    {
+      "content": "Use the following command to list the blob-related cmdlets:",
+      "pos": [
+        15639,
+        15698
+      ]
+    },
+    {
+      "content": "List of blob-related PowerShell cmdlets.",
+      "pos": [
+        15726,
+        15766
+      ]
+    },
+    {
+      "content": "Example of using Azure PowerShell to upload a file",
+      "pos": [
+        15805,
+        15855
+      ]
+    },
+    {
+      "pos": [
+        15859,
+        15913
+      ],
+      "content": "See <bpt id=\"p1\">[</bpt>Upload data to HDInsight<ept id=\"p1\">][hdinsight-upload-data]</ept>."
+    },
+    {
+      "content": "Example of using Azure PowerShell to download a file",
+      "pos": [
+        15917,
+        15969
+      ]
+    },
+    {
+      "content": "The following scrip downloads a block blob to the current folder.",
+      "pos": [
+        15973,
+        16038
+      ]
+    },
+    {
+      "content": "Before running the script, change the directory to a folder where you have write permissions.",
+      "pos": [
+        16039,
+        16132
+      ]
+    },
+    {
+      "content": "Example of using Azure PowerShell to delete a file",
+      "pos": [
+        17304,
+        17354
+      ]
+    },
+    {
+      "content": "The following script shows how to delete a file.",
+      "pos": [
+        17358,
+        17406
+      ]
+    },
+    {
+      "content": "Example of using Azure PowerShell to list files in a folder",
+      "pos": [
+        18477,
+        18536
+      ]
+    },
+    {
+      "content": "The following script shows how to list files inside a folder.",
+      "pos": [
+        18540,
+        18601
+      ]
+    },
+    {
+      "content": "(The next example shows how to use the <bpt id=\"p1\">**</bpt>Invoke-Hive<ept id=\"p1\">**</ept> cmdlet to execute the <bpt id=\"p2\">**</bpt>dfs ls<ept id=\"p2\">**</ept> command to list a folder.)",
+      "pos": [
+        18602,
+        18716
+      ]
+    },
+    {
+      "content": "Example of using Azure PowerShell to run a Hive query using an undefined storage account",
+      "pos": [
+        19737,
+        19825
+      ]
+    },
+    {
+      "content": "This example shows how to list a folder from storage account that is not defined during the provisioning process.",
+      "pos": [
+        19829,
+        19942
+      ]
+    },
+    {
+      "content": "$clusterName = \"",
+      "pos": [
+        19947,
+        19963
+      ]
+    },
+    {
+      "content": "\"",
+      "pos": [
+        19985,
+        19986
+      ]
+    },
+    {
+      "pos": [
+        20552,
+        20584
+      ],
+      "content": "<ph id=\"ph1\">&lt;a id=\"nextsteps\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Next steps"
+    },
+    {
+      "content": "In this article, you learned how to use HDFS-compatible Azure Blob storage with HDInsight, and you learned that Azure Blob storage is a fundamental component of HDInsight.",
+      "pos": [
+        20586,
+        20757
+      ]
+    },
+    {
+      "content": "This allows you to build scalable, long-term, archiving data acquisition solutions with Azure Blob storage and use HDInsight to unlock the information inside the stored  structured and unstructured data.",
+      "pos": [
+        20758,
+        20961
+      ]
+    },
+    {
+      "content": "For more information, see:",
+      "pos": [
+        20963,
+        20989
+      ]
+    },
+    {
+      "content": "Get Started with Azure HDInsight",
+      "pos": [
+        20994,
+        21026
+      ]
+    },
+    {
+      "content": "Upload data to HDInsight",
+      "pos": [
+        21054,
+        21078
+      ]
+    },
+    {
+      "content": "Use Hive with HDInsight",
+      "pos": [
+        21106,
+        21129
+      ]
+    },
+    {
+      "content": "Use Pig with HDInsight",
+      "pos": [
+        21154,
+        21176
+      ]
+    },
+    {
+      "content": "test",
+      "pos": [
+        21991,
+        21995
+      ]
+    }
+  ],
+  "content": "<properties\n    pageTitle=\"Query data from HDFS-compatible Blob storage | Microsoft Azure\"\n    description=\"HDInsight uses Blob storage as the big data store for HDFS. Learn how to query data from Blob storage and store results of your analysis.\"\n    keywords=\"blob storage,hdfs,structured data,unstructured data\"\n    services=\"hdinsight,storage\"\n    documentationCenter=\"\"\n    tags=\"azure-portal\"\n    authors=\"mumian\"\n    manager=\"paulettm\"\n    editor=\"cgronlun\"/>\n\n<tags\n    ms.service=\"hdinsight\"\n    ms.workload=\"big-data\"\n    ms.tgt_pltfrm=\"na\"\n    ms.devlang=\"na\"\n    ms.topic=\"article\"\n    ms.date=\"07/28/2015\"\n    ms.author=\"jgao\"/>\n\n\n# Use HDFS-compatible Azure Blob storage with Hadoop in HDInsight\n\nIn this tutorial, learn how to use low-cost Azure Blob storage with HDInsight, create Azure storage account and Blob storage container, and then address the data inside.\n\nAzure Blob storage is a robust, general-purpose storage solution that integrates seamlessly with HDInsight. Through a Hadoop distributed file system (HDFS) interface, the full set of components in HDInsight can operate directly on structured or unstructured data in Blob storage.\n\nStoring data in Blob storage enables you to safely delete the HDInsight clusters that are used for computation without losing user data.\n\n> [AZURE.NOTE]  The *asv://* syntax is not supported in HDInsight version 3.0 clusters. This means that any jobs submitted to an HDInsight version 3.0 cluster that explicitly use the *asv://* syntax will fail. The *wasb://* syntax should be used instead. Also, jobs submitted to any HDInsight version 3.0 clusters that are created with an existing metastore that contains explicit references to resources that use the asv:// syntax will fail. These metastores need to be re-created using the wasb:// syntax to address resources.\n\n> HDInsight currently only supports block blobs.\n\n> Most HDFS commands (for example, <b>ls</b>, <b>copyFromLocal</b> and <b>mkdir</b>) still work as expected. Only the commands that are specific to the native HDFS implementation (which is referred to as DFS), such as <b>fschk</b> and <b>dfsadmin</b>, will show different behavior in Azure Blob storage.\n\nFor information about provisioning an HDInsight cluster, see [Get Started with HDInsight][hdinsight-get-started] or [Provision HDInsight clusters][hdinsight-provision].\n\n\n## <a id=\"architecture\"></a>HDInsight storage architecture\nThe following diagram provides an abstract view of the HDInsight storage architecture:\n\n![Hadoop clusters use the HDFS API to access and store structured and unstructured data in Blob storage.](./media/hdinsight-hadoop-use-blob-storage/HDI.WASB.Arch.png \"HDInsight Storage Architecture\")\n\nHDInsight provides access to the distributed file system that is locally attached to the compute nodes. This file system can be accessed by using the fully qualified URI, for example:\n\n    hdfs://<namenodehost>/<path>\n\nIn addition, HDInsight provides the ability to access data that is stored in Azure Blob storage. The syntax is:\n\n    wasb[s]://<containername>@<accountname>.blob.core.windows.net/<path>\n\n\nHadoop supports a notion of the default file system. The default file system implies a default scheme and authority. It can also be used to resolve relative paths. During the HDInsight provisioning process, an Azure Storage account and a specific Azure Blob storage container from that account is designated as the default file system.\n\nIn addition to this storage account, you can add additional storage accounts from the same Azure subscription or different Azure subscriptions during the provisioning process. For instructions about adding additional storage accounts, see [Provision HDInsight clusters][hdinsight-provision].\n\n- **Containers in the storage accounts that are connected to a cluster:** Because the account name and key are associated with the cluster during provisioning, you have full access to the blobs in those containers.\n\n- **Public containers or public blobs in storage accounts that are NOT connected to a cluster:** You have read-only permission to the blobs in the containers.\n\n    > [AZURE.NOTE]\n        > Public containers allow you to get a list of all blobs that are available in that container and get container metadata. Public blobs allow you to access the blobs only if you know the exact URL. For more information, see <a href=\"http://msdn.microsoft.com/library/windowsazure/dd179354.aspx\">Restrict access to containers and blobs</a>.\n\n- **Private containers in storage accounts that are NOT connected to a cluster:** You can't access the blobs in the containers unless you define the storage account when you submit the WebHCat jobs. This is explained later in this article.\n\n\nThe storage accounts that are defined in the provisioning process and their keys are stored in %HADOOP_HOME%/conf/core-site.xml on the cluster nodes. The default behavior of HDInsight is to use the storage accounts defined in the core-site.xml file. It is not recommended to edit the core-site.xml file because the cluster head node(master) may be reimaged or migrated at any time, and any changes to those files will be lost.\n\nMultiple WebHCat jobs, including Hive, MapReduce, Hadoop streaming, and Pig, can carry a description of storage accounts and metadata with them. (This currently works for Pig with storage accounts, but not for metadata.) In the [Access blobs using Azure PowerShell](#powershell) section of this article, there is a sample of this feature. For more information, see [Using an HDInsight Cluster with Alternate Storage Accounts and Metastores](http://social.technet.microsoft.com/wiki/contents/articles/23256.using-an-hdinsight-cluster-with-alternate-storage-accounts-and-metastores.aspx).\n\nBlob storage can be used for structured and unstructured data. Blob storage containers store data as key/value pairs, and there is no directory hierarchy. However the slash character ( / ) can be used within the key name to make it appear as if a file is stored within a directory structure. For example, a blob's key may be *input/log1.txt*. No actual *input* directory exists, but due to the presence of the slash character in the key name, it has the appearance of a file path.\n\n###<a id=\"benefits\"></a>Benefits of Blob storage\nThe implied performance cost of not co-locating compute clusters and storage resources is mitigated by the way the compute clusters are provisioned close to the storage account resources inside the Azure datacenter, where the high-speed network makes it very efficient for the compute nodes to access the data inside Azure Blob storage.\n\nThere are several benefits associated with storing the data in Azure Blob storage instead of HDFS:\n\n* **Data reuse and sharing:** The data in HDFS is located inside the compute cluster. Only the applications that have access to the compute cluster can use the data by using HDFS APIs. The data in Azure Blob storage can be accessed either through the HDFS APIs or through the [Blob Storage REST APIs][blob-storage-restAPI]. Thus, a larger set of applications (including other HDInsight clusters) and tools can be used to produce and consume the data.\n* **Data archiving:** Storing data in Azure Blob storage enables the HDInsight clusters used for computation to be safely deleted without losing user data.\n* **Data storage cost:** Storing data in DFS for the long term is more costly than storing the data in Azure Blob storage because the cost of a compute cluster is higher than the cost of an Azure Blob storage container. In addition, because the data does not have to be reloaded for every compute cluster generation, you are also saving data loading costs.\n* **Elastic scale-out:** Although HDFS provides you with a scaled-out file system, the scale is determined by the number of nodes that you provision for your cluster. Changing the scale can become a more complicated process than relying on the elastic scaling capabilities that you get automatically in Azure  Blob storage.\n* **Geo-replication:** Your Azure Blob storage containers can be geo-replicated. Although this gives you geographic recovery and data redundancy, a failover to the geo-replicated location severely impacts your performance, and it may incur additional costs. So our recommendation is to choose the geo-replication wisely and only if the value of the data is worth the additional cost.\n\nCertain MapReduce jobs and packages may create intermediate results that you don't really want to store in Azure Blob storage. In that case, you can elect to store the data in the local HDFS. In fact, HDInsight uses DFS for several of these intermediate results in Hive jobs and other processes.\n\n\n\n## <a id=\"preparingblobstorage\"></a>Create a blob container\n\nTo use blobs, you first create an [Azure Storage account][azure-storage-create]. As part of this, you specify an Azure datacenter that will store the objects you create using this account. The cluster and the storage account must be hosted in the same datacenter. The Hive metastore SQL Server database and Oozie metastore SQL Server database must also be located in the same datacenter.\n\nWherever it lives, each blob you create belongs to a container in your Azure Storage account. This container may be an existing blob that was created outside of HDInsight, or it may be a container that is created for an HDInsight cluster.\n\nDon't share a default storage container with multiple HDInsight clusters. If you need to use a shared container to provide access to data for multiple HDInsight clusters then you should add it as an additional storage account in the cluster configuration. For more information, see [Provision HDInsight clusters][hdinsight-provision]. However you can reuse a default storage container after the original HDInsight cluster has been deleted. For HBase clusters, you can actually retain the HBase table schema and data by provision a new HBase cluster using the default blob storage container that is used by an HBase cluster that has been deleted.\n\n\n### Using the Azure preview portal\n\nWhen provisioning an HDInsight cluster from the preview portal, you have the options to use an existing storage account or create a new storage account:\n\n![hdinsight hadoop provision data source](./media/hdinsight-hadoop-use-blob-storage/hdinsight.provision.data.source.png)\n\n###Using Azure CLI\n\nIf you have [installed and configured the Azure CLI](../xplat-cli.md), the following command can be used to a storage account and container.\n\n    azure storage account create <storageaccountname> --type LRS\n\n> [AZURE.NOTE] The `--type` parameter indicates how the storage account will be replicated. For more information, see [Azure Storage Replication](../storage-redundancy.md)\n\nYou will be prompted to specify the geographic region that the storage account will be located in. You should create the storage account in the same region that you plan on creating your HDInsight cluster.\n\nOnce the storage account is created, use the following command to retrieve the storage account keys:\n\n    azure storage account keys list <storageaccountname>\n\nTo create a container, use the following command:\n\n    azure storage container create <containername> --account-name <storageaccountname> --account-key <storageaccountkey>\n\n### Using Azure PowerShell\n\nIf you [installed and configured Azure PowerShell][powershell-install], you can use the following from the Azure PowerShell prompt to create a storage account and container:\n\n    $subscriptionName = \"<SubscriptionName>\"    # Azure subscription name\n    $storageAccountName = \"<AzureStorageAccountName>\" # The storage account that you will create\n    $containerName=\"<BlobContainerToBeCreated>\" # The Blob container name that you will create\n\n    # Connect to your Azure account and selec the current subscription\n    Add-AzureAccount # The connection will expire in 12 hours.\n    Select-AzureSubscription $subscriptionName #only required if you have multiple subscriptions\n\n    # Create a storage context object\n    $storageAccountkey = get-azurestoragekey $storageAccountName | %{$_.Primary}\n    $destContext = New-AzureStorageContext -StorageAccountName $storageAccountName -StorageAccountKey $storageAccountKey  \n\n    # Create a Blob storage container\n    New-AzureStorageContainer -Name $containerName -Context $destContext\n\n\n## <a id=\"addressing\"></a>Address files in Blob storage\n\nThe URI scheme for accessing files in Blob storage from HDInsight is:\n\n    wasb[s]://<BlobStorageContainerName>@<StorageAccountName>.blob.core.windows.net/<path>\n\n\n> [AZURE.NOTE] The syntax for addressing the files on the storage emulator (running on HDInsight emulator) is <i>wasb://&lt;ContainerName&gt;@storageemulator</i>.\n\n\n\nThe URI scheme provides unencrypted access (with the *wasb:* prefix) and SSL encrypted access (with *wasbs*). We recommend using *wasbs* wherever possible, even when accessing data that lives inside the same datacenter in Azure.\n\nThe &lt;BlobStorageContainerName&gt; identifies the name of the container in Azure Blob storage.\nThe &lt;StorageAccountName&gt; identifies the Azure Storage account name. A fully qualified domain name (FQDN) is required.\n\nIf neither &lt;BlobStorageContainerName&gt; nor &lt;StorageAccountName&gt; has been specified, the default file system is used. For the files on the default file system, you can use a relative path or an absolute path. For example, the *hadoop-mapreduce-examples.jar* file that comes with HDInsight clusters can be referred to by using one of the following:\n\n    wasb://mycontainer@myaccount.blob.core.windows.net/example/jars/hadoop-mapreduce-examples.jar\n    wasb:///example/jars/hadoop-mapreduce-examples.jar\n    /example/jars/hadoop-mapreduce-examples.jar\n\n> [AZURE.NOTE] The file name is <i>hadoop-examples.jar</i> in HDInsight versions 2.1 and 1.6 clusters.\n\n\nThe &lt;path&gt; is the file or directory HDFS path name. Because containers in Azure Blob storage are simply key-value stores, there is no true hierarchical file system. A slash character ( / ) inside a blob key is interpreted as a directory separator. For example, the blob name for *hadoop-mapreduce-examples.jar* is:\n\n    example/jars/hadoop-mapreduce-examples.jar\n\n> [AZURE.NOTE] When working with blobs outside of HDInsight, most utilities do not recognize the WASB format and instead expect a basic path format, such as `example/jars/hadoop-mapreduce-examples.jar`.\n\n## <a id=\"azurecli\"></a>Access blobs with Azure CLI\n\nUse the following command to list the blob-related commands:\n\n    azure storage blob\n\n**Example of using Azure CLI to upload a file**\n\n    azure storage blob upload <sourcefilename> <containername> <blobname> --account-name <storageaccountname> --account-key <storageaccountkey>\n\n**Example of using Azure CLI to download a file**\n\n    azure storage blob download <containername> <blobname> <destinationfilename> --account-name <storageaccountname> --account-key <storageaccountkey>\n\n**Example of using Azure CLI to delete a file**\n\n    azure storage blob delete <containername> <blobname> --account-name <storageaccountname> --account-key <storageaccountkey>\n\n**Example of using Azure CLI to list files**\n\n    azure storage blob list <containername> <blobname|prefix> --account-name <storageaccountname> --account-key <storageaccountkey>\n\n## <a id=\"powershell\"></a>Access blobs with Azure PowerShell\n\n> [AZURE.NOTE] The commands in this section provide a basic example of using PowerShell to access data stored in blobs. For a more full-featured example that is customized for working with HDInsight, see the [HDInsight Tools](https://github.com/Blackmist/hdinsight-tools).\n\nUse the following command to list the blob-related cmdlets:\n\n    Get-Command *blob*\n\n![List of blob-related PowerShell cmdlets.][img-hdi-powershell-blobcommands]\n\n\n**Example of using Azure PowerShell to upload a file**\n\nSee [Upload data to HDInsight][hdinsight-upload-data].\n\n**Example of using Azure PowerShell to download a file**\n\nThe following scrip downloads a block blob to the current folder. Before running the script, change the directory to a folder where you have write permissions.\n\n\n    $storageAccountName = \"<AzureStorageAccountName>\"   # The storage account used for the default file system specified at provision.\n    $containerName = \"<BlobStorageContainerName>\"  # The default file system container has the same name as the cluster.\n    $blob = \"example/data/sample.log\" # The name of the blob to be downloaded.\n\n    # Use Add-AzureAccount if you haven't connected to your Azure subscription\n    #Add-AzureAccount # The connection is good for 12 hours\n\n    # Use these two commands if you have multiple subscriptions\n    #$subscriptionName = \"<SubscriptionName>\"\n    #Select-AzureSubscription $subscriptionName\n\n    Write-Host \"Create a context object ... \" -ForegroundColor Green\n    $storageAccountKey = Get-AzureStorageKey $storageAccountName | %{ $_.Primary }\n    $storageContext = New-AzureStorageContext -StorageAccountName $storageAccountName -StorageAccountKey $storageAccountKey  \n\n    Write-Host \"Download the blob ...\" -ForegroundColor Green\n    Get-AzureStorageBlobContent -Container $ContainerName -Blob $blob -Context $storageContext -Force\n\n    Write-Host \"List the downloaded file ...\" -ForegroundColor Green\n    cat \"./$blob\"\n\n**Example of using Azure PowerShell to delete a file**\n\nThe following script shows how to delete a file.\n\n    $storageAccountName = \"<AzureStorageAccountName>\"   # The storage account used for the default file system specified at provision.\n    $containerName = \"<BlobStorageContainerName>\"  # The default file system container has the same name as the cluster.\n    $blob = \"example/data/sample.log\" # The name of the blob to be downloaded.\n\n    # Use Add-AzureAccount if you haven't connected to your Azure subscription\n    #Add-AzureAccount # The connection is good for 12 hours\n\n    # Use these two commands if you have multiple subscriptions\n    #$subscriptionName = \"<SubscriptionName>\"\n    #Select-AzureSubscription $subscriptionName\n\n    Write-Host \"Create a context object ... \" -ForegroundColor Green\n    $storageAccountKey = Get-AzureStorageKey $storageAccountName | %{ $_.Primary }\n    $storageContext = New-AzureStorageContext -StorageAccountName $storageAccountName -StorageAccountKey $storageAccountKey  \n\n    Write-Host \"Delete the blob ...\" -ForegroundColor Green\n    Remove-AzureStorageBlob -Container $containerName -Context $storageContext -blob $blob\n\n\n**Example of using Azure PowerShell to list files in a folder**\n\nThe following script shows how to list files inside a folder. (The next example shows how to use the **Invoke-Hive** cmdlet to execute the **dfs ls** command to list a folder.)\n\n    $storageAccountName = \"<AzureStorageAccountName>\"   # The storage account used for the default file system specified at provision.\n    $containerName = \"<BlobStorageContainerName>\"  # The default file system container has the same name as the cluster.\n    $blobPrefix = \"example/data/\"\n\n    # Use Add-AzureAccount if you haven't connected to your Azure subscription\n    #Add-AzureAccount # The connection is good for 12 hours\n\n    # Use these two commands if you have multiple subscriptions\n    #$subscriptionName = \"<SubscriptionName>\"\n    #Select-AzureSubscription $subscriptionName\n\n    Write-Host \"Create a context object ... \" -ForegroundColor Green\n    $storageAccountKey = Get-AzureStorageKey $storageAccountName | %{ $_.Primary }\n    $storageContext = New-AzureStorageContext -StorageAccountName $storageAccountName -StorageAccountKey $storageAccountKey  \n\n    Write-Host \"List the files in $blobPrefix ...\"\n    Get-AzureStorageBlob -Container $containerName -Context $storageContext -prefix $blobPrefix\n\n**Example of using Azure PowerShell to run a Hive query using an undefined storage account**\n\nThis example shows how to list a folder from storage account that is not defined during the provisioning process.\n    $clusterName = \"<HDInsightClusterName>\"\n\n    $undefinedStorageAccount = \"<UnboundedStorageAccountUnderTheSameSubscription>\"\n    $undefinedContainer = \"<UnboundedBlobContainerAssociatedWithTheStorageAccount>\"\n\n    $undefinedStorageKey = Get-AzureStorageKey $undefinedStorageAccount | %{ $_.Primary }\n\n    Use-AzureHDInsightCluster $clusterName\n\n    $defines = @{}\n    $defines.Add(\"fs.azure.account.key.$undefinedStorageAccount.blob.core.windows.net\", $undefinedStorageKey)\n\n    Invoke-Hive -Defines $defines -Query \"dfs -ls wasb://$undefinedContainer@$undefinedStorageAccount.blob.core.windows.net/;\"\n\n## <a id=\"nextsteps\"></a>Next steps\n\nIn this article, you learned how to use HDFS-compatible Azure Blob storage with HDInsight, and you learned that Azure Blob storage is a fundamental component of HDInsight. This allows you to build scalable, long-term, archiving data acquisition solutions with Azure Blob storage and use HDInsight to unlock the information inside the stored  structured and unstructured data.\n\nFor more information, see:\n\n* [Get Started with Azure HDInsight][hdinsight-get-started]\n* [Upload data to HDInsight][hdinsight-upload-data]\n* [Use Hive with HDInsight][hdinsight-use-hive]\n* [Use Pig with HDInsight][hdinsight-use-pig]\n\n[powershell-install]: ../install-configure-powershell.md\n[hdinsight-provision]: hdinsight-provision-clusters.md\n[hdinsight-get-started]: hdinsight-hadoop-tutorial-get-started-windows.md\n[hdinsight-upload-data]: hdinsight-upload-data.md\n[hdinsight-use-hive]: hdinsight-use-hive.md\n[hdinsight-use-pig]: hdinsight-use-pig.md\n\n[blob-storage-restAPI]: http://msdn.microsoft.com/library/windowsazure/dd135733.aspx\n[azure-storage-create]: ../storage-create-storage-account.md\n\n[img-hdi-powershell-blobcommands]: ./media/hdinsight-hadoop-use-blob-storage/HDI.PowerShell.BlobCommands.png\n[img-hdi-quick-create]: ./media/hdinsight-hadoop-use-blob-storage/HDI.QuickCreateCluster.png\n[img-hdi-custom-create-storage-account]: ./media/hdinsight-hadoop-use-blob-storage/HDI.CustomCreateStorageAccount.png  \n\ntest\n"
+}

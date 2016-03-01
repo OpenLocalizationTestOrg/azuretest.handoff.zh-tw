@@ -1,0 +1,922 @@
+{
+  "nodes": [
+    {
+      "content": "Connect Azure Search with ASP.NET Web Apps | Microsoft Azure",
+      "pos": [
+        27,
+        87
+      ]
+    },
+    {
+      "content": "Hook up an ASP.NET Web app with Azure Search.",
+      "pos": [
+        106,
+        151
+      ]
+    },
+    {
+      "content": "Learn how to connect, query, and render results using the .Net library or REST API.",
+      "pos": [
+        152,
+        235
+      ]
+    },
+    {
+      "content": "How to integrate Azure Search with ASP.NET Web Apps",
+      "pos": [
+        537,
+        588
+      ]
+    },
+    {
+      "content": "ASP.NET is the predominant web application framework in custom solutions that integrate with Azure Search.",
+      "pos": [
+        590,
+        696
+      ]
+    },
+    {
+      "content": "In this article, you’ll learn how to connect your ASP.NET web app to Azure Search, ramp up on design patterns for common operations, and review a few coding practices that could help your development experience go more smoothly.",
+      "pos": [
+        697,
+        925
+      ]
+    },
+    {
+      "content": "Organize your code",
+      "pos": [
+        930,
+        948
+      ]
+    },
+    {
+      "content": "Splitting your workloads up into standalone projects within the same Visual Studio solution gives you more flexibility in how you design, maintain, and run each program.",
+      "pos": [
+        950,
+        1119
+      ]
+    },
+    {
+      "content": "We recommend three:",
+      "pos": [
+        1120,
+        1139
+      ]
+    },
+    {
+      "content": "Index creation code",
+      "pos": [
+        1143,
+        1162
+      ]
+    },
+    {
+      "content": "Data ingestion code",
+      "pos": [
+        1165,
+        1184
+      ]
+    },
+    {
+      "content": "User interaction code",
+      "pos": [
+        1187,
+        1208
+      ]
+    },
+    {
+      "content": "In Azure Search, indexing operations and document operations – such as adding or updating documents, or executing queries – are fully independent of each other.",
+      "pos": [
+        1210,
+        1370
+      ]
+    },
+    {
+      "content": "This means you can decouple index management from your ASP.NET user interaction code that formulates search requests and renders the results.",
+      "pos": [
+        1371,
+        1512
+      ]
+    },
+    {
+      "content": "In most of our code samples, the index is both created and loaded in one project (referred to as DataIndexer, CatalogIndexer, or DataCatalog in various samples), while the code that handles search requests and responses is placed in an ASP.NET MVC application project.",
+      "pos": [
+        1514,
+        1782
+      ]
+    },
+    {
+      "content": "In code samples, its practical to bundle index creation and document upload in one project, but production code would probably isolate these operations.",
+      "pos": [
+        1783,
+        1935
+      ]
+    },
+    {
+      "content": "Once an index is created, it’s rarely changed (and if it does change, it needs to be rebuilt), whereas documents are likely to be refreshed on a recurring basis.",
+      "pos": [
+        1936,
+        2097
+      ]
+    },
+    {
+      "content": "Separating the workloads provides other advantages in the form of different levels of permissions for Azure Search (full admin rights versus query-only rights), use of different programming languages, more specific dependencies per program, plus the ability to revise programs independently or create multiple front-end applications that all operate on the index built and maintained by a central indexing application.",
+      "pos": [
+        2099,
+        2517
+      ]
+    },
+    {
+      "content": "Samples and demos using ASP.NET and Azure Search",
+      "pos": [
+        2521,
+        2569
+      ]
+    },
+    {
+      "content": "Several code samples already exist that show how Search integrates with ASP.NET.",
+      "pos": [
+        2571,
+        2651
+      ]
+    },
+    {
+      "content": "You can go straight to code or a demo app by visiting any of these links:",
+      "pos": [
+        2652,
+        2725
+      ]
+    },
+    {
+      "content": "New York City (NYC) jobs demo site",
+      "pos": [
+        2730,
+        2764
+      ]
+    },
+    {
+      "content": "Try App Service + Azure Search",
+      "pos": [
+        2795,
+        2825
+      ]
+    },
+    {
+      "content": "Complete list of videos, tutorials, demos, and code samples",
+      "pos": [
+        2855,
+        2914
+      ]
+    },
+    {
+      "content": "Connect to the service",
+      "pos": [
+        2954,
+        2976
+      ]
+    },
+    {
+      "content": "To establish a connection to the service and issue requests, your Web application only needs three things:",
+      "pos": [
+        2978,
+        3084
+      ]
+    },
+    {
+      "content": "A URL to the Azure Search service you’ve provisioned, formatted as https://&lt;service-name&gt;.search.windows.net",
+      "pos": [
+        3089,
+        3197
+      ]
+    },
+    {
+      "content": "An API key (GUID) that authenticates the connection to Azure Search",
+      "pos": [
+        3200,
+        3267
+      ]
+    },
+    {
+      "content": "An HTTPClient or SearchServiceClient to formulate the connection request",
+      "pos": [
+        3270,
+        3342
+      ]
+    },
+    {
+      "content": "URLs and API Keys",
+      "pos": [
+        3348,
+        3365
+      ]
+    },
+    {
+      "pos": [
+        3367,
+        3565
+      ],
+      "content": "You can find the URL and API key in the <bpt id=\"p1\">[</bpt>portal<ept id=\"p1\">](search-create-service-portal.md)</ept> or retrieve them programmatically using the <bpt id=\"p2\">[</bpt>Management REST API<ept id=\"p2\">](https://msdn.microsoft.com/library/dn832684.aspx)</ept>."
+    },
+    {
+      "content": "Typically, both URL and key are placed in the web.config file of your user interaction program:",
+      "pos": [
+        3568,
+        3663
+      ]
+    },
+    {
+      "content": "The Search service name can be the short name you specified during provisioning as long as you append the domain (search.windows.net) on the connection, or you could specify the fully qualified name (&lt;service-name&gt;.search.windows.net) in web.config, without the HTTPS prefix.",
+      "pos": [
+        3851,
+        4126
+      ]
+    },
+    {
+      "content": "The API key is an authentication token generated during service provisioning (admin keys only) or generated by hand if you are creating query keys in the portal.",
+      "pos": [
+        4128,
+        4289
+      ]
+    },
+    {
+      "content": "The type of key determines which search operations are available to your application:",
+      "pos": [
+        4290,
+        4375
+      ]
+    },
+    {
+      "content": "admin keys (read-write permissions, 2 per service)",
+      "pos": [
+        4379,
+        4429
+      ]
+    },
+    {
+      "content": "query keys (read-only, up to 50 per service)",
+      "pos": [
+        4432,
+        4476
+      ]
+    },
+    {
+      "content": "All API keys are GUIDs.",
+      "pos": [
+        4478,
+        4501
+      ]
+    },
+    {
+      "content": "Visually, there is no distinction between admin and query keys.",
+      "pos": [
+        4502,
+        4565
+      ]
+    },
+    {
+      "content": "You would need to check the portal or use the Management REST API to determine the type of key.",
+      "pos": [
+        4566,
+        4661
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.TIP]</ph> A query key delivers a read-only experience to the client.",
+      "pos": [
+        4665,
+        4735
+      ]
+    },
+    {
+      "content": "See the <bpt id=\"p1\">[</bpt>TryAppService + Azure Search<ept id=\"p1\">](search-tryappservice.md)</ept> to test-drive the Azure Search operations that are available in a read-only service.",
+      "pos": [
+        4736,
+        4884
+      ]
+    },
+    {
+      "content": "Note that in TryAppService, the Web app code is fully modifiable – you can change any of the C# code in the ASP.NET project to modify web page layout, search query construction, or search results—it’s just the Azure Search service index and document load operations that are read-only, per the inclusion of a query api-key on the service connection.",
+      "pos": [
+        4885,
+        5234
+      ]
+    },
+    {
+      "content": "Client Connection",
+      "pos": [
+        5240,
+        5257
+      ]
+    },
+    {
+      "content": "The next two code snippets set up a connection to the Search service using the URL and API key.",
+      "pos": [
+        5259,
+        5354
+      ]
+    },
+    {
+      "content": "Recall that the service name and API keys are specified in web.config file.",
+      "pos": [
+        5355,
+        5430
+      ]
+    },
+    {
+      "content": "For REST calls, admin keys must be passed in the request header, while query keys could be passed in the header or directly in the URL.",
+      "pos": [
+        5431,
+        5566
+      ]
+    },
+    {
+      "pos": [
+        5570,
+        5670
+      ],
+      "content": "<bpt id=\"p1\">[</bpt>HttpClient<ept id=\"p1\">](https://msdn.microsoft.com/library/system.net.http.httpclient.aspx)</ept> with REST API calls"
+    },
+    {
+      "pos": [
+        6364,
+        6485
+      ],
+      "content": "<bpt id=\"p1\">[</bpt>SearchServiceClient<ept id=\"p1\">](https://msdn.microsoft.com/library/azure/microsoft.azure.search.searchserviceclient.aspx)</ept> with .NET"
+    },
+    {
+      "content": "Design patterns",
+      "pos": [
+        7109,
+        7124
+      ]
+    },
+    {
+      "content": "A Web app that integrates with Azure Search will need to formulate queries and render the results.",
+      "pos": [
+        7126,
+        7224
+      ]
+    },
+    {
+      "content": "This section provides guidance on how to structure code for tasks executed in a program that contains user interaction code.",
+      "pos": [
+        7225,
+        7349
+      ]
+    },
+    {
+      "content": "Schema definition, index generation, and data ingestion are purposely excluded.",
+      "pos": [
+        7350,
+        7429
+      ]
+    },
+    {
+      "content": "For guidance on how to code those operations, see the walkthroughs and samples listed in <bpt id=\"p1\">[</bpt>Videos, samples, and tutorials in Azure Search<ept id=\"p1\">](search-video-demo-tutorial-list.md)</ept>.",
+      "pos": [
+        7430,
+        7604
+      ]
+    },
+    {
+      "content": "Query formulation",
+      "pos": [
+        7610,
+        7627
+      ]
+    },
+    {
+      "content": "A full-text search over your index is executed on fields marked as <bpt id=\"p1\">**</bpt>isSearchable<ept id=\"p1\">**</ept> in the schema that defines the index.",
+      "pos": [
+        7629,
+        7750
+      ]
+    },
+    {
+      "content": "Given a search term input (represented below by string \"q\"), the search engine looks for a match inside all searchable fields, and returns results from fields marked as <bpt id=\"p1\">**</bpt>isRetrievable<ept id=\"p1\">**</ept>.",
+      "pos": [
+        7751,
+        7938
+      ]
+    },
+    {
+      "pos": [
+        7943,
+        8216
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> While most fields are likely to be searchable, an index could contain fields used only in filter expressions, in which case you would mark them as non-searchable to exclude them from full-text search and non-retrievable to exclude them from the search results."
+    },
+    {
+      "content": "A search query wraps the input term provided by the user into a Search request that specifies the target index, plus parameters used to filter or refine the request.",
+      "pos": [
+        8219,
+        8384
+      ]
+    },
+    {
+      "content": "Operators embedded within the search string, such as +, - or |, are handled automatically, which means there are no coding requirements for parsing a search term.",
+      "pos": [
+        8385,
+        8547
+      ]
+    },
+    {
+      "content": "Any parsing is done by the search engine, as an internal operation.",
+      "pos": [
+        8548,
+        8615
+      ]
+    },
+    {
+      "content": "You can assume that the string you pass in will be parsed and analyzed by the engine.",
+      "pos": [
+        8616,
+        8701
+      ]
+    },
+    {
+      "content": "A search query comes in two flavors: <bpt id=\"p1\">**</bpt>Search<ept id=\"p1\">**</ept> or <bpt id=\"p2\">**</bpt>Suggestions<ept id=\"p2\">**</ept>.",
+      "pos": [
+        8703,
+        8770
+      ]
+    },
+    {
+      "content": "You would define separate methods for each type of query.",
+      "pos": [
+        8771,
+        8828
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Search<ept id=\"p1\">**</ept> is full-text search over fields in your index.",
+      "pos": [
+        8829,
+        8886
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Suggestions<ept id=\"p1\">**</ept> is the type-ahead or auto-complete query feature in Azure Search that builds a list of potential search terms based on the first three characters of user input.",
+      "pos": [
+        8887,
+        9063
+      ]
+    },
+    {
+      "content": "In most cases, you would constrain <bpt id=\"p1\">**</bpt>Suggestions<ept id=\"p1\">**</ept> to just those fields that contain relatively unique or distinctive values (like a product or publication name), as opposed to a fields that contain undifferentiated data.",
+      "pos": [
+        9064,
+        9285
+      ]
+    },
+    {
+      "content": "The following code snippet captures a search term input in a program that uses the REST API.",
+      "pos": [
+        9287,
+        9379
+      ]
+    },
+    {
+      "content": "The input term is represented by string q, and the remaining parameters are used to pass in filter values from a faceted navigation structure on the same search page.",
+      "pos": [
+        9380,
+        9546
+      ]
+    },
+    {
+      "content": "Both the input term and filter parameters are used in the Search method.",
+      "pos": [
+        9547,
+        9619
+      ]
+    },
+    {
+      "content": "The <bpt id=\"p1\">**</bpt>Search<ept id=\"p1\">**</ept> method that accepts this query is defined as follows.",
+      "pos": [
+        10346,
+        10414
+      ]
+    },
+    {
+      "content": "Notice that it defines the parameters on the query string, plus the faceted navigation structure (supported through filters that do the heavy lifting on narrowing search results), and sort order.",
+      "pos": [
+        10415,
+        10610
+      ]
+    },
+    {
+      "content": "A .NET method that constructs a search string could be placed in an MVC view or in a controller.",
+      "pos": [
+        11534,
+        11630
+      ]
+    },
+    {
+      "content": "This function passes the string to the Home controller.",
+      "pos": [
+        11631,
+        11686
+      ]
+    },
+    {
+      "content": "It also defines a data structure for the results.",
+      "pos": [
+        11687,
+        11736
+      ]
+    },
+    {
+      "pos": [
+        13431,
+        13574
+      ],
+      "content": "A .NET method for invoking <bpt id=\"p1\">**</bpt>Search<ept id=\"p1\">**</ept> might look like this, contained in the main C# program that provides the connection and search operation:"
+    },
+    {
+      "content": "Handling search results",
+      "pos": [
+        14063,
+        14086
+      ]
+    },
+    {
+      "content": "Search results are returned as a rowset composed of fields that are marked in the index schema as isRetrievable.",
+      "pos": [
+        14088,
+        14200
+      ]
+    },
+    {
+      "content": "One of the simpler ways to render a result set is by using the ViewBag system object in MVC.",
+      "pos": [
+        14201,
+        14293
+      ]
+    },
+    {
+      "content": "The following code snippet is from Index.cshtml in the <bpt id=\"p1\">[</bpt>AdventureWorksDemo project on CodePlex<ept id=\"p1\">](https://azuresearchadventureworksdemo.codeplex.com/)</ept>.",
+      "pos": [
+        14294,
+        14443
+      ]
+    },
+    {
+      "content": "Faceted navigation",
+      "pos": [
+        15377,
+        15395
+      ]
+    },
+    {
+      "content": "In the same Index.cshmtl file, you can find the HTML used to build a faceted navigation structure that provides classifications for self-directed filtering, progressively narrowing search results by color, price or category.",
+      "pos": [
+        15397,
+        15621
+      ]
+    },
+    {
+      "content": "Hit highlighting",
+      "pos": [
+        18652,
+        18668
+      ]
+    },
+    {
+      "content": "Applying a style to the instance of the search term in a search result is called hit highlighting.",
+      "pos": [
+        18670,
+        18768
+      ]
+    },
+    {
+      "content": "In Azure Search, hit highlights are specified in the query, via the highlight search parameter, to which you give a comma-delimited list of fields to scan for matching terms.",
+      "pos": [
+        18769,
+        18943
+      ]
+    },
+    {
+      "content": "The actual style you apply is up to you.",
+      "pos": [
+        18944,
+        18984
+      ]
+    },
+    {
+      "content": "The following three code snippets are from the <bpt id=\"p1\">[</bpt>TryAppService + Azure Search tutorial<ept id=\"p1\">](search-tryappservice.md)</ept>.",
+      "pos": [
+        18985,
+        19097
+      ]
+    },
+    {
+      "content": "First, specify hit highlights as a search parameter and list the fields to check for matching terms.",
+      "pos": [
+        19099,
+        19199
+      ]
+    },
+    {
+      "content": "Specify the HTML style to use on hit highlight.",
+      "pos": [
+        19200,
+        19247
+      ]
+    },
+    {
+      "content": "Next, iterate through the search results to find the string that needs to be highlighted.",
+      "pos": [
+        19745,
+        19834
+      ]
+    },
+    {
+      "content": "private HtmlString RenderHitHighlightedString(SearchResult item, string fieldName)",
+      "pos": [
+        19835,
+        19917
+      ]
+    },
+    {
+      "content": "Last, provide the layout of the search results, specifying the result set that was evaluated in the previous snippet.",
+      "pos": [
+        20248,
+        20365
+      ]
+    },
+    {
+      "content": "Common coding practices",
+      "pos": [
+        21131,
+        21154
+      ]
+    },
+    {
+      "content": "New to MVC, .NET programming, or REST APIs?",
+      "pos": [
+        21156,
+        21199
+      ]
+    },
+    {
+      "content": "These sections offer a few coding practices to help you get up to speed.",
+      "pos": [
+        21201,
+        21273
+      ]
+    },
+    {
+      "content": "MVC template",
+      "pos": [
+        21278,
+        21290
+      ]
+    },
+    {
+      "content": "The following table summarizes how MVC template components are used in applications that include Azure Search.",
+      "pos": [
+        21292,
+        21402
+      ]
+    },
+    {
+      "content": "If you’re using MVC 4 or MVC 5, code that integrates Azure Search will generally be added to these modules",
+      "pos": [
+        21403,
+        21509
+      ]
+    },
+    {
+      "content": "File",
+      "pos": [
+        21511,
+        21515
+      ]
+    },
+    {
+      "content": "Description",
+      "pos": [
+        21516,
+        21527
+      ]
+    },
+    {
+      "content": "Web.config",
+      "pos": [
+        21545,
+        21555
+      ]
+    },
+    {
+      "content": "Provide the service URL and api-key.",
+      "pos": [
+        21556,
+        21592
+      ]
+    },
+    {
+      "content": "Add a reference to System.Configuration in your main program module to read the values.",
+      "pos": [
+        21593,
+        21680
+      ]
+    },
+    {
+      "content": "Program.cs",
+      "pos": [
+        21681,
+        21691
+      ]
+    },
+    {
+      "content": "In the main program, set up an HttpClient or SearchServiceClient to establish a connection to the service.",
+      "pos": [
+        21692,
+        21798
+      ]
+    },
+    {
+      "content": "Add the Search method to this program.",
+      "pos": [
+        21799,
+        21837
+      ]
+    },
+    {
+      "content": "DataModel",
+      "pos": [
+        21838,
+        21847
+      ]
+    },
+    {
+      "content": "Not used.",
+      "pos": [
+        21848,
+        21857
+      ]
+    },
+    {
+      "content": "Assuming that index creation and data load operations are in different programs, no data model is required for Azure Search in your web application.",
+      "pos": [
+        21858,
+        22006
+      ]
+    },
+    {
+      "content": "Views",
+      "pos": [
+        22007,
+        22012
+      ]
+    },
+    {
+      "content": "A view contains the HTML for the application web page, from search box input to dynamic HTML for handling search results.",
+      "pos": [
+        22013,
+        22134
+      ]
+    },
+    {
+      "content": "Controllers",
+      "pos": [
+        22135,
+        22146
+      ]
+    },
+    {
+      "content": "Query construction and error handling is typically found in the HomeContoller.cs.",
+      "pos": [
+        22147,
+        22228
+      ]
+    },
+    {
+      "content": "At a minimum, the controller should include a search method that retrieves results from Azure Search and forwards the result set to the view.",
+      "pos": [
+        22229,
+        22370
+      ]
+    },
+    {
+      "content": "Optionally, if you are using suggestions for auto-complete queries, you would include a method that returns suggested queries, depending on whether your index contains a matching value to the search term input provided by the user.",
+      "pos": [
+        22373,
+        22604
+      ]
+    },
+    {
+      "content": "When to use the .NET client library vs. REST API",
+      "pos": [
+        22609,
+        22657
+      ]
+    },
+    {
+      "content": "For ASP.NET applications, the .NET client library is considered a better choice because it sets up the HTTP connection and handles JSON serialization and deserialization for you, which simplifies your code.",
+      "pos": [
+        22659,
+        22865
+      ]
+    },
+    {
+      "content": "In some cases, your choice of API might be dictated by feature parity between the two approaches.",
+      "pos": [
+        22867,
+        22964
+      ]
+    },
+    {
+      "content": "Generally, the <bpt id=\"p1\">[</bpt>.NET client library<ept id=\"p1\">](https://msdn.microsoft.com/library/azure/dn951165.aspx)</ept> and <bpt id=\"p2\">[</bpt>Service REST API<ept id=\"p2\">](https://msdn.microsoft.com/library/azure/dn798935.aspx)</ept> are interchangeable so long as the operations you require are implemented in both.",
+      "pos": [
+        22965,
+        23219
+      ]
+    },
+    {
+      "content": "However, sometimes new features show up first in the REST API as part of a preview release, and only added to the .NET library months later.",
+      "pos": [
+        23220,
+        23360
+      ]
+    },
+    {
+      "content": "For example, indexers, which are used to automate data load operations from specific data source types, appeared in preview REST API first before showing up in the client library a few months later.",
+      "pos": [
+        23361,
+        23559
+      ]
+    },
+    {
+      "content": "Any restrictions on feature implementation are noted in feature documentation.",
+      "pos": [
+        23560,
+        23638
+      ]
+    },
+    {
+      "content": "Include AzureSearchHelper.cs for JSON serialization and deserialization in REST API",
+      "pos": [
+        23643,
+        23726
+      ]
+    },
+    {
+      "content": "Unlike the .NET library which does this step for you, the Service REST APIs must serialize and deserialize the JSON documents in the request-response exchange with the service.",
+      "pos": [
+        23728,
+        23904
+      ]
+    },
+    {
+      "content": "JSON is the payload format for data transmission when loading or refreshing documents in the index.",
+      "pos": [
+        23905,
+        24004
+      ]
+    },
+    {
+      "pos": [
+        24007,
+        24112
+      ],
+      "content": "Code for JSON serialization can be found in several of samples, in a file named <bpt id=\"p1\">**</bpt>AzureSearchHelper.cs<ept id=\"p1\">**</ept>:"
+    },
+    {
+      "content": "Next steps",
+      "pos": [
+        26533,
+        26543
+      ]
+    },
+    {
+      "content": "To further your understanding of Azure Search and ASP.NET integration, visit the following links:",
+      "pos": [
+        26545,
+        26642
+      ]
+    },
+    {
+      "content": "How to use Azure Search from a .NET Application",
+      "pos": [
+        26647,
+        26694
+      ]
+    },
+    {
+      "content": "Azure Search Developer Case Study",
+      "pos": [
+        26728,
+        26761
+      ]
+    },
+    {
+      "content": "Typical workflow for Azure Search development",
+      "pos": [
+        26804,
+        26849
+      ]
+    }
+  ],
+  "content": "<properties\n    pageTitle=\"Connect Azure Search with ASP.NET Web Apps | Microsoft Azure\"\n    description=\"Hook up an ASP.NET Web app with Azure Search. Learn how to connect, query, and render results using the .Net library or REST API.\"\n    services=\"search\"\n    documentationCenter=\"\"\n    authors=\"HeidiSteen\"\n    manager=\"mblythe\"\n    editor=\"v-lincan\"/>\n\n<tags\n    ms.service=\"search\"\n    ms.devlang=\"na\"\n    ms.workload=\"search\"\n    ms.topic=\"hero-article\"\n    ms.tgt_pltfrm=\"na\"\n    ms.date=\"08/26/2015\"\n    ms.author=\"heidist\"/>\n\n#How to integrate Azure Search with ASP.NET Web Apps\n\nASP.NET is the predominant web application framework in custom solutions that integrate with Azure Search. In this article, you’ll learn how to connect your ASP.NET web app to Azure Search, ramp up on design patterns for common operations, and review a few coding practices that could help your development experience go more smoothly. \n\n##Organize your code\n\nSplitting your workloads up into standalone projects within the same Visual Studio solution gives you more flexibility in how you design, maintain, and run each program. We recommend three:\n\n- Index creation code\n- Data ingestion code\n- User interaction code\n\nIn Azure Search, indexing operations and document operations – such as adding or updating documents, or executing queries – are fully independent of each other. This means you can decouple index management from your ASP.NET user interaction code that formulates search requests and renders the results.\n\nIn most of our code samples, the index is both created and loaded in one project (referred to as DataIndexer, CatalogIndexer, or DataCatalog in various samples), while the code that handles search requests and responses is placed in an ASP.NET MVC application project. In code samples, its practical to bundle index creation and document upload in one project, but production code would probably isolate these operations. Once an index is created, it’s rarely changed (and if it does change, it needs to be rebuilt), whereas documents are likely to be refreshed on a recurring basis.\n\nSeparating the workloads provides other advantages in the form of different levels of permissions for Azure Search (full admin rights versus query-only rights), use of different programming languages, more specific dependencies per program, plus the ability to revise programs independently or create multiple front-end applications that all operate on the index built and maintained by a central indexing application.\n\n##Samples and demos using ASP.NET and Azure Search\n\nSeveral code samples already exist that show how Search integrates with ASP.NET. You can go straight to code or a demo app by visiting any of these links:\n\n- [New York City (NYC) jobs demo site](http://aka.ms/azjobsdemo)\n- [Try App Service + Azure Search](search-tryappservice.md)\n- [Complete list of videos, tutorials, demos, and code samples](earch-video-demo-tutorial-list.md)\n\n##Connect to the service\n\nTo establish a connection to the service and issue requests, your Web application only needs three things: \n\n- A URL to the Azure Search service you’ve provisioned, formatted as https://<service-name>.search.windows.net\n- An API key (GUID) that authenticates the connection to Azure Search\n- An HTTPClient or SearchServiceClient to formulate the connection request\n\n####URLs and API Keys\n\nYou can find the URL and API key in the [portal](search-create-service-portal.md) or retrieve them programmatically using the [Management REST API](https://msdn.microsoft.com/library/dn832684.aspx). \n\nTypically, both URL and key are placed in the web.config file of your user interaction program:\n\n      <appSettings>\n        <add key=\"SearchServiceName\" value=\"[SEARCH SERVICE NAME]\" />\n        <add key=\"SearchServiceApiKey\" value=\"[API KEY]\" />\n        . . .\n      </appSettings>\n\nThe Search service name can be the short name you specified during provisioning as long as you append the domain (search.windows.net) on the connection, or you could specify the fully qualified name (<service-name>.search.windows.net) in web.config, without the HTTPS prefix.\n\nThe API key is an authentication token generated during service provisioning (admin keys only) or generated by hand if you are creating query keys in the portal. The type of key determines which search operations are available to your application:\n\n- admin keys (read-write permissions, 2 per service)\n- query keys (read-only, up to 50 per service)\n\nAll API keys are GUIDs. Visually, there is no distinction between admin and query keys. You would need to check the portal or use the Management REST API to determine the type of key.\n\n> [AZURE.TIP] A query key delivers a read-only experience to the client. See the [TryAppService + Azure Search](search-tryappservice.md) to test-drive the Azure Search operations that are available in a read-only service. Note that in TryAppService, the Web app code is fully modifiable – you can change any of the C# code in the ASP.NET project to modify web page layout, search query construction, or search results—it’s just the Azure Search service index and document load operations that are read-only, per the inclusion of a query api-key on the service connection.\n\n####Client Connection\n\nThe next two code snippets set up a connection to the Search service using the URL and API key. Recall that the service name and API keys are specified in web.config file. For REST calls, admin keys must be passed in the request header, while query keys could be passed in the header or directly in the URL.\n\n**[HttpClient](https://msdn.microsoft.com/library/system.net.http.httpclient.aspx) with REST API calls**\n\n    public class CatalogSearch\n    {\n        private static readonly Uri _serviceUri;\n        private static HttpClient _httpClient;\n        public static string errorMessage;\n\n        static CatalogSearch()\n        {\n            try\n            {\n                _serviceUri = new Uri(\"https://\" + ConfigurationManager.AppSettings[\"SearchServiceName\"] + \".search.windows.net\");\n                _httpClient = new HttpClient();\n                _httpClient.DefaultRequestHeaders.Add(\"api-key\", ConfigurationManager.AppSettings[\"SearchServiceApiKey\"]);\n            }\n            catch (Exception e)\n            {\n                errorMessage = e.Message.ToString();\n            }\n        }\n\n**[SearchServiceClient](https://msdn.microsoft.com/library/azure/microsoft.azure.search.searchserviceclient.aspx) with .NET**\n\n        static UsgsSearch()\n        {\n            try\n            {\n                string searchServiceName = ConfigurationManager.AppSettings[\"SearchServiceName\"];\n                string apiKey = ConfigurationManager.AppSettings[\"SearchServiceApiKey\"];\n\n                // Create an HTTP reference to the catalog index. Alternatively, include the index name in the query\n                _searchClient = new SearchServiceClient(searchServiceName, new SearchCredentials(apiKey));\n            }\n            catch (Exception e)\n            {\n                errorMessage = e.Message.ToString();\n            }\n        }\n\n##Design patterns\n\nA Web app that integrates with Azure Search will need to formulate queries and render the results. This section provides guidance on how to structure code for tasks executed in a program that contains user interaction code. Schema definition, index generation, and data ingestion are purposely excluded. For guidance on how to code those operations, see the walkthroughs and samples listed in [Videos, samples, and tutorials in Azure Search](search-video-demo-tutorial-list.md). \n\n###Query formulation\n\nA full-text search over your index is executed on fields marked as **isSearchable** in the schema that defines the index. Given a search term input (represented below by string \"q\"), the search engine looks for a match inside all searchable fields, and returns results from fields marked as **isRetrievable**. \n\n> [AZURE.NOTE] While most fields are likely to be searchable, an index could contain fields used only in filter expressions, in which case you would mark them as non-searchable to exclude them from full-text search and non-retrievable to exclude them from the search results. \n\nA search query wraps the input term provided by the user into a Search request that specifies the target index, plus parameters used to filter or refine the request. Operators embedded within the search string, such as +, - or |, are handled automatically, which means there are no coding requirements for parsing a search term. Any parsing is done by the search engine, as an internal operation. You can assume that the string you pass in will be parsed and analyzed by the engine.\n\nA search query comes in two flavors: **Search** or **Suggestions**. You would define separate methods for each type of query. **Search** is full-text search over fields in your index. **Suggestions** is the type-ahead or auto-complete query feature in Azure Search that builds a list of potential search terms based on the first three characters of user input. In most cases, you would constrain **Suggestions** to just those fields that contain relatively unique or distinctive values (like a product or publication name), as opposed to a fields that contain undifferentiated data.\n\nThe following code snippet captures a search term input in a program that uses the REST API. The input term is represented by string q, and the remaining parameters are used to pass in filter values from a faceted navigation structure on the same search page. Both the input term and filter parameters are used in the Search method.\n\n        public ActionResult Search(string q = \"\", string color = null, string category = null, double? priceFrom = null, double? priceTo = null, string sort = null)\n        {\n            dynamic result = null;\n\n            // If blank search, assume they want to search everything\n            if (string.IsNullOrWhiteSpace(q))\n                q = \"*\";\n\n            result = _catalogSearch.Search(q, sort, color, category, priceFrom, priceTo);\n            ViewBag.searchString = q;\n            ViewBag.color = color;\n            ViewBag.category = category;\n            ViewBag.priceFrom = priceFrom;\n            ViewBag.priceTo = priceTo;\n            ViewBag.sort = sort;\n\n            return View(\"Index\", result);\n        }\nThe **Search** method that accepts this query is defined as follows. Notice that it defines the parameters on the query string, plus the faceted navigation structure (supported through filters that do the heavy lifting on narrowing search results), and sort order.\n\n        public dynamic Search(string searchText, string sort, string color, string category, double? priceFrom, double? priceTo)\n        {\n            string search = \"&search=\" + Uri.EscapeDataString(searchText);\n            string facets = \"&facet=color&facet=categoryName&facet=listPrice,values:10|25|100|500|1000|2500\";\n            string paging = \"&$top=10\";\n            string filter = BuildFilter(color, category, priceFrom, priceTo);\n            string orderby = BuildSort(sort);\n\n            Uri uri = new Uri(_serviceUri, \"/indexes/catalog/docs?$count=true\" + search + facets + paging + filter + orderby);\n            HttpResponseMessage response = AzureSearchHelper.SendSearchRequest(_httpClient, HttpMethod.Get, uri);\n            AzureSearchHelper.EnsureSuccessfulSearchResponse(response);\n\n            return AzureSearchHelper.DeserializeJson<dynamic>(response.Content.ReadAsStringAsync().Result);\n        }\n\nA .NET method that constructs a search string could be placed in an MVC view or in a controller. This function passes the string to the Home controller. It also defines a data structure for the results. \n\n    function Search() {\n\n        var q = $(\"#q\").val();\n        \n        $.post('/home/search',\n        {\n            q: q\n        },\n        function (data) {\n            var searchResultsHTML = \"<tr><td>FEATURE NAME</td><td>FEATURE CLASS</td>\";\n            searchResultsHTML += \"<td>STATE ALPHA</td><td>COUNTY_NAME</td>\";\n            searchResultsHTML += \"<td>Elevation (m)</td><td>Elevation (ft)</td><td>MAP NAME</td>\";\n            searchResultsHTML += \"<td>DESCRIPTION</td><td>HISTORY</td><td>DATE CREATED</td>\";\n            searchResultsHTML += \"<td>DATE EDITED</td></tr>\";\n            for (var i = 0; i < data.length; i++) {\n                searchResultsHTML += \"<td>\" + data[i].Document.FEATURE_NAME + \"</td>\";\n                searchResultsHTML += \"<td>\" + data[i].Document.FEATURE_CLASS + \"</td>\";\n                searchResultsHTML += \"<td>\" + data[i].Document.STATE_ALPHA + \"</td>\";\n                searchResultsHTML += \"<td>\" + data[i].Document.COUNTY_NAME + \"</td>\";\n                searchResultsHTML += \"<td>\" + data[i].Document.ELEV_IN_M + \"</td>\";\n                searchResultsHTML += \"<td>\" + data[i].Document.ELEV_IN_FT + \"</td>\";\n                searchResultsHTML += \"<td>\" + data[i].Document.MAP_NAME + \"</td>\";\n                searchResultsHTML += \"<td>\" + data[i].Document.DESCRIPTION + \"</td>\";\n                searchResultsHTML += \"<td>\" + data[i].Document.HISTORY + \"</td>\";\n                searchResultsHTML += \"<td>\" + parseJsonDate(data[i].Document.DATE_CREATED) + \"</td>\";\n                searchResultsHTML += \"<td>\" + parseJsonDate(data[i].Document.DATE_EDITED) + \"</td></tr>\";\n            }\n\n            $(\"#searchResults\").html(searchResultsHTML);\n\n        });\n\nA .NET method for invoking **Search** might look like this, contained in the main C# program that provides the connection and search operation:\n\n        public DocumentSearchResponse Search(string searchText)\n        {\n            // Execute search based on query string\n            try\n            {\n                SearchParameters sp = new SearchParameters() { SearchMode = SearchMode.All };\n                return _indexClient.Documents.Search(searchText, sp);\n            }\n            catch (Exception e)\n            {\n                errorMessage = e.Message.ToString();\n            }\n            return null;\n        }\n\n\n###Handling search results\n\nSearch results are returned as a rowset composed of fields that are marked in the index schema as isRetrievable. One of the simpler ways to render a result set is by using the ViewBag system object in MVC. The following code snippet is from Index.cshtml in the [AdventureWorksDemo project on CodePlex](https://azuresearchadventureworksdemo.codeplex.com/).\n\n    @model dynamic\n    \n    @{\n        ViewBag.Title = \"Search\";\n    }\n    \n    <h2>Product search</h2>\n    \n    @if (@ViewBag.errorMessage != null) {\n        @ViewBag.errorMessage\n    } else {\n        <div class=\"container\">\n            <form action=\"/Home/Search\" method=\"get\">\n                <input type=\"search\" name=\"q\" id=\"q\" value=\"@ViewBag.searchString\" autocomplete=\"off\" size=\"100\" /> <button type=\"submit\">Search</button>\n                <input type=\"hidden\" name=\"color\" id=\"color\" value=\"@ViewBag.color\" />\n                <input type=\"hidden\" name=\"category\" id=\"category\" value=\"@ViewBag.category\" />\n                <input type=\"hidden\" name=\"priceFrom\" id=\"priceFrom\" value=\"@ViewBag.priceFrom\" />\n                <input type=\"hidden\" name=\"priceTo\" id=\"priceTo\" value=\"@ViewBag.priceTo\" />\n                <input type=\"hidden\" name=\"sort\" id=\"sort\" value=\"@ViewBag.sort\" />\n            </form>\n        </div>\n\n###Faceted navigation\n\nIn the same Index.cshmtl file, you can find the HTML used to build a faceted navigation structure that provides classifications for self-directed filtering, progressively narrowing search results by color, price or category. \n\n        if (@Model != null)\n        {\n            <div class=\"container\">\n                <div class=\"row\">\n                    <div class=\"col-md-4\">\n                        Colors:\n                        <ul>\n                            @foreach (var colorFacet in Model[\"@search.facets\"].color)\n                            {\n                                <li><a href=\"#\" onclick=\"document.getElementById('color').value='@colorFacet.value'; \n    document.forms[0].submit(); \n    return false;\">@colorFacet.value</a> (@colorFacet.count)</li>\n                            }\n                        </ul>\n                        Categories:\n                        <ul>\n                            @foreach (var categoryFacet in Model[\"@search.facets\"].categoryName)\n                            {\n                                <li><a href=\"#\" onclick=\"document.getElementById('category').value='@categoryFacet.value'; document.forms[0].submit(); return false;\">@categoryFacet.value</a> (@categoryFacet.count)</li>\n                            }\n                        </ul>\n                        Prices:\n                        <ul>\n                            @foreach (var priceFacet in Model[\"@search.facets\"].listPrice)\n                            {\n                                if (priceFacet.count > 0)\n                                {\n                           <li><a href=\"#\" onclick=\"document.getElementById('priceFrom').value=@(priceFacet.from ?? 0); document.getElementById('priceTo').value=@(priceFacet.to ?? 0); \n    document.forms[0].submit(); return false;\n    \">@(priceFacet.from ?? 0) - @(priceFacet.to ?? \"more\")</a> (@priceFacet.count)</li>\n                                }\n                            }\n                        </ul>\n                    </div>\n                    <div class=\"col-md-8\">\n                        <p>\n                            Sort -\n                            <a href=\"#\" onclick=\"document.getElementById('sort').value=null; document.forms[0].submit(); return false;\">by relevance</a>\n                            <a href=\"#\" onclick=\"document.getElementById('sort').value='listPrice'; document.forms[0].submit(); return false;\">by list price</a>\n                            <a href=\"#\" onclick=\"document.getElementById('sort').value='color'; document.forms[0].submit(); return false;\">by color</a>\n                        </p>\n                        <p>Found @Model[\"@odata.count\"] products in the catalog</p>\n    \n                        <ul>\n                            @foreach (var product in Model.value)\n                            {\n                                <li>\n                                    <h3><b>@product.name</b></h3>\n                                    price: @product.listPrice, color: @product.color, weight: @product.weight, size: @product.size\n                                </li>\n                            }\n                        </ul>\n                    </div>\n                </div>\n            </div>\n        }\n    }\n\n\n###Hit highlighting\n\nApplying a style to the instance of the search term in a search result is called hit highlighting. In Azure Search, hit highlights are specified in the query, via the highlight search parameter, to which you give a comma-delimited list of fields to scan for matching terms. The actual style you apply is up to you. The following three code snippets are from the [TryAppService + Azure Search tutorial](search-tryappservice.md).\n\nFirst, specify hit highlights as a search parameter and list the fields to check for matching terms. Specify the HTML style to use on hit highlight.\n\n    // Set the Search parameters used when executing the search request\n         var sp = new SearchParameters\n    {\n    // Include a count of results in the query result\n         IncludeTotalResultCount = true,\n    // Limit the results to 20 documents\n         Top = 20,\n    // Enable hit-highlighting\n         HighlightFields = new[] { \"FEATURE_NAME\", \"DESCRIPTION\", \"FEATURE_CLASS\", \"COUNTY_NAME\", \"STATE_ALPHA\" },\n         HighlightPreTag = \"<b>\",\n         HighlightPostTag = \"</b>\",\n    };\n\nNext, iterate through the search results to find the string that needs to be highlighted.\nprivate HtmlString RenderHitHighlightedString(SearchResult item, string fieldName)\n\n      {\n         if (item.Highlights != null && item.Highlights.ContainsKey(fieldName))\n          {\n          string highlightedResult = string.Join(\"...\", item.Highlights[fieldName]);\n          return new HtmlString(highlightedResult);\n          }\n          return new HtmlString(item.Document[fieldName].ToString());\n       }\n\nLast, provide the layout of the search results, specifying the result set that was evaluated in the previous snippet.\n\n    <div class=\"col-xs-12 col-sm-6 col-md-10\">\n      <p style=\"padding-top:20px\">1 - @response.Results.Count of @response.Count results for \"@searchText\"</p>\n    \n      <ul class=\"list-unstyled\">\n        <!-- Cycle through the search results -->\n       @foreach (var item in response.Results)\n        {\n         <li>\n           <h3>@RenderHitHighlightedString(item, \"FEATURE_NAME\")</h3>\n           <p>@RenderHitHighlightedString(item, \"DESCRIPTION\")</p>\n           <p>@RenderHitHighlightedString(item, \"FEATURE_CLASS\"), elevation: @item.Document[\"ELEV_IN_M\"] meters</p>\n           <p>@RenderHitHighlightedString(item, \"COUNTY_NAME\") County, @RenderHitHighlightedString(item, \"STATE_ALPHA\")</p>\n           <br />\n         </li>\n        }\n      </ul>\n    </div>\n\n\n##Common coding practices\n\nNew to MVC, .NET programming, or REST APIs?  These sections offer a few coding practices to help you get up to speed.\n\n###MVC template\n\nThe following table summarizes how MVC template components are used in applications that include Azure Search. If you’re using MVC 4 or MVC 5, code that integrates Azure Search will generally be added to these modules\n\nFile|Description\n----|-----------\nWeb.config|Provide the service URL and api-key. Add a reference to System.Configuration in your main program module to read the values.\nProgram.cs|In the main program, set up an HttpClient or SearchServiceClient to establish a connection to the service. Add the Search method to this program.\nDataModel|Not used. Assuming that index creation and data load operations are in different programs, no data model is required for Azure Search in your web application.\nViews|A view contains the HTML for the application web page, from search box input to dynamic HTML for handling search results.\nControllers|Query construction and error handling is typically found in the HomeContoller.cs. At a minimum, the controller should include a search method that retrieves results from Azure Search and forwards the result set to the view. \n\nOptionally, if you are using suggestions for auto-complete queries, you would include a method that returns suggested queries, depending on whether your index contains a matching value to the search term input provided by the user.\n\n###When to use the .NET client library vs. REST API\n\nFor ASP.NET applications, the .NET client library is considered a better choice because it sets up the HTTP connection and handles JSON serialization and deserialization for you, which simplifies your code.\n\nIn some cases, your choice of API might be dictated by feature parity between the two approaches. Generally, the [.NET client library](https://msdn.microsoft.com/library/azure/dn951165.aspx) and [Service REST API](https://msdn.microsoft.com/library/azure/dn798935.aspx) are interchangeable so long as the operations you require are implemented in both. However, sometimes new features show up first in the REST API as part of a preview release, and only added to the .NET library months later. For example, indexers, which are used to automate data load operations from specific data source types, appeared in preview REST API first before showing up in the client library a few months later. Any restrictions on feature implementation are noted in feature documentation.\n\n###Include AzureSearchHelper.cs for JSON serialization and deserialization in REST API\n\nUnlike the .NET library which does this step for you, the Service REST APIs must serialize and deserialize the JSON documents in the request-response exchange with the service. JSON is the payload format for data transmission when loading or refreshing documents in the index. \n\nCode for JSON serialization can be found in several of samples, in a file named **AzureSearchHelper.cs**:\n\n    using System;\n    using System.Net.Http;\n    using System.Text;\n    using Newtonsoft.Json;\n    using Newtonsoft.Json.Converters;\n    using Newtonsoft.Json.Serialization;\n    \n    namespace CatalogCommon\n    {\n        public class AzureSearchHelper\n        {\n            public const string ApiVersionString = \"api-version=2014-07-31-Preview\";\n    \n            private static readonly JsonSerializerSettings _jsonSettings;\n    \n            static AzureSearchHelper()\n            {\n                _jsonSettings = new JsonSerializerSettings\n                {\n                    Formatting = Formatting.Indented, // for readability, change to None for compactness\n                    ContractResolver = new CamelCasePropertyNamesContractResolver(),\n                    DateTimeZoneHandling = DateTimeZoneHandling.Utc\n                };\n    \n                _jsonSettings.Converters.Add(new StringEnumConverter());\n            }\n    \n            public static string SerializeJson(object value)\n            {\n                return JsonConvert.SerializeObject(value, _jsonSettings);\n            }\n    \n            public static T DeserializeJson<T>(string json)\n            {\n                return JsonConvert.DeserializeObject<T>(json, _jsonSettings);\n            }\n    \n            public static HttpResponseMessage SendSearchRequest(HttpClient client, HttpMethod method, Uri uri, string json = null)\n            {\n                UriBuilder builder = new UriBuilder(uri);\n                string separator = string.IsNullOrWhiteSpace(builder.Query) ? string.Empty : \"&\";\n                builder.Query = builder.Query.TrimStart('?') + separator + ApiVersionString;\n    \n                var request = new HttpRequestMessage(method, builder.Uri);\n    \n                if (json != null)\n                {\n                    request.Content = new StringContent(json, Encoding.UTF8, \"application/json\");\n                }\n    \n                return client.SendAsync(request).Result;\n            }\n    \n            public static void EnsureSuccessfulSearchResponse(HttpResponseMessage response)\n            {\n                if (!response.IsSuccessStatusCode)\n                {\n                    string error = response.Content == null ? null : response.Content.ReadAsStringAsync().Result;\n                    throw new Exception(\"Search request failed: \" + error);\n                }\n            }\n        }\n    }\n\n\n##Next steps\n\nTo further your understanding of Azure Search and ASP.NET integration, visit the following links:\n\n- [How to use Azure Search from a .NET Application](search-howto-dotnet-sdk.md) \n- [Azure Search Developer Case Study](search-dev-case-study-whattopedia.md)\n- [Typical workflow for Azure Search development](search-workflow.md) \n\n"
+}

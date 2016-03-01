@@ -1,0 +1,278 @@
+{
+  "nodes": [
+    {
+      "content": "Troubleshooting degraded status on Azure Traffic Manager",
+      "pos": [
+        26,
+        82
+      ]
+    },
+    {
+      "content": "How to troubleshoot Traffic Manager profiles when it shows as degraded status.",
+      "pos": [
+        100,
+        178
+      ]
+    },
+    {
+      "content": "Troubleshooting degraded status on Azure Traffic Manager",
+      "pos": [
+        498,
+        554
+      ]
+    },
+    {
+      "content": "This page will describe how to troubleshoot Azure Traffic Manager profile which is showing a degraded status, and provide some key points to understand about traffic manager probes.",
+      "pos": [
+        555,
+        736
+      ]
+    },
+    {
+      "content": "You have configured a Traffic Manager profile pointing to some of your .cloudapp.net hosted services and after a few seconds you see the Status as Degraded.",
+      "pos": [
+        739,
+        895
+      ]
+    },
+    {
+      "content": "degradedstate",
+      "pos": [
+        899,
+        912
+      ]
+    },
+    {
+      "content": "If you go into the Endpoints tab of that profile you will see one or more of the endpoints in an Offline status:",
+      "pos": [
+        994,
+        1106
+      ]
+    },
+    {
+      "content": "offline",
+      "pos": [
+        1110,
+        1117
+      ]
+    },
+    {
+      "content": "Important notes about Traffic Manager probing",
+      "pos": [
+        1201,
+        1246
+      ]
+    },
+    {
+      "content": "Traffic Manager only considers an endpoint as ONLINE if the probe gets a 200 back from the probe path.",
+      "pos": [
+        1250,
+        1352
+      ]
+    },
+    {
+      "content": "A 30x redirect (or any other non-200 response) will fail, even if the redirected URL returns a 200.",
+      "pos": [
+        1355,
+        1454
+      ]
+    },
+    {
+      "content": "For HTTPs probes, certificate errors are ignored.",
+      "pos": [
+        1458,
+        1507
+      ]
+    },
+    {
+      "content": "The actual content of the probe path doesn’t matter, as long as a 200 is returned.",
+      "pos": [
+        1512,
+        1594
+      ]
+    },
+    {
+      "content": "A common technique if the actual website content doesn’t return a 200 (ie. if the ASP pages redirect to an ACS login page or some other CNAME URL) is to set the path to something like “/favicon.ico”.",
+      "pos": [
+        1596,
+        1795
+      ]
+    },
+    {
+      "content": "Best practice is to set the Probe path to something which has enough logic to determine if the site is up or down.",
+      "pos": [
+        1800,
+        1914
+      ]
+    },
+    {
+      "content": "In the above example setting the path to “/favicon.ico” you are only testing if w3wp.exe is responding, but not if your website is healthy.",
+      "pos": [
+        1916,
+        2055
+      ]
+    },
+    {
+      "content": "A better option would be to set a path to something such as “/Probe.aspx”, and within Probe.aspx include enough logic to determine if your site is healthy (ie. check perf counters to make sure you aren’t at 100% CPU or receiving a large number of failed requests, attempt to access resources such as the database or session state to make sure the application’s logic is working, etc).",
+      "pos": [
+        2057,
+        2441
+      ]
+    },
+    {
+      "content": "If all endpoints in a profile are degraded then Traffic Manager will treat all endpoints as healthy and route traffic to all endpoints.",
+      "pos": [
+        2446,
+        2581
+      ]
+    },
+    {
+      "content": "This is to ensure that any potential problem with the probing mechanism which results in incorrectly failed probes will not result in a complete outage of your service.",
+      "pos": [
+        2583,
+        2751
+      ]
+    },
+    {
+      "content": "Troubleshooting",
+      "pos": [
+        2760,
+        2775
+      ]
+    },
+    {
+      "content": "One tool for troubleshooting Traffic Manager probe failures is wget.",
+      "pos": [
+        2777,
+        2845
+      ]
+    },
+    {
+      "content": "You can get the binaries and dependencies package from <bpt id=\"p1\">[</bpt>wget<ept id=\"p1\">](http://gnuwin32.sourceforge.net/packages/wget.htm)</ept>.",
+      "pos": [
+        2847,
+        2960
+      ]
+    },
+    {
+      "content": "Note that you can use other programs such as Fiddler or curl instead of wget – basically you just need something that will show you the raw HTTP response.",
+      "pos": [
+        2962,
+        3116
+      ]
+    },
+    {
+      "content": "Once you have wget installed, go to a command prompt and run wget against the URL + Probe port &amp; path that is configured in Traffic Manager.",
+      "pos": [
+        3118,
+        3258
+      ]
+    },
+    {
+      "content": "For this example it would be http://watestsdp2008r2.cloudapp.net:80/Probe.",
+      "pos": [
+        3260,
+        3334
+      ]
+    },
+    {
+      "content": "troubleshooting",
+      "pos": [
+        3338,
+        3353
+      ]
+    },
+    {
+      "content": "Using Wget:",
+      "pos": [
+        3442,
+        3453
+      ]
+    },
+    {
+      "content": "wget",
+      "pos": [
+        3457,
+        3461
+      ]
+    },
+    {
+      "content": "Notice that wget indicates that the URL returned a 301 redirect to http://watestsdp2008r2.cloudapp.net/Default.aspx.",
+      "pos": [
+        3542,
+        3658
+      ]
+    },
+    {
+      "content": "As we know from the “Important notes about Traffic Manager probing” section above, a 30x redirect is considered a failure by Traffic Manager probing and this will cause the probe to report Offline.",
+      "pos": [
+        3660,
+        3857
+      ]
+    },
+    {
+      "content": "At this point it is a simple matter to check the website configuration and make sure that a 200 is returned from the /Probe path (or reconfigure the Traffic Manager probe to point to a path which will return a 200).",
+      "pos": [
+        3859,
+        4074
+      ]
+    },
+    {
+      "content": "If your probe is using HTTPs protocol you will want to add the “--no-check-certificate” parameter to wget so that it will ignore the certificate mismatch on the cloudapp.net URL.",
+      "pos": [
+        4079,
+        4257
+      ]
+    },
+    {
+      "content": "Next Steps",
+      "pos": [
+        4263,
+        4273
+      ]
+    },
+    {
+      "content": "About Traffic Manager traffic routing methods",
+      "pos": [
+        4277,
+        4322
+      ]
+    },
+    {
+      "content": "What is Traffic Manager",
+      "pos": [
+        4369,
+        4392
+      ]
+    },
+    {
+      "content": "Cloud Services",
+      "pos": [
+        4429,
+        4443
+      ]
+    },
+    {
+      "content": "Websites",
+      "pos": [
+        4494,
+        4502
+      ]
+    },
+    {
+      "content": "Operations on Traffic Manager (REST API Reference)",
+      "pos": [
+        4555,
+        4605
+      ]
+    },
+    {
+      "content": "Azure Traffic Manager Cmdlets",
+      "pos": [
+        4656,
+        4685
+      ]
+    }
+  ],
+  "content": "<properties\n   pageTitle=\"Troubleshooting degraded status on Azure Traffic Manager\"\n   description=\"How to troubleshoot Traffic Manager profiles when it shows as degraded status.\"\n   services=\"traffic-manager\"\n   documentationCenter=\"\"\n   authors=\"kwill-MSFT\"\n   manager=\"adinah\"\n   editor=\"joaoma\" />\n\n<tags \n   ms.service=\"traffic-manager\"\n   ms.devlang=\"na\"\n   ms.topic=\"article\"\n   ms.tgt_pltfrm=\"na\"\n   ms.workload=\"infrastructure-services\"\n   ms.date=\"08/19/2015\"\n   ms.author=\"joaoma\" />\n\n# Troubleshooting degraded status on Azure Traffic Manager\nThis page will describe how to troubleshoot Azure Traffic Manager profile which is showing a degraded status, and provide some key points to understand about traffic manager probes.\n\n\nYou have configured a Traffic Manager profile pointing to some of your .cloudapp.net hosted services and after a few seconds you see the Status as Degraded.\n\n![degradedstate](./media/traffic-manager-troubleshooting-degraded/traffic-manager-degraded.png)\n\nIf you go into the Endpoints tab of that profile you will see one or more of the endpoints in an Offline status:\n\n![offline](./media/traffic-manager-troubleshooting-degraded/traffic-manager-offline.png)\n\n## Important notes about Traffic Manager probing\n\n- Traffic Manager only considers an endpoint as ONLINE if the probe gets a 200 back from the probe path.\n- A 30x redirect (or any other non-200 response) will fail, even if the redirected URL returns a 200.\n\n- For HTTPs probes, certificate errors are ignored.\n \n- The actual content of the probe path doesn’t matter, as long as a 200 is returned.  A common technique if the actual website content doesn’t return a 200 (ie. if the ASP pages redirect to an ACS login page or some other CNAME URL) is to set the path to something like “/favicon.ico”.\n \n- Best practice is to set the Probe path to something which has enough logic to determine if the site is up or down.  In the above example setting the path to “/favicon.ico” you are only testing if w3wp.exe is responding, but not if your website is healthy.  A better option would be to set a path to something such as “/Probe.aspx”, and within Probe.aspx include enough logic to determine if your site is healthy (ie. check perf counters to make sure you aren’t at 100% CPU or receiving a large number of failed requests, attempt to access resources such as the database or session state to make sure the application’s logic is working, etc).\n \n- If all endpoints in a profile are degraded then Traffic Manager will treat all endpoints as healthy and route traffic to all endpoints.  This is to ensure that any potential problem with the probing mechanism which results in incorrectly failed probes will not result in a complete outage of your service.\n\n  \n\n## Troubleshooting\n\nOne tool for troubleshooting Traffic Manager probe failures is wget.  You can get the binaries and dependencies package from [wget](http://gnuwin32.sourceforge.net/packages/wget.htm).  Note that you can use other programs such as Fiddler or curl instead of wget – basically you just need something that will show you the raw HTTP response.\n\nOnce you have wget installed, go to a command prompt and run wget against the URL + Probe port & path that is configured in Traffic Manager.  For this example it would be http://watestsdp2008r2.cloudapp.net:80/Probe.\n\n![troubleshooting](./media/traffic-manager-troubleshooting-degraded/traffic-manager-troubleshooting.png)\n\nUsing Wget:\n\n![wget](./media/traffic-manager-troubleshooting-degraded/traffic-manager-wget.png)\n\n \n\nNotice that wget indicates that the URL returned a 301 redirect to http://watestsdp2008r2.cloudapp.net/Default.aspx.  As we know from the “Important notes about Traffic Manager probing” section above, a 30x redirect is considered a failure by Traffic Manager probing and this will cause the probe to report Offline.  At this point it is a simple matter to check the website configuration and make sure that a 200 is returned from the /Probe path (or reconfigure the Traffic Manager probe to point to a path which will return a 200).\n\n \n\nIf your probe is using HTTPs protocol you will want to add the “--no-check-certificate” parameter to wget so that it will ignore the certificate mismatch on the cloudapp.net URL.\n\n\n## Next Steps\n\n\n[About Traffic Manager traffic routing methods](traffic-manager-load-balancing-methods.md)\n\n[What is Traffic Manager](../traffic-manmager-overview.md)\n\n[Cloud Services](http://go.microsoft.com/fwlink/?LinkId=314074)\n\n[Websites](http://go.microsoft.com/fwlink/p/?LinkId=393327)\n\n[Operations on Traffic Manager (REST API Reference)](http://go.microsoft.com/fwlink/?LinkId=313584)\n\n[Azure Traffic Manager Cmdlets](http://go.microsoft.com/fwlink/p/?LinkId=400769)\n \n"
+}

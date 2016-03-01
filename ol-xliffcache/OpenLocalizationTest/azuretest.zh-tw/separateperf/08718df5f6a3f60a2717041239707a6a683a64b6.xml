@@ -1,0 +1,768 @@
+{
+  "nodes": [
+    {
+      "content": "Automating Azure virtual machine deployment with Chef",
+      "pos": [
+        26,
+        79
+      ]
+    },
+    {
+      "content": "Learn the art of Azure virtual machine automation with Chef",
+      "pos": [
+        97,
+        156
+      ]
+    },
+    {
+      "content": "Automating Azure virtual machine deployment with Chef",
+      "pos": [
+        455,
+        508
+      ]
+    },
+    {
+      "content": "Chef is a great tool for delivering automation and desired state configurations.",
+      "pos": [
+        510,
+        590
+      ]
+    },
+    {
+      "content": "With our latest cloud-api release, Chef provides seamless integration with Azure, giving you the ability to provision and deploy configuration states through a single command.",
+      "pos": [
+        592,
+        767
+      ]
+    },
+    {
+      "content": "In this article, I’ll show you how to set up your Chef environment to provision Azure virtual machines and walk you through creating a policy or “CookBook” and then deploying this cookbook to an Azure virtual machine.",
+      "pos": [
+        769,
+        986
+      ]
+    },
+    {
+      "content": "Let’s begin!",
+      "pos": [
+        988,
+        1000
+      ]
+    },
+    {
+      "content": "Chef basics",
+      "pos": [
+        1005,
+        1016
+      ]
+    },
+    {
+      "content": "Before you begin, I suggest you review the basic concepts of Chef.",
+      "pos": [
+        1018,
+        1084
+      ]
+    },
+    {
+      "content": "There is great material <ph id=\"ph1\">&lt;a href=\"http://www.chef.io/chef\" target=\"_blank\"&gt;</ph>here<ph id=\"ph2\">&lt;/a&gt;</ph> and I recommend you have a quick read before you attempt this walkthrough.",
+      "pos": [
+        1085,
+        1242
+      ]
+    },
+    {
+      "content": "I will however recap the basics before we get started.",
+      "pos": [
+        1243,
+        1297
+      ]
+    },
+    {
+      "content": "The following diagram depicts the high-level Chef architecture.",
+      "pos": [
+        1299,
+        1362
+      ]
+    },
+    {
+      "content": "![][2]",
+      "pos": [
+        1364,
+        1370
+      ]
+    },
+    {
+      "content": "Chef has three main architectural components: Chef Server, Chef Client (node), and Chef Workstation.",
+      "pos": [
+        1372,
+        1472
+      ]
+    },
+    {
+      "content": "The Chef Server is our management point and there are two options for the Chef Server: a hosted solution or an on-premises solution.",
+      "pos": [
+        1474,
+        1606
+      ]
+    },
+    {
+      "content": "We will be using a hosted solution.",
+      "pos": [
+        1607,
+        1642
+      ]
+    },
+    {
+      "content": "The Chef Client (node) is the agent that sits on the servers you are managing.",
+      "pos": [
+        1644,
+        1722
+      ]
+    },
+    {
+      "content": "The Chef Workstation is our admin workstation where we create our policies and execute our management commands.",
+      "pos": [
+        1724,
+        1835
+      ]
+    },
+    {
+      "content": "We run the <bpt id=\"p1\">**</bpt>knife<ept id=\"p1\">**</ept> command from the Chef Workstation to manage our infrastructure.",
+      "pos": [
+        1836,
+        1920
+      ]
+    },
+    {
+      "content": "There is also the concept of “Cookbooks” and “Recipes”.",
+      "pos": [
+        1922,
+        1977
+      ]
+    },
+    {
+      "content": "These are effectively the policies we define and apply to our servers.",
+      "pos": [
+        1978,
+        2048
+      ]
+    },
+    {
+      "content": "Preparing the workstation",
+      "pos": [
+        2053,
+        2078
+      ]
+    },
+    {
+      "content": "First, lets prep the workstation.",
+      "pos": [
+        2080,
+        2113
+      ]
+    },
+    {
+      "content": "I’m using a standard Windows workstation.",
+      "pos": [
+        2114,
+        2155
+      ]
+    },
+    {
+      "content": "We need to create a directory to store our config files and cookbooks.",
+      "pos": [
+        2156,
+        2226
+      ]
+    },
+    {
+      "content": "First create a directory called C:\\chef.",
+      "pos": [
+        2228,
+        2268
+      ]
+    },
+    {
+      "content": "Then create a second directory called c:\\chef\\cookbooks.",
+      "pos": [
+        2270,
+        2326
+      ]
+    },
+    {
+      "content": "We now need to download our Azure settings file so Chef can communicate with our Azure subscription.",
+      "pos": [
+        2328,
+        2428
+      ]
+    },
+    {
+      "pos": [
+        2430,
+        2523
+      ],
+      "content": "Download your publish settings from <bpt id=\"p1\">[</bpt>here<ept id=\"p1\">](https://manage.windowsazure.com/publishsettings/)</ept>."
+    },
+    {
+      "content": "Save the publish settings file in C:\\chef.",
+      "pos": [
+        2525,
+        2567
+      ]
+    },
+    {
+      "content": "Creating a managed Chef account",
+      "pos": [
+        2571,
+        2602
+      ]
+    },
+    {
+      "pos": [
+        2604,
+        2676
+      ],
+      "content": "Sign up for a hosted Chef account <bpt id=\"p1\">[</bpt>here<ept id=\"p1\">](https://manage.chef.io/signup)</ept>."
+    },
+    {
+      "content": "During the signup process, you will be asked to create a new organization.",
+      "pos": [
+        2678,
+        2752
+      ]
+    },
+    {
+      "content": "![][3]",
+      "pos": [
+        2754,
+        2760
+      ]
+    },
+    {
+      "content": "Once your organization is created, download the starter kit.",
+      "pos": [
+        2762,
+        2822
+      ]
+    },
+    {
+      "content": "![][4]",
+      "pos": [
+        2824,
+        2830
+      ]
+    },
+    {
+      "pos": [
+        2834,
+        2988
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> If you receive a prompt warning you that your keys will be reset, it’s ok to proceed as we have no existing infrastructure configured as yet."
+    },
+    {
+      "content": "This starter kit zip file contains your organization config files and keys.",
+      "pos": [
+        2990,
+        3065
+      ]
+    },
+    {
+      "content": "Configuring the Chef workstation",
+      "pos": [
+        3069,
+        3101
+      ]
+    },
+    {
+      "content": "Extract the content of the chef-starter.zip to C:\\chef.",
+      "pos": [
+        3103,
+        3158
+      ]
+    },
+    {
+      "content": "Copy all files under chef-starter\\chef-repo\\.chef to your c:\\chef directory.",
+      "pos": [
+        3160,
+        3236
+      ]
+    },
+    {
+      "content": "Your directory should now look something like the following example.",
+      "pos": [
+        3238,
+        3306
+      ]
+    },
+    {
+      "content": "![][5]",
+      "pos": [
+        3308,
+        3314
+      ]
+    },
+    {
+      "content": "You should now have four files including the Azure publishing file in the root of c:\\chef.",
+      "pos": [
+        3316,
+        3406
+      ]
+    },
+    {
+      "content": "The PEM files contain your organization and admin private keys for communication while the knife.rb file contains your knife configuration.",
+      "pos": [
+        3408,
+        3547
+      ]
+    },
+    {
+      "content": "We will need to edit the knife.rb file.",
+      "pos": [
+        3548,
+        3587
+      ]
+    },
+    {
+      "content": "Open the file in your editor of choice and modify the “cookbook_path” by removing the /../ from the path so it appears as shown next.",
+      "pos": [
+        3589,
+        3722
+      ]
+    },
+    {
+      "content": "Also add the following line reflecting the name of your Azure publish settings file.",
+      "pos": [
+        3773,
+        3857
+      ]
+    },
+    {
+      "content": "Your knife.rb file should now look similar to the following example.",
+      "pos": [
+        3933,
+        4001
+      ]
+    },
+    {
+      "content": "![][6]",
+      "pos": [
+        4003,
+        4009
+      ]
+    },
+    {
+      "content": "These lines will ensure that Knife references the cookbooks directory under c:\\chef\\cookbooks, and also uses our Azure Publish Settings file during Azure operations.",
+      "pos": [
+        4011,
+        4176
+      ]
+    },
+    {
+      "content": "Installing the Chef Development Kit",
+      "pos": [
+        4181,
+        4216
+      ]
+    },
+    {
+      "pos": [
+        4218,
+        4358
+      ],
+      "content": "Next <bpt id=\"p1\">[</bpt>download and install<ept id=\"p1\">](http://downloads.getchef.com/chef-dk/windows)</ept> the ChefDK (Chef Development Kit) to set up your Chef Workstation."
+    },
+    {
+      "content": "![][7]",
+      "pos": [
+        4360,
+        4366
+      ]
+    },
+    {
+      "content": "Install in the default location of c:\\opscode.",
+      "pos": [
+        4368,
+        4414
+      ]
+    },
+    {
+      "content": "This install will take around 10 minutes.",
+      "pos": [
+        4415,
+        4456
+      ]
+    },
+    {
+      "content": "Confirm your PATH variable contains entries for C:\\opscode\\chefdk\\bin;C:\\opscode\\chefdk\\embedded\\bin;c:\\users\\yourusername\\.chefdk\\gem\\ruby\\2.0.0\\bin",
+      "pos": [
+        4458,
+        4607
+      ]
+    },
+    {
+      "content": "If they are not there, make sure you add these paths!",
+      "pos": [
+        4609,
+        4662
+      ]
+    },
+    {
+      "pos": [
+        4664,
+        4779
+      ],
+      "content": "<bpt id=\"p1\">*</bpt>NOTE THE ORDER OF THE PATH IS IMPORTANT!<ept id=\"p1\">*</ept> If your opscode paths are not in the correct order you will have issues."
+    },
+    {
+      "content": "Reboot your workstation before you continue.",
+      "pos": [
+        4781,
+        4825
+      ]
+    },
+    {
+      "content": "Next, we will install the Knife Azure extension.",
+      "pos": [
+        4827,
+        4875
+      ]
+    },
+    {
+      "content": "This provides Knife with the “Azure Plugin”.",
+      "pos": [
+        4876,
+        4920
+      ]
+    },
+    {
+      "content": "Run the following command.",
+      "pos": [
+        4922,
+        4948
+      ]
+    },
+    {
+      "pos": [
+        4992,
+        5145
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> The –pre argument ensures you are receiving the latest RC version of the Knife Azure Plugin which provides access to the latest set of APIs."
+    },
+    {
+      "content": "It’s likely that a number of dependencies will also be installed at the same time.",
+      "pos": [
+        5147,
+        5229
+      ]
+    },
+    {
+      "content": "![][8]",
+      "pos": [
+        5231,
+        5237
+      ]
+    },
+    {
+      "content": "To ensure everything is configured correctly, run the following command.",
+      "pos": [
+        5240,
+        5312
+      ]
+    },
+    {
+      "content": "If everything is configured correctly, you will see a list of available Azure images scroll through.",
+      "pos": [
+        5342,
+        5442
+      ]
+    },
+    {
+      "content": "Congratulations.",
+      "pos": [
+        5444,
+        5460
+      ]
+    },
+    {
+      "content": "The workstation is set up!",
+      "pos": [
+        5461,
+        5487
+      ]
+    },
+    {
+      "content": "Creating a Cookbook",
+      "pos": [
+        5491,
+        5510
+      ]
+    },
+    {
+      "content": "A Cookbook is used by Chef to define a set of commands that you wish to execute on your managed client.",
+      "pos": [
+        5512,
+        5615
+      ]
+    },
+    {
+      "content": "Creating a Cookbook is straightforward and we use the <bpt id=\"p1\">**</bpt>chef generate cookbook<ept id=\"p1\">**</ept> command to generate our Cookbook template.",
+      "pos": [
+        5616,
+        5739
+      ]
+    },
+    {
+      "content": "I will be calling my Cookbook web server as I would like a policy that automatically deploys IIS.",
+      "pos": [
+        5740,
+        5837
+      ]
+    },
+    {
+      "content": "Under your C:\\Chef directory run the following command.",
+      "pos": [
+        5839,
+        5894
+      ]
+    },
+    {
+      "content": "This will generate a set of files under the directory C:\\Chef\\cookbooks\\webserver.",
+      "pos": [
+        5934,
+        6016
+      ]
+    },
+    {
+      "content": "We now need to define the set of commands we would like our Chef client to execute on our managed virtual machine.",
+      "pos": [
+        6017,
+        6131
+      ]
+    },
+    {
+      "content": "The commands are stored in the file default.rb.",
+      "pos": [
+        6133,
+        6180
+      ]
+    },
+    {
+      "content": "In this file, I’ll be defining a set of commands that installs IIS, starts IIS and copies a template file to the wwwroot folder.",
+      "pos": [
+        6181,
+        6309
+      ]
+    },
+    {
+      "content": "Modify the C:\\chef\\cookbooks\\webserver\\recipes\\default.rb file and add the following lines.",
+      "pos": [
+        6311,
+        6402
+      ]
+    },
+    {
+      "content": "Save the file once you are done.",
+      "pos": [
+        6708,
+        6740
+      ]
+    },
+    {
+      "content": "Creating a template",
+      "pos": [
+        6745,
+        6764
+      ]
+    },
+    {
+      "content": "As we mentioned previously, we need to generate a template file which will be used as our default.html page.",
+      "pos": [
+        6766,
+        6874
+      ]
+    },
+    {
+      "content": "Run the following command to generate the template.",
+      "pos": [
+        6876,
+        6927
+      ]
+    },
+    {
+      "content": "Now navigate to the C:\\chef\\cookbooks\\webserver\\templates\\default\\Default.htm.erb file.",
+      "pos": [
+        6979,
+        7066
+      ]
+    },
+    {
+      "content": "Edit the file by adding some simple “Hello World” HTML code, and then save the file.",
+      "pos": [
+        7067,
+        7151
+      ]
+    },
+    {
+      "content": "Upload the Cookbook to the Chef Server",
+      "pos": [
+        7158,
+        7196
+      ]
+    },
+    {
+      "content": "In this step, we are taking a copy of the Cookbook that we have created on our local machine and uploading it to the Chef Hosted Server.",
+      "pos": [
+        7198,
+        7334
+      ]
+    },
+    {
+      "content": "Once uploaded, the Cookbook will appear under the <bpt id=\"p1\">**</bpt>Policy<ept id=\"p1\">**</ept> tab.",
+      "pos": [
+        7335,
+        7400
+      ]
+    },
+    {
+      "content": "![][9]",
+      "pos": [
+        7439,
+        7445
+      ]
+    },
+    {
+      "content": "Deploy a virtual machine with Knife Azure",
+      "pos": [
+        7450,
+        7491
+      ]
+    },
+    {
+      "content": "We will now deploy an Azure virtual machine and apply the “Webserver” Cookbook which will install our IIS web service and default web page.",
+      "pos": [
+        7493,
+        7632
+      ]
+    },
+    {
+      "pos": [
+        7634,
+        7701
+      ],
+      "content": "In order to do this, use the <bpt id=\"p1\">**</bpt>knife azure server create<ept id=\"p1\">**</ept> command."
+    },
+    {
+      "content": "Am example of the command appears next.",
+      "pos": [
+        7703,
+        7742
+      ]
+    },
+    {
+      "content": "The parameters are self-explanatory.",
+      "pos": [
+        8195,
+        8231
+      ]
+    },
+    {
+      "content": "Substitute your particular variables and run.",
+      "pos": [
+        8232,
+        8277
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> Through the the command line, I’m also automating my endpoint network filter rules by using the –tcp-endpoints parameter.",
+      "pos": [
+        8281,
+        8415
+      ]
+    },
+    {
+      "content": "I’ve opened up ports 80 and 3389 to provide access to my web page and RDP session.",
+      "pos": [
+        8416,
+        8498
+      ]
+    },
+    {
+      "content": "Once you run the command, go to the Azure portal and you will see your machine begin to provision.",
+      "pos": [
+        8500,
+        8598
+      ]
+    },
+    {
+      "content": "![][13]",
+      "pos": [
+        8600,
+        8607
+      ]
+    },
+    {
+      "content": "The command prompt appears next.",
+      "pos": [
+        8609,
+        8641
+      ]
+    },
+    {
+      "content": "![][10]",
+      "pos": [
+        8643,
+        8650
+      ]
+    },
+    {
+      "content": "Once the deployment is complete, we should be able to connect to the web service over port 80 as we had opened the port when we provisioned the virtual machine with the Knife Azure command.",
+      "pos": [
+        8652,
+        8841
+      ]
+    },
+    {
+      "content": "As this virtual machine is the only virtual machine in my cloud service, I’ll connect it with the cloud service url.",
+      "pos": [
+        8842,
+        8958
+      ]
+    },
+    {
+      "content": "![][11]",
+      "pos": [
+        8960,
+        8967
+      ]
+    },
+    {
+      "content": "As you can see, I got creative with my HTML code.",
+      "pos": [
+        8969,
+        9018
+      ]
+    },
+    {
+      "content": "Don’t forget we can also connect through an RDP session from the Azure portal via port 3389.",
+      "pos": [
+        9020,
+        9112
+      ]
+    },
+    {
+      "content": "I hope this has been helpful!",
+      "pos": [
+        9114,
+        9143
+      ]
+    },
+    {
+      "content": "Go  and start your infrastructure as code journey with Azure today!",
+      "pos": [
+        9144,
+        9211
+      ]
+    }
+  ],
+  "content": "<properties\n   pageTitle=\"Automating Azure virtual machine deployment with Chef\"\n   description=\"Learn the art of Azure virtual machine automation with Chef\"\n   services=\"virtual-machines\"\n   documentationCenter=\"\"\n   authors=\"diegoviso\"\n   manager=\"timlt\"\n   editor=\"\"/>\n\n<tags ms.service=\"virtual-machines\" ms.workload=\"infrastructure-services\"\nms.tgt_pltfrm=\"vm-multiple\"\nms.devlang=\"na\"\nms.topic=\"article\"\nms.date=\"05/19/2015\"\nms.author=\"diviso\"/>\n\n# Automating Azure virtual machine deployment with Chef\n\nChef is a great tool for delivering automation and desired state configurations.\n\nWith our latest cloud-api release, Chef provides seamless integration with Azure, giving you the ability to provision and deploy configuration states through a single command.\n\nIn this article, I’ll show you how to set up your Chef environment to provision Azure virtual machines and walk you through creating a policy or “CookBook” and then deploying this cookbook to an Azure virtual machine.\n\nLet’s begin!\n\n## Chef basics\n\nBefore you begin, I suggest you review the basic concepts of Chef. There is great material <a href=\"http://www.chef.io/chef\" target=\"_blank\">here</a> and I recommend you have a quick read before you attempt this walkthrough. I will however recap the basics before we get started.\n\nThe following diagram depicts the high-level Chef architecture.\n\n![][2]\n\nChef has three main architectural components: Chef Server, Chef Client (node), and Chef Workstation.\n\nThe Chef Server is our management point and there are two options for the Chef Server: a hosted solution or an on-premises solution. We will be using a hosted solution.\n\nThe Chef Client (node) is the agent that sits on the servers you are managing.\n\nThe Chef Workstation is our admin workstation where we create our policies and execute our management commands. We run the **knife** command from the Chef Workstation to manage our infrastructure.\n\nThere is also the concept of “Cookbooks” and “Recipes”. These are effectively the policies we define and apply to our servers.\n\n## Preparing the workstation\n\nFirst, lets prep the workstation. I’m using a standard Windows workstation. We need to create a directory to store our config files and cookbooks.\n\nFirst create a directory called C:\\chef.\n\nThen create a second directory called c:\\chef\\cookbooks.\n\nWe now need to download our Azure settings file so Chef can communicate with our Azure subscription.\n\nDownload your publish settings from [here](https://manage.windowsazure.com/publishsettings/).\n\nSave the publish settings file in C:\\chef.\n\n##Creating a managed Chef account\n\nSign up for a hosted Chef account [here](https://manage.chef.io/signup).\n\nDuring the signup process, you will be asked to create a new organization.\n\n![][3]\n\nOnce your organization is created, download the starter kit.\n\n![][4]\n\n> [AZURE.NOTE] If you receive a prompt warning you that your keys will be reset, it’s ok to proceed as we have no existing infrastructure configured as yet.\n\nThis starter kit zip file contains your organization config files and keys.\n\n##Configuring the Chef workstation\n\nExtract the content of the chef-starter.zip to C:\\chef.\n\nCopy all files under chef-starter\\chef-repo\\.chef to your c:\\chef directory.\n\nYour directory should now look something like the following example.\n\n![][5]\n\nYou should now have four files including the Azure publishing file in the root of c:\\chef.\n\nThe PEM files contain your organization and admin private keys for communication while the knife.rb file contains your knife configuration. We will need to edit the knife.rb file.\n\nOpen the file in your editor of choice and modify the “cookbook_path” by removing the /../ from the path so it appears as shown next.\n\n    cookbook_path  [\"#{current_dir}/cookbooks\"]\n\nAlso add the following line reflecting the name of your Azure publish settings file.\n\n    knife[:azure_publish_settings_file] = \"yourfilename.publishsettings\"\n\nYour knife.rb file should now look similar to the following example.\n\n![][6]\n\nThese lines will ensure that Knife references the cookbooks directory under c:\\chef\\cookbooks, and also uses our Azure Publish Settings file during Azure operations.\n\n## Installing the Chef Development Kit\n\nNext [download and install](http://downloads.getchef.com/chef-dk/windows) the ChefDK (Chef Development Kit) to set up your Chef Workstation.\n\n![][7]\n\nInstall in the default location of c:\\opscode. This install will take around 10 minutes.\n\nConfirm your PATH variable contains entries for C:\\opscode\\chefdk\\bin;C:\\opscode\\chefdk\\embedded\\bin;c:\\users\\yourusername\\.chefdk\\gem\\ruby\\2.0.0\\bin\n\nIf they are not there, make sure you add these paths!\n\n*NOTE THE ORDER OF THE PATH IS IMPORTANT!* If your opscode paths are not in the correct order you will have issues.\n\nReboot your workstation before you continue.\n\nNext, we will install the Knife Azure extension. This provides Knife with the “Azure Plugin”.\n\nRun the following command.\n\n    chef gem install knife-azure ––pre\n\n> [AZURE.NOTE] The –pre argument ensures you are receiving the latest RC version of the Knife Azure Plugin which provides access to the latest set of APIs.\n\nIt’s likely that a number of dependencies will also be installed at the same time.\n\n![][8]\n\n\nTo ensure everything is configured correctly, run the following command.\n\n    knife azure image list\n\nIf everything is configured correctly, you will see a list of available Azure images scroll through.\n\nCongratulations. The workstation is set up!\n\n##Creating a Cookbook\n\nA Cookbook is used by Chef to define a set of commands that you wish to execute on your managed client. Creating a Cookbook is straightforward and we use the **chef generate cookbook** command to generate our Cookbook template. I will be calling my Cookbook web server as I would like a policy that automatically deploys IIS.\n\nUnder your C:\\Chef directory run the following command.\n\n    chef generate cookbook webserver\n\nThis will generate a set of files under the directory C:\\Chef\\cookbooks\\webserver. We now need to define the set of commands we would like our Chef client to execute on our managed virtual machine.\n\nThe commands are stored in the file default.rb. In this file, I’ll be defining a set of commands that installs IIS, starts IIS and copies a template file to the wwwroot folder.\n\nModify the C:\\chef\\cookbooks\\webserver\\recipes\\default.rb file and add the following lines.\n\n    powershell_script 'Install IIS' do\n        action :run\n        code 'add-windowsfeature Web-Server'\n    end\n\n    service 'w3svc' do\n        action [ :enable, :start ]\n    end\n\n    template 'c:\\inetpub\\wwwroot\\Default.htm' do\n        source 'Default.htm.erb'\n        rights :read, 'Everyone'\n    end\n\nSave the file once you are done.\n\n## Creating a template\n\nAs we mentioned previously, we need to generate a template file which will be used as our default.html page.\n\nRun the following command to generate the template.\n\n    chef generate template webserver Default.htm\n\nNow navigate to the C:\\chef\\cookbooks\\webserver\\templates\\default\\Default.htm.erb file. Edit the file by adding some simple “Hello World” HTML code, and then save the file.\n\n\n\n## Upload the Cookbook to the Chef Server\n\nIn this step, we are taking a copy of the Cookbook that we have created on our local machine and uploading it to the Chef Hosted Server. Once uploaded, the Cookbook will appear under the **Policy** tab.\n\n    knife cookbook upload webserver\n\n![][9]\n\n## Deploy a virtual machine with Knife Azure\n\nWe will now deploy an Azure virtual machine and apply the “Webserver” Cookbook which will install our IIS web service and default web page.\n\nIn order to do this, use the **knife azure server create** command.\n\nAm example of the command appears next.\n\n    knife azure server create --azure-dns-name 'diegotest01' --azure-vm-name 'testserver01' --azure-vm-size 'Small' --azure-storage-account 'portalvhdsxxxx' --bootstrap-protocol 'cloud-api' --azure-source-image 'a699494373c04fc0bc8f2bb1389d6106__Windows-Server-2012-Datacenter-201411.01-en.us-127GB.vhd' --azure-service-location 'Southeast Asia' --winrm-user azureuser --winrm-password 'myPassword123' --tcp-endpoints 80,3389 --r 'recipe[webserver]'\n\nThe parameters are self-explanatory. Substitute your particular variables and run.\n\n> [AZURE.NOTE] Through the the command line, I’m also automating my endpoint network filter rules by using the –tcp-endpoints parameter. I’ve opened up ports 80 and 3389 to provide access to my web page and RDP session.\n\nOnce you run the command, go to the Azure portal and you will see your machine begin to provision.\n\n![][13]\n\nThe command prompt appears next.\n\n![][10]\n\nOnce the deployment is complete, we should be able to connect to the web service over port 80 as we had opened the port when we provisioned the virtual machine with the Knife Azure command. As this virtual machine is the only virtual machine in my cloud service, I’ll connect it with the cloud service url.\n\n![][11]\n\nAs you can see, I got creative with my HTML code.\n\nDon’t forget we can also connect through an RDP session from the Azure portal via port 3389.\n\nI hope this has been helpful! Go  and start your infrastructure as code journey with Azure today!\n\n\n<!--Image references-->\n[2]: ./media/virtual-machines-automation-with-chef/2.png\n[3]: ./media/virtual-machines-automation-with-chef/3.png\n[4]: ./media/virtual-machines-automation-with-chef/4.png\n[5]: ./media/virtual-machines-automation-with-chef/5.png\n[6]: ./media/virtual-machines-automation-with-chef/6.png\n[7]: ./media/virtual-machines-automation-with-chef/7.png\n[8]: ./media/virtual-machines-automation-with-chef/8.png\n[9]: ./media/virtual-machines-automation-with-chef/9.png\n[10]: ./media/virtual-machines-automation-with-chef/10.png\n[11]: ./media/virtual-machines-automation-with-chef/11.png\n[13]: ./media/virtual-machines-automation-with-chef/13.png\n\n\n<!--Link references-->\n"
+}

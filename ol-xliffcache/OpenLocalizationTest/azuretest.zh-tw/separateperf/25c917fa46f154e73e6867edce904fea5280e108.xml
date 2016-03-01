@@ -1,0 +1,355 @@
+{
+  "nodes": [
+    {
+      "content": "Use Hadoop Hive with PowerShell in HDInsight | Microsoft Azure",
+      "pos": [
+        26,
+        88
+      ]
+    },
+    {
+      "content": "Use PowerShell to run Hive queries in Hadoop on HDInsight.",
+      "pos": [
+        106,
+        164
+      ]
+    },
+    {
+      "content": "Run Hive queries using PowerShell",
+      "pos": [
+        481,
+        514
+      ]
+    },
+    {
+      "content": "This document provides an example of using Azure PowerShell to run Hive queries in a Hadoop on HDInsight cluster.",
+      "pos": [
+        596,
+        709
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> This document does not provide a detailed description of what the HiveQL statements that are used in the examples do.",
+      "pos": [
+        713,
+        843
+      ]
+    },
+    {
+      "content": "For information on the HiveQL that is used in this example, see <bpt id=\"p1\">[</bpt>Use Hive with Hadoop on HDInsight<ept id=\"p1\">](hdinsight-use-hive.md)</ept>.",
+      "pos": [
+        844,
+        967
+      ]
+    },
+    {
+      "pos": [
+        972,
+        1004
+      ],
+      "content": "<ph id=\"ph1\">&lt;a id=\"prereq\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Prerequisites"
+    },
+    {
+      "content": "To complete the steps in this article, you will need the following.",
+      "pos": [
+        1006,
+        1073
+      ]
+    },
+    {
+      "content": "An Azure HDInsight (Hadoop on HDInsight) cluster (Windows-based or Linux-based)",
+      "pos": [
+        1079,
+        1158
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>A workstation with Azure PowerShell<ept id=\"p1\">**</ept>.",
+      "pos": [
+        1163,
+        1203
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt>Install and use Azure PowerShell<ept id=\"p1\">](http://azure.microsoft.com/documentation/videos/install-and-use-azure-powershell/)</ept>.",
+      "pos": [
+        1204,
+        1326
+      ]
+    },
+    {
+      "pos": [
+        1330,
+        1392
+      ],
+      "content": "<ph id=\"ph1\">&lt;a id=\"powershell\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Run Hive queries using Azure PowerShell"
+    },
+    {
+      "content": "Azure PowerShell provides <bpt id=\"p1\">*</bpt>cmdlets<ept id=\"p1\">*</ept> that allow you to remotely run Hive queries on HDInsight.",
+      "pos": [
+        1394,
+        1487
+      ]
+    },
+    {
+      "content": "Internally, this is accomplished by using REST calls to <bpt id=\"p1\">[</bpt>WebHCat<ept id=\"p1\">](https://cwiki.apache.org/confluence/display/Hive/WebHCat)</ept> (formerly called Templeton) running on the HDInsight cluster.",
+      "pos": [
+        1488,
+        1673
+      ]
+    },
+    {
+      "content": "The following cmdlets are used when running Hive queries in a remote HDInsight cluster:",
+      "pos": [
+        1675,
+        1762
+      ]
+    },
+    {
+      "pos": [
+        1766,
+        1845
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Add-AzureAccount<ept id=\"p1\">**</ept>: Authenticates Azure PowerShell to your Azure subscription"
+    },
+    {
+      "pos": [
+        1849,
+        1961
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>New-AzureHDInsightHiveJobDefinition<ept id=\"p1\">**</ept>: Creates a new <bpt id=\"p2\">*</bpt>job definition<ept id=\"p2\">*</ept> by using the specified HiveQL statements"
+    },
+    {
+      "pos": [
+        1965,
+        2123
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Start-AzureHDInsightJob<ept id=\"p1\">**</ept>: Sends the job definition to HDInsight, starts the job, and returns a <bpt id=\"p2\">*</bpt>job<ept id=\"p2\">*</ept> object that can be used to check the status of the job"
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Wait-AzureHDInsightJob<ept id=\"p1\">**</ept>: Uses the job object to check the status of the job.",
+      "pos": [
+        2127,
+        2206
+      ]
+    },
+    {
+      "content": "It will wait until the job completes or the wait time is exceeded.",
+      "pos": [
+        2207,
+        2273
+      ]
+    },
+    {
+      "pos": [
+        2277,
+        2348
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Get-AzureHDInsightJobOutput<ept id=\"p1\">**</ept>: Used to retrieve the output of the job"
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Invoke-Hive<ept id=\"p1\">**</ept>: Used to run HiveQL statements.",
+      "pos": [
+        2352,
+        2399
+      ]
+    },
+    {
+      "content": "This will block the query completes, then returns the results",
+      "pos": [
+        2400,
+        2461
+      ]
+    },
+    {
+      "pos": [
+        2465,
+        2559
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Use-AzureHDInsightCluster<ept id=\"p1\">**</ept>: Sets the current cluster to use for the <bpt id=\"p2\">**</bpt>Invoke-Hive<ept id=\"p2\">**</ept> command"
+    },
+    {
+      "content": "The following steps demonstrate how to use these cmdlets to run a job in your HDInsight cluster:",
+      "pos": [
+        2561,
+        2657
+      ]
+    },
+    {
+      "content": "Using an editor, save the following code as <bpt id=\"p1\">**</bpt>hivejob.ps1<ept id=\"p1\">**</ept>.",
+      "pos": [
+        2662,
+        2722
+      ]
+    },
+    {
+      "content": "You must replace <bpt id=\"p1\">**</bpt>CLUSTERNAME<ept id=\"p1\">**</ept> with the name of your HDInsight cluster.",
+      "pos": [
+        2723,
+        2796
+      ]
+    },
+    {
+      "content": "Open a new <bpt id=\"p1\">**</bpt>Azure PowerShell<ept id=\"p1\">**</ept> command prompt.",
+      "pos": [
+        4244,
+        4291
+      ]
+    },
+    {
+      "content": "Change directories to the location of the <bpt id=\"p1\">**</bpt>hivejob.ps1<ept id=\"p1\">**</ept> file, then use the following command to run the script:",
+      "pos": [
+        4292,
+        4405
+      ]
+    },
+    {
+      "content": "When the job completes, it should return information similar to the following:",
+      "pos": [
+        4433,
+        4511
+      ]
+    },
+    {
+      "content": "As mentioned earlier, <bpt id=\"p1\">**</bpt>Invoke-Hive<ept id=\"p1\">**</ept> can be used to run a query and wait for the response.",
+      "pos": [
+        4574,
+        4665
+      ]
+    },
+    {
+      "content": "Use the following commands, and replace <bpt id=\"p1\">**</bpt>CLUSTERNAME<ept id=\"p1\">**</ept> with the name of your cluster:",
+      "pos": [
+        4666,
+        4752
+      ]
+    },
+    {
+      "content": "The output will look like the following:",
+      "pos": [
+        5129,
+        5169
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> For longer HiveQL queries, you can use the Azure PowerShell <bpt id=\"p1\">**</bpt>Here-Strings<ept id=\"p1\">**</ept> cmdlet or HiveQL script files.",
+      "pos": [
+        5391,
+        5511
+      ]
+    },
+    {
+      "content": "The following snippet shows how to use the <bpt id=\"p1\">**</bpt>Invoke-Hive<ept id=\"p1\">**</ept> cmdlet to run a HiveQL script file.",
+      "pos": [
+        5512,
+        5606
+      ]
+    },
+    {
+      "content": "The HiveQL script file must be uploaded to wasb://.",
+      "pos": [
+        5607,
+        5658
+      ]
+    },
+    {
+      "pos": [
+        5766,
+        5934
+      ],
+      "content": "For more information about <bpt id=\"p1\">**</bpt>Here-Strings<ept id=\"p1\">**</ept>, see <ph id=\"ph1\">&lt;a href=\"http://technet.microsoft.com/library/ee692792.aspx\" target=\"_blank\"&gt;</ph>Using Windows PowerShell Here-Strings<ph id=\"ph2\">&lt;/a&gt;</ph>."
+    },
+    {
+      "pos": [
+        5938,
+        5981
+      ],
+      "content": "<ph id=\"ph1\">&lt;a id=\"troubleshooting\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Troubleshooting"
+    },
+    {
+      "content": "If no information is returned when the job completes, an error may have occurred during processing.",
+      "pos": [
+        5983,
+        6082
+      ]
+    },
+    {
+      "content": "To view error information for this job, add the following to the end of the <bpt id=\"p1\">**</bpt>hivejob.ps1<ept id=\"p1\">**</ept> file, save it, and then run it again.",
+      "pos": [
+        6083,
+        6212
+      ]
+    },
+    {
+      "content": "This returns the information that is written to STDERR on the server when you ran the job, and it may help determine why the job is failing.",
+      "pos": [
+        6418,
+        6558
+      ]
+    },
+    {
+      "pos": [
+        6562,
+        6589
+      ],
+      "content": "<ph id=\"ph1\">&lt;a id=\"summary\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Summary"
+    },
+    {
+      "content": "As you can see, Azure PowerShell provides an easy way to run Hive queries in an HDInsight cluster, monitor the job status, and retrieve the output.",
+      "pos": [
+        6591,
+        6738
+      ]
+    },
+    {
+      "pos": [
+        6742,
+        6774
+      ],
+      "content": "<ph id=\"ph1\">&lt;a id=\"nextsteps\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Next steps"
+    },
+    {
+      "content": "For general information about Hive in HDInsight:",
+      "pos": [
+        6776,
+        6824
+      ]
+    },
+    {
+      "content": "Use Hive with Hadoop on HDInsight",
+      "pos": [
+        6829,
+        6862
+      ]
+    },
+    {
+      "content": "For information about other ways you can work with Hadoop on HDInsight:",
+      "pos": [
+        6888,
+        6959
+      ]
+    },
+    {
+      "content": "Use Pig with Hadoop on HDInsight",
+      "pos": [
+        6964,
+        6996
+      ]
+    },
+    {
+      "content": "Use MapReduce with Hadoop on HDInsight",
+      "pos": [
+        7024,
+        7062
+      ]
+    },
+    {
+      "content": "test",
+      "pos": [
+        7093,
+        7097
+      ]
+    }
+  ],
+  "content": "<properties\n   pageTitle=\"Use Hadoop Hive with PowerShell in HDInsight | Microsoft Azure\"\n   description=\"Use PowerShell to run Hive queries in Hadoop on HDInsight.\"\n   services=\"hdinsight\"\n   documentationCenter=\"\"\n   authors=\"Blackmist\"\n   manager=\"paulettm\"\n   editor=\"cgronlun\"\n    tags=\"azure-portal\"/>\n\n<tags\n   ms.service=\"hdinsight\"\n   ms.devlang=\"na\"\n   ms.topic=\"article\"\n   ms.tgt_pltfrm=\"na\"\n   ms.workload=\"big-data\"\n   ms.date=\"07/06/2015\"\n   ms.author=\"larryfr\"/>\n\n#Run Hive queries using PowerShell\n\n[AZURE.INCLUDE [hive-selector](../../includes/hdinsight-selector-use-hive.md)]\n\nThis document provides an example of using Azure PowerShell to run Hive queries in a Hadoop on HDInsight cluster.\n\n> [AZURE.NOTE] This document does not provide a detailed description of what the HiveQL statements that are used in the examples do. For information on the HiveQL that is used in this example, see [Use Hive with Hadoop on HDInsight](hdinsight-use-hive.md).\n\n\n##<a id=\"prereq\"></a>Prerequisites\n\nTo complete the steps in this article, you will need the following.\n\n- **An Azure HDInsight (Hadoop on HDInsight) cluster (Windows-based or Linux-based)**\n- **A workstation with Azure PowerShell**. See [Install and use Azure PowerShell](http://azure.microsoft.com/documentation/videos/install-and-use-azure-powershell/).\n\n##<a id=\"powershell\"></a>Run Hive queries using Azure PowerShell\n\nAzure PowerShell provides *cmdlets* that allow you to remotely run Hive queries on HDInsight. Internally, this is accomplished by using REST calls to [WebHCat](https://cwiki.apache.org/confluence/display/Hive/WebHCat) (formerly called Templeton) running on the HDInsight cluster.\n\nThe following cmdlets are used when running Hive queries in a remote HDInsight cluster:\n\n* **Add-AzureAccount**: Authenticates Azure PowerShell to your Azure subscription\n\n* **New-AzureHDInsightHiveJobDefinition**: Creates a new *job definition* by using the specified HiveQL statements\n\n* **Start-AzureHDInsightJob**: Sends the job definition to HDInsight, starts the job, and returns a *job* object that can be used to check the status of the job\n\n* **Wait-AzureHDInsightJob**: Uses the job object to check the status of the job. It will wait until the job completes or the wait time is exceeded.\n\n* **Get-AzureHDInsightJobOutput**: Used to retrieve the output of the job\n\n* **Invoke-Hive**: Used to run HiveQL statements. This will block the query completes, then returns the results\n\n* **Use-AzureHDInsightCluster**: Sets the current cluster to use for the **Invoke-Hive** command\n\nThe following steps demonstrate how to use these cmdlets to run a job in your HDInsight cluster:\n\n1. Using an editor, save the following code as **hivejob.ps1**. You must replace **CLUSTERNAME** with the name of your HDInsight cluster.\n\n        #Login to your Azure subscription\n        # Is there an active Azure subscription?\n        $sub = Get-AzureSubscription -ErrorAction SilentlyContinue\n        if(-not($sub))\n        {\n            Add-AzureAccount\n        }\n\n        #Specify the cluster name\n        $clusterName = \"CLUSTERNAME\"\n\n        #HiveQL\n        $queryString = \"DROP TABLE log4jLogs;\" +\n                       \"CREATE EXTERNAL TABLE log4jLogs(t1 string, t2 string, t3 string, t4 string, t5 string, t6 string, t7 string) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE LOCATION 'wasb:///example/data/';\" +\n                       \"SELECT t4 AS sev, COUNT(*) AS cnt FROM log4jLogs WHERE t4 = '[ERROR]' GROUP BY t4;\"\n\n        #Create an HDInsight Hive job definition\n        $hiveJobDefinition = New-AzureHDInsightHiveJobDefinition -Query $queryString\n\n        #Submit the job to the cluster\n        Write-Host \"Start the Hive job...\" -ForegroundColor Green\n        $hiveJob = Start-AzureHDInsightJob -Cluster $clusterName -JobDefinition $hiveJobDefinition\n\n        #Wait for the Hive job to complete\n        Write-Host \"Wait for the job to complete...\" -ForegroundColor Green\n        Wait-AzureHDInsightJob -Job $hiveJob -WaitTimeoutInSeconds 3600\n\n        # Print the output\n        Write-Host \"Display the standard output...\" -ForegroundColor Green\n        Get-AzureHDInsightJobOutput -Cluster $clusterName -JobId $hiveJob.JobId -StandardOutput\n\n2. Open a new **Azure PowerShell** command prompt. Change directories to the location of the **hivejob.ps1** file, then use the following command to run the script:\n\n        .\\hivejob.ps1\n\n7. When the job completes, it should return information similar to the following:\n\n        Display the standard output...\n        [ERROR] 3\n\n4. As mentioned earlier, **Invoke-Hive** can be used to run a query and wait for the response. Use the following commands, and replace **CLUSTERNAME** with the name of your cluster:\n\n        Use-AzureHDInsightCluster CLUSTERNAME\n        Invoke-Hive -Query @\"\n        CREATE TABLE IF NOT EXISTS errorLogs (t1 string, t2 string, t3 string, t4 string, t5 string, t6 string, t7 string) STORED AS ORC;\n        INSERT OVERWRITE TABLE errorLogs SELECT t1, t2, t3, t4, t5, t6, t7 FROM log4jLogs WHERE t4 = '[ERROR]';\n        SELECT * FROM errorLogs;\n        \"@\n\n    The output will look like the following:\n\n        2012-02-03  18:35:34    SampleClass0    [ERROR] incorrect   id\n        2012-02-03  18:55:54    SampleClass1    [ERROR] incorrect   id\n        2012-02-03  19:25:27    SampleClass4    [ERROR] incorrect   id\n\n    > [AZURE.NOTE] For longer HiveQL queries, you can use the Azure PowerShell **Here-Strings** cmdlet or HiveQL script files. The following snippet shows how to use the **Invoke-Hive** cmdlet to run a HiveQL script file. The HiveQL script file must be uploaded to wasb://.\n    >\n    > `Invoke-Hive -File \"wasb://<ContainerName>@<StorageAccountName>/<Path>/query.hql\"`\n    >\n    > For more information about **Here-Strings**, see <a href=\"http://technet.microsoft.com/library/ee692792.aspx\" target=\"_blank\">Using Windows PowerShell Here-Strings</a>.\n\n##<a id=\"troubleshooting\"></a>Troubleshooting\n\nIf no information is returned when the job completes, an error may have occurred during processing. To view error information for this job, add the following to the end of the **hivejob.ps1** file, save it, and then run it again.\n\n    # Print the output of the Hive job.\n    Write-Host \"Display the standard output ...\" -ForegroundColor Green\n    Get-AzureHDInsightJobOutput -Cluster $clusterName -JobId $hiveJob.JobId -StandardError\n\nThis returns the information that is written to STDERR on the server when you ran the job, and it may help determine why the job is failing.\n\n##<a id=\"summary\"></a>Summary\n\nAs you can see, Azure PowerShell provides an easy way to run Hive queries in an HDInsight cluster, monitor the job status, and retrieve the output.\n\n##<a id=\"nextsteps\"></a>Next steps\n\nFor general information about Hive in HDInsight:\n\n* [Use Hive with Hadoop on HDInsight](hdinsight-use-hive.md)\n\nFor information about other ways you can work with Hadoop on HDInsight:\n\n* [Use Pig with Hadoop on HDInsight](hdinsight-use-pig.md)\n\n* [Use MapReduce with Hadoop on HDInsight](hdinsight-use-mapreduce.md)\n\ntest\n"
+}

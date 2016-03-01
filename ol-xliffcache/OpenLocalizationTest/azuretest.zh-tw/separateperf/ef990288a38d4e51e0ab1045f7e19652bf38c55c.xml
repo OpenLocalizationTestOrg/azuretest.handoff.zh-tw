@@ -1,0 +1,187 @@
+{
+  "nodes": [
+    {
+      "content": "Some Azure Service Fabric Actors anti-patterns",
+      "pos": [
+        26,
+        72
+      ]
+    },
+    {
+      "content": "Some potential pitfalls for customers who are learning Azure Service Fabric Actors",
+      "pos": [
+        90,
+        172
+      ]
+    },
+    {
+      "content": "Reliable Actors design pattern: Some anti-patterns",
+      "pos": [
+        470,
+        520
+      ]
+    },
+    {
+      "content": "We identified the following potential pitfalls for customers who are learning Service Fabric Reliable Actors:",
+      "pos": [
+        522,
+        631
+      ]
+    },
+    {
+      "content": "Treat Reliable Actors as a transactional system.",
+      "pos": [
+        635,
+        683
+      ]
+    },
+    {
+      "content": "Service Fabric Reliable Actors is not a two phase commit-based system offering ACID.",
+      "pos": [
+        684,
+        768
+      ]
+    },
+    {
+      "content": "If we do not implement the optional persistence, and the machine the actor is running on dies, its current state will go with it.",
+      "pos": [
+        769,
+        898
+      ]
+    },
+    {
+      "content": "The actor will be coming up on another node very fast, but unless we have implemented the backing persistence, the state will be gone.",
+      "pos": [
+        899,
+        1033
+      ]
+    },
+    {
+      "content": "However, between leveraging retries, duplicate filtering, and/or idempotent design, you can achieve a high level of reliability and consistency.",
+      "pos": [
+        1034,
+        1178
+      ]
+    },
+    {
+      "content": "Block.",
+      "pos": [
+        1182,
+        1188
+      ]
+    },
+    {
+      "content": "Everything we do in Reliable Actors should be asynchronous.",
+      "pos": [
+        1189,
+        1248
+      ]
+    },
+    {
+      "content": "This is usually easy because async APIs are prolific now in the Microsoft platform.",
+      "pos": [
+        1249,
+        1332
+      ]
+    },
+    {
+      "content": "But if, for some reason, we must interact with a system that only provides a blocking API, we are going to need to put that in a wrapper that explicitly uses the .NET Thread Pool.",
+      "pos": [
+        1333,
+        1512
+      ]
+    },
+    {
+      "content": "Over architect.",
+      "pos": [
+        1516,
+        1531
+      ]
+    },
+    {
+      "content": "Let the environment work.",
+      "pos": [
+        1532,
+        1557
+      ]
+    },
+    {
+      "content": "It can be hard for developers who are accustomed to worrying about concurrent collections and locks, or using tools to compile objects from XML, to simply just code a class that does simple things like assign a value to a variable or schedule work.",
+      "pos": [
+        1558,
+        1806
+      ]
+    },
+    {
+      "content": "Scheduled tasks are built in.",
+      "pos": [
+        1807,
+        1836
+      ]
+    },
+    {
+      "content": "Locks are not needed.",
+      "pos": [
+        1837,
+        1858
+      ]
+    },
+    {
+      "content": "State is not a mortal enemy.",
+      "pos": [
+        1859,
+        1887
+      ]
+    },
+    {
+      "content": "This takes some getting used to for many folks who’ve done a lot of server side work in large scale environments.",
+      "pos": [
+        1888,
+        2001
+      ]
+    },
+    {
+      "content": "Make a single actor the bottleneck.",
+      "pos": [
+        2005,
+        2040
+      ]
+    },
+    {
+      "content": "It is often too easy to be trapped with this one, having millions of actors funnelling into a single instance of another actor.",
+      "pos": [
+        2041,
+        2168
+      ]
+    },
+    {
+      "content": "Use the aggregation approach that we demonstrated in the <bpt id=\"p1\">[</bpt>distributed computation design pattern<ept id=\"p1\">](service-fabric-reliable-actors-pattern-distributed-computation.md)</ept>.",
+      "pos": [
+        2169,
+        2334
+      ]
+    },
+    {
+      "content": "Map entity models blindly.",
+      "pos": [
+        2338,
+        2364
+      ]
+    },
+    {
+      "content": "This is for developers who are coming from a relational universe where problems are modelled using entities and their relationships.",
+      "pos": [
+        2365,
+        2497
+      ]
+    },
+    {
+      "content": "While this approach is still useful for understanding the subject domain, it should be coupled with service-oriented thinking and blended with the behavior.",
+      "pos": [
+        2498,
+        2654
+      ]
+    }
+  ],
+  "content": "<properties\n   pageTitle=\"Some Azure Service Fabric Actors anti-patterns\"\n   description=\"Some potential pitfalls for customers who are learning Azure Service Fabric Actors\"\n   services=\"service-fabric\"\n   documentationCenter=\".net\"\n   authors=\"jessebenson\"\n   manager=\"timlt\"\n   editor=\"\"/>\n\n<tags\n   ms.service=\"service-fabric\"\n   ms.devlang=\"dotnet\"\n   ms.topic=\"article\"\n   ms.tgt_pltfrm=\"NA\"\n   ms.workload=\"NA\"\n   ms.date=\"08/11/2015\"\n   ms.author=\"claudioc\"/>\n\n# Reliable Actors design pattern: Some anti-patterns\n\nWe identified the following potential pitfalls for customers who are learning Service Fabric Reliable Actors:\n\n* Treat Reliable Actors as a transactional system. Service Fabric Reliable Actors is not a two phase commit-based system offering ACID. If we do not implement the optional persistence, and the machine the actor is running on dies, its current state will go with it. The actor will be coming up on another node very fast, but unless we have implemented the backing persistence, the state will be gone. However, between leveraging retries, duplicate filtering, and/or idempotent design, you can achieve a high level of reliability and consistency.\n\n* Block. Everything we do in Reliable Actors should be asynchronous. This is usually easy because async APIs are prolific now in the Microsoft platform. But if, for some reason, we must interact with a system that only provides a blocking API, we are going to need to put that in a wrapper that explicitly uses the .NET Thread Pool.\n\n* Over architect. Let the environment work. It can be hard for developers who are accustomed to worrying about concurrent collections and locks, or using tools to compile objects from XML, to simply just code a class that does simple things like assign a value to a variable or schedule work. Scheduled tasks are built in. Locks are not needed. State is not a mortal enemy. This takes some getting used to for many folks who’ve done a lot of server side work in large scale environments.\n\n* Make a single actor the bottleneck. It is often too easy to be trapped with this one, having millions of actors funnelling into a single instance of another actor. Use the aggregation approach that we demonstrated in the [distributed computation design pattern](service-fabric-reliable-actors-pattern-distributed-computation.md).\n\n* Map entity models blindly. This is for developers who are coming from a relational universe where problems are modelled using entities and their relationships. While this approach is still useful for understanding the subject domain, it should be coupled with service-oriented thinking and blended with the behavior.\n"
+}

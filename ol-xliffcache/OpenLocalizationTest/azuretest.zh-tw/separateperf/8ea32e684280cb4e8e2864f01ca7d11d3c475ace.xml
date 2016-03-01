@@ -1,0 +1,474 @@
+{
+  "nodes": [
+    {
+      "content": "Role Based Access Control in Mobile Services and Azure Active Directory (Windows Store) | Microsoft Azure",
+      "pos": [
+        28,
+        133
+      ]
+    },
+    {
+      "content": "Learn how to control access based on Azure Active Directory roles in your Windows Store application.",
+      "pos": [
+        153,
+        253
+      ]
+    },
+    {
+      "content": "Role Based Access Control in Mobile Services and Azure Active Directory",
+      "pos": [
+        598,
+        669
+      ]
+    },
+    {
+      "content": "Overview",
+      "pos": [
+        771,
+        779
+      ]
+    },
+    {
+      "content": "Roles-based access control (RBAC) is the practice of assigning permissions to roles that your users can hold, nicely defining boundaries on what certain classes of users can and cannot do.",
+      "pos": [
+        781,
+        969
+      ]
+    },
+    {
+      "content": "This tutorial will walk you through how to add basic RBAC to Azure Mobile Services.",
+      "pos": [
+        970,
+        1053
+      ]
+    },
+    {
+      "content": "This tutorial will demonstrate role based access control, checking each user's membership to a Sales group defined in the Azure Active Directory (AAD).",
+      "pos": [
+        1055,
+        1206
+      ]
+    },
+    {
+      "content": "The access check will be done with JavaScript in the mobile service backend using the <bpt id=\"p1\">[</bpt><ept id=\"p1\">Graph API]</ept> for Azure Active Directory.",
+      "pos": [
+        1207,
+        1332
+      ]
+    },
+    {
+      "content": "Only users who belong to the Sales role will be allowed to query the data.",
+      "pos": [
+        1333,
+        1407
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> The intent of this tutorial is to extend your knowledge of authentication to include authorization practices.",
+      "pos": [
+        1411,
+        1533
+      ]
+    },
+    {
+      "content": "It is expected that you first complete the <bpt id=\"p1\">[</bpt><ept id=\"p1\">Add authentication to your Mobile Service app]</ept> tutorial using the Azure Active Directory authentication provider.",
+      "pos": [
+        1534,
+        1691
+      ]
+    },
+    {
+      "content": "This tutorial continues to update the TodoItem application used in the <bpt id=\"p1\">[</bpt><ept id=\"p1\">Add authentication to your Mobile Service app]</ept> tutorial.",
+      "pos": [
+        1692,
+        1820
+      ]
+    },
+    {
+      "content": "Prerequisites",
+      "pos": [
+        1824,
+        1837
+      ]
+    },
+    {
+      "content": "This tutorial requires the following:",
+      "pos": [
+        1839,
+        1876
+      ]
+    },
+    {
+      "content": "Visual Studio 2013 running on Windows 8.1.",
+      "pos": [
+        1880,
+        1922
+      ]
+    },
+    {
+      "pos": [
+        1925,
+        2057
+      ],
+      "content": "Completion of the <bpt id=\"p1\">[</bpt><ept id=\"p1\">Add authentication to your Mobile Service app]</ept> tutorial using the Azure Active Directory authentication provider."
+    },
+    {
+      "pos": [
+        2060,
+        2177
+      ],
+      "content": "Completion of the <bpt id=\"p1\">[</bpt><ept id=\"p1\">Store Server Scripts]</ept> tutorial to be familiar with using a Git repository to store server scripts."
+    },
+    {
+      "content": "Create a Sales group with membership",
+      "pos": [
+        2184,
+        2220
+      ]
+    },
+    {
+      "content": "Generate a key for the Integrated Application",
+      "pos": [
+        2351,
+        2396
+      ]
+    },
+    {
+      "content": "During the <bpt id=\"p1\">[</bpt><ept id=\"p1\">Add authentication to your Mobile Service app]</ept> tutorial, you created a registration for the integrated application when you completed the <bpt id=\"p2\">[</bpt><ept id=\"p2\">Register to use an Azure Active Directory Login]</ept> step.",
+      "pos": [
+        2399,
+        2604
+      ]
+    },
+    {
+      "content": "In this section you generate a key to be used when reading directory information with that integrated application's client ID.",
+      "pos": [
+        2605,
+        2731
+      ]
+    },
+    {
+      "pos": [
+        2734,
+        2884
+      ],
+      "content": "If you went through the <bpt id=\"p1\">[</bpt><ept id=\"p1\">Accessing Azure Active Directory Graph Information]</ept> tutorial, you have already completed this step and can skip this section."
+    },
+    {
+      "content": "Add a shared script to the mobile service that checks membership",
+      "pos": [
+        3044,
+        3108
+      ]
+    },
+    {
+      "content": "In this section you will use Git to deploy a shared script file named <bpt id=\"p1\">*</bpt>rbac.js<ept id=\"p1\">*</ept> to your mobile service.",
+      "pos": [
+        3110,
+        3213
+      ]
+    },
+    {
+      "content": "This shared script file will contain the functions that use the <bpt id=\"p1\">[</bpt><ept id=\"p1\">Graph API]</ept> to check the group membership of the user.",
+      "pos": [
+        3214,
+        3332
+      ]
+    },
+    {
+      "pos": [
+        3335,
+        3496
+      ],
+      "content": "If you are not familiar with deploying scripts to your mobile service with Git, please review the <bpt id=\"p1\">[</bpt><ept id=\"p1\">Store Server Scripts]</ept> tutorial before completing this section."
+    },
+    {
+      "pos": [
+        3501,
+        3627
+      ],
+      "content": "Create a new script file named <bpt id=\"p1\">*</bpt>rbac.js<ept id=\"p1\">*</ept> in the <bpt id=\"p2\">*</bpt>./service/shared/<ept id=\"p2\">*</ept> directory of the local repository for your mobile service."
+    },
+    {
+      "content": "Add the following script to the top of the file that defines the <ph id=\"ph1\">`getAADToken`</ph> function.",
+      "pos": [
+        3631,
+        3719
+      ]
+    },
+    {
+      "content": "Given the <bpt id=\"p1\">*</bpt>tenant_domain<ept id=\"p1\">*</ept>, integrated application <bpt id=\"p2\">*</bpt>client id<ept id=\"p2\">*</ept>, and application <bpt id=\"p3\">*</bpt>key<ept id=\"p3\">*</ept>, this function provides a Graph access token used for reading directory information.",
+      "pos": [
+        3720,
+        3889
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> You should cache the token instead of creating a new one with each access check.",
+      "pos": [
+        3896,
+        3989
+      ]
+    },
+    {
+      "content": "Then refresh the cache when attempts to use the token result in a 401 Authentication_ExpiredToken response as noted in the <bpt id=\"p1\">[</bpt><ept id=\"p1\">Graph API Error Reference]</ept>.",
+      "pos": [
+        3990,
+        4141
+      ]
+    },
+    {
+      "content": "This isn't demonstrated in the code below for simplicity sake but, it will alleviate extra network traffic against your Active Directory.",
+      "pos": [
+        4142,
+        4279
+      ]
+    },
+    {
+      "content": "Add the following code to <bpt id=\"p1\">*</bpt>rbac.js<ept id=\"p1\">*</ept> to define the <ph id=\"ph1\">`getGroupId`</ph> function.",
+      "pos": [
+        5297,
+        5369
+      ]
+    },
+    {
+      "content": "This function uses the access token to get the group id based on the group name used in a filter.",
+      "pos": [
+        5370,
+        5467
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> This code looks up the Active Directory group by name.",
+      "pos": [
+        5475,
+        5542
+      ]
+    },
+    {
+      "content": "In many cases it may be a better practice to store the group id as a mobile service app setting and just use that group id.",
+      "pos": [
+        5543,
+        5666
+      ]
+    },
+    {
+      "content": "This is because the group name may change but, the id stays the same.",
+      "pos": [
+        5667,
+        5736
+      ]
+    },
+    {
+      "content": "However, with a group name change there is usually at least a change in the scope of the role that may also require an update to the mobile service code.",
+      "pos": [
+        5737,
+        5890
+      ]
+    },
+    {
+      "pos": [
+        6671,
+        6802
+      ],
+      "content": "Add the following code to <bpt id=\"p1\">*</bpt>rbac.js<ept id=\"p1\">*</ept> to define the <ph id=\"ph1\">`isMemberOf`</ph> function that calls the <bpt id=\"p2\">[</bpt><ept id=\"p2\">IsMemberOf]</ept> endpoint of the Graph REST API."
+    },
+    {
+      "content": "This function is a thin wrapper around the <bpt id=\"p1\">[</bpt><ept id=\"p1\">IsMemberOf]</ept> endpoint of the Graph REST API.",
+      "pos": [
+        6808,
+        6895
+      ]
+    },
+    {
+      "content": "It uses the Graph access token to check if the user's directory object id has membership in the group based on the group id.",
+      "pos": [
+        6896,
+        7020
+      ]
+    },
+    {
+      "pos": [
+        7864,
+        7937
+      ],
+      "content": "Add the following exported <ph id=\"ph1\">`checkGroupMembership`</ph> function to <bpt id=\"p1\">*</bpt>rbac.js<ept id=\"p1\">*</ept> ."
+    },
+    {
+      "content": "This function wraps the use of the other script functions and is exported from the shared script to be called by other scripts to perform the actual access checks.",
+      "pos": [
+        7945,
+        8108
+      ]
+    },
+    {
+      "content": "Given the mobile service user object, and the group id, the script will retrieve the Azure Active Directory object id for the user's identity and verify membership to the group.",
+      "pos": [
+        8109,
+        8286
+      ]
+    },
+    {
+      "pos": [
+        9144,
+        9175
+      ],
+      "content": "Save your changes to <bpt id=\"p1\">*</bpt>rbac.js<ept id=\"p1\">*</ept>."
+    },
+    {
+      "content": "Add role based access checking to the database operations",
+      "pos": [
+        9179,
+        9236
+      ]
+    },
+    {
+      "pos": [
+        9239,
+        9410
+      ],
+      "content": "When you completed the <bpt id=\"p1\">[</bpt><ept id=\"p1\">Add authentication to your Mobile Service app]</ept> tutorial, you should have already set the table operations to require authentication as shown below."
+    },
+    {
+      "content": "![][3]",
+      "pos": [
+        9412,
+        9418
+      ]
+    },
+    {
+      "content": "With each database operation requiring authentication, we can add scripts that use the user object for access checks.",
+      "pos": [
+        9420,
+        9537
+      ]
+    },
+    {
+      "content": "The following steps demonstrate how to deploy role based access control using scripts to each table operation in your mobile service.",
+      "pos": [
+        9539,
+        9672
+      ]
+    },
+    {
+      "content": "A script, that uses the shared <bpt id=\"p1\">*</bpt>rbac.js<ept id=\"p1\">*</ept> script, is executed for each table operation.",
+      "pos": [
+        9673,
+        9759
+      ]
+    },
+    {
+      "content": "Add a new script file named <bpt id=\"p1\">*</bpt>todoitem.insert.js<ept id=\"p1\">*</ept> to the <bpt id=\"p2\">*</bpt>./service/table/<ept id=\"p2\">*</ept> directory in the local Git repository for your mobile service.",
+      "pos": [
+        9764,
+        9901
+      ]
+    },
+    {
+      "content": "Paste the following script into that file.",
+      "pos": [
+        9902,
+        9944
+      ]
+    },
+    {
+      "content": "Add a new script file named <bpt id=\"p1\">*</bpt>todoitem.read.js<ept id=\"p1\">*</ept> to the <bpt id=\"p2\">*</bpt>./service/table/<ept id=\"p2\">*</ept> directory in the local Git repository for your mobile service.",
+      "pos": [
+        10387,
+        10522
+      ]
+    },
+    {
+      "content": "Paste the following script into that file.",
+      "pos": [
+        10523,
+        10565
+      ]
+    },
+    {
+      "content": "Add a new script file named <bpt id=\"p1\">*</bpt>todoitem.update.js<ept id=\"p1\">*</ept> to the <bpt id=\"p2\">*</bpt>./service/table/<ept id=\"p2\">*</ept> directory in the local Git repository for your mobile service.",
+      "pos": [
+        11007,
+        11144
+      ]
+    },
+    {
+      "content": "Paste the following script into that file.",
+      "pos": [
+        11145,
+        11187
+      ]
+    },
+    {
+      "content": "Add a new script file named <bpt id=\"p1\">*</bpt>todoitem.delete.js<ept id=\"p1\">*</ept> to the <bpt id=\"p2\">*</bpt>./service/table/<ept id=\"p2\">*</ept> directory in the local Git repository for your mobile service.",
+      "pos": [
+        11630,
+        11767
+      ]
+    },
+    {
+      "content": "Paste the following script into that file.",
+      "pos": [
+        11768,
+        11810
+      ]
+    },
+    {
+      "content": "In the command-line interface to your Git repository, add tracking for the script files you added by executing the following command.",
+      "pos": [
+        12248,
+        12381
+      ]
+    },
+    {
+      "content": "In the command-line interface to your Git repository, commit the updates by executing the following command.",
+      "pos": [
+        12405,
+        12513
+      ]
+    },
+    {
+      "content": "In the command-line interface to your Git repository, deploy the updates to your local Git repository to the mobile service by executing the following command.",
+      "pos": [
+        12597,
+        12756
+      ]
+    },
+    {
+      "content": "This command assumes that you made the updates in the <bpt id=\"p1\">*</bpt>master<ept id=\"p1\">*</ept> branch.",
+      "pos": [
+        12757,
+        12827
+      ]
+    },
+    {
+      "pos": [
+        12864,
+        13019
+      ],
+      "content": "In the <bpt id=\"p1\">[</bpt><ept id=\"p1\">Azure Management Portal]</ept> you should be able to navigate to the table operations for the mobile service and see the updates in place as shown below."
+    },
+    {
+      "content": "![][4]",
+      "pos": [
+        13026,
+        13032
+      ]
+    },
+    {
+      "content": "Test the client's access",
+      "pos": [
+        13036,
+        13060
+      ]
+    },
+    {
+      "content": "test",
+      "pos": [
+        13881,
+        13885
+      ]
+    }
+  ],
+  "content": "<properties \n    pageTitle=\"Role Based Access Control in Mobile Services and Azure Active Directory (Windows Store) | Microsoft Azure\" \n    description=\"Learn how to control access based on Azure Active Directory roles in your Windows Store application.\" \n    documentationCenter=\"windows\" \n    authors=\"wesmc7777\" \n    manager=\"dwrede\" \n    editor=\"\" \n    services=\"mobile-services\"/>\n\n<tags \n    ms.service=\"mobile-services\" \n    ms.workload=\"mobile\" \n    ms.tgt_pltfrm=\"mobile-windows-store\" \n    ms.devlang=\"dotnet\" \n    ms.topic=\"article\" \n    ms.date=\"06/15/2015\" \n    ms.author=\"wesmc\"/>\n\n# Role Based Access Control in Mobile Services and Azure Active Directory\n\n[AZURE.INCLUDE [mobile-services-selector-rbac](../../includes/mobile-services-selector-rbac.md)]\n\n##Overview\n\nRoles-based access control (RBAC) is the practice of assigning permissions to roles that your users can hold, nicely defining boundaries on what certain classes of users can and cannot do. This tutorial will walk you through how to add basic RBAC to Azure Mobile Services.\n\nThis tutorial will demonstrate role based access control, checking each user's membership to a Sales group defined in the Azure Active Directory (AAD). The access check will be done with JavaScript in the mobile service backend using the [Graph API] for Azure Active Directory. Only users who belong to the Sales role will be allowed to query the data.\n\n\n>[AZURE.NOTE] The intent of this tutorial is to extend your knowledge of authentication to include authorization practices. It is expected that you first complete the [Add authentication to your Mobile Service app] tutorial using the Azure Active Directory authentication provider. This tutorial continues to update the TodoItem application used in the [Add authentication to your Mobile Service app] tutorial.\n\n##Prerequisites\n\nThis tutorial requires the following:\n\n* Visual Studio 2013 running on Windows 8.1.\n* Completion of the [Add authentication to your Mobile Service app] tutorial using the Azure Active Directory authentication provider.\n* Completion of the [Store Server Scripts] tutorial to be familiar with using a Git repository to store server scripts.\n \n\n\n##Create a Sales group with membership\n\n[AZURE.INCLUDE [mobile-services-aad-rbac-create-sales-group](../../includes/mobile-services-aad-rbac-create-sales-group.md)]\n\n\n##Generate a key for the Integrated Application\n\n\nDuring the [Add authentication to your Mobile Service app] tutorial, you created a registration for the integrated application when you completed the [Register to use an Azure Active Directory Login] step. In this section you generate a key to be used when reading directory information with that integrated application's client ID. \n\nIf you went through the [Accessing Azure Active Directory Graph Information] tutorial, you have already completed this step and can skip this section.\n\n[AZURE.INCLUDE [mobile-services-generate-aad-app-registration-access-key](../../includes/mobile-services-generate-aad-app-registration-access-key.md)]\n\n\n\n\n\n##Add a shared script to the mobile service that checks membership\n\nIn this section you will use Git to deploy a shared script file named *rbac.js* to your mobile service. This shared script file will contain the functions that use the [Graph API] to check the group membership of the user. \n\nIf you are not familiar with deploying scripts to your mobile service with Git, please review the [Store Server Scripts] tutorial before completing this section.\n\n1. Create a new script file named *rbac.js* in the *./service/shared/* directory of the local repository for your mobile service.\n2. Add the following script to the top of the file that defines the `getAADToken` function. Given the *tenant_domain*, integrated application *client id*, and application *key*, this function provides a Graph access token used for reading directory information.\n\n    >[AZURE.NOTE] You should cache the token instead of creating a new one with each access check. Then refresh the cache when attempts to use the token result in a 401 Authentication_ExpiredToken response as noted in the [Graph API Error Reference]. This isn't demonstrated in the code below for simplicity sake but, it will alleviate extra network traffic against your Active Directory. \n\n        var appSettings = require('mobileservice-config').appSettings;\n        var tenant_domain = appSettings.AAD_TENANT_DOMAIN;\n        var clientID = appSettings.AAD_CLIENT_ID;\n        var key = appSettings.AAD_CLIENT_KEY;\n        exports.SalesGroup = appSettings.AAD_GROUP_ID;\n         \n        function getAADToken(callback) {\n            var req = require(\"request\");\n            var options = {\n                url: \"https://login.windows.net/\" + tenant_domain + \"/oauth2/token?api-version=1.0\",\n                method: 'POST',\n                form: {\n                    grant_type: \"client_credentials\",\n                    resource: \"https://graph.windows.net\",\n                    client_id: clientID,\n                    client_secret: key\n                }\n            };\n            req(options, function (err, resp, body) {\n                if (err || resp.statusCode !== 200) callback(err, null);\n                else callback(null, JSON.parse(body).access_token);\n                });\n        }\n\n\n3. Add the following code to *rbac.js* to define the `getGroupId` function. This function uses the access token to get the group id based on the group name used in a filter.\n \n    >[AZURE.NOTE] This code looks up the Active Directory group by name. In many cases it may be a better practice to store the group id as a mobile service app setting and just use that group id. This is because the group name may change but, the id stays the same. However, with a group name change there is usually at least a change in the scope of the role that may also require an update to the mobile service code.   \n\n        function getGroupId(groupname, accessToken, callback) {\n            var req = require(\"request\");\n            var options = {\n                url: \"https://graph.windows.net/\" + tenant_domain + \"/groups\" + \n                      \"?$filter=displayName%20eq%20'\" + groupname + \"'\" + \n                  \"&api-version=2013-04-05\" ,\n                method: 'GET',\n                headers: {\n                    \"Authorization\": \"Bearer \" + accessToken,\n                    \"Content-Type\": \"application/json\",\n                }\n            };\n            req(options, function (err, resp, body) {\n                if (err || resp.statusCode !== 200) callback(err, null);\n                else callback(null, JSON.parse(body).value[0].objectId);\n            });\n        }\n\n\n4. Add the following code to *rbac.js* to define the `isMemberOf` function that calls the [IsMemberOf] endpoint of the Graph REST API.\n\n    This function is a thin wrapper around the [IsMemberOf] endpoint of the Graph REST API. It uses the Graph access token to check if the user's directory object id has membership in the group based on the group id.\n\n        function isMemberOf(access_token, userObjectId, groupObjectId, callback) {\n            var req = require(\"request\");\n            var options = {\n                url: \"https://graph.windows.net/\" + tenant_domain + \"/isMemberOf\" + \"?api-version=2013-04-05\",\n                method: 'POST',\n                headers: {\n                    \"Authorization\": \"Bearer \" + access_token,\n                    \"Content-Type\": \"application/json\",\n                },\n                body: JSON.stringify({\n                \"groupId\": groupObjectId,\n                \"memberId\": userObjectId\n                })\n            };\n            req(options, function (err, resp, body) {\n                if (err || resp.statusCode !== 200) callback(err, null);\n                else callback(null, JSON.parse(body).value);\n            });\n        };\n\n    \n\n7. Add the following exported `checkGroupMembership` function to *rbac.js* .  \n\n    This function wraps the use of the other script functions and is exported from the shared script to be called by other scripts to perform the actual access checks. Given the mobile service user object, and the group id, the script will retrieve the Azure Active Directory object id for the user's identity and verify membership to the group.\n\n        exports.checkGroupMembership = function (user, groupName, callback) {\n            user.getIdentities({\n                success: function (identities) {\n                    var objectId = identities.aad.oid;\n                    getAADToken(function (err, access_token) {\n                        if (err) callback(err);\n                else getGroupId(groupName, access_token, function (err, groupId) { \n                            if (err) callback(err);\n                            else isMemberOf(access_token, objectId, groupId, function (err, isInGroup) {\n                                if (err) errorHandler(err);\n                                else callback(null, isInGroup);\n                            });\n                        });\n                    });\n                },\n                error: callback\n            });\n        }\n\n8. Save your changes to *rbac.js*.\n\n##Add role based access checking to the database operations\n\n\nWhen you completed the [Add authentication to your Mobile Service app] tutorial, you should have already set the table operations to require authentication as shown below.\n\n![][3]\n\nWith each database operation requiring authentication, we can add scripts that use the user object for access checks.\n\nThe following steps demonstrate how to deploy role based access control using scripts to each table operation in your mobile service. A script, that uses the shared *rbac.js* script, is executed for each table operation.\n\n1. Add a new script file named *todoitem.insert.js* to the *./service/table/* directory in the local Git repository for your mobile service. Paste the following script into that file.\n\n        function insert(item, user, request) {\n        \n            var RBAC = require('../shared/rbac.js');\n        \n            RBAC.checkGroupMembership(user, \"sales\", function(err, isInGroup) {\n                if (err) request.respond(err);\n                else if (!isInGroup) request.respond(statusCodes.UNAUTHORIZED, null);\n                else {\n                    request.execute();\n                }\n            });\n        }\n\n2. Add a new script file named *todoitem.read.js* to the *./service/table/* directory in the local Git repository for your mobile service. Paste the following script into that file.\n\n        function read(query, user, request) {\n        \n            var RBAC = require('../shared/rbac.js');\n        \n            RBAC.checkGroupMembership(user, \"sales\", function(err, isInGroup) {\n                if (err) request.respond(err);\n                else if (!isInGroup) request.respond(statusCodes.UNAUTHORIZED, null);\n                else {\n                    request.execute();\n                }\n            });\n        }\n\n3. Add a new script file named *todoitem.update.js* to the *./service/table/* directory in the local Git repository for your mobile service. Paste the following script into that file.\n\n        function update(item, user, request) {\n        \n            var RBAC = require('../shared/rbac.js');\n        \n            RBAC.checkGroupMembership(user, \"sales\", function(err, isInGroup) {\n                if (err) request.respond(err);\n                else if (!isInGroup) request.respond(statusCodes.UNAUTHORIZED, null);\n                else {\n                    request.execute();\n                }\n            });\n        }\n\n4. Add a new script file named *todoitem.delete.js* to the *./service/table/* directory in the local Git repository for your mobile service. Paste the following script into that file.\n\n        function del(id, user, request) {\n        \n            var RBAC = require('../shared/rbac.js');\n        \n            RBAC.checkGroupMembership(user, \"sales\", function(err, isInGroup) {\n                if (err) request.respond(err);\n                else if (!isInGroup) request.respond(statusCodes.UNAUTHORIZED, null);\n                else {\n                    request.execute();\n                }\n            });\n        }\n\n5. In the command-line interface to your Git repository, add tracking for the script files you added by executing the following command.\n\n        git add .\n\n6. In the command-line interface to your Git repository, commit the updates by executing the following command.\n\n        git commit -m \"Added role based access control to table operations\"\n  \n7. In the command-line interface to your Git repository, deploy the updates to your local Git repository to the mobile service by executing the following command. This command assumes that you made the updates in the *master* branch.\n\n        git push origin master\n\n8. In the [Azure Management Portal] you should be able to navigate to the table operations for the mobile service and see the updates in place as shown below. \n\n    ![][4]\n\n##Test the client's access\n\n[AZURE.INCLUDE [mobile-services-aad-rbac-test-app](../../includes/mobile-services-aad-rbac-test-app.md)]\n\n\n\n\n\n\n\n<!-- Images -->\n[0]: ./media/mobile-services-javascript-backend-windows-store-dotnet-aad-rbac/users.png\n[1]: ./media/mobile-services-javascript-backend-windows-store-dotnet-aad-rbac/group-membership.png\n[2]: ./media/mobile-services-javascript-backend-windows-store-dotnet-aad-rbac/sales-group.png\n[3]: ./media/mobile-services-javascript-backend-windows-store-dotnet-aad-rbac/table-perms.png\n[4]: ./media/mobile-services-javascript-backend-windows-store-dotnet-aad-rbac/insert-table-op-view.png\n[5]: ./media/mobile-services-javascript-backend-windows-store-dotnet-aad-rbac/sales-group-id.png\n[6]: ./media/mobile-services-javascript-backend-windows-store-dotnet-aad-rbac/client-id-and-key.png\n\n<!-- URLs. -->\n[Add authentication to your Mobile Service app]: mobile-services-javascript-backend-windows-universal-dotnet-get-started-users.md\n[How to Register with the Azure Active Directory]: mobile-services-how-to-register-active-directory-authentication.md\n[Azure Management Portal]: https://manage.windowsazure.com/\n[Directory Sync Scenarios]: http://msdn.microsoft.com/library/azure/jj573653.aspx\n[Store Server Scripts]: mobile-services-store-scripts-source-control.md\n[Register to use an Azure Active Directory Login]: mobile-services-how-to-register-active-directory-authentication.md\n[Graph API]: http://msdn.microsoft.com/library/azure/hh974478.aspx\n[Graph API Error Reference]: http://msdn.microsoft.com/library/azure/hh974480.aspx\n[IsMemberOf]: http://msdn.microsoft.com/library/azure/dn151601.aspx\n[Accessing Azure Active Directory Graph Information]: mobile-services-javascript-backend-windows-store-dotnet-aad-graph-info.md \ntest\n"
+}

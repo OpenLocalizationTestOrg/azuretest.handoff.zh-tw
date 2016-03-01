@@ -1,0 +1,1485 @@
+{
+  "nodes": [
+    {
+      "content": "Optimizing MySQL Performance on Azure Linux VMs",
+      "pos": [
+        28,
+        75
+      ]
+    },
+    {
+      "content": "Learn how to optimize MySQL running on an Azure virtual machine (VM) running Linux.",
+      "pos": [
+        95,
+        178
+      ]
+    },
+    {
+      "content": "Optimizing MySQL Performance on Azure Linux VMs",
+      "pos": [
+        523,
+        570
+      ]
+    },
+    {
+      "content": "There are many factors that impact MySQL performance on Azure, both in virtual hardware selection and software configuration.",
+      "pos": [
+        573,
+        698
+      ]
+    },
+    {
+      "content": "This article focuses on optimizing performance through storage, system, and database configurations.",
+      "pos": [
+        699,
+        799
+      ]
+    },
+    {
+      "content": "Utilizing RAID on an Azure virtual machine",
+      "pos": [
+        803,
+        845
+      ]
+    },
+    {
+      "content": "Storage is the key factor that impacts database performance in cloud environments.",
+      "pos": [
+        847,
+        929
+      ]
+    },
+    {
+      "content": "Compared to a single disk, RAID can provide faster access via concurrency.",
+      "pos": [
+        931,
+        1005
+      ]
+    },
+    {
+      "content": "Refer to <bpt id=\"p1\">[</bpt>Standard RAID Levels<ept id=\"p1\">](http://en.wikipedia.org/wiki/Standard_RAID_levels)</ept> for more detail.",
+      "pos": [
+        1007,
+        1106
+      ]
+    },
+    {
+      "content": "Disk I/O throughput and I/O response time in Azure can be significantly improved through RAID.",
+      "pos": [
+        1111,
+        1205
+      ]
+    },
+    {
+      "content": "Our lab tests show disk I/O throughput can be doubled and I/O response time can be reduced by half on average when the number of RAID disks is doubled (from 2 to 4, 4 to 8, etc.).",
+      "pos": [
+        1206,
+        1385
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt>Appendix A<ept id=\"p1\">](#AppendixA)</ept> for details.",
+      "pos": [
+        1386,
+        1427
+      ]
+    },
+    {
+      "content": "In addition to disk I/O, MySQL performance improves when you increase the RAID level.",
+      "pos": [
+        1431,
+        1516
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt>Appendix B<ept id=\"p1\">](#AppendixB)</ept> for details.",
+      "pos": [
+        1518,
+        1559
+      ]
+    },
+    {
+      "content": "You may also want to consider the chunk size.",
+      "pos": [
+        1563,
+        1608
+      ]
+    },
+    {
+      "content": "In general when you have a larger chunk size, you will get lower overhead, especially for large writes.",
+      "pos": [
+        1609,
+        1712
+      ]
+    },
+    {
+      "content": "However, when the chunk size is too large, it might add additional overhead and you cannot take advantage of the RAID.",
+      "pos": [
+        1713,
+        1831
+      ]
+    },
+    {
+      "content": "The current default size is 512KB, which is proven to be optimal for most general production environments.",
+      "pos": [
+        1832,
+        1938
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt>Appendix C<ept id=\"p1\">](#AppendixC)</ept> for details.",
+      "pos": [
+        1939,
+        1980
+      ]
+    },
+    {
+      "content": "Please note that there are limits on how many disks you can add for different virtual machine types.",
+      "pos": [
+        1985,
+        2085
+      ]
+    },
+    {
+      "content": "These limits are detailed in <bpt id=\"p1\">[</bpt>Virtual Machine and Cloud Service Sizes for Azure<ept id=\"p1\">](http://msdn.microsoft.com/library/azure/dn197896.aspx)</ept>.",
+      "pos": [
+        2086,
+        2222
+      ]
+    },
+    {
+      "content": "You will need 4 attached data disks to follow the RAID example in this article, although you could choose to set up RAID with fewer disks.",
+      "pos": [
+        2223,
+        2361
+      ]
+    },
+    {
+      "content": "This article assumes you have already created a Linux virtual machine and have MYSQL installed and configured.",
+      "pos": [
+        2365,
+        2475
+      ]
+    },
+    {
+      "content": "For more information on getting started please refer to How to install MySQL on Azure.",
+      "pos": [
+        2476,
+        2562
+      ]
+    },
+    {
+      "content": "Setting up RAID on Azure",
+      "pos": [
+        2571,
+        2595
+      ]
+    },
+    {
+      "content": "The following steps show how to create RAID on Azure using the Windows Azure Management Portal.",
+      "pos": [
+        2596,
+        2691
+      ]
+    },
+    {
+      "content": "You can also set up RAID using Windows PowerShell scripts.",
+      "pos": [
+        2692,
+        2750
+      ]
+    },
+    {
+      "content": "In this example we will configure RAID 0 with 4 disks.",
+      "pos": [
+        2752,
+        2806
+      ]
+    },
+    {
+      "content": "Step 1: Add a Data Disk to your Virtual Machine",
+      "pos": [
+        2814,
+        2861
+      ]
+    },
+    {
+      "content": "In the Virtual Machines page of the Azure Management Portal, click the virtual machine to which you want to add a data disk.",
+      "pos": [
+        2865,
+        2989
+      ]
+    },
+    {
+      "content": "In this example, the virtual machine is mysqlnode1.",
+      "pos": [
+        2990,
+        3041
+      ]
+    },
+    {
+      "pos": [
+        3053,
+        3110
+      ],
+      "content": "On the page for the virtual machine, click <bpt id=\"p1\">**</bpt>Dashboard<ept id=\"p1\">**</ept>."
+    },
+    {
+      "pos": [
+        3124,
+        3158
+      ],
+      "content": "In the task bar, click <bpt id=\"p1\">**</bpt>Attach<ept id=\"p1\">**</ept>."
+    },
+    {
+      "pos": [
+        3169,
+        3206
+      ],
+      "content": "And then click <bpt id=\"p1\">**</bpt>Attach empty disk<ept id=\"p1\">**</ept>."
+    },
+    {
+      "pos": [
+        3219,
+        3291
+      ],
+      "content": "For data disks, the <bpt id=\"p1\">**</bpt>Host Cache Preference<ept id=\"p1\">**</ept> should be set to <bpt id=\"p2\">**</bpt>None<ept id=\"p2\">**</ept>."
+    },
+    {
+      "content": "This will add one empty disk into your virtual machine.",
+      "pos": [
+        3295,
+        3350
+      ]
+    },
+    {
+      "content": "Repeat this step three more times so that you have 4 data disks for RAID.",
+      "pos": [
+        3351,
+        3424
+      ]
+    },
+    {
+      "content": "You can see the added drives in the virtual machine by looking at the kernel message log.",
+      "pos": [
+        3428,
+        3517
+      ]
+    },
+    {
+      "content": "For example, to see this on Ubuntu, use the following command:",
+      "pos": [
+        3518,
+        3580
+      ]
+    },
+    {
+      "content": "Step 2: Create RAID with the additional disks",
+      "pos": [
+        3623,
+        3668
+      ]
+    },
+    {
+      "content": "Follow this article for detailed RAID setup steps:",
+      "pos": [
+        3669,
+        3719
+      ]
+    },
+    {
+      "content": "http://azure.microsoft.com/documentation/articles/virtual-machines-linux-configure-RAID/",
+      "pos": [
+        3724,
+        3812
+      ]
+    },
+    {
+      "pos": [
+        3906,
+        4008
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> If you are using the XFS file system, follow the steps below after you have created RAID."
+    },
+    {
+      "content": "To install XFS on Debian, Ubuntu, or Linux Mint, use the following command:",
+      "pos": [
+        4010,
+        4085
+      ]
+    },
+    {
+      "content": "To install XFS On Fedora, CentOS, or RHEL, use the following command:",
+      "pos": [
+        4124,
+        4193
+      ]
+    },
+    {
+      "content": "Step 3: Set up a new storage path",
+      "pos": [
+        4241,
+        4274
+      ]
+    },
+    {
+      "content": "Use the following command:",
+      "pos": [
+        4275,
+        4301
+      ]
+    },
+    {
+      "content": "Step 4: Copy the original data to the new storage path",
+      "pos": [
+        4355,
+        4409
+      ]
+    },
+    {
+      "content": "Use the following command:",
+      "pos": [
+        4410,
+        4436
+      ]
+    },
+    {
+      "content": "Step 5: Modify permissions so MySQL can access (read and write) the data disk",
+      "pos": [
+        4506,
+        4583
+      ]
+    },
+    {
+      "content": "Use the following command:",
+      "pos": [
+        4584,
+        4610
+      ]
+    },
+    {
+      "content": "Adjust the disk I/O scheduling algorithm",
+      "pos": [
+        4704,
+        4744
+      ]
+    },
+    {
+      "content": "Linux implements four types of I/O scheduling algorithms:",
+      "pos": [
+        4745,
+        4802
+      ]
+    },
+    {
+      "content": "NOOP algorithm (No Operation)",
+      "pos": [
+        4810,
+        4839
+      ]
+    },
+    {
+      "content": "Deadline algorithm (Deadline)",
+      "pos": [
+        4844,
+        4873
+      ]
+    },
+    {
+      "content": "Completely fair queuing algorithm (CFQ)",
+      "pos": [
+        4878,
+        4917
+      ]
+    },
+    {
+      "content": "Budget period algorithm (Anticipatory)",
+      "pos": [
+        4922,
+        4960
+      ]
+    },
+    {
+      "content": "You can select different I/O schedulers under different scenarios to optimize performance.",
+      "pos": [
+        4964,
+        5054
+      ]
+    },
+    {
+      "content": "In a completely random access environment, there is not a big difference between the CFQ and Deadline algorithms for performance.",
+      "pos": [
+        5055,
+        5184
+      ]
+    },
+    {
+      "content": "It is generally recommended to set the MySQL database environment to Deadline for stability.",
+      "pos": [
+        5185,
+        5277
+      ]
+    },
+    {
+      "content": "If there is a lot of sequential I/O, CFQ may reduce disk I/O performance.",
+      "pos": [
+        5278,
+        5351
+      ]
+    },
+    {
+      "content": "For SSD and other equipment, using NOOP or Deadline can achieve better performance than the Default scheduler.",
+      "pos": [
+        5356,
+        5466
+      ]
+    },
+    {
+      "content": "From the kernel 2.5, the default I/O scheduling algorithm is Deadline.",
+      "pos": [
+        5471,
+        5541
+      ]
+    },
+    {
+      "content": "Beginning from the kernel 2.6.18, CFQ became the default I/O scheduling algorithm.",
+      "pos": [
+        5542,
+        5624
+      ]
+    },
+    {
+      "content": "You can specify this setting at Kernel boot time or dynamically modify this setting when the system is running.",
+      "pos": [
+        5626,
+        5737
+      ]
+    },
+    {
+      "content": "The following example demonstrates how to check and set the default scheduler to the NOOP algorithm.",
+      "pos": [
+        5741,
+        5841
+      ]
+    },
+    {
+      "content": "For the Debian distribution family:",
+      "pos": [
+        5845,
+        5880
+      ]
+    },
+    {
+      "content": "Step 1.View the current I/O scheduler",
+      "pos": [
+        5885,
+        5922
+      ]
+    },
+    {
+      "content": "Use the following command:",
+      "pos": [
+        5923,
+        5949
+      ]
+    },
+    {
+      "content": "You will see following output, which indicates the current scheduler.",
+      "pos": [
+        6013,
+        6082
+      ]
+    },
+    {
+      "content": "Step 2.",
+      "pos": [
+        6116,
+        6123
+      ]
+    },
+    {
+      "content": "Change the current device (/dev/sda) of I/O scheduling algorithm",
+      "pos": [
+        6124,
+        6188
+      ]
+    },
+    {
+      "content": "Use the following commands:",
+      "pos": [
+        6189,
+        6216
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> Setting this for /dev/sda alone is not useful.",
+      "pos": [
+        6494,
+        6553
+      ]
+    },
+    {
+      "content": "It needs to be set on all data disks where the database resides.",
+      "pos": [
+        6554,
+        6618
+      ]
+    },
+    {
+      "content": "You should see the following output, indicating that grub.cfg has been rebuilt successfully and that the default scheduler has been updated to NOOP.",
+      "pos": [
+        6622,
+        6770
+      ]
+    },
+    {
+      "content": "For the Redhat distribution family, you only need the following command:",
+      "pos": [
+        7143,
+        7215
+      ]
+    },
+    {
+      "content": "Configure system file operations settings",
+      "pos": [
+        7293,
+        7334
+      ]
+    },
+    {
+      "content": "One best practice is to disable the atime logging feature on the file system.",
+      "pos": [
+        7335,
+        7412
+      ]
+    },
+    {
+      "content": "Atime is the last file access time.",
+      "pos": [
+        7413,
+        7448
+      ]
+    },
+    {
+      "content": "Whenever a file is accessed, the file system records the timestamp in the log.",
+      "pos": [
+        7449,
+        7527
+      ]
+    },
+    {
+      "content": "However, this information is rarely used.",
+      "pos": [
+        7528,
+        7569
+      ]
+    },
+    {
+      "content": "You can disable it if you don't need it, which will reduce overall disk access time.",
+      "pos": [
+        7570,
+        7654
+      ]
+    },
+    {
+      "pos": [
+        7659,
+        7782
+      ],
+      "content": "To disable atime logging, you need to modify the file system configuration file /etc/ fstab and add the <bpt id=\"p1\">**</bpt>noatime<ept id=\"p1\">**</ept> option."
+    },
+    {
+      "content": "For example, edit  the vim /etc/fstab file, adding the noatime as shown below.",
+      "pos": [
+        7786,
+        7864
+      ]
+    },
+    {
+      "content": "Then, remount the file system with the following command:",
+      "pos": [
+        8293,
+        8350
+      ]
+    },
+    {
+      "content": "Test the modified result.",
+      "pos": [
+        8383,
+        8408
+      ]
+    },
+    {
+      "content": "Note that when you modify the test file, the access time is not updated.",
+      "pos": [
+        8409,
+        8481
+      ]
+    },
+    {
+      "content": "Before example:",
+      "pos": [
+        8485,
+        8500
+      ]
+    },
+    {
+      "content": "After example:",
+      "pos": [
+        8516,
+        8530
+      ]
+    },
+    {
+      "content": "Increase the maximum number of system handles for high concurrency",
+      "pos": [
+        8542,
+        8608
+      ]
+    },
+    {
+      "content": "MySQL is high concurrency database.",
+      "pos": [
+        8609,
+        8644
+      ]
+    },
+    {
+      "content": "The default number of concurrent handles is 1024 for Linux, which is not always sufficient.",
+      "pos": [
+        8645,
+        8736
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Use the following steps to increase the maximum concurrent handles of the system to support high concurrency of MySQL<ept id=\"p1\">**</ept>.",
+      "pos": [
+        8737,
+        8859
+      ]
+    },
+    {
+      "content": "Step 1: Modify the limits.conf file",
+      "pos": [
+        8864,
+        8899
+      ]
+    },
+    {
+      "content": "Add the following four lines in the /etc/security/limits.conf file to increase the maximum allowed concurrent handles.",
+      "pos": [
+        8900,
+        9018
+      ]
+    },
+    {
+      "content": "Note that 65536 is the maximum number that the system can support.",
+      "pos": [
+        9019,
+        9085
+      ]
+    },
+    {
+      "content": "Step 2: Update the system for the new limits",
+      "pos": [
+        9188,
+        9232
+      ]
+    },
+    {
+      "content": "Run the following commands:",
+      "pos": [
+        9233,
+        9260
+      ]
+    },
+    {
+      "content": "Step 3: Ensure that the limits are updated at boot time",
+      "pos": [
+        9313,
+        9368
+      ]
+    },
+    {
+      "content": "Put the following startup commands in the /etc/rc.local file so it will take effect during every boot time.",
+      "pos": [
+        9369,
+        9476
+      ]
+    },
+    {
+      "content": "MySQL database optimization",
+      "pos": [
+        9573,
+        9600
+      ]
+    },
+    {
+      "content": "You can use the same performance tuning strategy to configure MySQL on Azure as on an on-premises machine.",
+      "pos": [
+        9602,
+        9708
+      ]
+    },
+    {
+      "content": "The main I/O optimization rules are:",
+      "pos": [
+        9712,
+        9748
+      ]
+    },
+    {
+      "content": "Increase the cache size.",
+      "pos": [
+        9757,
+        9781
+      ]
+    },
+    {
+      "content": "Reduce I/O response time.",
+      "pos": [
+        9786,
+        9811
+      ]
+    },
+    {
+      "content": "To optimize MySQL server settings, you can update the my.cnf file, which is the default configuration file for both server and client computers.",
+      "pos": [
+        9815,
+        9959
+      ]
+    },
+    {
+      "content": "The following configuration items are the main factors that affect MySQL performance:",
+      "pos": [
+        9963,
+        10048
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>innodb_buffer_pool_size<ept id=\"p1\">**</ept>: The buffer pool contains buffered data and the index.",
+      "pos": [
+        10056,
+        10138
+      ]
+    },
+    {
+      "content": "This is usually set to 70% of physical memory.",
+      "pos": [
+        10139,
+        10185
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>innodb_log_file_size<ept id=\"p1\">**</ept>: This is the redo log size.",
+      "pos": [
+        10190,
+        10242
+      ]
+    },
+    {
+      "content": "You use redo logs to ensure that write operations are fast, reliable, and recoverable after a crash.",
+      "pos": [
+        10243,
+        10343
+      ]
+    },
+    {
+      "content": "This is set to 512MB, which will give you plenty of space for logging write operations.",
+      "pos": [
+        10344,
+        10431
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>max_connections<ept id=\"p1\">**</ept>: Sometimes applications do not close connections properly.",
+      "pos": [
+        10436,
+        10514
+      ]
+    },
+    {
+      "content": "A larger value will give the server more time to recycle idled connections.",
+      "pos": [
+        10515,
+        10590
+      ]
+    },
+    {
+      "content": "The maximum connections is 10000, but the recommended maximum is 5000.",
+      "pos": [
+        10591,
+        10661
+      ]
+    },
+    {
+      "pos": [
+        10666,
+        11333
+      ],
+      "content": "**Innodb_file_per_table**: This setting enable or disable the ability of InnoDB to store tables in separate files. Turn on the option will ensure that several advanced administration operations can be applied efficiently. From performance point of view, it can speed up the table space transmission and optimize the debris management performance. So the recommended setting for this is ON.</br>\nFrom MySQL 5.6, the default setting is ON. Therefore, no action is required. For other versions, which is earlier than 5.6, default settings is OFF. Turning this ON is required. And should apply it before data is loaded, because only newly-created tables are affected.",
+      "leadings": [
+        "",
+        "    "
+      ],
+      "nodes": [
+        {
+          "content": "**Innodb_file_per_table**: This setting enable or disable the ability of InnoDB to store tables in separate files. Turn on the option will ensure that several advanced administration operations can be applied efficiently. From performance point of view, it can speed up the table space transmission and optimize the debris management performance. So the recommended setting for this is ON.",
+          "pos": [
+            0,
+            389
+          ],
+          "nodes": [
+            {
+              "content": "<bpt id=\"p1\">**</bpt>Innodb_file_per_table<ept id=\"p1\">**</ept>: This setting enable or disable the ability of InnoDB to store tables in separate files.",
+              "pos": [
+                0,
+                114
+              ]
+            },
+            {
+              "content": "Turn on the option will ensure that several advanced administration operations can be applied efficiently.",
+              "pos": [
+                115,
+                221
+              ]
+            },
+            {
+              "content": "From performance point of view, it can speed up the table space transmission and optimize the debris management performance.",
+              "pos": [
+                222,
+                346
+              ]
+            },
+            {
+              "content": "So the recommended setting for this is ON.",
+              "pos": [
+                347,
+                389
+              ]
+            }
+          ]
+        },
+        {
+          "content": "From MySQL 5.6, the default setting is ON. Therefore, no action is required. For other versions, which is earlier than 5.6, default settings is OFF. Turning this ON is required. And should apply it before data is loaded, because only newly-created tables are affected.",
+          "pos": [
+            395,
+            663
+          ],
+          "nodes": [
+            {
+              "content": "From MySQL 5.6, the default setting is ON.",
+              "pos": [
+                0,
+                42
+              ]
+            },
+            {
+              "content": "Therefore, no action is required.",
+              "pos": [
+                43,
+                76
+              ]
+            },
+            {
+              "content": "For other versions, which is earlier than 5.6, default settings is OFF.",
+              "pos": [
+                77,
+                148
+              ]
+            },
+            {
+              "content": "Turning this ON is required.",
+              "pos": [
+                149,
+                177
+              ]
+            },
+            {
+              "content": "And should apply it before data is loaded, because only newly-created tables are affected.",
+              "pos": [
+                178,
+                268
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>innodb_flush_log_at_trx_commit<ept id=\"p1\">**</ept>: Default value is 1, with the scope set to 0~2.",
+      "pos": [
+        11338,
+        11420
+      ]
+    },
+    {
+      "content": "The default value is the most suitable option for standalone MySQL DB.",
+      "pos": [
+        11421,
+        11491
+      ]
+    },
+    {
+      "content": "The setting of 2 enables the most data integrity and is suitable for Master in MySQL cluster.",
+      "pos": [
+        11492,
+        11585
+      ]
+    },
+    {
+      "content": "The setting of 0 allows data loss, which can affect reliability, in some cases with better performance, and is suitable for Slave in MySQL cluster.",
+      "pos": [
+        11586,
+        11733
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Innodb_log_buffer_size<ept id=\"p1\">**</ept>: The log buffer allows transactions to run without having to flush the log to disk before the transactions commit.",
+      "pos": [
+        11738,
+        11879
+      ]
+    },
+    {
+      "content": "However, if there is large binary object or text field, the cache will be consumed very quickly and frequent disk I/O will be triggered.",
+      "pos": [
+        11880,
+        12016
+      ]
+    },
+    {
+      "content": "It is better increase the buffer size if Innodb_log_waits state variable is not 0.",
+      "pos": [
+        12017,
+        12099
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>query_cache_size<ept id=\"p1\">**</ept>:  The best option is to disable it from the outset.",
+      "pos": [
+        12104,
+        12176
+      ]
+    },
+    {
+      "content": "Set query_cache_size to 0 (this is now the default setting in MySQL 5.6) and use other methods to speed up queries .",
+      "pos": [
+        12177,
+        12293
+      ]
+    },
+    {
+      "pos": [
+        12299,
+        12377
+      ],
+      "content": "See <bpt id=\"p1\">[</bpt>Appendix D<ept id=\"p1\">](#AppendixD)</ept> for comparing performance after the optimization."
+    },
+    {
+      "content": "Turn on the MySQL slow query log for analyzing the performance bottleneck",
+      "pos": [
+        12382,
+        12455
+      ]
+    },
+    {
+      "content": "The MySQL slow query log can help you identify the slow queries for MySQL.",
+      "pos": [
+        12456,
+        12530
+      ]
+    },
+    {
+      "content": "After enabling the MySQL slow query log, you can use MySQL tools like <bpt id=\"p1\">**</bpt>mysqldumpslow<ept id=\"p1\">**</ept> to identify the performance bottleneck.",
+      "pos": [
+        12531,
+        12658
+      ]
+    },
+    {
+      "content": "Please note that by default this is not enabled.",
+      "pos": [
+        12662,
+        12710
+      ]
+    },
+    {
+      "content": "Turning on the slow query log may consume some CPU resources.",
+      "pos": [
+        12711,
+        12772
+      ]
+    },
+    {
+      "content": "Therefore, it is recommended that you enable this temporarily for troubleshooting performance bottlenecks.",
+      "pos": [
+        12773,
+        12879
+      ]
+    },
+    {
+      "content": "Step 1: Modify my.cnf file by adding the following lines to the end",
+      "pos": [
+        12884,
+        12951
+      ]
+    },
+    {
+      "content": "Step 2: Restart mysql server",
+      "pos": [
+        13061,
+        13089
+      ]
+    },
+    {
+      "content": "service  mysql  restart",
+      "pos": [
+        13094,
+        13117
+      ]
+    },
+    {
+      "content": "Step 3: Check whether the setting is taking effect using the “show” command",
+      "pos": [
+        13122,
+        13197
+      ]
+    },
+    {
+      "content": "In this example, you can see that the slow query feature has been turned on.",
+      "pos": [
+        13223,
+        13299
+      ]
+    },
+    {
+      "content": "You can then use the <bpt id=\"p1\">**</bpt>mysqldumpslow<ept id=\"p1\">**</ept> tool to determine performance bottlenecks and optimize performance, such as adding indexes.",
+      "pos": [
+        13300,
+        13430
+      ]
+    },
+    {
+      "content": "Appendix",
+      "pos": [
+        13438,
+        13446
+      ]
+    },
+    {
+      "content": "The following are sample performance test data produced on targeted lab environment, they provide general background on the performance data trend with different performance tuning approaches, however the results may vary under different environment or product versions.",
+      "pos": [
+        13448,
+        13718
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">&lt;a name=\"AppendixA\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Appendix A:",
+      "pos": [
+        13721,
+        13756
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Disk Performance (IOPS) with Different RAID Levels<ept id=\"p1\">**</ept>",
+      "pos": [
+        13759,
+        13813
+      ]
+    },
+    {
+      "content": "Test commands:",
+      "pos": [
+        13828,
+        13842
+      ]
+    },
+    {
+      "content": "AZURE.NOTE: The workload of this test uses 64 threads, trying to reach the upper limit of RAID.",
+      "pos": [
+        14010,
+        14105
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">&lt;a name=\"AppendixB\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Appendix B:",
+      "pos": [
+        14107,
+        14142
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>MySQL Performance (Throughput) Comparison with Different RAID Levels<ept id=\"p1\">**</ept><ph id=\"ph1\"> </ph>",
+      "pos": [
+        14145,
+        14218
+      ]
+    },
+    {
+      "content": "(XFS file system)",
+      "pos": [
+        14221,
+        14238
+      ]
+    },
+    {
+      "content": "Test commands:",
+      "pos": [
+        14263,
+        14277
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>MySQL Performance (OLTP) Comparison with Different RAID Levels<ept id=\"p1\">**</ept>",
+      "pos": [
+        14493,
+        14559
+      ]
+    },
+    {
+      "content": "Test commands:",
+      "pos": [
+        14573,
+        14587
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">&lt;a name=\"AppendixC\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Appendix C:",
+      "pos": [
+        14846,
+        14881
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Disk Performance (IOPS) Comparison for Different Chunk Sizes<ept id=\"p1\">**</ept>",
+      "pos": [
+        14885,
+        14949
+      ]
+    },
+    {
+      "content": "(XFS file system)",
+      "pos": [
+        14952,
+        14969
+      ]
+    },
+    {
+      "content": "Test commands:",
+      "pos": [
+        14984,
+        14998
+      ]
+    },
+    {
+      "content": "Note the file size used for this testing is 30GB and 1GB respectively, with RAID 0(4 disks) XFS fie system.",
+      "pos": [
+        15328,
+        15435
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">&lt;a name=\"AppendixD\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Appendix D:",
+      "pos": [
+        15438,
+        15473
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>MySQL Performance (Throughput) Comparison Before and After Optimization<ept id=\"p1\">**</ept>",
+      "pos": [
+        15476,
+        15551
+      ]
+    },
+    {
+      "content": "(XFS File System)",
+      "pos": [
+        15554,
+        15571
+      ]
+    },
+    {
+      "content": "Test commands:",
+      "pos": [
+        15587,
+        15601
+      ]
+    },
+    {
+      "content": "The configuration setting for default and optmization is as follows:",
+      "pos": [
+        15825,
+        15893
+      ]
+    },
+    {
+      "content": "Parameters",
+      "pos": [
+        15898,
+        15908
+      ]
+    },
+    {
+      "content": "Default",
+      "pos": [
+        15910,
+        15917
+      ]
+    },
+    {
+      "content": "optmization",
+      "pos": [
+        15922,
+        15933
+      ]
+    },
+    {
+      "content": "innodb_buffer_pool_size",
+      "pos": [
+        15974,
+        15997
+      ]
+    },
+    {
+      "content": "None",
+      "pos": [
+        16004,
+        16008
+      ]
+    },
+    {
+      "content": "7G",
+      "pos": [
+        16012,
+        16014
+      ]
+    },
+    {
+      "content": "innodb_log_file_size",
+      "pos": [
+        16018,
+        16038
+      ]
+    },
+    {
+      "content": "5M",
+      "pos": [
+        16044,
+        16046
+      ]
+    },
+    {
+      "content": "512M",
+      "pos": [
+        16048,
+        16052
+      ]
+    },
+    {
+      "content": "max_connections",
+      "pos": [
+        16056,
+        16071
+      ]
+    },
+    {
+      "content": "100",
+      "pos": [
+        16078,
+        16081
+      ]
+    },
+    {
+      "content": "5000",
+      "pos": [
+        16086,
+        16090
+      ]
+    },
+    {
+      "content": "innodb_file_per_table",
+      "pos": [
+        16094,
+        16115
+      ]
+    },
+    {
+      "content": "0",
+      "pos": [
+        16120,
+        16121
+      ]
+    },
+    {
+      "content": "1",
+      "pos": [
+        16124,
+        16125
+      ]
+    },
+    {
+      "content": "innodb_flush_log_at_trx_commit",
+      "pos": [
+        16129,
+        16159
+      ]
+    },
+    {
+      "content": "1",
+      "pos": [
+        16163,
+        16164
+      ]
+    },
+    {
+      "content": "2",
+      "pos": [
+        16167,
+        16168
+      ]
+    },
+    {
+      "content": "innodb_log_buffer_size",
+      "pos": [
+        16172,
+        16194
+      ]
+    },
+    {
+      "content": "8M",
+      "pos": [
+        16198,
+        16200
+      ]
+    },
+    {
+      "content": "128M",
+      "pos": [
+        16202,
+        16206
+      ]
+    },
+    {
+      "content": "query_cache_size",
+      "pos": [
+        16210,
+        16226
+      ]
+    },
+    {
+      "content": "16M",
+      "pos": [
+        16232,
+        16235
+      ]
+    },
+    {
+      "content": "0",
+      "pos": [
+        16240,
+        16241
+      ]
+    },
+    {
+      "content": "More and more detailed optimization configuration parameters, please refer to the mysql official instructions.",
+      "pos": [
+        16244,
+        16354
+      ]
+    },
+    {
+      "content": "http://dev.mysql.com/doc/refman/5.6/en/innodb-configuration.html",
+      "pos": [
+        16359,
+        16423
+      ]
+    },
+    {
+      "content": "http://dev.mysql.com/doc/refman/5.6/en/innodb-parameters.html#sysvar_innodb_flush_method",
+      "pos": [
+        16495,
+        16583
+      ]
+    },
+    {
+      "content": "Test Environment",
+      "pos": [
+        16678,
+        16694
+      ]
+    },
+    {
+      "content": "Hardware",
+      "pos": [
+        16701,
+        16709
+      ]
+    },
+    {
+      "content": "Details",
+      "pos": [
+        16713,
+        16720
+      ]
+    },
+    {
+      "content": "Cpu",
+      "pos": [
+        16743,
+        16746
+      ]
+    },
+    {
+      "content": "AMD Opteron(tm) Processor 4171 HE/4 cores",
+      "pos": [
+        16751,
+        16792
+      ]
+    },
+    {
+      "content": "Memory",
+      "pos": [
+        16794,
+        16800
+      ]
+    },
+    {
+      "content": "14G",
+      "pos": [
+        16802,
+        16805
+      ]
+    },
+    {
+      "content": "disk",
+      "pos": [
+        16807,
+        16811
+      ]
+    },
+    {
+      "content": "10G/disk",
+      "pos": [
+        16815,
+        16823
+      ]
+    },
+    {
+      "content": "os",
+      "pos": [
+        16825,
+        16827
+      ]
+    },
+    {
+      "content": "Ubuntu 14.04.1 LTS",
+      "pos": [
+        16829,
+        16847
+      ]
+    }
+  ],
+  "content": "<properties \n    pageTitle=\"Optimizing MySQL Performance on Azure Linux VMs\" \n    description=\"Learn how to optimize MySQL running on an Azure virtual machine (VM) running Linux.\" \n    services=\"virtual-machines\" \n    documentationCenter=\"\" \n    authors=\"NingKuang\" \n    manager=\"timlt\" \n    editor=\"tysonn\"/>\n\n<tags \n    ms.service=\"virtual-machines\" \n    ms.workload=\"infrastructure-services\" \n    ms.tgt_pltfrm=\"vm-linux\" \n    ms.devlang=\"na\" \n    ms.topic=\"article\" \n    ms.date=\"05/21/2015\" \n    ms.author=\"ningk\"/>\n\n#Optimizing MySQL Performance on Azure Linux VMs \n\nThere are many factors that impact MySQL performance on Azure, both in virtual hardware selection and software configuration. This article focuses on optimizing performance through storage, system, and database configurations.\n\n##Utilizing RAID on an Azure virtual machine \nStorage is the key factor that impacts database performance in cloud environments.  Compared to a single disk, RAID can provide faster access via concurrency.  Refer to [Standard RAID Levels](http://en.wikipedia.org/wiki/Standard_RAID_levels) for more detail.   \n\nDisk I/O throughput and I/O response time in Azure can be significantly improved through RAID. Our lab tests show disk I/O throughput can be doubled and I/O response time can be reduced by half on average when the number of RAID disks is doubled (from 2 to 4, 4 to 8, etc.). See [Appendix A](#AppendixA) for details.  \n\nIn addition to disk I/O, MySQL performance improves when you increase the RAID level.  See [Appendix B](#AppendixB) for details.  \n\nYou may also want to consider the chunk size. In general when you have a larger chunk size, you will get lower overhead, especially for large writes. However, when the chunk size is too large, it might add additional overhead and you cannot take advantage of the RAID. The current default size is 512KB, which is proven to be optimal for most general production environments. See [Appendix C](#AppendixC) for details.   \n\nPlease note that there are limits on how many disks you can add for different virtual machine types. These limits are detailed in [Virtual Machine and Cloud Service Sizes for Azure](http://msdn.microsoft.com/library/azure/dn197896.aspx). You will need 4 attached data disks to follow the RAID example in this article, although you could choose to set up RAID with fewer disks.  \n\nThis article assumes you have already created a Linux virtual machine and have MYSQL installed and configured. For more information on getting started please refer to How to install MySQL on Azure.  \n  \n###Setting up RAID on Azure\nThe following steps show how to create RAID on Azure using the Windows Azure Management Portal. You can also set up RAID using Windows PowerShell scripts. \nIn this example we will configure RAID 0 with 4 disks.  \n\n####Step 1: Add a Data Disk to your Virtual Machine  \n\nIn the Virtual Machines page of the Azure Management Portal, click the virtual machine to which you want to add a data disk. In this example, the virtual machine is mysqlnode1.  \n\n![][1]\n\nOn the page for the virtual machine, click **Dashboard**.  \n\n![][2]\n \n\nIn the task bar, click **Attach**.\n \n![][3]\n\nAnd then click **Attach empty disk**.  \n\n![][4]\n \nFor data disks, the **Host Cache Preference** should be set to **None**.  \n\nThis will add one empty disk into your virtual machine. Repeat this step three more times so that you have 4 data disks for RAID.  \n\nYou can see the added drives in the virtual machine by looking at the kernel message log. For example, to see this on Ubuntu, use the following command:  \n\n    sudo grep SCSI /var/log/dmesg\n\n####Step 2: Create RAID with the additional disks\nFollow this article for detailed RAID setup steps:  \n\n[http://azure.microsoft.com/documentation/articles/virtual-machines-linux-configure-RAID/](http://azure.microsoft.com/documentation/articles/virtual-machines-linux-configure-RAID/)\n\n>[AZURE.NOTE] If you are using the XFS file system, follow the steps below after you have created RAID.\n\nTo install XFS on Debian, Ubuntu, or Linux Mint, use the following command:  \n\n    apt-get -y install xfsprogs  \n\nTo install XFS On Fedora, CentOS, or RHEL, use the following command:  \n\n    yum -y install xfsprogs  xfsdump \n\n\n####Step 3: Set up a new storage path\nUse the following command:  \n\n    root@mysqlnode1:~# mkdir -p /RAID0/mysql\n\n####Step 4: Copy the original data to the new storage path\nUse the following command:  \n\n    root@mysqlnode1:~# cp -rp /var/lib/mysql/* /RAID0/mysql/\n\n####Step 5: Modify permissions so MySQL can access (read and write) the data disk\nUse the following command:  \n\n    root@mysqlnode1:~# chown -R mysql.mysql /RAID0/mysql && chmod -R 755 /RAID0/mysql\n\n\n##Adjust the disk I/O scheduling algorithm\nLinux implements four types of I/O scheduling algorithms:  \n\n-   NOOP algorithm (No Operation)\n-   Deadline algorithm (Deadline)\n-   Completely fair queuing algorithm (CFQ)\n-   Budget period algorithm (Anticipatory)  \n\nYou can select different I/O schedulers under different scenarios to optimize performance. In a completely random access environment, there is not a big difference between the CFQ and Deadline algorithms for performance. It is generally recommended to set the MySQL database environment to Deadline for stability. If there is a lot of sequential I/O, CFQ may reduce disk I/O performance.   \n\nFor SSD and other equipment, using NOOP or Deadline can achieve better performance than the Default scheduler.   \n\nFrom the kernel 2.5, the default I/O scheduling algorithm is Deadline. Beginning from the kernel 2.6.18, CFQ became the default I/O scheduling algorithm.  You can specify this setting at Kernel boot time or dynamically modify this setting when the system is running.  \n\nThe following example demonstrates how to check and set the default scheduler to the NOOP algorithm.  \n\nFor the Debian distribution family:\n\n###Step 1.View the current I/O scheduler\nUse the following command:  \n\n    root@mysqlnode1:~# cat /sys/block/sda/queue/scheduler \n\nYou will see following output, which indicates the current scheduler.  \n\n    noop [deadline] cfq \n\n\n###Step 2. Change the current device (/dev/sda) of I/O scheduling algorithm\nUse the following commands:  \n\n    azureuser@mysqlnode1:~$ sudo su -\n    root@mysqlnode1:~# echo \"noop\" >/sys/block/sda/queue/scheduler\n    root@mysqlnode1:~# sed -i 's/GRUB_CMDLINE_LINUX=\"\"/GRUB_CMDLINE_LINUX_DEFAULT=\"quiet splash elevator=noop\"/g' /etc/default/grub\n    root@mysqlnode1:~# update-grub\n\n>[AZURE.NOTE] Setting this for /dev/sda alone is not useful. It needs to be set on all data disks where the database resides.  \n\nYou should see the following output, indicating that grub.cfg has been rebuilt successfully and that the default scheduler has been updated to NOOP.  \n\n    Generating grub configuration file ...\n    Found linux image: /boot/vmlinuz-3.13.0-34-generic\n    Found initrd image: /boot/initrd.img-3.13.0-34-generic\n    Found linux image: /boot/vmlinuz-3.13.0-32-generic\n    Found initrd image: /boot/initrd.img-3.13.0-32-generic\n    Found memtest86+ image: /memtest86+.elf\n    Found memtest86+ image: /memtest86+.bin\n    done\n\nFor the Redhat distribution family, you only need the following command:   \n\n    echo 'echo noop >/sys/block/sda/queue/scheduler' >> /etc/rc.local\n\n##Configure system file operations settings\nOne best practice is to disable the atime logging feature on the file system. Atime is the last file access time. Whenever a file is accessed, the file system records the timestamp in the log. However, this information is rarely used. You can disable it if you don't need it, which will reduce overall disk access time.  \n \nTo disable atime logging, you need to modify the file system configuration file /etc/ fstab and add the **noatime** option.  \n\nFor example, edit  the vim /etc/fstab file, adding the noatime as shown below.  \n\n    # CLOUD_IMG: This file was created/modified by the Cloud Image build process\n    UUID=3cc98c06-d649-432d-81df-6dcd2a584d41       /        ext4   defaults,discard        0 0\n    #Add the “noatime” option below to disable atime logging\n    UUID=\"431b1e78-8226-43ec-9460-514a9adf060e\"     /RAID0   xfs   defaults,nobootwait, noatime 0 0\n    /dev/sdb1       /mnt    auto    defaults,nobootwait,comment=cloudconfig 0       2\n\nThen, remount the file system with the following command:  \n\n    mount -o remount /RAID0\n\nTest the modified result. Note that when you modify the test file, the access time is not updated.  \n\nBefore example:     \n\n![][5]\n \nAfter example:\n\n![][6]\n\n##Increase the maximum number of system handles for high concurrency\nMySQL is high concurrency database. The default number of concurrent handles is 1024 for Linux, which is not always sufficient. **Use the following steps to increase the maximum concurrent handles of the system to support high concurrency of MySQL**.\n\n###Step 1: Modify the limits.conf file\nAdd the following four lines in the /etc/security/limits.conf file to increase the maximum allowed concurrent handles. Note that 65536 is the maximum number that the system can support.   \n\n    * soft nofile 65536\n    * hard nofile 65536\n    * soft nproc 65536\n    * hard nproc 65536\n\n###Step 2: Update the system for the new limits\nRun the following commands:  \n\n    ulimit -SHn 65536\n    ulimit -SHu 65536 \n\n###Step 3: Ensure that the limits are updated at boot time\nPut the following startup commands in the /etc/rc.local file so it will take effect during every boot time.  \n\n    echo “ulimit -SHn 65536” >>/etc/rc.local\n    echo “ulimit -SHu 65536” >>/etc/rc.local\n\n##MySQL database optimization \nYou can use the same performance tuning strategy to configure MySQL on Azure as on an on-premises machine.  \n\nThe main I/O optimization rules are:   \n\n-   Increase the cache size.\n-   Reduce I/O response time.  \n\nTo optimize MySQL server settings, you can update the my.cnf file, which is the default configuration file for both server and client computers.  \n\nThe following configuration items are the main factors that affect MySQL performance:  \n\n-   **innodb_buffer_pool_size**: The buffer pool contains buffered data and the index. This is usually set to 70% of physical memory.\n-   **innodb_log_file_size**: This is the redo log size. You use redo logs to ensure that write operations are fast, reliable, and recoverable after a crash. This is set to 512MB, which will give you plenty of space for logging write operations.\n-   **max_connections**: Sometimes applications do not close connections properly. A larger value will give the server more time to recycle idled connections. The maximum connections is 10000, but the recommended maximum is 5000.\n-   **Innodb_file_per_table**: This setting enable or disable the ability of InnoDB to store tables in separate files. Turn on the option will ensure that several advanced administration operations can be applied efficiently. From performance point of view, it can speed up the table space transmission and optimize the debris management performance. So the recommended setting for this is ON.</br>\n    From MySQL 5.6, the default setting is ON. Therefore, no action is required. For other versions, which is earlier than 5.6, default settings is OFF. Turning this ON is required. And should apply it before data is loaded, because only newly-created tables are affected.\n-   **innodb_flush_log_at_trx_commit**: Default value is 1, with the scope set to 0~2. The default value is the most suitable option for standalone MySQL DB. The setting of 2 enables the most data integrity and is suitable for Master in MySQL cluster. The setting of 0 allows data loss, which can affect reliability, in some cases with better performance, and is suitable for Slave in MySQL cluster.\n-   **Innodb_log_buffer_size**: The log buffer allows transactions to run without having to flush the log to disk before the transactions commit. However, if there is large binary object or text field, the cache will be consumed very quickly and frequent disk I/O will be triggered. It is better increase the buffer size if Innodb_log_waits state variable is not 0.\n-   **query_cache_size**:  The best option is to disable it from the outset. Set query_cache_size to 0 (this is now the default setting in MySQL 5.6) and use other methods to speed up queries .  \n  \nSee [Appendix D](#AppendixD) for comparing performance after the optimization.\n\n\n##Turn on the MySQL slow query log for analyzing the performance bottleneck\nThe MySQL slow query log can help you identify the slow queries for MySQL. After enabling the MySQL slow query log, you can use MySQL tools like **mysqldumpslow** to identify the performance bottleneck.  \n\nPlease note that by default this is not enabled. Turning on the slow query log may consume some CPU resources. Therefore, it is recommended that you enable this temporarily for troubleshooting performance bottlenecks.\n\n###Step 1: Modify my.cnf file by adding the following lines to the end   \n\n    long_query_time = 2\n    slow_query_log = 1\n    slow_query_log_file = /RAID0/mysql/mysql-slow.log\n\n###Step 2: Restart mysql server\n    service  mysql  restart\n\n###Step 3: Check whether the setting is taking effect using the “show” command\n \n![][7]   \n   \n![][8]\n \nIn this example, you can see that the slow query feature has been turned on. You can then use the **mysqldumpslow** tool to determine performance bottlenecks and optimize performance, such as adding indexes.\n\n\n\n\n\n##Appendix\n\nThe following are sample performance test data produced on targeted lab environment, they provide general background on the performance data trend with different performance tuning approaches, however the results may vary under different environment or product versions. \n\n<a name=\"AppendixA\"></a>Appendix A:  \n**Disk Performance (IOPS) with Different RAID Levels** \n\n\n![][9]\n \n**Test commands:**  \n\n    fio -filename=/path/test -iodepth=64 -ioengine=libaio -direct=1 -rw=randwrite -bs=4k -size=5G -numjobs=64 -runtime=30 -group_reporting -name=test-randwrite\n\n>AZURE.NOTE: The workload of this test uses 64 threads, trying to reach the upper limit of RAID.\n\n<a name=\"AppendixB\"></a>Appendix B:  \n**MySQL Performance (Throughput) Comparison with Different RAID Levels**   \n(XFS file system)\n\n \n![][10]  \n![][11]\n\n**Test commands:**\n\n    mysqlslap -p0ps.123 --concurrency=2 --iterations=1 --number-int-cols=10 --number-char-cols=10 -a --auto-generate-sql-guid-primary --number-of-queries=10000 --auto-generate-sql-load-type=write –engine=innodb\n\n**MySQL Performance (OLTP) Comparison with Different RAID Levels**  \n![][12]\n\n**Test commands:**\n\n    time sysbench --test=oltp --db-driver=mysql --mysql-user=root --mysql-password=0ps.123  --mysql-table-engine=innodb --mysql-host=127.0.0.1 --mysql-port=3306 --mysql-socket=/var/run/mysqld/mysqld.sock --mysql-db=test --oltp-table-size=1000000 prepare\n\n<a name=\"AppendixC\"></a>Appendix C:   \n**Disk Performance (IOPS) Comparison for Different Chunk Sizes**  \n(XFS file system)\n\n \n![][13]\n\n**Test commands:**  \n\n    fio -filename=/path/test -iodepth=64 -ioengine=libaio -direct=1 -rw=randwrite -bs=4k -size=30G -numjobs=64 -runtime=30 -group_reporting -name=test-randwrite\n    fio -filename=/path/test -iodepth=64 -ioengine=libaio -direct=1 -rw=randwrite -bs=4k -size=1G -numjobs=64 -runtime=30 -group_reporting -name=test-randwrite  \n\nNote the file size used for this testing is 30GB and 1GB respectively, with RAID 0(4 disks) XFS fie system.\n\n\n<a name=\"AppendixD\"></a>Appendix D:  \n**MySQL Performance (Throughput) Comparison Before and After Optimization**  \n(XFS File System)\n\n  \n![][14]\n\n**Test commands:**\n\n    mysqlslap -p0ps.123 --concurrency=2 --iterations=1 --number-int-cols=10 --number-char-cols=10 -a --auto-generate-sql-guid-primary --number-of-queries=10000 --auto-generate-sql-load-type=write –engine=innodb,misam\n\n**The configuration setting for default and optmization is as follows:**\n\n|Parameters |Default    |optmization\n|-----------|-----------|-----------\n|**innodb_buffer_pool_size**    |None   |7G\n|**innodb_log_file_size**   |5M |512M\n|**max_connections**    |100    |5000\n|**innodb_file_per_table**  |0  |1\n|**innodb_flush_log_at_trx_commit** |1  |2\n|**innodb_log_buffer_size** |8M |128M\n|**query_cache_size**   |16M    |0\n\n\nMore and more detailed optimization configuration parameters, please refer to the mysql official instructions.  \n\n[http://dev.mysql.com/doc/refman/5.6/en/innodb-configuration.html](http://dev.mysql.com/doc/refman/5.6/en/innodb-configuration.html)  \n\n[http://dev.mysql.com/doc/refman/5.6/en/innodb-parameters.html#sysvar_innodb_flush_method](http://dev.mysql.com/doc/refman/5.6/en/innodb-parameters.html#sysvar_innodb_flush_method)\n\n**Test Environment**  \n\n|Hardware   |Details\n|-----------|-------\n|Cpu    |AMD Opteron(tm) Processor 4171 HE/4 cores\n|Memory |14G\n|disk   |10G/disk\n|os |Ubuntu 14.04.1 LTS\n\n\n\n[1]: ./media/virtual-machines-linux-optimize-mysql-perf/virtual-machines-linux-optimize-mysql-perf-01.png\n[2]: ./media/virtual-machines-linux-optimize-mysql-perf/virtual-machines-linux-optimize-mysql-perf-02.png\n[3]: ./media/virtual-machines-linux-optimize-mysql-perf/virtual-machines-linux-optimize-mysql-perf-03.png\n[4]: ./media/virtual-machines-linux-optimize-mysql-perf/virtual-machines-linux-optimize-mysql-perf-04.png\n[5]: ./media/virtual-machines-linux-optimize-mysql-perf/virtual-machines-linux-optimize-mysql-perf-05.png\n[6]: ./media/virtual-machines-linux-optimize-mysql-perf/virtual-machines-linux-optimize-mysql-perf-06.png\n[7]: ./media/virtual-machines-linux-optimize-mysql-perf/virtual-machines-linux-optimize-mysql-perf-07.png\n[8]: ./media/virtual-machines-linux-optimize-mysql-perf/virtual-machines-linux-optimize-mysql-perf-08.png\n[9]: ./media/virtual-machines-linux-optimize-mysql-perf/virtual-machines-linux-optimize-mysql-perf-09.png\n[10]: ./media/virtual-machines-linux-optimize-mysql-perf/virtual-machines-linux-optimize-mysql-perf-10.png\n[11]: ./media/virtual-machines-linux-optimize-mysql-perf/virtual-machines-linux-optimize-mysql-perf-11.png\n[12]: ./media/virtual-machines-linux-optimize-mysql-perf/virtual-machines-linux-optimize-mysql-perf-12.png\n[13]: ./media/virtual-machines-linux-optimize-mysql-perf/virtual-machines-linux-optimize-mysql-perf-13.png\n[14]: ./media/virtual-machines-linux-optimize-mysql-perf/virtual-machines-linux-optimize-mysql-perf-14.png\n "
+}

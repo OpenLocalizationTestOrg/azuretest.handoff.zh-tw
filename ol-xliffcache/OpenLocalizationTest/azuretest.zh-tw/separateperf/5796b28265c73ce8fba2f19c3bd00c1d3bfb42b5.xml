@@ -1,0 +1,334 @@
+{
+  "nodes": [
+    {
+      "content": "Transactions in SQL Data Warehouse | Microsoft Azure",
+      "pos": [
+        26,
+        78
+      ]
+    },
+    {
+      "content": "Tips for implementing transactions in Azure SQL Data Warehouse for developing solutions.",
+      "pos": [
+        96,
+        184
+      ]
+    },
+    {
+      "content": "Transactions in SQL Data Warehouse",
+      "pos": [
+        522,
+        556
+      ]
+    },
+    {
+      "content": "As you would expect SQL Data Warehouse does offer support for all transactional properties.",
+      "pos": [
+        558,
+        649
+      ]
+    },
+    {
+      "content": "However, to ensure the performance of SQL Data Warehouse is maintained at scale some features are limited when compared to SQL Server.",
+      "pos": [
+        650,
+        784
+      ]
+    },
+    {
+      "content": "This article hightlights the differences and lists the others.",
+      "pos": [
+        785,
+        847
+      ]
+    },
+    {
+      "content": "Transaction isolation levels",
+      "pos": [
+        853,
+        881
+      ]
+    },
+    {
+      "content": "SQL Data Warehouse implements ACID transactions.",
+      "pos": [
+        882,
+        930
+      ]
+    },
+    {
+      "content": "However, the Isolation of the transactional support is limited to <ph id=\"ph1\">`READ UNCOMMITTED`</ph> and this cannot be changed.",
+      "pos": [
+        931,
+        1043
+      ]
+    },
+    {
+      "content": "You can implement a number of coding methods to prevent dirty reads of data if this is a concern for you.",
+      "pos": [
+        1044,
+        1149
+      ]
+    },
+    {
+      "content": "The most popular methods leverage both CTAS and table partition switching (often known as the sliding window pattern) to prevent users from querying data that is still being prepared.",
+      "pos": [
+        1150,
+        1333
+      ]
+    },
+    {
+      "content": "Views that pre-filter the data is also a popular approach.",
+      "pos": [
+        1334,
+        1392
+      ]
+    },
+    {
+      "content": "Transaction state",
+      "pos": [
+        1399,
+        1416
+      ]
+    },
+    {
+      "content": "SQL Data Warehouse uses the XACT_STATE() function to report a failed transaction using the value -2.",
+      "pos": [
+        1417,
+        1517
+      ]
+    },
+    {
+      "content": "This means that the transaction has failed and is marked for rollback only",
+      "pos": [
+        1518,
+        1592
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> The use of -2 by the XACT_STATE function to denote a failed transaction represents different behavior to SQL Server.",
+      "pos": [
+        1596,
+        1725
+      ]
+    },
+    {
+      "content": "SQL Server uses the value -1 to represent an un-committable transaction.",
+      "pos": [
+        1726,
+        1798
+      ]
+    },
+    {
+      "content": "SQL Server can tolerate some errors inside a transaction without it having to be marked as un-committable.",
+      "pos": [
+        1799,
+        1905
+      ]
+    },
+    {
+      "content": "For example SELECT 1/0 would cause an error but not force a transaction into an un-committable state.",
+      "pos": [
+        1906,
+        2007
+      ]
+    },
+    {
+      "content": "SQL Server also permits reads in the un-committable transaction.",
+      "pos": [
+        2008,
+        2072
+      ]
+    },
+    {
+      "content": "However, in SQLDW this is not the case.",
+      "pos": [
+        2073,
+        2112
+      ]
+    },
+    {
+      "content": "If an error occurs inside a SQLDW transaction it will automatically enter the -2 state: including SELECT 1/0 errors.",
+      "pos": [
+        2113,
+        2229
+      ]
+    },
+    {
+      "content": "It is therefore important to check that your application code to see if it uses  XACT_STATE().",
+      "pos": [
+        2230,
+        2324
+      ]
+    },
+    {
+      "content": "In SQL Server you might see a code fragment that looks like this:",
+      "pos": [
+        2326,
+        2391
+      ]
+    },
+    {
+      "content": "Notice that the <ph id=\"ph1\">`SELECT`</ph> statement occurs before the <ph id=\"ph2\">`ROLLBACK`</ph> statement.",
+      "pos": [
+        2859,
+        2933
+      ]
+    },
+    {
+      "content": "Also note that the setting of the <ph id=\"ph1\">`@xact`</ph> variable uses DECLARE and not <ph id=\"ph2\">`SELECT`</ph>.",
+      "pos": [
+        2934,
+        3015
+      ]
+    },
+    {
+      "content": "In SQL Data Warehouse the code would need to look like this:",
+      "pos": [
+        3017,
+        3077
+      ]
+    },
+    {
+      "pos": [
+        3559,
+        3679
+      ],
+      "content": "Notice that the rollback of the transaction has to happen before the read of the error information in the <ph id=\"ph1\">`CATCH`</ph> Block."
+    },
+    {
+      "content": "Error_Line() function",
+      "pos": [
+        3684,
+        3705
+      ]
+    },
+    {
+      "content": "It is also worth noting that SQL Data Warehouse does not implement or support the ERROR_LINE() function.",
+      "pos": [
+        3706,
+        3810
+      ]
+    },
+    {
+      "content": "If you have this in your code you will need to remove it to be compliant with SQL Data Warehouse.",
+      "pos": [
+        3811,
+        3908
+      ]
+    },
+    {
+      "content": "Use query labels in your code instead to implement equivalent functionality.",
+      "pos": [
+        3909,
+        3985
+      ]
+    },
+    {
+      "content": "Please refer to the [query labels] article for more details on this feature.",
+      "pos": [
+        3986,
+        4062
+      ]
+    },
+    {
+      "content": "Using THROW and RAISERROR",
+      "pos": [
+        4067,
+        4092
+      ]
+    },
+    {
+      "content": "THROW is the more modern implementation for raising exceptions in SQL Data Warehouse but RAISERROR is also supported.",
+      "pos": [
+        4093,
+        4210
+      ]
+    },
+    {
+      "content": "There are a few differences that are worth paying attention to however.",
+      "pos": [
+        4211,
+        4282
+      ]
+    },
+    {
+      "content": "User defined error messages numbers cannot be in the 100,000 - 150,000 range for THROW",
+      "pos": [
+        4286,
+        4372
+      ]
+    },
+    {
+      "content": "RAISERROR error messages are fixed at 50,000",
+      "pos": [
+        4375,
+        4419
+      ]
+    },
+    {
+      "content": "Use of sys.messages is not supported",
+      "pos": [
+        4422,
+        4458
+      ]
+    },
+    {
+      "content": "Limitiations",
+      "pos": [
+        4463,
+        4475
+      ]
+    },
+    {
+      "content": "SQL Data Warehouse does have a few other restrictions that relate to transactions.",
+      "pos": [
+        4476,
+        4558
+      ]
+    },
+    {
+      "content": "They are as follows:",
+      "pos": [
+        4560,
+        4580
+      ]
+    },
+    {
+      "content": "No distributed transactions",
+      "pos": [
+        4584,
+        4611
+      ]
+    },
+    {
+      "content": "No nested transactions permitted",
+      "pos": [
+        4614,
+        4646
+      ]
+    },
+    {
+      "content": "No save points allowed",
+      "pos": [
+        4649,
+        4671
+      ]
+    },
+    {
+      "content": "Next steps",
+      "pos": [
+        4676,
+        4686
+      ]
+    },
+    {
+      "pos": [
+        4687,
+        4743
+      ],
+      "content": "For more development tips, see <bpt id=\"p1\">[</bpt>development overview<ept id=\"p1\">][]</ept>."
+    }
+  ],
+  "content": "<properties\n   pageTitle=\"Transactions in SQL Data Warehouse | Microsoft Azure\"\n   description=\"Tips for implementing transactions in Azure SQL Data Warehouse for developing solutions.\"\n   services=\"sql-data-warehouse\"\n   documentationCenter=\"NA\"\n   authors=\"jrowlandjones\"\n   manager=\"barbkess\"\n   editor=\"\"/>\n\n<tags\n   ms.service=\"sql-data-warehouse\"\n   ms.devlang=\"NA\"\n   ms.topic=\"article\"\n   ms.tgt_pltfrm=\"NA\"\n   ms.workload=\"data-services\"\n   ms.date=\"06/26/2015\"\n   ms.author=\"JRJ@BigBangData.co.uk;barbkess\"/>\n\n# Transactions in SQL Data Warehouse\n\nAs you would expect SQL Data Warehouse does offer support for all transactional properties. However, to ensure the performance of SQL Data Warehouse is maintained at scale some features are limited when compared to SQL Server. This article hightlights the differences and lists the others. \n\n## Transaction isolation levels\nSQL Data Warehouse implements ACID transactions. However, the Isolation of the transactional support is limited to `READ UNCOMMITTED` and this cannot be changed. You can implement a number of coding methods to prevent dirty reads of data if this is a concern for you. The most popular methods leverage both CTAS and table partition switching (often known as the sliding window pattern) to prevent users from querying data that is still being prepared. Views that pre-filter the data is also a popular approach.  \n\n## Transaction state\nSQL Data Warehouse uses the XACT_STATE() function to report a failed transaction using the value -2. This means that the transaction has failed and is marked for rollback only\n\n> [AZURE.NOTE] The use of -2 by the XACT_STATE function to denote a failed transaction represents different behavior to SQL Server. SQL Server uses the value -1 to represent an un-committable transaction. SQL Server can tolerate some errors inside a transaction without it having to be marked as un-committable. For example SELECT 1/0 would cause an error but not force a transaction into an un-committable state. SQL Server also permits reads in the un-committable transaction. However, in SQLDW this is not the case. If an error occurs inside a SQLDW transaction it will automatically enter the -2 state: including SELECT 1/0 errors. It is therefore important to check that your application code to see if it uses  XACT_STATE().\n\nIn SQL Server you might see a code fragment that looks like this:\n\n```\nBEGIN TRAN\n    BEGIN TRY\n        DECLARE @i INT;\n        SET     @i = CONVERT(int,'ABC');\n    END TRY\n    BEGIN CATCH\n\n        DECLARE @xact smallint = XACT_STATE();\n\n        SELECT  ERROR_NUMBER()    AS ErrNumber\n        ,       ERROR_SEVERITY()  AS ErrSeverity\n        ,       ERROR_STATE()     AS ErrState\n        ,       ERROR_PROCEDURE() AS ErrProcedure\n        ,       ERROR_MESSAGE()   AS ErrMessage\n        ;\n\n        ROLLBACK TRAN;\n\n    END CATCH;\n```\n\nNotice that the `SELECT` statement occurs before the `ROLLBACK` statement. Also note that the setting of the `@xact` variable uses DECLARE and not `SELECT`.\n\nIn SQL Data Warehouse the code would need to look like this:\n\n```\nBEGIN TRAN\n    BEGIN TRY\n        DECLARE @i INT;\n        SET     @i = CONVERT(int,'ABC');\n    END TRY\n    BEGIN CATCH\n\n        ROLLBACK TRAN;\n\n        DECLARE @xact smallint = XACT_STATE();\n\n        SELECT  ERROR_NUMBER()    AS ErrNumber\n        ,       ERROR_SEVERITY()  AS ErrSeverity\n        ,       ERROR_STATE()     AS ErrState\n        ,       ERROR_PROCEDURE() AS ErrProcedure\n        ,       ERROR_MESSAGE()   AS ErrMessage\n        ;\n    END CATCH;\n\nSELECT @xact;\n```\n\nNotice that the rollback of the transaction has to happen before the read of the error information in the `CATCH` Block.\n\n## Error_Line() function\nIt is also worth noting that SQL Data Warehouse does not implement or support the ERROR_LINE() function. If you have this in your code you will need to remove it to be compliant with SQL Data Warehouse. Use query labels in your code instead to implement equivalent functionality. Please refer to the [query labels] article for more details on this feature.\n\n## Using THROW and RAISERROR\nTHROW is the more modern implementation for raising exceptions in SQL Data Warehouse but RAISERROR is also supported. There are a few differences that are worth paying attention to however.\n\n- User defined error messages numbers cannot be in the 100,000 - 150,000 range for THROW\n- RAISERROR error messages are fixed at 50,000\n- Use of sys.messages is not supported\n\n## Limitiations\nSQL Data Warehouse does have a few other restrictions that relate to transactions.\n\nThey are as follows:\n\n- No distributed transactions\n- No nested transactions permitted\n- No save points allowed\n\n## Next steps\nFor more development tips, see [development overview][].\n\n<!--Image references-->\n\n<!--Article references-->\n[development overview]: sql-data-warehouse-overview-develop.md\n\n<!--MSDN references-->\n\n<!--Other Web references-->\n"
+}

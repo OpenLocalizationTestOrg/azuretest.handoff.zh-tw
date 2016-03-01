@@ -1,0 +1,2357 @@
+{
+  "nodes": [
+    {
+      "content": "Advanced Analytics Process and Technology in Action: using HDInsight Hadoop clusters on the 1 TB Criteo dataset | Microsoft Azure",
+      "pos": [
+        28,
+        157
+      ]
+    },
+    {
+      "content": "Using the Advanced Analytics Process and Technology (ADAPT) for an end-to-end scenario employing an HDInsight Hadoop cluster to build and deploy a model using a large (1 TB) publicly available dataset",
+      "pos": [
+        177,
+        377
+      ]
+    },
+    {
+      "content": "Advanced Analytics Process and Technology in Action - Using Azure HDInsight Hadoop Clusters on a 1 TB dataset",
+      "pos": [
+        781,
+        890
+      ]
+    },
+    {
+      "content": "In this walkthrough, we demonstrate using the Advanced Analytics Process and Technology (ADAPT) end-to-end with an <bpt id=\"p1\">[</bpt>Azure HDInsight Hadoop cluster<ept id=\"p1\">](http://azure.microsoft.com/services/hdinsight/)</ept> to store, explore, feature engineer, and down sample data from one of the publicly available <bpt id=\"p2\">[</bpt>Criteo<ept id=\"p2\">](http://labs.criteo.com/downloads/download-terabyte-click-logs/)</ept> datasets.",
+      "pos": [
+        892,
+        1263
+      ]
+    },
+    {
+      "content": "We use Azure Machine Learning to build a binary classification model on this data.",
+      "pos": [
+        1264,
+        1346
+      ]
+    },
+    {
+      "content": "We also show how to publish one of these models as a Web service.",
+      "pos": [
+        1347,
+        1412
+      ]
+    },
+    {
+      "content": "It is also possible to use an IPython notebook to accomplish the tasks presented in this walkthrough.",
+      "pos": [
+        1414,
+        1515
+      ]
+    },
+    {
+      "content": "Users who would like to try this approach should consult the <bpt id=\"p1\">[</bpt>Criteo walkthrough using a Hive ODBC connection<ept id=\"p1\">](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/DataScienceProcess/iPythonNotebooks/machine-Learning-data-science-process-hive-walkthrough-criteo.ipynb)</ept> topic.",
+      "pos": [
+        1516,
+        1814
+      ]
+    },
+    {
+      "pos": [
+        1820,
+        1868
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"dataset\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Criteo Dataset Description"
+    },
+    {
+      "content": "The Criteo data is a click prediction dataset that is approximately 370GB of gzip compressed TSV files (~1.3TB uncompressed), comprising more than 4.3 billion records.",
+      "pos": [
+        1870,
+        2037
+      ]
+    },
+    {
+      "content": "It is taken from 24 days of click data made available by <bpt id=\"p1\">[</bpt>Criteo<ept id=\"p1\">](http://labs.criteo.com/downloads/download-terabyte-click-logs/)</ept>.",
+      "pos": [
+        2038,
+        2168
+      ]
+    },
+    {
+      "content": "For the convenience of data scientists, we have unzipped data available to us to experiment with.",
+      "pos": [
+        2169,
+        2266
+      ]
+    },
+    {
+      "content": "Each record in this dataset contains 40 columns:",
+      "pos": [
+        2268,
+        2316
+      ]
+    },
+    {
+      "content": "the first column is a label column that indicates whether a user clicks on an add (value 1) or does not click (value 0)",
+      "pos": [
+        2321,
+        2440
+      ]
+    },
+    {
+      "content": "next 13 columns are numeric, and",
+      "pos": [
+        2444,
+        2476
+      ]
+    },
+    {
+      "content": "last 26 are categorical columns",
+      "pos": [
+        2480,
+        2511
+      ]
+    },
+    {
+      "content": "The columns are anonymized and use a series of enumerated names: \"Col1\" (for the label column) to 'Col40\" (for the last categorical column).",
+      "pos": [
+        2514,
+        2654
+      ]
+    },
+    {
+      "content": "Here is an excerpt of the first 20 columns of two observations (rows) from this dataset:",
+      "pos": [
+        2668,
+        2756
+      ]
+    },
+    {
+      "content": "There are missing values in both the numeric and categorical columns in this dataset.",
+      "pos": [
+        3396,
+        3481
+      ]
+    },
+    {
+      "content": "We describe a simple method for handling the missing values below.",
+      "pos": [
+        3482,
+        3548
+      ]
+    },
+    {
+      "content": "Additional details of the data are explored below when we store them into Hive tables.",
+      "pos": [
+        3549,
+        3635
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Definition:<ept id=\"p1\">**</ept> <bpt id=\"p2\">*</bpt>Clickthrough rate (CTR):<ept id=\"p2\">*</ept> This is the percentage of clicks in the data.",
+      "pos": [
+        3637,
+        3725
+      ]
+    },
+    {
+      "content": "In this Criteo dataset, the CTR is about 3.3% or 0.033.",
+      "pos": [
+        3726,
+        3781
+      ]
+    },
+    {
+      "pos": [
+        3786,
+        3836
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"mltasks\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Examples of prediction tasks"
+    },
+    {
+      "content": "Two sample prediction problems are addressed in this walkthrough:",
+      "pos": [
+        3837,
+        3902
+      ]
+    },
+    {
+      "pos": [
+        3907,
+        3983
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Binary classification<ept id=\"p1\">**</ept>: Predicts whether or not a user clicked on an add:"
+    },
+    {
+      "content": "Class 0: No Click",
+      "pos": [
+        3990,
+        4007
+      ]
+    },
+    {
+      "content": "Class 1: Click",
+      "pos": [
+        4014,
+        4028
+      ]
+    },
+    {
+      "pos": [
+        4033,
+        4108
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Regression<ept id=\"p1\">**</ept>: Predicts the probability of an ad click from user features."
+    },
+    {
+      "pos": [
+        4114,
+        4185
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"setup\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Set Up an HDInsight Hadoop cluster for data science"
+    },
+    {
+      "pos": [
+        4187,
+        4233
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Note:<ept id=\"p1\">**</ept> This is typically an <bpt id=\"p2\">**</bpt>Admin<ept id=\"p2\">**</ept> task."
+    },
+    {
+      "content": "Set up your Azure Data Science environment for building predictive analytics solutions with HDInsight clusters in three steps:",
+      "pos": [
+        4235,
+        4361
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt>Create a storage account<ept id=\"p1\">](storage-whatis-account.md)</ept>: This storage account is used to store data in Azure Blob Storage.",
+      "pos": [
+        4366,
+        4486
+      ]
+    },
+    {
+      "content": "The data used in HDInsight clusters is stored here.",
+      "pos": [
+        4487,
+        4538
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt>Customize Azure HDInsight Hadoop Clusters for Data Science<ept id=\"p1\">](machine-learning-data-science-customize-hadoop-cluster.md)</ept>: This step creates an Azure HDInsight Hadoop cluster with 64-bit Anaconda Python 2.7 installed on all nodes.",
+      "pos": [
+        4543,
+        4771
+      ]
+    },
+    {
+      "content": "There are two important steps (described in this topic) to complete when customizing the HDInsight cluster.",
+      "pos": [
+        4772,
+        4879
+      ]
+    },
+    {
+      "content": "You must link the storage account created in step 1 with your HDInsight cluster when it is created.",
+      "pos": [
+        4887,
+        4986
+      ]
+    },
+    {
+      "content": "This storage account is used for accessing data that can be processed within the cluster.",
+      "pos": [
+        4987,
+        5076
+      ]
+    },
+    {
+      "content": "You must enable Remote Access to the head node of the cluster after it is created.",
+      "pos": [
+        5084,
+        5166
+      ]
+    },
+    {
+      "content": "Remember the remote access credentials you specify here (different from those specified for the cluster at its creation): you will need them below.",
+      "pos": [
+        5167,
+        5314
+      ]
+    },
+    {
+      "pos": [
+        5319,
+        5549
+      ],
+      "content": "<bpt id=\"p1\">[</bpt>Create an Azure ML workspace<ept id=\"p1\">](machine-learning-create-workspace.md)</ept>: This Azure Machine Learning workspace is used for building machine learning models after an initial data exploration and down sampling on the HDInsight cluster."
+    },
+    {
+      "pos": [
+        5554,
+        5617
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"getdata\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Get and consume data from a public source"
+    },
+    {
+      "content": "The <bpt id=\"p1\">[</bpt>Criteo<ept id=\"p1\">](http://labs.criteo.com/downloads/download-terabyte-click-logs/)</ept> dataset can be accessed by clicking on the link, accepting the terms of use, and providing a name.",
+      "pos": [
+        5619,
+        5794
+      ]
+    },
+    {
+      "content": "A snapshot of what this looks like is shown below:",
+      "pos": [
+        5795,
+        5845
+      ]
+    },
+    {
+      "content": "Accept Criteo terms",
+      "pos": [
+        5849,
+        5868
+      ]
+    },
+    {
+      "pos": [
+        5903,
+        5989
+      ],
+      "content": "Click on <bpt id=\"p1\">**</bpt>Continue to Download<ept id=\"p1\">**</ept> to read more about the dataset and its availability."
+    },
+    {
+      "content": "The data resides in a public <bpt id=\"p1\">[</bpt>Azure blob storage<ept id=\"p1\">](storage-dotnet-how-to-use-blobs.md)</ept> location: wasb://criteo@azuremlsampleexperiments.blob.core.windows.net/raw/.",
+      "pos": [
+        5991,
+        6153
+      ]
+    },
+    {
+      "content": "The \"wasb\" refers to Azure Blob Storage location.",
+      "pos": [
+        6154,
+        6203
+      ]
+    },
+    {
+      "content": "The data in this public blob storage consists of three sub-folders of unzipped data.",
+      "pos": [
+        6209,
+        6293
+      ]
+    },
+    {
+      "pos": [
+        6310,
+        6398
+      ],
+      "content": "The sub-folder <bpt id=\"p1\">*</bpt>raw/count/<ept id=\"p1\">*</ept> contains the first 21 days of data - from day\\_00 to day\\_20"
+    },
+    {
+      "pos": [
+        6406,
+        6475
+      ],
+      "content": "The sub-folder <bpt id=\"p1\">*</bpt>raw/train/<ept id=\"p1\">*</ept> consists of a single day of data, day\\_21"
+    },
+    {
+      "pos": [
+        6483,
+        6559
+      ],
+      "content": "The sub-folder <bpt id=\"p1\">*</bpt>raw/test/<ept id=\"p1\">*</ept> consists of two days of data, day\\_22 and day\\_23"
+    },
+    {
+      "pos": [
+        6564,
+        6709
+      ],
+      "content": "For those who want to start with the raw gzip data, these are also available in the main folder <bpt id=\"p1\">*</bpt>raw/<ept id=\"p1\">*</ept> as day_NN.gz, where NN goes from 00 to 23."
+    },
+    {
+      "content": "An alternative approach to access, explore, and model this data that does not require any local downloads is explained later in this walkthrough when we create Hive tables.",
+      "pos": [
+        6711,
+        6883
+      ]
+    },
+    {
+      "pos": [
+        6888,
+        6937
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"login\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Log into the cluster headnode"
+    },
+    {
+      "content": "To login to the headnode of the cluster, use the <bpt id=\"p1\">[</bpt>Azure Management<ept id=\"p1\">](manage.windowsazure.com)</ept> portal to locate the cluster.",
+      "pos": [
+        6939,
+        7061
+      ]
+    },
+    {
+      "content": "Click on the HDInsight elephant icon on the left and then double click on the name of your cluster.",
+      "pos": [
+        7062,
+        7161
+      ]
+    },
+    {
+      "content": "Navigate to the <bpt id=\"p1\">**</bpt>Configuration<ept id=\"p1\">**</ept> tab, double click on the CONNECT icon on the bottom of the page, and enter your remote access credentials when prompted.",
+      "pos": [
+        7162,
+        7316
+      ]
+    },
+    {
+      "content": "This takes you to the headnode of the cluster.",
+      "pos": [
+        7317,
+        7363
+      ]
+    },
+    {
+      "content": "Here is what a typical first login to the cluster headnode looks like:",
+      "pos": [
+        7366,
+        7436
+      ]
+    },
+    {
+      "content": "Login to cluster",
+      "pos": [
+        7440,
+        7456
+      ]
+    },
+    {
+      "content": "On the left, we see the \"Hadoop Command Line\", which will be our workhorse for the data exploration.",
+      "pos": [
+        7491,
+        7591
+      ]
+    },
+    {
+      "content": "We also see two useful URLs - \"Hadoop Yarn Status\" and \"Hadoop Name Node\".",
+      "pos": [
+        7592,
+        7666
+      ]
+    },
+    {
+      "content": "The yarn status URL shows job progress and the name node URL gives details on the cluster configuration.",
+      "pos": [
+        7667,
+        7771
+      ]
+    },
+    {
+      "content": "Now we are set up and ready to begin first part of the walkthrough: data exploration using Hive and getting data ready for Azure Machine Learning.",
+      "pos": [
+        7774,
+        7920
+      ]
+    },
+    {
+      "pos": [
+        7926,
+        7987
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"hive-db-tables\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph> Create Hive database and tables"
+    },
+    {
+      "pos": [
+        7989,
+        8155
+      ],
+      "content": "To create Hive tables for our Criteo dataset, open the <bpt id=\"p1\">***</bpt>Hadoop Command Line<ept id=\"p1\">***</ept> on the desktop of the head node, and enter the Hive directory by entering the command"
+    },
+    {
+      "pos": [
+        8181,
+        8464
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>IMPORTANT NOTE<ept id=\"p1\">**</ept>: <bpt id=\"p2\">**</bpt>Run all Hive commands in this walkthrough from the above Hive bin/ directory prompt. This will take care of any path issues automatically. We will use the terms \"Hive directory prompt\", \"Hive bin/ directory prompt\",  and \"Hadoop Command Line\" interchangeably.<ept id=\"p2\">**</ept>"
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>IMPORTANT NOTE 2<ept id=\"p1\">**</ept>: <bpt id=\"p2\">**</bpt>To execute any Hive query, one can always do the following<ept id=\"p2\">**</ept>",
+      "pos": [
+        8467,
+        8551
+      ]
+    },
+    {
+      "content": "cd %hive_home%\\bin",
+      "pos": [
+        8561,
+        8579
+      ]
+    },
+    {
+      "content": "hive",
+      "pos": [
+        8588,
+        8592
+      ]
+    },
+    {
+      "content": "After the Hive REPL appears with a \"hive &gt;\"sign, simply cut and paste the query to execute it.",
+      "pos": [
+        8594,
+        8688
+      ]
+    },
+    {
+      "content": "The code below creates a database \"criteo\" and then generates 4 tables:",
+      "pos": [
+        8690,
+        8761
+      ]
+    },
+    {
+      "pos": [
+        8767,
+        8832
+      ],
+      "content": "a <bpt id=\"p1\">*</bpt>table for generating counts<ept id=\"p1\">*</ept> built on days day\\_00 to day\\_20,"
+    },
+    {
+      "pos": [
+        8836,
+        8896
+      ],
+      "content": "a <bpt id=\"p1\">*</bpt>table for use as the train dataset<ept id=\"p1\">*</ept> built on day\\_21, and"
+    },
+    {
+      "pos": [
+        8900,
+        8984
+      ],
+      "content": "two <bpt id=\"p1\">*</bpt>tables for use as the test datasets<ept id=\"p1\">*</ept> built on day\\_22 and day\\_23 respectively."
+    },
+    {
+      "content": "We split our test dataset into two different tables because one of the days is a holiday, and we want to determine if the model can detect differences between a holiday and non-holiday from the clickthrough rate.",
+      "pos": [
+        8987,
+        9199
+      ]
+    },
+    {
+      "pos": [
+        9201,
+        9488
+      ],
+      "content": "The script <bpt id=\"p1\">[</bpt>sample&amp;#95;hive&amp;#95;create&amp;#95;criteo&amp;#95;database&amp;#95;and&amp;#95;tables.hql<ept id=\"p1\">](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/DataScienceProcess/DataScienceScripts/sample_hive_create_criteo_database_and_tables.hql)</ept> is displayed below for convenience:"
+    },
+    {
+      "content": "We note that all these tables are external as we simply point to Azure Blob Storage (wasb) locations.",
+      "pos": [
+        12720,
+        12821
+      ]
+    },
+    {
+      "content": "There are two ways to execute ANY Hive query that we now mention.",
+      "pos": [
+        12826,
+        12891
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Using the Hive REPL command-line<ept id=\"p1\">**</ept>: The first is to issue a \"hive\" command and copy and paste the above query at the Hive REPL command-line.",
+      "pos": [
+        12898,
+        13040
+      ]
+    },
+    {
+      "content": "To do this, do:",
+      "pos": [
+        13041,
+        13056
+      ]
+    },
+    {
+      "content": "Now at the REPL command-line, cutting and pasting the query executes it.",
+      "pos": [
+        13103,
+        13175
+      ]
+    },
+    {
+      "pos": [
+        13180,
+        13586
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Saving queries to a file and executing the command<ept id=\"p1\">**</ept>: The second is to save the queries to a .hql file (<bpt id=\"p2\">[</bpt>sample&amp;#95;hive&amp;#95;create&amp;#95;criteo&amp;#95;database&amp;#95;and&amp;#95;tables.hql<ept id=\"p2\">](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/DataScienceProcess/DataScienceScripts/sample_hive_create_criteo_database_and_tables.hql)</ept>) and then issue the following command to execute the query:"
+    },
+    {
+      "content": "Confirm database and table creation",
+      "pos": [
+        13668,
+        13703
+      ]
+    },
+    {
+      "content": "Next, we confirm the creation of the database by issuing the command below from the Hive bin/ directory prompt:",
+      "pos": [
+        13705,
+        13816
+      ]
+    },
+    {
+      "content": "This gives:",
+      "pos": [
+        13853,
+        13864
+      ]
+    },
+    {
+      "content": "This confirms the creation of the new database, \"criteo\".",
+      "pos": [
+        13950,
+        14007
+      ]
+    },
+    {
+      "content": "To see what tables we created, we simply issue the command below from the Hive bin/ directory prompt:",
+      "pos": [
+        14009,
+        14110
+      ]
+    },
+    {
+      "content": "We then see the following output:",
+      "pos": [
+        14154,
+        14187
+      ]
+    },
+    {
+      "pos": [
+        14341,
+        14392
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"exploration\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph> Data exploration in Hive"
+    },
+    {
+      "content": "Now we are ready to do some basic data exploration in Hive.",
+      "pos": [
+        14394,
+        14453
+      ]
+    },
+    {
+      "content": "We begin by counting the number of examples in the train and test data tables.",
+      "pos": [
+        14454,
+        14532
+      ]
+    },
+    {
+      "content": "Number of train examples",
+      "pos": [
+        14538,
+        14562
+      ]
+    },
+    {
+      "pos": [
+        14564,
+        14819
+      ],
+      "content": "The contents of <bpt id=\"p1\">[</bpt>sample&amp;#95;hive&amp;#95;count&amp;#95;train&amp;#95;table&amp;#95;examples.hql<ept id=\"p1\">](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/DataScienceProcess/DataScienceScripts/sample_hive_count_train_table_examples.hql)</ept> are shown below:"
+    },
+    {
+      "content": "This yields:",
+      "pos": [
+        14872,
+        14884
+      ]
+    },
+    {
+      "content": "Alternatively, one may also issue the command below from the Hive bin/ directory prompt:",
+      "pos": [
+        14960,
+        15048
+      ]
+    },
+    {
+      "content": "Number of test examples in the two test datasets",
+      "pos": [
+        15129,
+        15177
+      ]
+    },
+    {
+      "content": "We now count the number of examples in the two test datasets.",
+      "pos": [
+        15179,
+        15240
+      ]
+    },
+    {
+      "content": "The contents of <bpt id=\"p1\">[</bpt>sample&amp;#95;hive&amp;#95;count&amp;#95;criteo&amp;#95;test&amp;#95;day&amp;#95;22&amp;#95;table&amp;#95;examples.hql<ept id=\"p1\">](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/DataScienceProcess/DataScienceScripts/sample_hive_count_criteo_test_day_22_table_examples.hql)</ept> are below:",
+      "pos": [
+        15241,
+        15528
+      ]
+    },
+    {
+      "content": "This yields:",
+      "pos": [
+        15587,
+        15599
+      ]
+    },
+    {
+      "content": "As usual, we may also call the script from the Hive bin/ directory prompt by issuing the below command:",
+      "pos": [
+        15679,
+        15782
+      ]
+    },
+    {
+      "content": "Finally, we examine the number of test examples in the test dataset based on day\\_23.",
+      "pos": [
+        15865,
+        15950
+      ]
+    },
+    {
+      "pos": [
+        15952,
+        16255
+      ],
+      "content": "The command to do this is similar to the above (refer to <bpt id=\"p1\">[</bpt>sample&amp;#95;hive&amp;#95;count&amp;#95;criteo&amp;#95;test&amp;#95;day&amp;#95;23&amp;#95;examples.hql<ept id=\"p1\">](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/DataScienceProcess/DataScienceScripts/sample_hive_count_criteo_test_day_23_examples.hql)</ept>):"
+    },
+    {
+      "content": "This gives:",
+      "pos": [
+        16314,
+        16325
+      ]
+    },
+    {
+      "content": "Label distribution in the train dataset",
+      "pos": [
+        16409,
+        16448
+      ]
+    },
+    {
+      "content": "The label distribution in the train dataset is of interest.",
+      "pos": [
+        16450,
+        16509
+      ]
+    },
+    {
+      "content": "To see this, we show contents of <bpt id=\"p1\">[</bpt>sample&amp;#95;hive&amp;#95;criteo&amp;#95;label&amp;#95;distribution&amp;#95;train&amp;#95;table.hql<ept id=\"p1\">](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/DataScienceProcess/DataScienceScripts/sample_hive_criteo_label_distribution_train_table.hql)</ept>:",
+      "pos": [
+        16510,
+        16792
+      ]
+    },
+    {
+      "content": "This yields the label distribution:",
+      "pos": [
+        16871,
+        16906
+      ]
+    },
+    {
+      "content": "Note that the percentage of positive labels is about 3.3% (consistent with the original dataset).",
+      "pos": [
+        17014,
+        17111
+      ]
+    },
+    {
+      "content": "Histogram distributions of some numeric variables in the train dataset",
+      "pos": [
+        17125,
+        17195
+      ]
+    },
+    {
+      "content": "We can use Hive's native \"histogram\\_numeric\" function to find out what the distribution of the numeric variables looks like.",
+      "pos": [
+        17197,
+        17322
+      ]
+    },
+    {
+      "content": "The contents of <bpt id=\"p1\">[</bpt>sample&amp;#95;hive&amp;#95;criteo&amp;#95;histogram&amp;#95;numeric.hql<ept id=\"p1\">](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/DataScienceProcess/DataScienceScripts/sample_hive_criteo_histogram_numeric.hql)</ept> are as below:",
+      "pos": [
+        17323,
+        17567
+      ]
+    },
+    {
+      "content": "This yields the following:",
+      "pos": [
+        17869,
+        17895
+      ]
+    },
+    {
+      "content": "The LATERAL VIEW - explode combination in Hive serves to produce a SQL-like output instead of the usual list.",
+      "pos": [
+        18371,
+        18480
+      ]
+    },
+    {
+      "content": "Note that in the above table, the first column corresponds to the bin center and the second to the bin frequency.",
+      "pos": [
+        18481,
+        18594
+      ]
+    },
+    {
+      "content": "Approximate percentiles of some numeric variables in the train dataset",
+      "pos": [
+        18600,
+        18670
+      ]
+    },
+    {
+      "content": "Also of interest with numeric variables is the computation of approximate percentiles.",
+      "pos": [
+        18672,
+        18758
+      ]
+    },
+    {
+      "content": "Hive's native \"percentile\\_approx\" does this for us.",
+      "pos": [
+        18759,
+        18811
+      ]
+    },
+    {
+      "content": "The contents of <bpt id=\"p1\">[</bpt>sample&amp;#95;hive&amp;#95;criteo&amp;#95;approximate&amp;#95;percentiles.hql<ept id=\"p1\">](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/DataScienceProcess/DataScienceScripts/sample_hive_criteo_approximate_percentiles.hql)</ept> are:",
+      "pos": [
+        18812,
+        19059
+      ]
+    },
+    {
+      "content": "This yields:",
+      "pos": [
+        19316,
+        19328
+      ]
+    },
+    {
+      "content": "We remark that the distribution of percentiles is closely related to the histogram distribution of any numeric variable usually.",
+      "pos": [
+        19497,
+        19625
+      ]
+    },
+    {
+      "content": "Find number of unique values for some categorical columns in the train dataset",
+      "pos": [
+        19639,
+        19717
+      ]
+    },
+    {
+      "content": "Continuing the data exploration, we now find, for some categorical columns, the number of unique values they take.",
+      "pos": [
+        19719,
+        19833
+      ]
+    },
+    {
+      "content": "To do this, we show contents of <bpt id=\"p1\">[</bpt>sample&amp;#95;hive&amp;#95;criteo&amp;#95;unique&amp;#95;values&amp;#95;categoricals.hql<ept id=\"p1\">](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/DataScienceProcess/DataScienceScripts/sample_hive_criteo_unique_values_categoricals.hql)</ept>:",
+      "pos": [
+        19834,
+        20103
+      ]
+    },
+    {
+      "content": "This yields:",
+      "pos": [
+        20185,
+        20197
+      ]
+    },
+    {
+      "content": "We note that Col15 has 19M unique values!",
+      "pos": [
+        20272,
+        20313
+      ]
+    },
+    {
+      "content": "Using naive techniques like \"one-hot encoding\" to encode such high-dimensional categorical variables is infeasible.",
+      "pos": [
+        20314,
+        20429
+      ]
+    },
+    {
+      "content": "In particular, we explain and demonstrate a powerful, robust technique called <bpt id=\"p1\">[</bpt>Learning With Counts<ept id=\"p1\">](http://blogs.technet.com/b/machinelearning/archive/2015/02/17/big-learning-made-easy-with-counts.aspx)</ept> for tackling this problem efficiently.",
+      "pos": [
+        20430,
+        20672
+      ]
+    },
+    {
+      "content": "We end this sub-section by looking at the number of unique values for some other categorical columns as well.",
+      "pos": [
+        20675,
+        20784
+      ]
+    },
+    {
+      "content": "The contents of <bpt id=\"p1\">[</bpt>sample&amp;#95;hive&amp;#95;criteo&amp;#95;unique&amp;#95;values&amp;#95;multiple&amp;#95;categoricals.hql<ept id=\"p1\">](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/DataScienceProcess/DataScienceScripts/sample_hive_criteo_unique_values_multiple_categoricals.hql)</ept> are:",
+      "pos": [
+        20785,
+        21064
+      ]
+    },
+    {
+      "content": "This yields:",
+      "pos": [
+        21242,
+        21254
+      ]
+    },
+    {
+      "content": "Again we see that except for Col20, all the other columns have many unique values.",
+      "pos": [
+        21356,
+        21438
+      ]
+    },
+    {
+      "content": "Co-occurence counts of pairs of categorical variables in the train dataset",
+      "pos": [
+        21445,
+        21519
+      ]
+    },
+    {
+      "content": "The co-occurence counts of pairs of categorical variables is also of interest.",
+      "pos": [
+        21521,
+        21599
+      ]
+    },
+    {
+      "content": "This can be determined using the code in <bpt id=\"p1\">[</bpt>sample&amp;#95;hive&amp;#95;criteo&amp;#95;paired&amp;#95;categorical&amp;#95;counts.hql<ept id=\"p1\">](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/DataScienceProcess/DataScienceScripts/sample_hive_criteo_paired_categorical_counts.hql)</ept>:",
+      "pos": [
+        21600,
+        21876
+      ]
+    },
+    {
+      "content": "We reverse order the counts by their occurrence and look at the top 15 in this case.",
+      "pos": [
+        22017,
+        22101
+      ]
+    },
+    {
+      "content": "This gives us:",
+      "pos": [
+        22102,
+        22116
+      ]
+    },
+    {
+      "pos": [
+        22892,
+        22969
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"downsample\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph> Down sample the datasets for Azure Machine Learning"
+    },
+    {
+      "content": "Having explored the datasets and demonstrated how we may do this type of exploration for any variables (including combinations), we now down sample the data sets so that we can build models in Azure Machine Learning.",
+      "pos": [
+        22971,
+        23187
+      ]
+    },
+    {
+      "content": "Recall that the problem we focus on is: given a set of example attributes (feature values from Col2 - Col40), we predict if Col1 is a 0 (no click) or a 1 (click).",
+      "pos": [
+        23188,
+        23350
+      ]
+    },
+    {
+      "content": "To down sample our train and test datasets to 1% of the original size, we use Hive's native RAND() function.",
+      "pos": [
+        23353,
+        23461
+      ]
+    },
+    {
+      "content": "The next script, <bpt id=\"p1\">[</bpt>sample&amp;#95;hive&amp;#95;criteo&amp;#95;downsample&amp;#95;train&amp;#95;dataset.hql<ept id=\"p1\">](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/DataScienceProcess/DataScienceScripts/sample_hive_criteo_downsample_train_dataset.hql)</ept> does this for the train dataset:",
+      "pos": [
+        23462,
+        23744
+      ]
+    },
+    {
+      "content": "This yields:",
+      "pos": [
+        24619,
+        24631
+      ]
+    },
+    {
+      "pos": [
+        24703,
+        24998
+      ],
+      "content": "The script <bpt id=\"p1\">[</bpt>sample&amp;#95;hive&amp;#95;criteo&amp;#95;downsample&amp;#95;test&amp;#95;day&amp;#95;22&amp;#95;dataset.hql<ept id=\"p1\">](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/DataScienceProcess/DataScienceScripts/sample_hive_criteo_downsample_test_day_22_dataset.hql)</ept> does it for test data, day\\_22:"
+    },
+    {
+      "content": "This yields:",
+      "pos": [
+        25880,
+        25892
+      ]
+    },
+    {
+      "pos": [
+        25964,
+        26268
+      ],
+      "content": "Finally, the script <bpt id=\"p1\">[</bpt>sample&amp;#95;hive&amp;#95;criteo&amp;#95;downsample&amp;#95;test&amp;#95;day&amp;#95;23&amp;#95;dataset.hql<ept id=\"p1\">](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/DataScienceProcess/DataScienceScripts/sample_hive_criteo_downsample_test_day_23_dataset.hql)</ept> does it for test data, day\\_23:"
+    },
+    {
+      "content": "This yields:",
+      "pos": [
+        27147,
+        27159
+      ]
+    },
+    {
+      "content": "With this, we are ready to use our down sampled train and test datasets for building models in Azure Machine Learning.",
+      "pos": [
+        27230,
+        27348
+      ]
+    },
+    {
+      "content": "There is a final important component before we move on to Azure Machine Learning, which is concerns the count table.",
+      "pos": [
+        27350,
+        27466
+      ]
+    },
+    {
+      "content": "In the next sub-section, we discuss this in some detail.",
+      "pos": [
+        27467,
+        27523
+      ]
+    },
+    {
+      "pos": [
+        27527,
+        27585
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"count\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph> A brief discussion on the count table"
+    },
+    {
+      "content": "As we saw, several categorical variables have a very high dimensionality.",
+      "pos": [
+        27587,
+        27660
+      ]
+    },
+    {
+      "content": "In our walkthrough, we present a powerful technique called <bpt id=\"p1\">[</bpt>Learning With Counts<ept id=\"p1\">](http://blogs.technet.com/b/machinelearning/archive/2015/02/17/big-learning-made-easy-with-counts.aspx)</ept> to encode these variables in an efficient, robust manner.",
+      "pos": [
+        27661,
+        27903
+      ]
+    },
+    {
+      "content": "More information on this technique is in the link provided.",
+      "pos": [
+        27904,
+        27963
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Note:<ept id=\"p1\">**</ept> In this walkthrough, we focus on using count tables to produce compact representations of high-dimensional categorical features.",
+      "pos": [
+        27966,
+        28104
+      ]
+    },
+    {
+      "content": "This is certainly not the only way to encode categorical features ; for more information on other techniques, interested users can check out <bpt id=\"p1\">[</bpt>one-hot-encoding<ept id=\"p1\">](http://en.wikipedia.org/wiki/One-hot)</ept> and <bpt id=\"p2\">[</bpt>feature hashing<ept id=\"p2\">](http://en.wikipedia.org/wiki/Feature_hashing)</ept>.",
+      "pos": [
+        28105,
+        28371
+      ]
+    },
+    {
+      "content": "To build count tables on the count data, we use the data in the folder raw/count.",
+      "pos": [
+        28374,
+        28455
+      ]
+    },
+    {
+      "content": "In the modeling section, we show users how to build these count tables for categorical features from scratch, or alternatively to use a pre-built count table for their explorations.",
+      "pos": [
+        28456,
+        28637
+      ]
+    },
+    {
+      "content": "In what follows, when we refer to \"pre-built count tables\", we mean using the count tables that we provide.",
+      "pos": [
+        28638,
+        28745
+      ]
+    },
+    {
+      "content": "Detailed instructions on how to access these tables are below.",
+      "pos": [
+        28746,
+        28808
+      ]
+    },
+    {
+      "pos": [
+        28813,
+        28873
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"aml\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph> Build a model with Azure Machine Learning"
+    },
+    {
+      "content": "Our model building process in Azure Machine Learning will follow these steps:",
+      "pos": [
+        28875,
+        28952
+      ]
+    },
+    {
+      "content": "Get the data from Hive tables into Azure Machine Learning",
+      "pos": [
+        28958,
+        29015
+      ]
+    },
+    {
+      "content": "Create the experiment: clean the data, choose a learner, and featurize with count tables",
+      "pos": [
+        29029,
+        29117
+      ]
+    },
+    {
+      "content": "Train the model",
+      "pos": [
+        29131,
+        29146
+      ]
+    },
+    {
+      "content": "Score the model on test data",
+      "pos": [
+        29160,
+        29188
+      ]
+    },
+    {
+      "content": "Evaluate the model",
+      "pos": [
+        29202,
+        29220
+      ]
+    },
+    {
+      "content": "Publish the model as a web-service to be consumed",
+      "pos": [
+        29234,
+        29283
+      ]
+    },
+    {
+      "content": "Now we are ready to build models in Azure Machine Learning studio.",
+      "pos": [
+        29294,
+        29360
+      ]
+    },
+    {
+      "content": "Our down sampled data is saved as Hive tables in the cluster.",
+      "pos": [
+        29361,
+        29422
+      ]
+    },
+    {
+      "content": "We will use the Azure Machine Learning <bpt id=\"p1\">**</bpt>Reader<ept id=\"p1\">**</ept> module to read this data.",
+      "pos": [
+        29423,
+        29498
+      ]
+    },
+    {
+      "content": "The credentials to access the storage account of this cluster are provided below.",
+      "pos": [
+        29499,
+        29580
+      ]
+    },
+    {
+      "pos": [
+        29586,
+        29740
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"step1\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph> Step 1: Get data from Hive tables into Azure Machine Learning using the Reader module and select it for a machine learning experiment"
+    },
+    {
+      "content": "Start by selecting a <bpt id=\"p1\">**</bpt>+NEW<ept id=\"p1\">**</ept> -&gt; <bpt id=\"p2\">**</bpt>EXPERIMENT<ept id=\"p2\">**</ept> -&gt; <bpt id=\"p3\">**</bpt>Blank Experiment<ept id=\"p3\">**</ept>.",
+      "pos": [
+        29742,
+        29814
+      ]
+    },
+    {
+      "content": "Then, from the <bpt id=\"p1\">**</bpt>Search<ept id=\"p1\">**</ept> box on the top left, search for \"Reader\".",
+      "pos": [
+        29815,
+        29882
+      ]
+    },
+    {
+      "content": "Drag and drop the <bpt id=\"p1\">**</bpt>Reader<ept id=\"p1\">**</ept> module on to the experiment canvas (the middle portion of the screen) to use the module for data access.",
+      "pos": [
+        29883,
+        30016
+      ]
+    },
+    {
+      "pos": [
+        30018,
+        30096
+      ],
+      "content": "This is what the <bpt id=\"p1\">**</bpt>Reader<ept id=\"p1\">**</ept> looks like while getting data from the Hive table:"
+    },
+    {
+      "content": "Reader gets data",
+      "pos": [
+        30100,
+        30116
+      ]
+    },
+    {
+      "content": "For the <bpt id=\"p1\">**</bpt>Reader<ept id=\"p1\">**</ept> module, the values of the parameters that are provided in the graphic are just examples of the sort of values you will need to provide.",
+      "pos": [
+        30151,
+        30305
+      ]
+    },
+    {
+      "content": "Here is some general guidance on how to fill out the parameter set for the <bpt id=\"p1\">**</bpt>Reader<ept id=\"p1\">**</ept> module.",
+      "pos": [
+        30306,
+        30399
+      ]
+    },
+    {
+      "pos": [
+        30404,
+        30443
+      ],
+      "content": "Choose \"Hive query\" for <bpt id=\"p1\">**</bpt>Data Source<ept id=\"p1\">**</ept>"
+    },
+    {
+      "pos": [
+        30447,
+        30559
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Hive database query<ept id=\"p1\">**</ept> box, a simple SELECT * FROM &lt;your\\_database\\_name.your\\_table\\_name&gt; - is enough."
+    },
+    {
+      "pos": [
+        30563,
+        30665
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Hcatalog server URI<ept id=\"p1\">**</ept>: If your cluster is \"abc\", then this is simply: https://abc.azurehdinsight.net"
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Hadoop user account name<ept id=\"p1\">**</ept>: The user name chosen at the time of commissioning the cluster.",
+      "pos": [
+        30669,
+        30761
+      ]
+    },
+    {
+      "content": "(NOT the Remote Access user name!)",
+      "pos": [
+        30762,
+        30796
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Hadoop user account password<ept id=\"p1\">**</ept>: The password for the above user name chosen at the time of commissioning the cluster.",
+      "pos": [
+        30800,
+        30919
+      ]
+    },
+    {
+      "content": "(NOT the Remote Access password!)",
+      "pos": [
+        30920,
+        30953
+      ]
+    },
+    {
+      "pos": [
+        30957,
+        31000
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Location of output data<ept id=\"p1\">**</ept>: Choose \"Azure\""
+    },
+    {
+      "pos": [
+        31004,
+        31083
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Azure storage account name<ept id=\"p1\">**</ept>: The storage account associated with the cluster"
+    },
+    {
+      "pos": [
+        31087,
+        31177
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Azure storage account key<ept id=\"p1\">**</ept>: The key of the storage account associated with the cluster."
+    },
+    {
+      "pos": [
+        31181,
+        31272
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Azure container name<ept id=\"p1\">**</ept>: If the cluster name is \"abc\", then this is simply \"abc\", usually."
+    },
+    {
+      "content": "Once the <bpt id=\"p1\">**</bpt>Reader<ept id=\"p1\">**</ept> finishes getting data (you see the green tick on the Module), save this data as a Dataset (with a name of your choice).",
+      "pos": [
+        31276,
+        31415
+      ]
+    },
+    {
+      "content": "What this looks like:",
+      "pos": [
+        31416,
+        31437
+      ]
+    },
+    {
+      "content": "Reader save data",
+      "pos": [
+        31441,
+        31457
+      ]
+    },
+    {
+      "content": "Right click on the output port of the <bpt id=\"p1\">**</bpt>Reader<ept id=\"p1\">**</ept> module.",
+      "pos": [
+        31493,
+        31549
+      ]
+    },
+    {
+      "content": "This reveals a <bpt id=\"p1\">**</bpt>Save as dataset<ept id=\"p1\">**</ept> option and a <bpt id=\"p2\">**</bpt>Visualize<ept id=\"p2\">**</ept> option.",
+      "pos": [
+        31550,
+        31619
+      ]
+    },
+    {
+      "content": "The <bpt id=\"p1\">**</bpt>Visualize<ept id=\"p1\">**</ept> option, if clicked, displays 100 rows of the data, along with a right panel that is useful for some summary statistics.",
+      "pos": [
+        31620,
+        31757
+      ]
+    },
+    {
+      "content": "To save data, simply select <bpt id=\"p1\">**</bpt>Save as dataset<ept id=\"p1\">**</ept> and follow instructions.",
+      "pos": [
+        31758,
+        31830
+      ]
+    },
+    {
+      "content": "To select the saved dataset for use in a machine learning experiment, locate the datasets using the <bpt id=\"p1\">**</bpt>Search<ept id=\"p1\">**</ept> box shown below.",
+      "pos": [
+        31832,
+        31959
+      ]
+    },
+    {
+      "content": "Then simply type out the name you gave the dataset partially to access it and drag the dataset onto the main panel.",
+      "pos": [
+        31960,
+        32075
+      ]
+    },
+    {
+      "content": "Dropping it onto the main panel selects it for use in machine learning modeling.",
+      "pos": [
+        32076,
+        32156
+      ]
+    },
+    {
+      "content": "Do this for both the train and the test datasets.",
+      "pos": [
+        32219,
+        32268
+      ]
+    },
+    {
+      "content": "Also, remember to use the database name and table names that you gave for this purpose.",
+      "pos": [
+        32269,
+        32356
+      ]
+    },
+    {
+      "content": "The values used in the figure are solely for illustration purposes.",
+      "pos": [
+        32357,
+        32424
+      ]
+    },
+    {
+      "content": "**",
+      "pos": [
+        32424,
+        32426
+      ]
+    },
+    {
+      "pos": [
+        32433,
+        32544
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"step2\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph> Step 2: Create a simple experiment in Azure Machine Learning to predict clicks / no clicks"
+    },
+    {
+      "content": "Our Azure ML experiment looks like the below:",
+      "pos": [
+        32546,
+        32591
+      ]
+    },
+    {
+      "content": "We now examine the key components of this experiment.",
+      "pos": [
+        32630,
+        32683
+      ]
+    },
+    {
+      "content": "As a reminder, we need to drag our saved train and test datasets on to our experiment canvas first.",
+      "pos": [
+        32684,
+        32783
+      ]
+    },
+    {
+      "content": "Clean Missing Data",
+      "pos": [
+        32790,
+        32808
+      ]
+    },
+    {
+      "content": "The <bpt id=\"p1\">**</bpt>Clean Missing Data<ept id=\"p1\">**</ept> module does what its name suggests:  it cleans missing data in ways that can be user-specified.",
+      "pos": [
+        32810,
+        32932
+      ]
+    },
+    {
+      "content": "Looking into this module, we see this:",
+      "pos": [
+        32933,
+        32971
+      ]
+    },
+    {
+      "content": "Clean missing data",
+      "pos": [
+        32975,
+        32993
+      ]
+    },
+    {
+      "content": "Here, we chose to replace all missing values with a 0.",
+      "pos": [
+        33028,
+        33082
+      ]
+    },
+    {
+      "content": "There are other options as well, which can be seen by looking at the dropdowns in the module.",
+      "pos": [
+        33083,
+        33176
+      ]
+    },
+    {
+      "content": "Feature engineering on the data",
+      "pos": [
+        33183,
+        33214
+      ]
+    },
+    {
+      "content": "There can be millions of unique values for some categorical features of large datasets.",
+      "pos": [
+        33216,
+        33303
+      ]
+    },
+    {
+      "content": "Using naive methods such as one-hot encoding for representing such high-dimensional categorical features is entirely infeasible.",
+      "pos": [
+        33304,
+        33432
+      ]
+    },
+    {
+      "content": "In this walkthrough, we demonstrate how to use count features using built-in Azure Machine Learning modules to generate compact representations of these high-dimensional categorical variables.",
+      "pos": [
+        33433,
+        33625
+      ]
+    },
+    {
+      "content": "The end-result is a smaller model size, faster training times, and performance metrics that are quite comparable to using other techniques.",
+      "pos": [
+        33626,
+        33765
+      ]
+    },
+    {
+      "content": "Building counting transforms",
+      "pos": [
+        33773,
+        33801
+      ]
+    },
+    {
+      "content": "To build count features, we use the <bpt id=\"p1\">**</bpt>Build Counting Transform<ept id=\"p1\">**</ept> module that is available in Azure Machine Learning.",
+      "pos": [
+        33803,
+        33919
+      ]
+    },
+    {
+      "content": "The module looks like this :",
+      "pos": [
+        33920,
+        33948
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Important Note<ept id=\"p1\">**</ept> : In the <bpt id=\"p2\">**</bpt>Count columns<ept id=\"p2\">**</ept> box, we enter those columns that we wish to perform counts on.",
+      "pos": [
+        34023,
+        34131
+      ]
+    },
+    {
+      "content": "Typically, these are (as mentioned) high-dimensional categorical columns.",
+      "pos": [
+        34132,
+        34205
+      ]
+    },
+    {
+      "content": "At the start, we mentioned that the Criteo dataset has 26 categorical columns : from Col15 to Col40.",
+      "pos": [
+        34206,
+        34306
+      ]
+    },
+    {
+      "content": "Here, we count on all of them and give their indices (from 15 to 40 separated by commas as shown).",
+      "pos": [
+        34307,
+        34405
+      ]
+    },
+    {
+      "content": "To use the module in the MapReduce mode (appropriate for large datasets), we need access to an HDInsight Hadoop cluster (the one used for feature exploration above can be reused for this purpose as well) and its credentials.",
+      "pos": [
+        34407,
+        34631
+      ]
+    },
+    {
+      "content": "The figures above illustrate what the filled-in values look like (replace the values provided for illustration with those relevant for your own use-case).",
+      "pos": [
+        34632,
+        34786
+      ]
+    },
+    {
+      "content": "In the figure above, we show how to enter the input blob location.",
+      "pos": [
+        34826,
+        34892
+      ]
+    },
+    {
+      "content": "This location has the data reserved for building count tables on.",
+      "pos": [
+        34893,
+        34958
+      ]
+    },
+    {
+      "pos": [
+        34961,
+        35112
+      ],
+      "content": "After this module finishes running, we can save the transform for later by right clicking on the module and selecting the <bpt id=\"p1\">**</bpt>Save as Transform<ept id=\"p1\">**</ept> option:"
+    },
+    {
+      "content": "In our experiment architecture shown above, the dataset \"ytransform2\" corresponds precisely to a saved count transform.",
+      "pos": [
+        35151,
+        35270
+      ]
+    },
+    {
+      "content": "For the remainder of this experiment, we assume that the reader used a <bpt id=\"p1\">**</bpt>Build Counting Transform<ept id=\"p1\">**</ept> module on some data to generate counts, and can then use those counts to generate count features on the train and test datasets.",
+      "pos": [
+        35271,
+        35499
+      ]
+    },
+    {
+      "content": "Choosing what count features to include as part of the train and test datasets",
+      "pos": [
+        35507,
+        35585
+      ]
+    },
+    {
+      "content": "Once we have a count transform ready, the user can choose what features to include in their train and test datasets using the <bpt id=\"p1\">**</bpt>Modify Count Table Parameters<ept id=\"p1\">**</ept> module.",
+      "pos": [
+        35587,
+        35754
+      ]
+    },
+    {
+      "content": "We just show this module below for completeness, but in interests of simplicity do not actually use it in our experiment.",
+      "pos": [
+        35755,
+        35876
+      ]
+    },
+    {
+      "content": "In this case, as can be seen, we have chosen to use just the log-odds and to ignore the back off column.",
+      "pos": [
+        35915,
+        36019
+      ]
+    },
+    {
+      "content": "We can also set parameters such as the garbage bin threshold, how many pseudo-prior examples to add for smoothing, and whether to use any Laplacian noise or not.",
+      "pos": [
+        36020,
+        36181
+      ]
+    },
+    {
+      "content": "All these are advanced features and it is to be noted that the default values are a good starting point for users who are new to this type of feature generation.",
+      "pos": [
+        36182,
+        36343
+      ]
+    },
+    {
+      "content": "Data transformation before generating the count features",
+      "pos": [
+        36351,
+        36407
+      ]
+    },
+    {
+      "content": "Now we focus on an important point about transforming our train and test data prior to actually generating count features.",
+      "pos": [
+        36409,
+        36531
+      ]
+    },
+    {
+      "content": "Note that there are two <bpt id=\"p1\">**</bpt>Execute R Script<ept id=\"p1\">**</ept> modules used before we apply the count transform to our data.",
+      "pos": [
+        36532,
+        36638
+      ]
+    },
+    {
+      "content": "Here is the first R script:",
+      "pos": [
+        36677,
+        36704
+      ]
+    },
+    {
+      "content": "In this R script, we rename our columns to names \"Col1\" to \"Col40\".",
+      "pos": [
+        36743,
+        36810
+      ]
+    },
+    {
+      "content": "This is because the count transform expects names of this format.",
+      "pos": [
+        36811,
+        36876
+      ]
+    },
+    {
+      "content": "In the second R script, we balance the distribution between positive and negative classes (classes 1 ansd 0 respectively) by downsampling the negative class.",
+      "pos": [
+        36878,
+        37035
+      ]
+    },
+    {
+      "content": "The R script below shows how to do this :",
+      "pos": [
+        37036,
+        37077
+      ]
+    },
+    {
+      "content": "In this simple R script, we use \"pos\\_neg\\_ratio\" to set the amount of balance between the positive and the negative classes.",
+      "pos": [
+        37116,
+        37241
+      ]
+    },
+    {
+      "content": "This is important to do since improving class imbalance usually has performance benefits for classification problems where the class distribution is skewed (recall that in our case, we have 3.3% positive class and 96.7% negative class).",
+      "pos": [
+        37242,
+        37478
+      ]
+    },
+    {
+      "content": "Applying the count transformation on our data",
+      "pos": [
+        37486,
+        37531
+      ]
+    },
+    {
+      "content": "Finally, we can use the <bpt id=\"p1\">**</bpt>Apply Transformation<ept id=\"p1\">**</ept> module to apply the count transforms on our train and test datasets.",
+      "pos": [
+        37533,
+        37650
+      ]
+    },
+    {
+      "content": "This module takes the saved count transform as one input and the train or test datasets as the other input, and returns data with count features.",
+      "pos": [
+        37651,
+        37796
+      ]
+    },
+    {
+      "content": "It is shown below :",
+      "pos": [
+        37797,
+        37816
+      ]
+    },
+    {
+      "content": "An excerpt of what the count features look like",
+      "pos": [
+        37861,
+        37908
+      ]
+    },
+    {
+      "content": "It is instructive to see what the count features look like in our case.",
+      "pos": [
+        37910,
+        37981
+      ]
+    },
+    {
+      "content": "Below, we show an excerpt of this :",
+      "pos": [
+        37982,
+        38017
+      ]
+    },
+    {
+      "content": "In this excerpt, we show that for the columns that we counted on, we get the counts and log odds in addition to any relevant backoffs.",
+      "pos": [
+        38056,
+        38190
+      ]
+    },
+    {
+      "content": "We are now ready to build an Azure Machine Learning model using these transformed datasets.",
+      "pos": [
+        38193,
+        38284
+      ]
+    },
+    {
+      "content": "In the next section, we show how this can be done.",
+      "pos": [
+        38285,
+        38335
+      ]
+    },
+    {
+      "content": "Azure Machine Learning model building",
+      "pos": [
+        38342,
+        38379
+      ]
+    },
+    {
+      "content": "Choice of learner",
+      "pos": [
+        38387,
+        38404
+      ]
+    },
+    {
+      "content": "First, we need to choose a learner.",
+      "pos": [
+        38406,
+        38441
+      ]
+    },
+    {
+      "content": "We are going to use a two class boosted decision tree as our learner.",
+      "pos": [
+        38442,
+        38511
+      ]
+    },
+    {
+      "content": "Here are the default options for this learner:",
+      "pos": [
+        38512,
+        38558
+      ]
+    },
+    {
+      "content": "For our experiment, we simply going to choose the default values.",
+      "pos": [
+        38597,
+        38662
+      ]
+    },
+    {
+      "content": "We note that the defaults are usually meaningful and a good way to get quick baselines on performance.",
+      "pos": [
+        38663,
+        38765
+      ]
+    },
+    {
+      "content": "You can improve on performance by sweeping parameters if you choose to once you have a baseline.",
+      "pos": [
+        38766,
+        38862
+      ]
+    },
+    {
+      "content": "Train the model",
+      "pos": [
+        38869,
+        38884
+      ]
+    },
+    {
+      "content": "For training, we simply invoke a <bpt id=\"p1\">**</bpt>Train Model<ept id=\"p1\">**</ept> module.",
+      "pos": [
+        38886,
+        38942
+      ]
+    },
+    {
+      "content": "The two inputs to it are the Two-Class Boosted Decision Tree learner and our train dataset.",
+      "pos": [
+        38943,
+        39034
+      ]
+    },
+    {
+      "content": "This is shown below :",
+      "pos": [
+        39035,
+        39056
+      ]
+    },
+    {
+      "content": "Score the model",
+      "pos": [
+        39100,
+        39115
+      ]
+    },
+    {
+      "content": "Once we have a trained model, we are ready to score on the test dataset and to evaluate its performance.",
+      "pos": [
+        39117,
+        39221
+      ]
+    },
+    {
+      "content": "We do this by using the <bpt id=\"p1\">**</bpt>Score Model<ept id=\"p1\">**</ept> module shown below, along with an <bpt id=\"p2\">**</bpt>Evaluate Model<ept id=\"p2\">**</ept> module :",
+      "pos": [
+        39222,
+        39323
+      ]
+    },
+    {
+      "pos": [
+        39366,
+        39413
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"step5\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph> Step 5: Evaluate the model"
+    },
+    {
+      "content": "Finally, we would like to analyze model performance.",
+      "pos": [
+        39415,
+        39467
+      ]
+    },
+    {
+      "content": "Usually, for two class (binary) classification problems, a good measure is the AUC.",
+      "pos": [
+        39468,
+        39551
+      ]
+    },
+    {
+      "content": "To visualize this, we hook up the <bpt id=\"p1\">**</bpt>Score Model<ept id=\"p1\">**</ept> module to an <bpt id=\"p2\">**</bpt>Evaluate Model<ept id=\"p2\">**</ept> module for this.",
+      "pos": [
+        39552,
+        39650
+      ]
+    },
+    {
+      "content": "Clicking <bpt id=\"p1\">**</bpt>Visualize<ept id=\"p1\">**</ept> on the <bpt id=\"p2\">**</bpt>Evaluate Model<ept id=\"p2\">**</ept> module yields a graphic like the below:",
+      "pos": [
+        39651,
+        39739
+      ]
+    },
+    {
+      "content": "Evaluate module BDT model",
+      "pos": [
+        39743,
+        39768
+      ]
+    },
+    {
+      "content": "In binary (or two class) classification problems, a good measure of prediction accuracy is the Area Under Curve (AUC).",
+      "pos": [
+        39803,
+        39921
+      ]
+    },
+    {
+      "content": "Below, we show our results using this model on our test dataset.",
+      "pos": [
+        39922,
+        39986
+      ]
+    },
+    {
+      "content": "To get this, right click the output port of the <bpt id=\"p1\">**</bpt>Evaluate Model<ept id=\"p1\">**</ept> module and then <bpt id=\"p2\">**</bpt>Visualize<ept id=\"p2\">**</ept>.",
+      "pos": [
+        39987,
+        40084
+      ]
+    },
+    {
+      "content": "Visualize Evaluate Model module",
+      "pos": [
+        40088,
+        40119
+      ]
+    },
+    {
+      "pos": [
+        40158,
+        40221
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"step6\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph> Step 6: Publish the model as a Web service"
+    },
+    {
+      "content": "The ability to publish an Azure Machine Learning model as web services with a minimum of fuss is a valuable feature for making it widely available.",
+      "pos": [
+        40222,
+        40369
+      ]
+    },
+    {
+      "content": "Once that is done, anyone can make calls to the web service with input data that they need predictions for, and the web service uses the model to return those predictions.",
+      "pos": [
+        40370,
+        40541
+      ]
+    },
+    {
+      "content": "To do this, we first save our trained model as a Trained Model object.",
+      "pos": [
+        40543,
+        40613
+      ]
+    },
+    {
+      "content": "This is done by right clicking on the <bpt id=\"p1\">**</bpt>Train Model<ept id=\"p1\">**</ept> module and using the <bpt id=\"p2\">**</bpt>Save as Trained Model<ept id=\"p2\">**</ept> option.",
+      "pos": [
+        40614,
+        40722
+      ]
+    },
+    {
+      "content": "Next, we need to create input and output ports for our web service:",
+      "pos": [
+        40724,
+        40791
+      ]
+    },
+    {
+      "content": "an input port takes data in the same form as the data that we need predictions for",
+      "pos": [
+        40796,
+        40878
+      ]
+    },
+    {
+      "content": "an output port returns the Scored Labels and the associated probabilities.",
+      "pos": [
+        40882,
+        40956
+      ]
+    },
+    {
+      "content": "Select a few rows of data for the input port",
+      "pos": [
+        40963,
+        41007
+      ]
+    },
+    {
+      "content": "It is convenient to use an <bpt id=\"p1\">**</bpt>Apply SQL Transformation<ept id=\"p1\">**</ept> module to select just 10 rows to serve as the input port data.",
+      "pos": [
+        41009,
+        41127
+      ]
+    },
+    {
+      "content": "Select just these rows of data for our input port using the SQL query shown below.",
+      "pos": [
+        41128,
+        41210
+      ]
+    },
+    {
+      "content": "Input port data",
+      "pos": [
+        41214,
+        41229
+      ]
+    },
+    {
+      "content": "Web service",
+      "pos": [
+        41269,
+        41280
+      ]
+    },
+    {
+      "content": "Now we are ready to run a small experiment that can be used to publish our web service.",
+      "pos": [
+        41281,
+        41368
+      ]
+    },
+    {
+      "content": "Generate input data for webservice",
+      "pos": [
+        41375,
+        41409
+      ]
+    },
+    {
+      "content": "As a zeroth step, since the count table is large, we take a few lines of test data and generate output data from it with count features.",
+      "pos": [
+        41411,
+        41547
+      ]
+    },
+    {
+      "content": "This can serve as the input data format for our webservice.",
+      "pos": [
+        41548,
+        41607
+      ]
+    },
+    {
+      "content": "This is shown below:",
+      "pos": [
+        41608,
+        41628
+      ]
+    },
+    {
+      "content": "Create BDT input data",
+      "pos": [
+        41632,
+        41653
+      ]
+    },
+    {
+      "content": "Note: for the input data format, we will now use the OUTPUT of the <bpt id=\"p1\">**</bpt>Count Featurizer<ept id=\"p1\">**</ept> module.",
+      "pos": [
+        41688,
+        41783
+      ]
+    },
+    {
+      "content": "Once this experiment finishes running, save the output from the <bpt id=\"p1\">**</bpt>Count Featurizer<ept id=\"p1\">**</ept> module as a Dataset.",
+      "pos": [
+        41784,
+        41889
+      ]
+    },
+    {
+      "pos": [
+        41892,
+        41975
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Important Note:<ept id=\"p1\">**</ept> This Dataset will be used for the input data in the webservice."
+    },
+    {
+      "content": "Scoring experiment for publishing webservice",
+      "pos": [
+        41983,
+        42027
+      ]
+    },
+    {
+      "content": "First, we show what this looks like.",
+      "pos": [
+        42029,
+        42065
+      ]
+    },
+    {
+      "content": "The essential structure is a <bpt id=\"p1\">**</bpt>Score Model<ept id=\"p1\">**</ept> module that accepts our trained model object and a few lines of input data that we generated in the previous steps using the <bpt id=\"p2\">**</bpt>Count Featurizer<ept id=\"p2\">**</ept> module.",
+      "pos": [
+        42066,
+        42264
+      ]
+    },
+    {
+      "content": "We use \"Project Columns\" to project out the Scored labels and the Score probabilities.",
+      "pos": [
+        42265,
+        42351
+      ]
+    },
+    {
+      "content": "Project Columns",
+      "pos": [
+        42356,
+        42371
+      ]
+    },
+    {
+      "content": "Notice how the <bpt id=\"p1\">**</bpt>Project Columns<ept id=\"p1\">**</ept> module can be used for 'filtering' data out from a dataset.",
+      "pos": [
+        42406,
+        42500
+      ]
+    },
+    {
+      "content": "We show the contents below:",
+      "pos": [
+        42501,
+        42528
+      ]
+    },
+    {
+      "content": "Filtering with the Project Columns module",
+      "pos": [
+        42532,
+        42573
+      ]
+    },
+    {
+      "content": "To get the blue input and output ports, you simply click <bpt id=\"p1\">**</bpt>prepare webservice<ept id=\"p1\">**</ept> at the bottom right.",
+      "pos": [
+        42608,
+        42708
+      ]
+    },
+    {
+      "content": "Running this experiment also allows us to publish the web service  by clicking the <bpt id=\"p1\">**</bpt>PUBLISH WEB SERVICE<ept id=\"p1\">**</ept> icon at the bottom right, shown below.",
+      "pos": [
+        42709,
+        42854
+      ]
+    },
+    {
+      "content": "Publish Web service",
+      "pos": [
+        42858,
+        42877
+      ]
+    },
+    {
+      "content": "Once the webservice is published, we get redirected to a page that looks thus:",
+      "pos": [
+        42912,
+        42990
+      ]
+    },
+    {
+      "content": "We see two links for webservices on the left side:",
+      "pos": [
+        43029,
+        43079
+      ]
+    },
+    {
+      "pos": [
+        43083,
+        43202
+      ],
+      "content": "The <bpt id=\"p1\">**</bpt>REQUEST/RESPONSE<ept id=\"p1\">**</ept> Service (or RRS) is meant for single predictions and is what we will utilize in this workshop."
+    },
+    {
+      "pos": [
+        43206,
+        43361
+      ],
+      "content": "The <bpt id=\"p1\">**</bpt>BATCH EXECUTION<ept id=\"p1\">**</ept> Service (BES) is used for batch predictions and requires that the input data used to make predictions reside in Azure Blob Storage."
+    },
+    {
+      "content": "Clicking on the link <bpt id=\"p1\">**</bpt>REQUEST/RESPONSE<ept id=\"p1\">**</ept> takes us to a page that gives us pre-canned code in C#, python, and R. This code can be conveniently used for making calls to the webservice.",
+      "pos": [
+        43363,
+        43546
+      ]
+    },
+    {
+      "content": "Note that the API key on this page needs to be used for authentication.",
+      "pos": [
+        43547,
+        43618
+      ]
+    },
+    {
+      "content": "It is convenient to copy this python code over to a new cell in the IPython notebook.",
+      "pos": [
+        43621,
+        43706
+      ]
+    },
+    {
+      "content": "Below, we show a segment of python code with the correct API key.",
+      "pos": [
+        43709,
+        43774
+      ]
+    },
+    {
+      "content": "Python code",
+      "pos": [
+        43778,
+        43789
+      ]
+    },
+    {
+      "content": "Note that we replaced the default API key with our webservices's API key.",
+      "pos": [
+        43824,
+        43897
+      ]
+    },
+    {
+      "content": "Clicking <bpt id=\"p1\">**</bpt>Run<ept id=\"p1\">**</ept> on this cell in an IPython notebook yields the following response:",
+      "pos": [
+        43898,
+        43981
+      ]
+    },
+    {
+      "content": "IPython response",
+      "pos": [
+        43985,
+        44001
+      ]
+    },
+    {
+      "content": "We see that for the two test examples we asked about (in the JSON framework of the python script), we get back answers in the form \"Scored Labels, Scored Probabilities\".",
+      "pos": [
+        44036,
+        44205
+      ]
+    },
+    {
+      "content": "Note that in this case, we chose the default values that the pre-canned code provides (0's for all numeric columns and the string \"value\" for all categorical columns).",
+      "pos": [
+        44206,
+        44373
+      ]
+    },
+    {
+      "content": "This concludes our end-to-end walkthrough showing how to handle large scale dataset using Azure Machine Learning.",
+      "pos": [
+        44375,
+        44488
+      ]
+    },
+    {
+      "content": "We started with a terabyte of data, constructed a prediction model and deployed it as a web service in the cloud.",
+      "pos": [
+        44489,
+        44602
+      ]
+    },
+    {
+      "content": "test",
+      "pos": [
+        44604,
+        44608
+      ]
+    }
+  ],
+  "content": "<properties \n    pageTitle=\"Advanced Analytics Process and Technology in Action: using HDInsight Hadoop clusters on the 1 TB Criteo dataset | Microsoft Azure\" \n    description=\"Using the Advanced Analytics Process and Technology (ADAPT) for an end-to-end scenario employing an HDInsight Hadoop cluster to build and deploy a model using a large (1 TB) publicly available dataset\" \n    metaKeywords=\"\" \n    services=\"machine-learning,hdinsight\" \n    solutions=\"\" \n    documentationCenter=\"\" \n    authors=\"bradsev\" \n    manager=\"paulettm\" \n    editor=\"cgronlun\" />\n\n<tags \n    ms.service=\"machine-learning\" \n    ms.workload=\"data-services\" \n    ms.tgt_pltfrm=\"na\" \n    ms.devlang=\"na\" \n    ms.topic=\"article\" \n    ms.date=\"07/21/2015\" \n    ms.author=\"ginathan;mohabib;bradsev\" /> \n\n# Advanced Analytics Process and Technology in Action - Using Azure HDInsight Hadoop Clusters on a 1 TB dataset\n\nIn this walkthrough, we demonstrate using the Advanced Analytics Process and Technology (ADAPT) end-to-end with an [Azure HDInsight Hadoop cluster](http://azure.microsoft.com/services/hdinsight/) to store, explore, feature engineer, and down sample data from one of the publicly available [Criteo](http://labs.criteo.com/downloads/download-terabyte-click-logs/) datasets. We use Azure Machine Learning to build a binary classification model on this data. We also show how to publish one of these models as a Web service.\n\nIt is also possible to use an IPython notebook to accomplish the tasks presented in this walkthrough. Users who would like to try this approach should consult the [Criteo walkthrough using a Hive ODBC connection](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/DataScienceProcess/iPythonNotebooks/machine-Learning-data-science-process-hive-walkthrough-criteo.ipynb) topic.\n\n\n## <a name=\"dataset\"></a>Criteo Dataset Description\n\nThe Criteo data is a click prediction dataset that is approximately 370GB of gzip compressed TSV files (~1.3TB uncompressed), comprising more than 4.3 billion records. It is taken from 24 days of click data made available by [Criteo](http://labs.criteo.com/downloads/download-terabyte-click-logs/). For the convenience of data scientists, we have unzipped data available to us to experiment with.\n\nEach record in this dataset contains 40 columns: \n\n- the first column is a label column that indicates whether a user clicks on an add (value 1) or does not click (value 0) \n- next 13 columns are numeric, and \n- last 26 are categorical columns \n\nThe columns are anonymized and use a series of enumerated names: \"Col1\" (for the label column) to 'Col40\" (for the last categorical column).            \n\nHere is an excerpt of the first 20 columns of two observations (rows) from this dataset:\n\n    Col1    Col2    Col3    Col4    Col5    Col6    Col7    Col8    Col9    Col10   Col11   Col12   Col13   Col14   Col15           Col16           Col17           Col18           Col19       Col20   \n\n    0       40      42      2       54      3       0       0       2       16      0       1       4448    4       1acfe1ee        1b2ff61f        2e8b2631        6faef306        c6fc10d3    6fcd6dcb           \n    0               24              27      5               0       2       1               3       10064           9a8cb066        7a06385f        417e6103        2170fc56        acf676aa    6fcd6dcb                      \n\nThere are missing values in both the numeric and categorical columns in this dataset. We describe a simple method for handling the missing values below. Additional details of the data are explored below when we store them into Hive tables.\n\n**Definition:** *Clickthrough rate (CTR):* This is the percentage of clicks in the data. In this Criteo dataset, the CTR is about 3.3% or 0.033.\n\n## <a name=\"mltasks\"></a>Examples of prediction tasks\nTwo sample prediction problems are addressed in this walkthrough:\n\n1. **Binary classification**: Predicts whether or not a user clicked on an add:\n    - Class 0: No Click\n    - Class 1: Click\n\n2. **Regression**: Predicts the probability of an ad click from user features.\n\n\n## <a name=\"setup\"></a>Set Up an HDInsight Hadoop cluster for data science\n\n**Note:** This is typically an **Admin** task.\n\nSet up your Azure Data Science environment for building predictive analytics solutions with HDInsight clusters in three steps:\n\n1. [Create a storage account](storage-whatis-account.md): This storage account is used to store data in Azure Blob Storage. The data used in HDInsight clusters is stored here.\n\n2. [Customize Azure HDInsight Hadoop Clusters for Data Science](machine-learning-data-science-customize-hadoop-cluster.md): This step creates an Azure HDInsight Hadoop cluster with 64-bit Anaconda Python 2.7 installed on all nodes. There are two important steps (described in this topic) to complete when customizing the HDInsight cluster.\n\n    * You must link the storage account created in step 1 with your HDInsight cluster when it is created. This storage account is used for accessing data that can be processed within the cluster.\n\n    * You must enable Remote Access to the head node of the cluster after it is created. Remember the remote access credentials you specify here (different from those specified for the cluster at its creation): you will need them below.\n\n3. [Create an Azure ML workspace](machine-learning-create-workspace.md): This Azure Machine Learning workspace is used for building machine learning models after an initial data exploration and down sampling on the HDInsight cluster.\n\n## <a name=\"getdata\"></a>Get and consume data from a public source\n\nThe [Criteo](http://labs.criteo.com/downloads/download-terabyte-click-logs/) dataset can be accessed by clicking on the link, accepting the terms of use, and providing a name. A snapshot of what this looks like is shown below:\n\n![Accept Criteo terms](http://i.imgur.com/hLxfI2E.png)\n\nClick on **Continue to Download** to read more about the dataset and its availability.\n\nThe data resides in a public [Azure blob storage](storage-dotnet-how-to-use-blobs.md) location: wasb://criteo@azuremlsampleexperiments.blob.core.windows.net/raw/. The \"wasb\" refers to Azure Blob Storage location. \n\n1. The data in this public blob storage consists of three sub-folders of unzipped data.\n        \n    1. The sub-folder *raw/count/* contains the first 21 days of data - from day\\_00 to day\\_20\n    2. The sub-folder *raw/train/* consists of a single day of data, day\\_21\n    3. The sub-folder *raw/test/* consists of two days of data, day\\_22 and day\\_23\n\n2. For those who want to start with the raw gzip data, these are also available in the main folder *raw/* as day_NN.gz, where NN goes from 00 to 23.\n\nAn alternative approach to access, explore, and model this data that does not require any local downloads is explained later in this walkthrough when we create Hive tables.\n\n## <a name=\"login\"></a>Log into the cluster headnode\n\nTo login to the headnode of the cluster, use the [Azure Management](manage.windowsazure.com) portal to locate the cluster. Click on the HDInsight elephant icon on the left and then double click on the name of your cluster. Navigate to the **Configuration** tab, double click on the CONNECT icon on the bottom of the page, and enter your remote access credentials when prompted. This takes you to the headnode of the cluster. \n\nHere is what a typical first login to the cluster headnode looks like:\n\n![Login to cluster](http://i.imgur.com/Yys9Vvm.png)\n\nOn the left, we see the \"Hadoop Command Line\", which will be our workhorse for the data exploration. We also see two useful URLs - \"Hadoop Yarn Status\" and \"Hadoop Name Node\". The yarn status URL shows job progress and the name node URL gives details on the cluster configuration. \n\nNow we are set up and ready to begin first part of the walkthrough: data exploration using Hive and getting data ready for Azure Machine Learning. \n\n## <a name=\"hive-db-tables\"></a> Create Hive database and tables\n\nTo create Hive tables for our Criteo dataset, open the ***Hadoop Command Line*** on the desktop of the head node, and enter the Hive directory by entering the command\n\n    cd %hive_home%\\bin\n\n**IMPORTANT NOTE**: **Run all Hive commands in this walkthrough from the above Hive bin/ directory prompt. This will take care of any path issues automatically. We will use the terms \"Hive directory prompt\", \"Hive bin/ directory prompt\",  and \"Hadoop Command Line\" interchangeably.** \n\n**IMPORTANT NOTE 2**: **To execute any Hive query, one can always do the following** \n        cd %hive_home%\\bin\n        hive\n\nAfter the Hive REPL appears with a \"hive >\"sign, simply cut and paste the query to execute it.\n\nThe code below creates a database \"criteo\" and then generates 4 tables: \n\n\n* a *table for generating counts* built on days day\\_00 to day\\_20, \n* a *table for use as the train dataset* built on day\\_21, and \n* two *tables for use as the test datasets* built on day\\_22 and day\\_23 respectively. \n\nWe split our test dataset into two different tables because one of the days is a holiday, and we want to determine if the model can detect differences between a holiday and non-holiday from the clickthrough rate.\n\nThe script [sample&#95;hive&#95;create&#95;criteo&#95;database&#95;and&#95;tables.hql](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/DataScienceProcess/DataScienceScripts/sample_hive_create_criteo_database_and_tables.hql) is displayed below for convenience:\n\n    CREATE DATABASE IF NOT EXISTS criteo;\n    DROP TABLE IF EXISTS criteo.criteo_count;\n    CREATE TABLE criteo.criteo_count (\n    col1 string,col2 double,col3 double,col4 double,col5 double,col6 double,col7 double,col8 double,col9 double,col10 double,col11 double,col12 double,col13 double,col14 double,col15 string,col16 string,col17 string,col18 string,col19 string,col20 string,col21 string,col22 string,col23 string,col24 string,col25 string,col26 string,col27 string,col28 string,col29 string,col30 string,col31 string,col32 string,col33 string,col34 string,col35 string,col36 string,col37 string,col38 string,col39 string,col40 string)\n    ROW FORMAT DELIMITED FIELDS TERMINATED BY '\\t'\n    LINES TERMINATED BY '\\n'\n    STORED AS TEXTFILE LOCATION 'wasb://criteo@azuremlsampleexperiments.blob.core.windows.net/raw/count';\n\n    DROP TABLE IF EXISTS criteo.criteo_train;\n    CREATE TABLE criteo.criteo_train (\n    col1 string,col2 double,col3 double,col4 double,col5 double,col6 double,col7 double,col8 double,col9 double,col10 double,col11 double,col12 double,col13 double,col14 double,col15 string,col16 string,col17 string,col18 string,col19 string,col20 string,col21 string,col22 string,col23 string,col24 string,col25 string,col26 string,col27 string,col28 string,col29 string,col30 string,col31 string,col32 string,col33 string,col34 string,col35 string,col36 string,col37 string,col38 string,col39 string,col40 string)\n    ROW FORMAT DELIMITED FIELDS TERMINATED BY '\\t'\n    LINES TERMINATED BY '\\n'\n    STORED AS TEXTFILE LOCATION 'wasb://criteo@azuremlsampleexperiments.blob.core.windows.net/raw/train';\n\n    DROP TABLE IF EXISTS criteo.criteo_test_day_22;\n    CREATE TABLE criteo.criteo_test_day_22 (\n    col1 string,col2 double,col3 double,col4 double,col5 double,col6 double,col7 double,col8 double,col9 double,col10 double,col11 double,col12 double,col13 double,col14 double,col15 string,col16 string,col17 string,col18 string,col19 string,col20 string,col21 string,col22 string,col23 string,col24 string,col25 string,col26 string,col27 string,col28 string,col29 string,col30 string,col31 string,col32 string,col33 string,col34 string,col35 string,col36 string,col37 string,col38 string,col39 string,col40 string)\n    ROW FORMAT DELIMITED FIELDS TERMINATED BY '\\t'\n    LINES TERMINATED BY '\\n'\n    STORED AS TEXTFILE LOCATION 'wasb://criteo@azuremlsampleexperiments.blob.core.windows.net/raw/test/day_22';\n\n    DROP TABLE IF EXISTS criteo.criteo_test_day_23;\n    CREATE TABLE criteo.criteo_test_day_23 (\n    col1 string,col2 double,col3 double,col4 double,col5 double,col6 double,col7 double,col8 double,col9 double,col10 double,col11 double,col12 double,col13 double,col14 double,col15 string,col16 string,col17 string,col18 string,col19 string,col20 string,col21 string,col22 string,col23 string,col24 string,col25 string,col26 string,col27 string,col28 string,col29 string,col30 string,col31 string,col32 string,col33 string,col34 string,col35 string,col36 string,col37 string,col38 string,col39 string,col40 string)\n    ROW FORMAT DELIMITED FIELDS TERMINATED BY '\\t'\n    LINES TERMINATED BY '\\n'\n    STORED AS TEXTFILE LOCATION 'wasb://criteo@azuremlsampleexperiments.blob.core.windows.net/raw/test/day_23';\n\nWe note that all these tables are external as we simply point to Azure Blob Storage (wasb) locations. \n\n**There are two ways to execute ANY Hive query that we now mention.**\n\n1. **Using the Hive REPL command-line**: The first is to issue a \"hive\" command and copy and paste the above query at the Hive REPL command-line. To do this, do:\n\n        cd %hive_home%\\bin\n        hive\n\n    Now at the REPL command-line, cutting and pasting the query executes it.\n\n2. **Saving queries to a file and executing the command**: The second is to save the queries to a .hql file ([sample&#95;hive&#95;create&#95;criteo&#95;database&#95;and&#95;tables.hql](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/DataScienceProcess/DataScienceScripts/sample_hive_create_criteo_database_and_tables.hql)) and then issue the following command to execute the query:\n\n        hive -f C:\\temp\\sample_hive_create_criteo_database_and_tables.hql\n\n\n### Confirm database and table creation\n\nNext, we confirm the creation of the database by issuing the command below from the Hive bin/ directory prompt:\n\n        hive -e \"show databases;\"\n\nThis gives:\n\n        criteo\n        default\n        Time taken: 1.25 seconds, Fetched: 2 row(s)\n\nThis confirms the creation of the new database, \"criteo\".\n\nTo see what tables we created, we simply issue the command below from the Hive bin/ directory prompt:\n\n        hive -e \"show tables in criteo;\"\n\nWe then see the following output:\n\n        criteo_count\n        criteo_test_day_22\n        criteo_test_day_23\n        criteo_train\n        Time taken: 1.437 seconds, Fetched: 4 row(s)\n\n##<a name=\"exploration\"></a> Data exploration in Hive\n\nNow we are ready to do some basic data exploration in Hive. We begin by counting the number of examples in the train and test data tables.\n\n### Number of train examples\n\nThe contents of [sample&#95;hive&#95;count&#95;train&#95;table&#95;examples.hql](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/DataScienceProcess/DataScienceScripts/sample_hive_count_train_table_examples.hql) are shown below:\n\n        SELECT COUNT(*) FROM criteo.criteo_train;\n\nThis yields:\n\n        192215183\n        Time taken: 264.154 seconds, Fetched: 1 row(s)\n\nAlternatively, one may also issue the command below from the Hive bin/ directory prompt:\n\n        hive -f C:\\temp\\sample_hive_count_criteo_train_table_examples.hql\n\n### Number of test examples in the two test datasets\n\nWe now count the number of examples in the two test datasets. The contents of [sample&#95;hive&#95;count&#95;criteo&#95;test&#95;day&#95;22&#95;table&#95;examples.hql](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/DataScienceProcess/DataScienceScripts/sample_hive_count_criteo_test_day_22_table_examples.hql) are below:\n\n        SELECT COUNT(*) FROM criteo.criteo_test_day_22;\n\nThis yields:\n    \n        189747893\n        Time taken: 267.968 seconds, Fetched: 1 row(s)\n\nAs usual, we may also call the script from the Hive bin/ directory prompt by issuing the below command:\n\n        hive -f C:\\temp\\sample_hive_count_criteo_test_day_22_table_examples.hql\n\nFinally, we examine the number of test examples in the test dataset based on day\\_23.\n\nThe command to do this is similar to the above (refer to [sample&#95;hive&#95;count&#95;criteo&#95;test&#95;day&#95;23&#95;examples.hql](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/DataScienceProcess/DataScienceScripts/sample_hive_count_criteo_test_day_23_examples.hql)):\n\n        SELECT COUNT(*) FROM criteo.criteo_test_day_23;\n\nThis gives:\n    \n        178274637\n        Time taken: 253.089 seconds, Fetched: 1 row(s)\n\n### Label distribution in the train dataset\n\nThe label distribution in the train dataset is of interest. To see this, we show contents of [sample&#95;hive&#95;criteo&#95;label&#95;distribution&#95;train&#95;table.hql](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/DataScienceProcess/DataScienceScripts/sample_hive_criteo_label_distribution_train_table.hql):\n\n        SELECT Col1, COUNT(*) AS CT FROM criteo.criteo_train GROUP BY Col1;\n\nThis yields the label distribution:\n\n        1       6292903\n        0       185922280\n        Time taken: 459.435 seconds, Fetched: 2 row(s)\n\nNote that the percentage of positive labels is about 3.3% (consistent with the original dataset).\n        \n### Histogram distributions of some numeric variables in the train dataset\n\nWe can use Hive's native \"histogram\\_numeric\" function to find out what the distribution of the numeric variables looks like. The contents of [sample&#95;hive&#95;criteo&#95;histogram&#95;numeric.hql](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/DataScienceProcess/DataScienceScripts/sample_hive_criteo_histogram_numeric.hql) are as below:\n\n        SELECT CAST(hist.x as int) as bin_center, CAST(hist.y as bigint) as bin_height FROM \n            (SELECT\n            histogram_numeric(col2, 20) as col2_hist\n            FROM\n            criteo.criteo_train\n            ) a\n            LATERAL VIEW explode(col2_hist) exploded_table as hist;\n\nThis yields the following:\n\n        26      155878415\n        2606    92753\n        6755    22086\n        11202   6922\n        14432   4163\n        17815   2488\n        21072   1901\n        24113   1283\n        27429   1225\n        30818   906\n        34512   723\n        38026   387\n        41007   290\n        43417   312\n        45797   571\n        49819   428\n        53505   328\n        56853   527\n        61004   160\n        65510   3446\n        Time taken: 317.851 seconds, Fetched: 20 row(s)\n\nThe LATERAL VIEW - explode combination in Hive serves to produce a SQL-like output instead of the usual list. Note that in the above table, the first column corresponds to the bin center and the second to the bin frequency.\n\n### Approximate percentiles of some numeric variables in the train dataset\n\nAlso of interest with numeric variables is the computation of approximate percentiles. Hive's native \"percentile\\_approx\" does this for us. The contents of [sample&#95;hive&#95;criteo&#95;approximate&#95;percentiles.hql](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/DataScienceProcess/DataScienceScripts/sample_hive_criteo_approximate_percentiles.hql) are:\n\n        SELECT MIN(Col2) AS Col2_min, PERCENTILE_APPROX(Col2, 0.1) AS Col2_01, PERCENTILE_APPROX(Col2, 0.3) AS Col2_03, PERCENTILE_APPROX(Col2, 0.5) AS Col2_median, PERCENTILE_APPROX(Col2, 0.8) AS Col2_08, MAX(Col2) AS Col2_max FROM criteo.criteo_train;\n\nThis yields:\n\n        1.0     2.1418600917169246      2.1418600917169246    6.21887086390288 27.53454893115633       65535.0\n        Time taken: 564.953 seconds, Fetched: 1 row(s)\n\nWe remark that the distribution of percentiles is closely related to the histogram distribution of any numeric variable usually.        \n\n### Find number of unique values for some categorical columns in the train dataset\n\nContinuing the data exploration, we now find, for some categorical columns, the number of unique values they take. To do this, we show contents of [sample&#95;hive&#95;criteo&#95;unique&#95;values&#95;categoricals.hql](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/DataScienceProcess/DataScienceScripts/sample_hive_criteo_unique_values_categoricals.hql):\n\n        SELECT COUNT(DISTINCT(Col15)) AS num_uniques FROM criteo.criteo_train;\n\nThis yields:\n\n        19011825\n        Time taken: 448.116 seconds, Fetched: 1 row(s)\n\nWe note that Col15 has 19M unique values! Using naive techniques like \"one-hot encoding\" to encode such high-dimensional categorical variables is infeasible. In particular, we explain and demonstrate a powerful, robust technique called [Learning With Counts](http://blogs.technet.com/b/machinelearning/archive/2015/02/17/big-learning-made-easy-with-counts.aspx) for tackling this problem efficiently. \n\nWe end this sub-section by looking at the number of unique values for some other categorical columns as well. The contents of [sample&#95;hive&#95;criteo&#95;unique&#95;values&#95;multiple&#95;categoricals.hql](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/DataScienceProcess/DataScienceScripts/sample_hive_criteo_unique_values_multiple_categoricals.hql) are:\n\n        SELECT COUNT(DISTINCT(Col16)), COUNT(DISTINCT(Col17)), \n        COUNT(DISTINCT(Col18), COUNT(DISTINCT(Col19), COUNT(DISTINCT(Col20))\n        FROM criteo.criteo_train;\n\nThis yields: \n\n        30935   15200   7349    20067   3\n        Time taken: 1933.883 seconds, Fetched: 1 row(s)\n\nAgain we see that except for Col20, all the other columns have many unique values. \n\n### Co-occurence counts of pairs of categorical variables in the train dataset\n\nThe co-occurence counts of pairs of categorical variables is also of interest. This can be determined using the code in [sample&#95;hive&#95;criteo&#95;paired&#95;categorical&#95;counts.hql](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/DataScienceProcess/DataScienceScripts/sample_hive_criteo_paired_categorical_counts.hql):\n\n        SELECT Col15, Col16, COUNT(*) AS paired_count FROM criteo.criteo_train GROUP BY Col15, Col16 ORDER BY paired_count DESC LIMIT 15;\n\nWe reverse order the counts by their occurrence and look at the top 15 in this case. This gives us:\n\n        ad98e872        cea68cd3        8964458\n        ad98e872        3dbb483e        8444762\n        ad98e872        43ced263        3082503\n        ad98e872        420acc05        2694489\n        ad98e872        ac4c5591        2559535\n        ad98e872        fb1e95da        2227216\n        ad98e872        8af1edc8        1794955\n        ad98e872        e56937ee        1643550\n        ad98e872        d1fade1c        1348719\n        ad98e872        977b4431        1115528\n        e5f3fd8d        a15d1051        959252\n        ad98e872        dd86c04a        872975\n        349b3fec        a52ef97d        821062\n        e5f3fd8d        a0aaffa6        792250\n        265366bf        6f5c7c41        782142\n        Time taken: 560.22 seconds, Fetched: 15 row(s)\n\n## <a name=\"downsample\"></a> Down sample the datasets for Azure Machine Learning\n\nHaving explored the datasets and demonstrated how we may do this type of exploration for any variables (including combinations), we now down sample the data sets so that we can build models in Azure Machine Learning. Recall that the problem we focus on is: given a set of example attributes (feature values from Col2 - Col40), we predict if Col1 is a 0 (no click) or a 1 (click). \n\nTo down sample our train and test datasets to 1% of the original size, we use Hive's native RAND() function. The next script, [sample&#95;hive&#95;criteo&#95;downsample&#95;train&#95;dataset.hql](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/DataScienceProcess/DataScienceScripts/sample_hive_criteo_downsample_train_dataset.hql) does this for the train dataset:\n\n        CREATE TABLE criteo.criteo_train_downsample_1perc (\n        col1 string,col2 double,col3 double,col4 double,col5 double,col6 double,col7 double,col8 double,col9 double,col10 double,col11 double,col12 double,col13 double,col14 double,col15 string,col16 string,col17 string,col18 string,col19 string,col20 string,col21 string,col22 string,col23 string,col24 string,col25 string,col26 string,col27 string,col28 string,col29 string,col30 string,col31 string,col32 string,col33 string,col34 string,col35 string,col36 string,col37 string,col38 string,col39 string,col40 string)\n        ROW FORMAT DELIMITED FIELDS TERMINATED BY '\\t'\n        LINES TERMINATED BY '\\n'\n        STORED AS TEXTFILE;\n\n        ---Now downsample and store in this table\n\n        INSERT OVERWRITE TABLE criteo.criteo_train_downsample_1perc SELECT * FROM criteo.criteo_train WHERE RAND() <= 0.01;\n\nThis yields:\n\n        Time taken: 12.22 seconds\n        Time taken: 298.98 seconds\n\nThe script [sample&#95;hive&#95;criteo&#95;downsample&#95;test&#95;day&#95;22&#95;dataset.hql](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/DataScienceProcess/DataScienceScripts/sample_hive_criteo_downsample_test_day_22_dataset.hql) does it for test data, day\\_22:\n\n        --- Now for test data (day_22)\n\n        CREATE TABLE criteo.criteo_test_day_22_downsample_1perc (\n        col1 string,col2 double,col3 double,col4 double,col5 double,col6 double,col7 double,col8 double,col9 double,col10 double,col11 double,col12 double,col13 double,col14 double,col15 string,col16 string,col17 string,col18 string,col19 string,col20 string,col21 string,col22 string,col23 string,col24 string,col25 string,col26 string,col27 string,col28 string,col29 string,col30 string,col31 string,col32 string,col33 string,col34 string,col35 string,col36 string,col37 string,col38 string,col39 string,col40 string)\n        ROW FORMAT DELIMITED FIELDS TERMINATED BY '\\t'\n        LINES TERMINATED BY '\\n'\n        STORED AS TEXTFILE;\n\n        INSERT OVERWRITE TABLE criteo.criteo_test_day_22_downsample_1perc SELECT * FROM criteo.criteo_test_day_22 WHERE RAND() <= 0.01;\n\nThis yields:\n\n        Time taken: 1.22 seconds\n        Time taken: 317.66 seconds\n\n\nFinally, the script [sample&#95;hive&#95;criteo&#95;downsample&#95;test&#95;day&#95;23&#95;dataset.hql](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/DataScienceProcess/DataScienceScripts/sample_hive_criteo_downsample_test_day_23_dataset.hql) does it for test data, day\\_23:\n\n        --- Finally test data day_23\n        CREATE TABLE criteo.criteo_test_day_23_downsample_1perc (\n        col1 string,col2 double,col3 double,col4 double,col5 double,col6 double,col7 double,col8 double,col9 double,col10 double,col11 double,col12 double,col13 double,col14 double,col15 string,col16 string,col17 string,col18 string,col19 string,col20 string,col21 string,col22 string,col23 string,col24 string,col25 string,col26 string,col27 string,col28 string,col29 string,col30 string,col31 string,col32 string,col33 string,col34 string,col35 string,col36 string,col37 string,col38 string,col39 string,col40 string)\n        ROW FORMAT DELIMITED FIELDS TERMINATED BY '\\t'\n        LINES TERMINATED BY '\\n'\n        STORED AS TEXTFILE;\n\n        INSERT OVERWRITE TABLE criteo.criteo_test_day_23_downsample_1perc SELECT * FROM criteo.criteo_test_day_23 WHERE RAND() <= 0.01;\n\nThis yields:\n\n        Time taken: 1.86 seconds\n        Time taken: 300.02 seconds\n\nWith this, we are ready to use our down sampled train and test datasets for building models in Azure Machine Learning.\n\nThere is a final important component before we move on to Azure Machine Learning, which is concerns the count table. In the next sub-section, we discuss this in some detail.\n\n##<a name=\"count\"></a> A brief discussion on the count table\n\nAs we saw, several categorical variables have a very high dimensionality. In our walkthrough, we present a powerful technique called [Learning With Counts](http://blogs.technet.com/b/machinelearning/archive/2015/02/17/big-learning-made-easy-with-counts.aspx) to encode these variables in an efficient, robust manner. More information on this technique is in the link provided. \n\n**Note:** In this walkthrough, we focus on using count tables to produce compact representations of high-dimensional categorical features. This is certainly not the only way to encode categorical features ; for more information on other techniques, interested users can check out [one-hot-encoding](http://en.wikipedia.org/wiki/One-hot) and [feature hashing](http://en.wikipedia.org/wiki/Feature_hashing). \n\nTo build count tables on the count data, we use the data in the folder raw/count. In the modeling section, we show users how to build these count tables for categorical features from scratch, or alternatively to use a pre-built count table for their explorations. In what follows, when we refer to \"pre-built count tables\", we mean using the count tables that we provide. Detailed instructions on how to access these tables are below.\n\n## <a name=\"aml\"></a> Build a model with Azure Machine Learning\n\nOur model building process in Azure Machine Learning will follow these steps:\n\n1. [Get the data from Hive tables into Azure Machine Learning](#step1)\n2. [Create the experiment: clean the data, choose a learner, and featurize with count tables](#step2)\n3. [Train the model](#step3)\n4. [Score the model on test data](#step4)\n5. [Evaluate the model](#step5)\n6. [Publish the model as a web-service to be consumed](#step6)\n\nNow we are ready to build models in Azure Machine Learning studio. Our down sampled data is saved as Hive tables in the cluster. We will use the Azure Machine Learning **Reader** module to read this data. The credentials to access the storage account of this cluster are provided below.\n\n### <a name=\"step1\"></a> Step 1: Get data from Hive tables into Azure Machine Learning using the Reader module and select it for a machine learning experiment\n\nStart by selecting a **+NEW** -> **EXPERIMENT** -> **Blank Experiment**. Then, from the **Search** box on the top left, search for \"Reader\". Drag and drop the **Reader** module on to the experiment canvas (the middle portion of the screen) to use the module for data access.\n\nThis is what the **Reader** looks like while getting data from the Hive table:\n\n![Reader gets data](http://i.imgur.com/i3zRaoj.png)\n\nFor the **Reader** module, the values of the parameters that are provided in the graphic are just examples of the sort of values you will need to provide. Here is some general guidance on how to fill out the parameter set for the **Reader** module.\n\n1. Choose \"Hive query\" for **Data Source**\n2. In the **Hive database query** box, a simple SELECT * FROM <your\\_database\\_name.your\\_table\\_name> - is enough.\n3. **Hcatalog server URI**: If your cluster is \"abc\", then this is simply: https://abc.azurehdinsight.net\n4. **Hadoop user account name**: The user name chosen at the time of commissioning the cluster. (NOT the Remote Access user name!)\n5. **Hadoop user account password**: The password for the above user name chosen at the time of commissioning the cluster. (NOT the Remote Access password!)\n6. **Location of output data**: Choose \"Azure\"\n7. **Azure storage account name**: The storage account associated with the cluster\n8. **Azure storage account key**: The key of the storage account associated with the cluster.\n9. **Azure container name**: If the cluster name is \"abc\", then this is simply \"abc\", usually. \n\n\nOnce the **Reader** finishes getting data (you see the green tick on the Module), save this data as a Dataset (with a name of your choice). What this looks like:\n\n![Reader save data](http://i.imgur.com/oxM73Np.png)\n\n\nRight click on the output port of the **Reader** module. This reveals a **Save as dataset** option and a **Visualize** option. The **Visualize** option, if clicked, displays 100 rows of the data, along with a right panel that is useful for some summary statistics. To save data, simply select **Save as dataset** and follow instructions.\n\nTo select the saved dataset for use in a machine learning experiment, locate the datasets using the **Search** box shown below. Then simply type out the name you gave the dataset partially to access it and drag the dataset onto the main panel. Dropping it onto the main panel selects it for use in machine learning modeling.\n\n![](http://i.imgur.com/cl5tpGw.png)\n\n***IMPORTANT NOTE:*** **Do this for both the train and the test datasets. Also, remember to use the database name and table names that you gave for this purpose. The values used in the figure are solely for illustration purposes.**\n \n### <a name=\"step2\"></a> Step 2: Create a simple experiment in Azure Machine Learning to predict clicks / no clicks\n\nOur Azure ML experiment looks like the below:\n\n![](http://i.imgur.com/xRpVfrY.png)\n\nWe now examine the key components of this experiment. As a reminder, we need to drag our saved train and test datasets on to our experiment canvas first.\n\n#### Clean Missing Data\n\nThe **Clean Missing Data** module does what its name suggests:  it cleans missing data in ways that can be user-specified. Looking into this module, we see this:\n\n![Clean missing data](http://i.imgur.com/0ycXod6.png)\n\nHere, we chose to replace all missing values with a 0. There are other options as well, which can be seen by looking at the dropdowns in the module.\n\n#### Feature engineering on the data\n\nThere can be millions of unique values for some categorical features of large datasets. Using naive methods such as one-hot encoding for representing such high-dimensional categorical features is entirely infeasible. In this walkthrough, we demonstrate how to use count features using built-in Azure Machine Learning modules to generate compact representations of these high-dimensional categorical variables. The end-result is a smaller model size, faster training times, and performance metrics that are quite comparable to using other techniques.\n\n##### Building counting transforms\n\nTo build count features, we use the **Build Counting Transform** module that is available in Azure Machine Learning. The module looks like this :\n\n![](http://i.imgur.com/e0eqKtZ.png)\n![](http://i.imgur.com/OdDN0vw.png)\n\n**Important Note** : In the **Count columns** box, we enter those columns that we wish to perform counts on. Typically, these are (as mentioned) high-dimensional categorical columns. At the start, we mentioned that the Criteo dataset has 26 categorical columns : from Col15 to Col40. Here, we count on all of them and give their indices (from 15 to 40 separated by commas as shown).\n\nTo use the module in the MapReduce mode (appropriate for large datasets), we need access to an HDInsight Hadoop cluster (the one used for feature exploration above can be reused for this purpose as well) and its credentials. The figures above illustrate what the filled-in values look like (replace the values provided for illustration with those relevant for your own use-case). \n\n![](http://i.imgur.com/05IqySf.png)\n\nIn the figure above, we show how to enter the input blob location. This location has the data reserved for building count tables on.\n\n\nAfter this module finishes running, we can save the transform for later by right clicking on the module and selecting the **Save as Transform** option:\n\n![](http://i.imgur.com/IcVgvHR.png)\n\nIn our experiment architecture shown above, the dataset \"ytransform2\" corresponds precisely to a saved count transform. For the remainder of this experiment, we assume that the reader used a **Build Counting Transform** module on some data to generate counts, and can then use those counts to generate count features on the train and test datasets.\n\n##### Choosing what count features to include as part of the train and test datasets\n\nOnce we have a count transform ready, the user can choose what features to include in their train and test datasets using the **Modify Count Table Parameters** module. We just show this module below for completeness, but in interests of simplicity do not actually use it in our experiment.\n\n![](http://i.imgur.com/PfCHkVg.png)\n\nIn this case, as can be seen, we have chosen to use just the log-odds and to ignore the back off column. We can also set parameters such as the garbage bin threshold, how many pseudo-prior examples to add for smoothing, and whether to use any Laplacian noise or not. All these are advanced features and it is to be noted that the default values are a good starting point for users who are new to this type of feature generation.\n\n##### Data transformation before generating the count features\n\nNow we focus on an important point about transforming our train and test data prior to actually generating count features. Note that there are two **Execute R Script** modules used before we apply the count transform to our data.\n\n![](http://i.imgur.com/aF59wbc.png)\n\nHere is the first R script:\n\n![](http://i.imgur.com/3hkIoMx.png)\n\nIn this R script, we rename our columns to names \"Col1\" to \"Col40\". This is because the count transform expects names of this format.\n\nIn the second R script, we balance the distribution between positive and negative classes (classes 1 ansd 0 respectively) by downsampling the negative class. The R script below shows how to do this :\n\n![](http://i.imgur.com/91wvcwN.png)\n\nIn this simple R script, we use \"pos\\_neg\\_ratio\" to set the amount of balance between the positive and the negative classes. This is important to do since improving class imbalance usually has performance benefits for classification problems where the class distribution is skewed (recall that in our case, we have 3.3% positive class and 96.7% negative class).\n\n##### Applying the count transformation on our data\n\nFinally, we can use the **Apply Transformation** module to apply the count transforms on our train and test datasets. This module takes the saved count transform as one input and the train or test datasets as the other input, and returns data with count features. It is shown below :\n\n![](http://i.imgur.com/xnQvsYf.png)\n\n##### An excerpt of what the count features look like\n\nIt is instructive to see what the count features look like in our case. Below, we show an excerpt of this :\n\n![](http://i.imgur.com/FO1nNfw.png)\n\nIn this excerpt, we show that for the columns that we counted on, we get the counts and log odds in addition to any relevant backoffs. \n\nWe are now ready to build an Azure Machine Learning model using these transformed datasets. In the next section, we show how this can be done.\n\n#### Azure Machine Learning model building\n\n##### Choice of learner\n\nFirst, we need to choose a learner. We are going to use a two class boosted decision tree as our learner. Here are the default options for this learner:\n\n![](http://i.imgur.com/bH3ST2z.png)\n\nFor our experiment, we simply going to choose the default values. We note that the defaults are usually meaningful and a good way to get quick baselines on performance. You can improve on performance by sweeping parameters if you choose to once you have a baseline.\n\n#### Train the model\n\nFor training, we simply invoke a **Train Model** module. The two inputs to it are the Two-Class Boosted Decision Tree learner and our train dataset. This is shown below :\n\n![](http://i.imgur.com/2bZDZTy.png)\n\n#### Score the model\n\nOnce we have a trained model, we are ready to score on the test dataset and to evaluate its performance. We do this by using the **Score Model** module shown below, along with an **Evaluate Model** module :\n\n![](http://i.imgur.com/fydcv6u.png)\n\n### <a name=\"step5\"></a> Step 5: Evaluate the model\n\nFinally, we would like to analyze model performance. Usually, for two class (binary) classification problems, a good measure is the AUC. To visualize this, we hook up the **Score Model** module to an **Evaluate Model** module for this. Clicking **Visualize** on the **Evaluate Model** module yields a graphic like the below:\n\n![Evaluate module BDT model](http://i.imgur.com/0Tl0cdg.png)\n\nIn binary (or two class) classification problems, a good measure of prediction accuracy is the Area Under Curve (AUC). Below, we show our results using this model on our test dataset. To get this, right click the output port of the **Evaluate Model** module and then **Visualize**.\n\n![Visualize Evaluate Model module](http://i.imgur.com/IRfc7fH.png)\n\n### <a name=\"step6\"></a> Step 6: Publish the model as a Web service\nThe ability to publish an Azure Machine Learning model as web services with a minimum of fuss is a valuable feature for making it widely available. Once that is done, anyone can make calls to the web service with input data that they need predictions for, and the web service uses the model to return those predictions.\n\nTo do this, we first save our trained model as a Trained Model object. This is done by right clicking on the **Train Model** module and using the **Save as Trained Model** option.\n\nNext, we need to create input and output ports for our web service: \n\n* an input port takes data in the same form as the data that we need predictions for \n* an output port returns the Scored Labels and the associated probabilities.\n\n#### Select a few rows of data for the input port\n\nIt is convenient to use an **Apply SQL Transformation** module to select just 10 rows to serve as the input port data. Select just these rows of data for our input port using the SQL query shown below.\n\n![Input port data](http://i.imgur.com/XqVtSxu.png)\n\n#### Web service\nNow we are ready to run a small experiment that can be used to publish our web service.\n\n#### Generate input data for webservice\n\nAs a zeroth step, since the count table is large, we take a few lines of test data and generate output data from it with count features. This can serve as the input data format for our webservice. This is shown below:\n\n![Create BDT input data](http://i.imgur.com/OEJMmst.png)\n\nNote: for the input data format, we will now use the OUTPUT of the **Count Featurizer** module. Once this experiment finishes running, save the output from the **Count Featurizer** module as a Dataset. \n\n**Important Note:** This Dataset will be used for the input data in the webservice. \n\n#### Scoring experiment for publishing webservice\n\nFirst, we show what this looks like. The essential structure is a **Score Model** module that accepts our trained model object and a few lines of input data that we generated in the previous steps using the **Count Featurizer** module. We use \"Project Columns\" to project out the Scored labels and the Score probabilities. \n\n![Project Columns](http://i.imgur.com/kRHrIbe.png)\n\nNotice how the **Project Columns** module can be used for 'filtering' data out from a dataset. We show the contents below:\n\n![Filtering with the Project Columns module](http://i.imgur.com/oVUJC9K.png)\n\nTo get the blue input and output ports, you simply click **prepare webservice** at the bottom right. Running this experiment also allows us to publish the web service  by clicking the **PUBLISH WEB SERVICE** icon at the bottom right, shown below.\n\n![Publish Web service](http://i.imgur.com/WO0nens.png)\n\nOnce the webservice is published, we get redirected to a page that looks thus:\n\n![](http://i.imgur.com/YKzxAA5.png)\n\nWe see two links for webservices on the left side:\n\n* The **REQUEST/RESPONSE** Service (or RRS) is meant for single predictions and is what we will utilize in this workshop. \n* The **BATCH EXECUTION** Service (BES) is used for batch predictions and requires that the input data used to make predictions reside in Azure Blob Storage.\n\nClicking on the link **REQUEST/RESPONSE** takes us to a page that gives us pre-canned code in C#, python, and R. This code can be conveniently used for making calls to the webservice. Note that the API key on this page needs to be used for authentication. \n\nIt is convenient to copy this python code over to a new cell in the IPython notebook. \n\nBelow, we show a segment of python code with the correct API key.\n\n![Python code](http://i.imgur.com/f8N4L4g.png)\n\nNote that we replaced the default API key with our webservices's API key. Clicking **Run** on this cell in an IPython notebook yields the following response:\n\n![IPython response](http://i.imgur.com/KSxmia2.png)\n\nWe see that for the two test examples we asked about (in the JSON framework of the python script), we get back answers in the form \"Scored Labels, Scored Probabilities\". Note that in this case, we chose the default values that the pre-canned code provides (0's for all numeric columns and the string \"value\" for all categorical columns).\n\nThis concludes our end-to-end walkthrough showing how to handle large scale dataset using Azure Machine Learning. We started with a terabyte of data, constructed a prediction model and deployed it as a web service in the cloud.\n\ntest\n"
+}

@@ -1,0 +1,271 @@
+{
+  "nodes": [
+    {
+      "content": "Azure Mobile Engagement - backend integration",
+      "pos": [
+        28,
+        73
+      ]
+    },
+    {
+      "content": "Connect Azure Mobile Engagement with a SharePoint backend to create campaigns from SharePoint",
+      "pos": [
+        93,
+        186
+      ]
+    },
+    {
+      "content": "Azure Mobile Engagement - API integration",
+      "pos": [
+        532,
+        573
+      ]
+    },
+    {
+      "content": "In an automated marketing system, creating and activating the marketing campaigns also occur automatically.",
+      "pos": [
+        575,
+        682
+      ]
+    },
+    {
+      "content": "For this purpose - Azure Mobile Engagement enables creating such automated marketing campaigns using APIs as well.",
+      "pos": [
+        683,
+        797
+      ]
+    },
+    {
+      "content": "Typically customers use the Mobile Engagement front end interface to create announcements/polls etc as part of their marketing campaigns.",
+      "pos": [
+        800,
+        937
+      ]
+    },
+    {
+      "content": "However as the marketing campaigns become mature, there is a need to leverage the data locked in the backend systems (like any CRM system or CMS system like SharePoint) so that a fully automated pipeline can be created which creates campaigns in Mobile Engagement dynamically based on the data flowing in from the backend systems.",
+      "pos": [
+        938,
+        1268
+      ]
+    },
+    {
+      "content": "![][5]",
+      "pos": [
+        1271,
+        1277
+      ]
+    },
+    {
+      "content": "This tutorial goes through such a scenario where a SharePoint business user populates a SharePoint list with marketing data and an automated process picks up items from the list and connects with the Mobile Engagement system using the available REST APIs to create a marketing campaign from the SharePoint data.",
+      "pos": [
+        1279,
+        1590
+      ]
+    },
+    {
+      "pos": [
+        1596,
+        1825
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.IMPORTANT]</ph> In general, you can use this sample as a starting point for understanding how to call any Mobile Engagement REST API as it details the two key aspects of calling the APIs - authenticating and passing parameters."
+    },
+    {
+      "content": "SharePoint integration",
+      "pos": [
+        1831,
+        1853
+      ]
+    },
+    {
+      "content": "Here is what the sample SharePoint list looks like.",
+      "pos": [
+        1857,
+        1908
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Title<ept id=\"p1\">**</ept>, <bpt id=\"p2\">**</bpt>Category<ept id=\"p2\">**</ept>, <bpt id=\"p3\">**</bpt>NotificationTitle<ept id=\"p3\">**</ept>, <bpt id=\"p4\">**</bpt>Message<ept id=\"p4\">**</ept> and <bpt id=\"p5\">**</bpt>URL<ept id=\"p5\">**</ept> are used for creating the announcement.",
+      "pos": [
+        1909,
+        2020
+      ]
+    },
+    {
+      "content": "There is a column called <bpt id=\"p1\">**</bpt>IsProcessed<ept id=\"p1\">**</ept> which is used by the sample automation process in the form of a console program.",
+      "pos": [
+        2021,
+        2142
+      ]
+    },
+    {
+      "content": "You can either run this console program as an Azure WebJob so that you can schedule it or you can directly use the SharePoint workflow to program creating and activating the announcement when an item is inserted into the SharePoint list.",
+      "pos": [
+        2143,
+        2380
+      ]
+    },
+    {
+      "content": "In this sample we use the console program which goes through the items in the SharePoint list and create announcement in Azure Mobile Engagement for each of them and then finally marks the <bpt id=\"p1\">**</bpt>IsProcessed<ept id=\"p1\">**</ept> flag to be true on successful announcement creation.",
+      "pos": [
+        2381,
+        2638
+      ]
+    },
+    {
+      "content": "![][1]",
+      "pos": [
+        2644,
+        2650
+      ]
+    },
+    {
+      "pos": [
+        2655,
+        2883
+      ],
+      "content": "We are using the code from the sample <bpt id=\"p1\">*</bpt>Remote Authentication in SharePoint Online Using the Client Object Model<ept id=\"p1\">*</ept> <bpt id=\"p2\">[</bpt>here<ept id=\"p2\">](https://code.msdn.microsoft.com/Remote-Authentication-in-b7b6f43c)</ept> to authenticate with the SharePoint list."
+    },
+    {
+      "pos": [
+        2889,
+        3018
+      ],
+      "content": "Once authenticated, we loop through the list items to find out any newly created items (which will have <bpt id=\"p1\">**</bpt>IsProcessed<ept id=\"p1\">**</ept> = false)."
+    },
+    {
+      "content": "Mobile Engagement integration",
+      "pos": [
+        5284,
+        5313
+      ]
+    },
+    {
+      "content": "Once we find an item which requires processing - we extract the information required to create an announcement from the list item and call <ph id=\"ph1\">`CreateAzMECampaign`</ph> to create it and subsequently <ph id=\"ph2\">`ActivateAzMECampaign`</ph> to activate it.",
+      "pos": [
+        5318,
+        5546
+      ]
+    },
+    {
+      "content": "These are essentially REST API calls calling to the Mobile Engagement backend.",
+      "pos": [
+        5547,
+        5625
+      ]
+    },
+    {
+      "content": "The Mobile Engagement REST APIs require a <bpt id=\"p1\">**</bpt>Basic auth scheme authorization HTTP header<ept id=\"p1\">**</ept> which is composed of the <ph id=\"ph1\">`ApplicationId`</ph> and the <ph id=\"ph2\">`ApiKey`</ph> which you get from the Azure portal.",
+      "pos": [
+        5632,
+        5816
+      ]
+    },
+    {
+      "content": "Make sure that you are using the Key from the <bpt id=\"p1\">**</bpt>api keys<ept id=\"p1\">**</ept> section and <bpt id=\"p2\">*</bpt>not<ept id=\"p2\">*</ept> from the <bpt id=\"p3\">**</bpt>sdk keys<ept id=\"p3\">**</ept> section.",
+      "pos": [
+        5817,
+        5924
+      ]
+    },
+    {
+      "content": "![][2]",
+      "pos": [
+        5931,
+        5937
+      ]
+    },
+    {
+      "content": "For creating the announcement type campaign - refer to the <bpt id=\"p1\">[</bpt>documentation<ept id=\"p1\">](https://msdn.microsoft.com/library/dn913754.aspx)</ept>.",
+      "pos": [
+        6427,
+        6552
+      ]
+    },
+    {
+      "content": "You need to make sure that you are specifying the campaign <ph id=\"ph1\">`kind`</ph> as <bpt id=\"p1\">*</bpt>announcement<ept id=\"p1\">*</ept> and the <bpt id=\"p2\">[</bpt>payload<ept id=\"p2\">](https://msdn.microsoft.com/library/dn913749.aspx)</ept> and passing it as FormUrlEncodedContent.",
+      "pos": [
+        6553,
+        6745
+      ]
+    },
+    {
+      "content": "Once you have the announcement created, you will see something like the following on the Mobile Engagement portal (note that the State=Draft and Activated = N/A)",
+      "pos": [
+        8831,
+        8992
+      ]
+    },
+    {
+      "content": "![][3]",
+      "pos": [
+        8998,
+        9004
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">`CreateAzMECampaign`</ph> creates an announcement campaign and returns its Id to the caller.",
+      "pos": [
+        9009,
+        9096
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">`ActivateAzMECampaign`</ph> requires this Id as the parameter to activate the campaign.",
+      "pos": [
+        9097,
+        9179
+      ]
+    },
+    {
+      "content": "Once you have the announcement activated, you will see something like the following on the Mobile Engagement portal:",
+      "pos": [
+        10443,
+        10559
+      ]
+    },
+    {
+      "content": "![][4]",
+      "pos": [
+        10565,
+        10571
+      ]
+    },
+    {
+      "content": "As soon as the campaign gets activated, any devices which satisfy the criterion on the campaign will start seeing notifications.",
+      "pos": [
+        10576,
+        10704
+      ]
+    },
+    {
+      "content": "You will also notice that the list item marked with IsProcessed = false has been set to True once the announcement campaign is created.",
+      "pos": [
+        10710,
+        10845
+      ]
+    },
+    {
+      "content": "This sample created a simple announcement campaign specifying mostly the required properties.",
+      "pos": [
+        10849,
+        10942
+      ]
+    },
+    {
+      "content": "You can customize this as much as you can from the portal by using the information <bpt id=\"p1\">[</bpt>here<ept id=\"p1\">](https://msdn.microsoft.com/library/dn913749.aspx)</ept>.",
+      "pos": [
+        10943,
+        11083
+      ]
+    },
+    {
+      "content": "test",
+      "pos": [
+        11545,
+        11549
+      ]
+    }
+  ],
+  "content": "<properties \n    pageTitle=\"Azure Mobile Engagement - backend integration\" \n    description=\"Connect Azure Mobile Engagement with a SharePoint backend to create campaigns from SharePoint\" \n    services=\"mobile-engagement\" \n    documentationCenter=\"mobile\" \n    authors=\"piyushjo\" \n    manager=\"dwrede\" \n    editor=\"\"/>\n\n<tags \n    ms.service=\"mobile-engagement\" \n    ms.workload=\"mobile\" \n    ms.tgt_pltfrm=\"mobile-multiple\" \n    ms.devlang=\"dotnet\" \n    ms.topic=\"article\" \n    ms.date=\"05/12/2015\" \n    ms.author=\"piyushjo\" />\n\n# Azure Mobile Engagement - API integration\n\nIn an automated marketing system, creating and activating the marketing campaigns also occur automatically. For this purpose - Azure Mobile Engagement enables creating such automated marketing campaigns using APIs as well. \n\nTypically customers use the Mobile Engagement front end interface to create announcements/polls etc as part of their marketing campaigns. However as the marketing campaigns become mature, there is a need to leverage the data locked in the backend systems (like any CRM system or CMS system like SharePoint) so that a fully automated pipeline can be created which creates campaigns in Mobile Engagement dynamically based on the data flowing in from the backend systems. \n\n![][5]\n\nThis tutorial goes through such a scenario where a SharePoint business user populates a SharePoint list with marketing data and an automated process picks up items from the list and connects with the Mobile Engagement system using the available REST APIs to create a marketing campaign from the SharePoint data. \n \n> [AZURE.IMPORTANT] In general, you can use this sample as a starting point for understanding how to call any Mobile Engagement REST API as it details the two key aspects of calling the APIs - authenticating and passing parameters. \n\n## SharePoint integration\n1. Here is what the sample SharePoint list looks like. **Title**, **Category**, **NotificationTitle**, **Message** and **URL** are used for creating the announcement. There is a column called **IsProcessed** which is used by the sample automation process in the form of a console program. You can either run this console program as an Azure WebJob so that you can schedule it or you can directly use the SharePoint workflow to program creating and activating the announcement when an item is inserted into the SharePoint list. In this sample we use the console program which goes through the items in the SharePoint list and create announcement in Azure Mobile Engagement for each of them and then finally marks the **IsProcessed** flag to be true on successful announcement creation.\n\n    ![][1]\n\n2. We are using the code from the sample *Remote Authentication in SharePoint Online Using the Client Object Model* [here](https://code.msdn.microsoft.com/Remote-Authentication-in-b7b6f43c) to authenticate with the SharePoint list.\n \n3. Once authenticated, we loop through the list items to find out any newly created items (which will have **IsProcessed** = false). \n\n        static async void CreateCampaignFromSharepoint()\n        {\n            using (ClientContext clientContext = ClaimClientContext.GetAuthenticatedContext(targetSharepointSite))\n            {\n                // Using https://code.msdn.microsoft.com/Remote-Authentication-in-b7b6f43c for authentication     \n                Web site = clientContext.Web;\n                List list = site.Lists.GetByTitle(\"VideoContent\");\n                CamlQuery query = new CamlQuery();\n                query.ViewXml = \"<View/>\";\n                ListItemCollection items = list.GetItems(query);\n\n                // Load the SharePoint list\n                clientContext.Load(list);\n                clientContext.Load(items);\n                clientContext.ExecuteQuery();\n\n                // Loop through the list to go through all the items which are newly added\n                foreach (ListItem item in items)\n                    if (item[\"IsProcessed\"].ToString() != \"Yes\")\n                    {\n                        string name = item[\"Title\"].ToString();\n                        string notificationTitle = item[\"NotificationTitle\"].ToString();\n                        string notificationMessage = item[\"Message\"].ToString();\n                        string category = item[\"Category\"].ToString();\n                        string actionURL = ((FieldUrlValue)item[\"URL\"]).Url;\n\n                        // Send an HTTP request to create AzME campaign\n                        int campaignId = CreateAzMECampaign\n                            (name, notificationTitle, notificationMessage, category, actionURL).Result;\n\n                        if (campaignId != -1)\n                        {\n                            // If creating campaign is successful then set this to true\n                            item[\"IsProcessed\"] = \"Yes\";\n\n                            // Now try to activate the campaign also\n                            await ActivateAzMECampaign(campaignId);\n                        }\n                        else\n                        {\n                            item[\"IsProcessed\"] = \"Error\";\n                        }\n                        item.Update();\n                    }\n                clientContext.ExecuteQuery();\n            }\n        }\n\n## Mobile Engagement integration\n1.  Once we find an item which requires processing - we extract the information required to create an announcement from the list item and call `CreateAzMECampaign` to create it and subsequently `ActivateAzMECampaign` to activate it. These are essentially REST API calls calling to the Mobile Engagement backend. \n\n2.  The Mobile Engagement REST APIs require a **Basic auth scheme authorization HTTP header** which is composed of the `ApplicationId` and the `ApiKey` which you get from the Azure portal. Make sure that you are using the Key from the **api keys** section and *not* from the **sdk keys** section. \n\n    ![][2]\n\n        static string CreateAuthZHeader()\n        {\n            string BasicAuthzHeaderString = \"Basic \" + EncodeTo64(ApplicationId + \":\" + ApiKey);\n            return BasicAuthzHeaderString;\n        }\n\n        static public string EncodeTo64(string toEncode)\n        {\n            byte[] toEncodeAsBytes = System.Text.ASCIIEncoding.ASCII.GetBytes(toEncode);\n            string returnValue = System.Convert.ToBase64String(toEncodeAsBytes);\n            return returnValue;\n        }  \n\n3. For creating the announcement type campaign - refer to the [documentation](https://msdn.microsoft.com/library/dn913754.aspx). You need to make sure that you are specifying the campaign `kind` as *announcement* and the [payload](https://msdn.microsoft.com/library/dn913749.aspx) and passing it as FormUrlEncodedContent. \n\n        static async Task<int> CreateAzMECampaign(string campaignName, string notificationTitle, \n            string notificationMessage, string notificationCategory, string actionURL)\n        {\n            string createURIFragment = \"/reach/1/create\";\n\n            using (var client = new HttpClient())\n            {\n                // Add Authorization Header\n                client.DefaultRequestHeaders.TryAddWithoutValidation(\"Authorization\", CreateAuthZHeader());\n                \n                // Create the payload to send the content\n                // Reference -> https://msdn.microsoft.com/en-us/library/dn913749.aspx\n                string data =\n                    @\"{\"\"name\"\":\"\"\" + campaignName + @\"\"\",\" + \n                    @\"\"\"type\"\":\"\"only_notif\"\",\" + \n                    @\"\"\"deliveryTime\"\":\"\"any\"\",\"\" + \n                    @\"\"notificationTitle\"\":\"\"\" + notificationTitle + \n                    @\"\"\",\"\"notificationMessage\"\":\"\"\" + notificationMessage + \n                    @\"\"\",\"\"actionUrl\"\":\"\"\" + actionURL + @\"\"\"}\";\n                \n                var content = new FormUrlEncodedContent(new[] \n                {\n                    new KeyValuePair<string, string>(\"kind\", \"announcement\"),\n                    new KeyValuePair<string, string>(\"data\", data),\n                });\n\n                // Send the POST request\n                var response = await client.PostAsync(url + createURIFragment, content);\n                var responseString = response.Content.ReadAsStringAsync().Result;\n                int campaignId = -1;\n                if (response.StatusCode.ToString() == \"OK\")\n                {\n                    // This is the campaign id\n                    campaignId = Convert.ToInt32(responseString);\n                    Console.WriteLine(\"Campaign successfully created with id {0}\", campaignId);\n                }\n                else\n                {\n                    Console.WriteLine(\"Campaign creation failed with error - '{0}'\", responseString);\n                }\n                return campaignId;\n            }\n        }\n\n4. Once you have the announcement created, you will see something like the following on the Mobile Engagement portal (note that the State=Draft and Activated = N/A)\n\n    ![][3]\n\n5. `CreateAzMECampaign` creates an announcement campaign and returns its Id to the caller. `ActivateAzMECampaign` requires this Id as the parameter to activate the campaign. \n\n        static async Task<bool> ActivateAzMECampaign(int campaignId)\n        {\n            string activateUriFragment = \"/reach/1/activate\";\n            using (var client = new HttpClient())\n            {\n                // Add Authorization Header\n                client.DefaultRequestHeaders.TryAddWithoutValidation(\"Authorization\", CreateAuthZHeader());\n\n                var content = new FormUrlEncodedContent(new[] \n                {\n                    new KeyValuePair<string, string>(\"kind\", \"announcement\"),\n                    new KeyValuePair<string, string>(\"id\", campaignId.ToString()),\n                });\n\n                // Send the POST request\n                var response = await client.PostAsync(url + activateUriFragment, content);\n                var responseString = response.Content.ReadAsStringAsync().Result;\n                if (response.StatusCode.ToString() == \"OK\")\n                {\n                    Console.WriteLine(\"Campaign successfully activated\");\n                    return true;\n                }\n                else\n                {\n                    Console.WriteLine(\"Campaign activation failed with error - '{0}'\", responseString);\n                    return false;\n                }\n            }\n        }\n\n6. Once you have the announcement activated, you will see something like the following on the Mobile Engagement portal:\n\n    ![][4]\n\n7. As soon as the campaign gets activated, any devices which satisfy the criterion on the campaign will start seeing notifications. \n\n8. You will also notice that the list item marked with IsProcessed = false has been set to True once the announcement campaign is created.  \n\nThis sample created a simple announcement campaign specifying mostly the required properties. You can customize this as much as you can from the portal by using the information [here](https://msdn.microsoft.com/library/dn913749.aspx). \n\n<!-- Images. -->\n[1]: ./media/mobile-engagement-sample-backend-integration-sharepoint/sharepointlist.png\n[2]: ./media/mobile-engagement-sample-backend-integration-sharepoint/properties.png\n[3]: ./media/mobile-engagement-sample-backend-integration-sharepoint/new-announcement.png\n[4]: ./media/mobile-engagement-sample-backend-integration-sharepoint/activate-announcement.png\n[5]: ./media/mobile-engagement-sample-backend-integration-sharepoint/diagram.png\n\n\n \ntest\n"
+}

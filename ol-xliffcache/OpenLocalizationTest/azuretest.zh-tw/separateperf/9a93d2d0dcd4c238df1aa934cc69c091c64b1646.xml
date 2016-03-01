@@ -1,0 +1,159 @@
+{
+  "nodes": [
+    {
+      "content": "Loops in SQL Data Warehouse | Microsoft Azure",
+      "pos": [
+        26,
+        71
+      ]
+    },
+    {
+      "content": "Tips for Transact-SQL loops and replacing cursors in Azure SQL Data Warehouse for developing solutions.",
+      "pos": [
+        89,
+        192
+      ]
+    },
+    {
+      "content": "Loops in SQL Data Warehouse",
+      "pos": [
+        530,
+        557
+      ]
+    },
+    {
+      "content": "SQL Data Warehouse supports the <bpt id=\"p1\">[</bpt>WHILE<ept id=\"p1\">][]</ept> loop for repeatedly executing statement blocks.",
+      "pos": [
+        558,
+        647
+      ]
+    },
+    {
+      "content": "This will continue for as long as the specified conditions are true or until the code specifically terminates the loop using the <ph id=\"ph1\">`BREAK`</ph> keyword.",
+      "pos": [
+        648,
+        793
+      ]
+    },
+    {
+      "content": "Loops are particularly useful for replacing cursors defined in SQL code.",
+      "pos": [
+        794,
+        866
+      ]
+    },
+    {
+      "content": "Fortunately, almost all cursors that are written in SQL code are of the fast forward, read only variety.",
+      "pos": [
+        867,
+        971
+      ]
+    },
+    {
+      "content": "Therefore <bpt id=\"p1\">[</bpt><ept id=\"p1\">WHILE]</ept> loops are a great alternative if you find yourself having to replace one.",
+      "pos": [
+        972,
+        1063
+      ]
+    },
+    {
+      "content": "Leveraging loops and replacing cursors in SQL Data Warehouse",
+      "pos": [
+        1068,
+        1128
+      ]
+    },
+    {
+      "content": "However, before diving in head first you should ask yourself the following question: \"Could this cursor be re-written to use set based operations?\".",
+      "pos": [
+        1129,
+        1277
+      ]
+    },
+    {
+      "content": "In many cases the answer will be yes.",
+      "pos": [
+        1278,
+        1315
+      ]
+    },
+    {
+      "content": "More often than not the best approach is to do just that.",
+      "pos": [
+        1316,
+        1373
+      ]
+    },
+    {
+      "content": "A set based operation will often perform significantly faster than an iterative row by row approach.",
+      "pos": [
+        1374,
+        1474
+      ]
+    },
+    {
+      "content": "Fast forward read only cursors can be easily replaced with a looping construct.",
+      "pos": [
+        1476,
+        1555
+      ]
+    },
+    {
+      "content": "Below is a simple example to convey the approach.",
+      "pos": [
+        1556,
+        1605
+      ]
+    },
+    {
+      "content": "The code example updates the statistics for every table in the database.",
+      "pos": [
+        1606,
+        1678
+      ]
+    },
+    {
+      "content": "By iterating over the tables in the loop we are able to execute each command in sequence.",
+      "pos": [
+        1679,
+        1768
+      ]
+    },
+    {
+      "content": "Firstly, create a temporary table containing a unique row number used to identify the individual statements:",
+      "pos": [
+        1770,
+        1878
+      ]
+    },
+    {
+      "content": "Secondly, initialize the variables required to perform the loop:",
+      "pos": [
+        2138,
+        2202
+      ]
+    },
+    {
+      "content": "Now loop over statements executing them one at a time:",
+      "pos": [
+        2292,
+        2346
+      ]
+    },
+    {
+      "content": "Finally drop the temporary table created in the first step",
+      "pos": [
+        2542,
+        2600
+      ]
+    },
+    {
+      "content": "Next steps\nFor more development tips, see [development overview][].",
+      "pos": [
+        2749,
+        2816
+      ]
+    }
+  ],
+  "content": "<properties\n   pageTitle=\"Loops in SQL Data Warehouse | Microsoft Azure\"\n   description=\"Tips for Transact-SQL loops and replacing cursors in Azure SQL Data Warehouse for developing solutions.\"\n   services=\"sql-data-warehouse\"\n   documentationCenter=\"NA\"\n   authors=\"jrowlandjones\"\n   manager=\"barbkess\"\n   editor=\"\"/>\n\n<tags\n   ms.service=\"sql-data-warehouse\"\n   ms.devlang=\"NA\"\n   ms.topic=\"article\"\n   ms.tgt_pltfrm=\"NA\"\n   ms.workload=\"data-services\"\n   ms.date=\"06/26/2015\"\n   ms.author=\"JRJ@BigBangData.co.uk;barbkess\"/>\n\n# Loops in SQL Data Warehouse\nSQL Data Warehouse supports the [WHILE][] loop for repeatedly executing statement blocks. This will continue for as long as the specified conditions are true or until the code specifically terminates the loop using the `BREAK` keyword. Loops are particularly useful for replacing cursors defined in SQL code. Fortunately, almost all cursors that are written in SQL code are of the fast forward, read only variety. Therefore [WHILE] loops are a great alternative if you find yourself having to replace one.\n\n## Leveraging loops and replacing cursors in SQL Data Warehouse\nHowever, before diving in head first you should ask yourself the following question: \"Could this cursor be re-written to use set based operations?\". In many cases the answer will be yes. More often than not the best approach is to do just that. A set based operation will often perform significantly faster than an iterative row by row approach.\n\nFast forward read only cursors can be easily replaced with a looping construct. Below is a simple example to convey the approach. The code example updates the statistics for every table in the database. By iterating over the tables in the loop we are able to execute each command in sequence.\n\nFirstly, create a temporary table containing a unique row number used to identify the individual statements:\n  \n```\nCREATE TABLE #tbl \nWITH \n(   LOCATION     = USER_DB\n,   DISTRIBUTION = ROUND_ROBIN\n)\nAS\nSELECT  ROW_NUMBER() OVER(ORDER BY (SELECT NULL)) ) AS Sequence\n,       [name]\n,       'UPDATE STATISTICS '+QUOTENAME([name]) AS sql_code\nFROM    sys.tables\n;\n```\n\nSecondly, initialize the variables required to perform the loop:\n\n```\nDECLARE @nbr_statements INT = (SELECT COUNT(*) FROM #tbl)\n,       @i INT = 1\n;\n```\n\nNow loop over statements executing them one at a time:\n\n```\nWHILE   @i <= @nbr_statements\nBEGIN\n    DECLARE @sql_code NVARCHAR(4000) = (SELECT sql_code FROM #tbl WHERE Sequence = @i);\n    EXEC    sp_executesql @sql_code;\n    SET     @i +=1;\nEND\n```\n\nFinally drop the temporary table created in the first step\n\n```\nDROP TABLE #tbl;\n```\n\n\n<!--Every topic should have next steps and links to the next logical set of content to keep the customer engaged-->\n\n## Next steps\nFor more development tips, see [development overview][].\n\n<!--Image references-->\n\n<!--Article references-->\n[development overview]: sql-data-warehouse-overview-develop.md\n\n<!--MSDN references-->\n[WHILE]: https://msdn.microsoft.com/library/ms178642.aspx\n\n\n<!--Other Web references-->\n\n\n"
+}

@@ -1,0 +1,369 @@
+{
+  "nodes": [
+    {
+      "content": "Reliable Actors Lifecycle",
+      "pos": [
+        26,
+        51
+      ]
+    },
+    {
+      "content": "Explains Lifecycle and Garbage Collection for Service Fabric Reliable Actors",
+      "pos": [
+        69,
+        145
+      ]
+    },
+    {
+      "content": "Actor lifecycle and Garbage Collection",
+      "pos": [
+        443,
+        481
+      ]
+    },
+    {
+      "content": "An Actor is activated when the first call is made to it and it is deactivated (Garbage Collected by Actors runtime) if it is not used for some period of time.",
+      "pos": [
+        482,
+        640
+      ]
+    },
+    {
+      "content": "To configure this time period please see section on Actor Garbage Collection below.",
+      "pos": [
+        641,
+        724
+      ]
+    },
+    {
+      "content": "What happens on Actor Activation?",
+      "pos": [
+        726,
+        759
+      ]
+    },
+    {
+      "content": "When a call comes for an actor and it is not already active, a new actor is created.",
+      "pos": [
+        763,
+        847
+      ]
+    },
+    {
+      "content": "Its state is loaded (if it is a stateful actor)",
+      "pos": [
+        850,
+        897
+      ]
+    },
+    {
+      "pos": [
+        900,
+        986
+      ],
+      "content": "<ph id=\"ph1\">`OnActivateAsync`</ph> method (which can be overridden in  actor implementation) is called."
+    },
+    {
+      "content": "It is added to an Active Actors table.",
+      "pos": [
+        989,
+        1027
+      ]
+    },
+    {
+      "content": "What happens on Actor Deactivation?",
+      "pos": [
+        1029,
+        1064
+      ]
+    },
+    {
+      "content": "When an actor is not used for some period of time, it is removed from the table of Active Actors.",
+      "pos": [
+        1068,
+        1165
+      ]
+    },
+    {
+      "pos": [
+        1168,
+        1297
+      ],
+      "content": "<ph id=\"ph1\">`OnDeactivateAsync`</ph> method (which can be overridden in actor implementation) is called which clears all the timers for the actor."
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.TIP]</ph> The Fabric Actors runtime emits some <bpt id=\"p1\">[</bpt>events related to actor activation and deactivation<ept id=\"p1\">](service-fabric-reliable-actors-diagnostics.md#actor-activation-and-deactivation-events)</ept>.",
+      "pos": [
+        1301,
+        1492
+      ]
+    },
+    {
+      "content": "They are useful in diagnostics and performance monitoring.",
+      "pos": [
+        1493,
+        1551
+      ]
+    },
+    {
+      "content": "Actor Garbage Collection",
+      "pos": [
+        1556,
+        1580
+      ]
+    },
+    {
+      "content": "The Actors runtime periodically scans for actors that have not been used for some period of time, and deactivates them.",
+      "pos": [
+        1581,
+        1700
+      ]
+    },
+    {
+      "content": "Once they are deactivated they can be garbage collected by CLR.",
+      "pos": [
+        1701,
+        1764
+      ]
+    },
+    {
+      "content": "What counts as “being used” for the purpose of garbage collection?",
+      "pos": [
+        1766,
+        1832
+      ]
+    },
+    {
+      "content": "Receiving a call.",
+      "pos": [
+        1836,
+        1853
+      ]
+    },
+    {
+      "pos": [
+        1856,
+        1958
+      ],
+      "content": "<ph id=\"ph1\">`IRemindable.ReceiveReminderAsync`</ph> method being invoked (applicable only if the actor uses reminders)."
+    },
+    {
+      "pos": [
+        1960,
+        2082
+      ],
+      "content": "It is worth noting that if the actor uses timers and its timer callback is invoked, it does <bpt id=\"p1\">**</bpt>not<ept id=\"p1\">**</ept> count as \"being used\"."
+    },
+    {
+      "content": "Before going into the details of garbage collection, it is important to define the following terms:",
+      "pos": [
+        2084,
+        2183
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">*</bpt>Scan interval<ept id=\"p1\">*</ept> - This is the interval at which the Actors runtime scans its Active Actors table for actors that can be garbage collected.",
+      "pos": [
+        2187,
+        2325
+      ]
+    },
+    {
+      "content": "The default value for this is 1 minute.",
+      "pos": [
+        2326,
+        2365
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">*</bpt>Idle timeout<ept id=\"p1\">*</ept> - This is the amount of time an actor needs to remain unused (idle) before it can be garbage collected.",
+      "pos": [
+        2368,
+        2486
+      ]
+    },
+    {
+      "content": "The default value for this is 60 minutes.",
+      "pos": [
+        2487,
+        2528
+      ]
+    },
+    {
+      "content": "Typically you do not need to change these defaults.",
+      "pos": [
+        2530,
+        2581
+      ]
+    },
+    {
+      "content": "However, if necessary, these intervals can be changed at an assembly level for all actor types in that assembly or at an actor type level using the <ph id=\"ph1\">`ActorGarbageCollection`</ph> attribute.",
+      "pos": [
+        2582,
+        2765
+      ]
+    },
+    {
+      "content": "The example below shows the change in the garbage collection intervals for HelloActor.",
+      "pos": [
+        2766,
+        2852
+      ]
+    },
+    {
+      "pos": [
+        3133,
+        3257
+      ],
+      "content": "To change default value of <ph id=\"ph1\">`ActorGarbageCollection`</ph> attribute at Assembly level, add following snippet to <ph id=\"ph2\">`AssemblyInfo.cs`</ph>."
+    },
+    {
+      "content": "For each actor in its Active Actors table, the Actors runtime keeps track of the amount of time it has been idle (i.e. not used).",
+      "pos": [
+        3363,
+        3492
+      ]
+    },
+    {
+      "content": "The Actors runtime checks each of the actors every <ph id=\"ph1\">`ScanIntervalInSeconds`</ph> to see if it can be garbage collected and collects it if has been idle for <ph id=\"ph2\">`IdleTimeoutInSeconds`</ph>.",
+      "pos": [
+        3493,
+        3666
+      ]
+    },
+    {
+      "content": "Any time an actor gets used, its idle time reset to 0.",
+      "pos": [
+        3668,
+        3722
+      ]
+    },
+    {
+      "content": "After this, the actor can only be garbage collected if it again remains idle for <ph id=\"ph1\">`IdleTimeoutInSeconds`</ph>.",
+      "pos": [
+        3723,
+        3827
+      ]
+    },
+    {
+      "content": "Recall that an actor is considered to have been used if either an actor interface method an actor reminder callback is executed.",
+      "pos": [
+        3828,
+        3956
+      ]
+    },
+    {
+      "content": "An actor is <bpt id=\"p1\">**</bpt>not<ept id=\"p1\">**</ept> considered to have been used if its timer callback is executed.",
+      "pos": [
+        3957,
+        4040
+      ]
+    },
+    {
+      "content": "The diagram below contains an example to illustrate these concepts.",
+      "pos": [
+        4042,
+        4109
+      ]
+    },
+    {
+      "content": "![][1]",
+      "pos": [
+        4111,
+        4117
+      ]
+    },
+    {
+      "content": "The example assumes that there is only one active actor in the Active Actors table and shows the impact of actor method calls, reminders and timers on the lifetime of this actor.",
+      "pos": [
+        4119,
+        4297
+      ]
+    },
+    {
+      "content": "The following points about the example are worth mentioning:",
+      "pos": [
+        4298,
+        4358
+      ]
+    },
+    {
+      "content": "ScanInterval and IdleTimeout are set to 5 and 10 respectively in the example (units do not matter here, since our purpose is only to illustrate the concept).",
+      "pos": [
+        4362,
+        4519
+      ]
+    },
+    {
+      "content": "The scan for actors to be garbage collected happens at T=0,5,10,15,20,25 as defined by the ScanInterval of 5.",
+      "pos": [
+        4522,
+        4631
+      ]
+    },
+    {
+      "content": "A periodic timer fires at T=4,8,12,16,20,24 and its callback executes.",
+      "pos": [
+        4634,
+        4704
+      ]
+    },
+    {
+      "content": "It does not impact the idle time of the actor.",
+      "pos": [
+        4705,
+        4751
+      ]
+    },
+    {
+      "content": "An actor method call at T=7, resets the idle time to 0 and delays the garbage collection of the actor.",
+      "pos": [
+        4754,
+        4856
+      ]
+    },
+    {
+      "content": "An actor reminder callback executes at T=14 and further delays the garbage collection of the actor.",
+      "pos": [
+        4859,
+        4958
+      ]
+    },
+    {
+      "content": "During the garbage collection scan at T=25, the actor's idle time finally exceeds the IdleTimeout of 10 and the actor is garbage collected.",
+      "pos": [
+        4961,
+        5100
+      ]
+    },
+    {
+      "content": "Please note that an actor will never get garbage collected while it is executing one of its methods, no matter how much time is spent in executing that method.",
+      "pos": [
+        5102,
+        5261
+      ]
+    },
+    {
+      "content": "As mentioned earlier, the execution of actor interface methods and reminder callbacks prevents garbage collection by resetting the actor's idle time to 0.",
+      "pos": [
+        5262,
+        5416
+      ]
+    },
+    {
+      "content": "The execution of timer callbacks does not reset the idle time to 0.",
+      "pos": [
+        5417,
+        5484
+      ]
+    },
+    {
+      "content": "However, the garbage collection of the actor is deferred until the timer callback has completed execution.",
+      "pos": [
+        5485,
+        5591
+      ]
+    }
+  ],
+  "content": "<properties\n   pageTitle=\"Reliable Actors Lifecycle\"\n   description=\"Explains Lifecycle and Garbage Collection for Service Fabric Reliable Actors\"\n   services=\"service-fabric\"\n   documentationCenter=\".net\"\n   authors=\"jessebenson\"\n   manager=\"timlt\"\n   editor=\"\"/>\n\n<tags\n   ms.service=\"service-fabric\"\n   ms.devlang=\"dotnet\"\n   ms.topic=\"article\"\n   ms.tgt_pltfrm=\"NA\"\n   ms.workload=\"NA\"\n   ms.date=\"08/05/2015\"\n   ms.author=\"amanbha\"/>\n\n\n# Actor lifecycle and Garbage Collection\nAn Actor is activated when the first call is made to it and it is deactivated (Garbage Collected by Actors runtime) if it is not used for some period of time. To configure this time period please see section on Actor Garbage Collection below.\n\nWhat happens on Actor Activation?\n\n- When a call comes for an actor and it is not already active, a new actor is created.\n- Its state is loaded (if it is a stateful actor)\n- `OnActivateAsync` method (which can be overridden in  actor implementation) is called.\n- It is added to an Active Actors table.\n\nWhat happens on Actor Deactivation?\n\n- When an actor is not used for some period of time, it is removed from the table of Active Actors.\n- `OnDeactivateAsync` method (which can be overridden in actor implementation) is called which clears all the timers for the actor.\n\n> [AZURE.TIP] The Fabric Actors runtime emits some [events related to actor activation and deactivation](service-fabric-reliable-actors-diagnostics.md#actor-activation-and-deactivation-events). They are useful in diagnostics and performance monitoring.\n\n## Actor Garbage Collection\nThe Actors runtime periodically scans for actors that have not been used for some period of time, and deactivates them. Once they are deactivated they can be garbage collected by CLR.\n\nWhat counts as “being used” for the purpose of garbage collection?\n\n- Receiving a call.\n- `IRemindable.ReceiveReminderAsync` method being invoked (applicable only if the actor uses reminders).\n\nIt is worth noting that if the actor uses timers and its timer callback is invoked, it does **not** count as \"being used\".\n\nBefore going into the details of garbage collection, it is important to define the following terms:\n\n- *Scan interval* - This is the interval at which the Actors runtime scans its Active Actors table for actors that can be garbage collected. The default value for this is 1 minute.\n- *Idle timeout* - This is the amount of time an actor needs to remain unused (idle) before it can be garbage collected. The default value for this is 60 minutes.\n\nTypically you do not need to change these defaults. However, if necessary, these intervals can be changed at an assembly level for all actor types in that assembly or at an actor type level using the `ActorGarbageCollection` attribute. The example below shows the change in the garbage collection intervals for HelloActor.\n\n```csharp\n[ActorGarbageCollection(IdleTimeoutInSeconds = 10, ScanIntervalInSeconds = 2)]\nclass HelloActor : Actor, IHello\n{\n    public Task<string> SayHello(string greeting)\n    {\n        return Task.FromResult(\"You said: '\" + greeting + \"', I say: Hello Actors!\");\n    }\n}\n```\n\nTo change default value of `ActorGarbageCollection` attribute at Assembly level, add following snippet to `AssemblyInfo.cs`.\n\n```csharp\n[assembly: ActorGarbageCollection(IdleTimeoutInSeconds = 10, ScanIntervalInSeconds = 2)]\n```\n\nFor each actor in its Active Actors table, the Actors runtime keeps track of the amount of time it has been idle (i.e. not used). The Actors runtime checks each of the actors every `ScanIntervalInSeconds` to see if it can be garbage collected and collects it if has been idle for `IdleTimeoutInSeconds`.\n\nAny time an actor gets used, its idle time reset to 0. After this, the actor can only be garbage collected if it again remains idle for `IdleTimeoutInSeconds`. Recall that an actor is considered to have been used if either an actor interface method an actor reminder callback is executed. An actor is **not** considered to have been used if its timer callback is executed.\n\nThe diagram below contains an example to illustrate these concepts.\n\n![][1]\n\nThe example assumes that there is only one active actor in the Active Actors table and shows the impact of actor method calls, reminders and timers on the lifetime of this actor. The following points about the example are worth mentioning:\n\n- ScanInterval and IdleTimeout are set to 5 and 10 respectively in the example (units do not matter here, since our purpose is only to illustrate the concept).\n- The scan for actors to be garbage collected happens at T=0,5,10,15,20,25 as defined by the ScanInterval of 5.\n- A periodic timer fires at T=4,8,12,16,20,24 and its callback executes. It does not impact the idle time of the actor.\n- An actor method call at T=7, resets the idle time to 0 and delays the garbage collection of the actor.\n- An actor reminder callback executes at T=14 and further delays the garbage collection of the actor.\n- During the garbage collection scan at T=25, the actor's idle time finally exceeds the IdleTimeout of 10 and the actor is garbage collected.\n\nPlease note that an actor will never get garbage collected while it is executing one of its methods, no matter how much time is spent in executing that method. As mentioned earlier, the execution of actor interface methods and reminder callbacks prevents garbage collection by resetting the actor's idle time to 0. The execution of timer callbacks does not reset the idle time to 0. However, the garbage collection of the actor is deferred until the timer callback has completed execution.\n\n<!--Image references-->\n[1]: ./media/service-fabric-reliable-actors-lifecycle/garbage-collection.png\n"
+}

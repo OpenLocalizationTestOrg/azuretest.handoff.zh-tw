@@ -1,0 +1,1132 @@
+{
+  "nodes": [
+    {
+      "content": "Shared Access Signatures: Understanding the SAS Model | Microsoft Azure",
+      "pos": [
+        28,
+        99
+      ]
+    },
+    {
+      "content": "Learn about delegating access to Azure Storage resources, including blobs, queues, tables, and files, using shared access signatures (SAS).",
+      "pos": [
+        119,
+        258
+      ]
+    },
+    {
+      "content": "With shared access signatures, you can protect your storage account key while granting access to resources in your account to other users.",
+      "pos": [
+        259,
+        397
+      ]
+    },
+    {
+      "content": "You can control the permissions that you grant and the interval over which the SAS is valid.",
+      "pos": [
+        398,
+        490
+      ]
+    },
+    {
+      "content": "If you also establish a stored access policy, you can revoke the SAS should you fear your account security is compromised.",
+      "pos": [
+        491,
+        613
+      ]
+    },
+    {
+      "content": "Shared Access Signatures, Part 1: Understanding the SAS Model",
+      "pos": [
+        918,
+        979
+      ]
+    },
+    {
+      "content": "Overview",
+      "pos": [
+        984,
+        992
+      ]
+    },
+    {
+      "content": "Using a shared access signature (SAS) is a powerful way to grant limited access to objects in your storage account to other clients, without having to expose your account key.",
+      "pos": [
+        994,
+        1169
+      ]
+    },
+    {
+      "content": "In Part 1 of this tutorial on shared access signatures, we'll provide an overview of the SAS model and review SAS best practices.",
+      "pos": [
+        1170,
+        1299
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt>Part 2<ept id=\"p1\">](storage-dotnet-shared-access-signature-part-2.md)</ept> of the tutorial walks you through the process of creating shared access signatures with the Blob service.",
+      "pos": [
+        1300,
+        1464
+      ]
+    },
+    {
+      "content": "What Is a Shared Access Signature?",
+      "pos": [
+        1469,
+        1503
+      ]
+    },
+    {
+      "content": "A shared access signature provides delegated access to resources in your storage account.",
+      "pos": [
+        1508,
+        1597
+      ]
+    },
+    {
+      "content": "This means that you can grant a client limited permissions to objects in your storage account for a specified period of time and with a specified set of permissions, without having to share your account access keys.",
+      "pos": [
+        1598,
+        1813
+      ]
+    },
+    {
+      "content": "The SAS is a URI that encompasses in its query parameters all of the information necessary for authenticated access to a storage resource.",
+      "pos": [
+        1814,
+        1952
+      ]
+    },
+    {
+      "content": "To access storage resources with the SAS, the client only needs to pass in the SAS to the appropriate constructor or method.",
+      "pos": [
+        1953,
+        2077
+      ]
+    },
+    {
+      "content": "When Should You Use a Shared Access Signature?",
+      "pos": [
+        2082,
+        2128
+      ]
+    },
+    {
+      "content": "You can use a SAS when you want to provide access to resources in your storage account to a client that can't be trusted with the account key.",
+      "pos": [
+        2133,
+        2275
+      ]
+    },
+    {
+      "content": "Your storage account keys include both a primary and secondary key, both of which grant administrative access to your account and all of the resources in it.",
+      "pos": [
+        2276,
+        2433
+      ]
+    },
+    {
+      "content": "Exposing either of your account keys opens your account to the possibility of malicious or negligent use.",
+      "pos": [
+        2434,
+        2539
+      ]
+    },
+    {
+      "content": "Shared access signatures provide a safe alternative that allows other clients to read, write, and delete data in your storage account according to the permissions you've granted, and without need for the account key.",
+      "pos": [
+        2540,
+        2756
+      ]
+    },
+    {
+      "content": "A common scenario where a SAS is useful is a service where users read and write their own data to your storage account.",
+      "pos": [
+        2758,
+        2877
+      ]
+    },
+    {
+      "content": "In a scenario where a storage account stores user data, there are two typical design patterns:",
+      "pos": [
+        2878,
+        2972
+      ]
+    },
+    {
+      "content": "1\\.",
+      "pos": [
+        2975,
+        2978
+      ]
+    },
+    {
+      "content": "Clients upload and download data via a front-end proxy service, which performs authentication.",
+      "pos": [
+        2979,
+        3073
+      ]
+    },
+    {
+      "content": "This front-end proxy service has the advantage of allowing validation of business rules, but for large amounts of data or high-volume transactions, creating a service that can scale to match demand may be expensive or difficult.",
+      "pos": [
+        3074,
+        3302
+      ]
+    },
+    {
+      "content": "![sas-storage-fe-proxy-service][sas-storage-fe-proxy-service]",
+      "pos": [
+        3304,
+        3365
+      ]
+    },
+    {
+      "content": "2\\.",
+      "pos": [
+        3367,
+        3370
+      ]
+    },
+    {
+      "content": "A lightweight service authenticates the client as needed and then generates a SAS.",
+      "pos": [
+        3371,
+        3453
+      ]
+    },
+    {
+      "content": "Once the client receives the SAS, they can access storage account resources directly with the permissions defined by the SAS and for the interval allowed by the SAS.",
+      "pos": [
+        3454,
+        3619
+      ]
+    },
+    {
+      "content": "The SAS mitigates the need for routing all data through the front-end proxy service.",
+      "pos": [
+        3620,
+        3704
+      ]
+    },
+    {
+      "content": "![sas-storage-provider-service][sas-storage-provider-service]",
+      "pos": [
+        3706,
+        3767
+      ]
+    },
+    {
+      "content": "Many real-world services may use a hybrid of these two approaches, depending on the scenario involved, with some data processed and validated via the front-end proxy while other data is saved and/or read directly using SAS.",
+      "pos": [
+        3769,
+        3992
+      ]
+    },
+    {
+      "content": "Additionally, you will need to use a SAS to authenticate the source object in a copy operation in certain scenarios:",
+      "pos": [
+        3994,
+        4110
+      ]
+    },
+    {
+      "content": "When you copy a blob to another blob that resides in a different storage account, you must use a SAS to authenticate the source blob.",
+      "pos": [
+        4114,
+        4247
+      ]
+    },
+    {
+      "content": "You can optionally use a SAS to authenticate the destination blob, so long as you are using version 2013-08-15 of the storage services or later.",
+      "pos": [
+        4248,
+        4392
+      ]
+    },
+    {
+      "content": "When you copy a file to another file that resides in a different storage account, you must use a SAS to authenticate the source file.",
+      "pos": [
+        4395,
+        4528
+      ]
+    },
+    {
+      "content": "You can optionally use a SAS to authenticate the destination file.",
+      "pos": [
+        4529,
+        4595
+      ]
+    },
+    {
+      "content": "When you copy a blob to a file, or a file to a blob, you must use a SAS to authenticate the source object, even if the source and destination objects reside within the same storage account.",
+      "pos": [
+        4598,
+        4787
+      ]
+    },
+    {
+      "content": "How a Shared Access Signature Works",
+      "pos": [
+        4792,
+        4827
+      ]
+    },
+    {
+      "content": "A shared access signature is a URI that points to a storage resource and includes a special set of query parameters that indicate how the resource may be accessed by the client.",
+      "pos": [
+        4832,
+        5009
+      ]
+    },
+    {
+      "content": "One of these parameters, the signature, is constructed from the SAS parameters and signed with the account key.",
+      "pos": [
+        5010,
+        5121
+      ]
+    },
+    {
+      "content": "This signature is used by Azure Storage to authenticate the SAS.",
+      "pos": [
+        5122,
+        5186
+      ]
+    },
+    {
+      "content": "A shared access signature has the following constraints that define it, each of which is represented as a parameter on the URI:",
+      "pos": [
+        5188,
+        5315
+      ]
+    },
+    {
+      "content": "The storage resource.",
+      "pos": [
+        5321,
+        5342
+      ]
+    },
+    {
+      "content": "Storage resources for which you can delegate access include:",
+      "pos": [
+        5345,
+        5405
+      ]
+    },
+    {
+      "content": "Containers and blobs",
+      "pos": [
+        5412,
+        5432
+      ]
+    },
+    {
+      "content": "File shares and files",
+      "pos": [
+        5439,
+        5460
+      ]
+    },
+    {
+      "content": "Queues",
+      "pos": [
+        5467,
+        5473
+      ]
+    },
+    {
+      "content": "Tables and ranges of table entities.",
+      "pos": [
+        5480,
+        5516
+      ]
+    },
+    {
+      "content": "Start time.",
+      "pos": [
+        5521,
+        5532
+      ]
+    },
+    {
+      "content": "This is the time at which the SAS becomes valid.",
+      "pos": [
+        5535,
+        5583
+      ]
+    },
+    {
+      "content": "The start time for a shared access signature is optional; if omitted, the SAS is effective immediately.",
+      "pos": [
+        5584,
+        5687
+      ]
+    },
+    {
+      "content": "Expiry time.",
+      "pos": [
+        5693,
+        5705
+      ]
+    },
+    {
+      "content": "This is the time after which the SAS is no longer valid.",
+      "pos": [
+        5708,
+        5764
+      ]
+    },
+    {
+      "content": "Best practices recommend that you either specify an expiry time for a SAS, or associate it with a stored access policy (see more below).",
+      "pos": [
+        5765,
+        5901
+      ]
+    },
+    {
+      "content": "Permissions.",
+      "pos": [
+        5906,
+        5918
+      ]
+    },
+    {
+      "content": "The permissions specified on the SAS indicate what operations the client can perform against the storage resource using the SAS.",
+      "pos": [
+        5921,
+        6049
+      ]
+    },
+    {
+      "content": "Here is an example of a SAS URI that provides read and write permissions to a blob.",
+      "pos": [
+        6052,
+        6135
+      ]
+    },
+    {
+      "content": "The table breaks down each part of the URI to understand how it contributes to the SAS:",
+      "pos": [
+        6136,
+        6223
+      ]
+    },
+    {
+      "content": "Name",
+      "pos": [
+        6429,
+        6433
+      ]
+    },
+    {
+      "content": "Link section",
+      "pos": [
+        6434,
+        6446
+      ]
+    },
+    {
+      "content": "Description",
+      "pos": [
+        6447,
+        6458
+      ]
+    },
+    {
+      "content": "Blob URI",
+      "pos": [
+        6471,
+        6479
+      ]
+    },
+    {
+      "content": "https://myaccount.blob.core.windows.net/sascontainer/sasblob.txt",
+      "pos": [
+        6480,
+        6544
+      ]
+    },
+    {
+      "content": "The address of the blob.",
+      "pos": [
+        6547,
+        6571
+      ]
+    },
+    {
+      "content": "Note that using HTTPS is highly recommended.",
+      "pos": [
+        6572,
+        6616
+      ]
+    },
+    {
+      "content": "Storage services version",
+      "pos": [
+        6617,
+        6641
+      ]
+    },
+    {
+      "content": "sv=2012-02-12",
+      "pos": [
+        6642,
+        6655
+      ]
+    },
+    {
+      "content": "For storage services version 2012-02-12 and later, this parameter indicates the version to use.",
+      "pos": [
+        6656,
+        6751
+      ]
+    },
+    {
+      "content": "Start time",
+      "pos": [
+        6752,
+        6762
+      ]
+    },
+    {
+      "content": "st=2013-04-29T22%3A18%3A26Z",
+      "pos": [
+        6763,
+        6790
+      ]
+    },
+    {
+      "content": "Specified in an ISO 8061 format.",
+      "pos": [
+        6791,
+        6823
+      ]
+    },
+    {
+      "content": "If you want the SAS to be valid immediately, omit the start time.",
+      "pos": [
+        6824,
+        6889
+      ]
+    },
+    {
+      "content": "Expiry time",
+      "pos": [
+        6890,
+        6901
+      ]
+    },
+    {
+      "content": "se=2013-04-30T02%3A23%3A26Z",
+      "pos": [
+        6902,
+        6929
+      ]
+    },
+    {
+      "content": "Specified in an ISO 8061 format.",
+      "pos": [
+        6930,
+        6962
+      ]
+    },
+    {
+      "content": "Resource",
+      "pos": [
+        6963,
+        6971
+      ]
+    },
+    {
+      "content": "sr=b",
+      "pos": [
+        6972,
+        6976
+      ]
+    },
+    {
+      "content": "The resource is a blob.",
+      "pos": [
+        6977,
+        7000
+      ]
+    },
+    {
+      "content": "Permissions",
+      "pos": [
+        7001,
+        7012
+      ]
+    },
+    {
+      "content": "sp=rw",
+      "pos": [
+        7013,
+        7018
+      ]
+    },
+    {
+      "content": "The permissions granted by the SAS include Read (r) and Write (w).",
+      "pos": [
+        7019,
+        7085
+      ]
+    },
+    {
+      "content": "Signature",
+      "pos": [
+        7086,
+        7095
+      ]
+    },
+    {
+      "content": "sig=Z%2FRHIX5Xcg0Mq2rqI3OlWTjEg2tYkboXr1P9ZUXDtkk%3D",
+      "pos": [
+        7096,
+        7148
+      ]
+    },
+    {
+      "content": "Used to authenticate access to the blob.",
+      "pos": [
+        7149,
+        7189
+      ]
+    },
+    {
+      "content": "The signature is an HMAC computed over a string-to-sign and key using the SHA256 algorithm, and then encoded using Base64 encoding.",
+      "pos": [
+        7190,
+        7321
+      ]
+    },
+    {
+      "content": "Controlling Shared Access Signatures with a Stored Access Policy",
+      "pos": [
+        7326,
+        7390
+      ]
+    },
+    {
+      "content": "A shared access signature can take one of two forms:",
+      "pos": [
+        7395,
+        7447
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Ad hoc SAS:<ept id=\"p1\">**</ept> When you create an ad hoc SAS, the start time, expiry time, and permissions for the SAS are all specified on the SAS URI (or implied, in the case where start time is omitted).",
+      "pos": [
+        7451,
+        7642
+      ]
+    },
+    {
+      "content": "This type of SAS may be created on a container, blob, file share, file, table, or queue.",
+      "pos": [
+        7643,
+        7731
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>SAS with stored access policy:<ept id=\"p1\">**</ept> A stored access policy is defined on a resource container - a blob container, table, queue, or file share - and can be used to manage constraints for one or more shared access signatures.",
+      "pos": [
+        7734,
+        7956
+      ]
+    },
+    {
+      "content": "When you associate a SAS with a stored access policy, the SAS inherits the constraints - the start time, expiry time, and permissions - defined for the stored access policy.",
+      "pos": [
+        7957,
+        8130
+      ]
+    },
+    {
+      "content": "The difference between the two forms is important for one key scenario: revocation.",
+      "pos": [
+        8132,
+        8215
+      ]
+    },
+    {
+      "content": "A SAS is a URL, so anyone who obtains the SAS can use it, regardless of who requested it to begin with.",
+      "pos": [
+        8216,
+        8319
+      ]
+    },
+    {
+      "content": "If a SAS is published publically, it can be used by anyone in the world.",
+      "pos": [
+        8320,
+        8392
+      ]
+    },
+    {
+      "content": "A SAS that is distributed is valid until one of four things happens:",
+      "pos": [
+        8393,
+        8461
+      ]
+    },
+    {
+      "content": "The expiry time specified on the SAS is reached.",
+      "pos": [
+        8467,
+        8515
+      ]
+    },
+    {
+      "content": "The expiry time specified on the stored access policy referenced by the SAS is reached (if a stored access policy is referenced, and if it specifies an expiry time).",
+      "pos": [
+        8520,
+        8685
+      ]
+    },
+    {
+      "content": "This can either occur because the interval elapses, or because you have modified the stored access policy to have an expiry time in the past, which is one way to revoke the SAS.",
+      "pos": [
+        8686,
+        8863
+      ]
+    },
+    {
+      "content": "The stored access policy referenced by the SAS is deleted, which is another way to revoke the SAS.",
+      "pos": [
+        8868,
+        8966
+      ]
+    },
+    {
+      "content": "Note that if you recreate the stored access policy with exactly the same name, all existing SAS tokens will again be valid according to the permissions associated with that stored access policy (assuming that the expiry time on the SAS has not passed).",
+      "pos": [
+        8967,
+        9219
+      ]
+    },
+    {
+      "content": "If you are intending to revoke the SAS, be sure to use a different name if you recreate the access policy with an expiry time in the future.",
+      "pos": [
+        9220,
+        9360
+      ]
+    },
+    {
+      "content": "The account key that was used to create the SAS is regenerated.",
+      "pos": [
+        9365,
+        9428
+      ]
+    },
+    {
+      "content": "Note that doing this will cause all application components using that account key to fail to authenticate until they are updated to use either the other valid account key or the newly regenerated account key.",
+      "pos": [
+        9430,
+        9638
+      ]
+    },
+    {
+      "content": "Best Practices for Using Shared Access Signatures",
+      "pos": [
+        9644,
+        9693
+      ]
+    },
+    {
+      "content": "When you use shared access signatures in your applications, you need to be aware of two potential risks:",
+      "pos": [
+        9698,
+        9802
+      ]
+    },
+    {
+      "content": "If a SAS is leaked, it can be used by anyone who obtains it, which can potentially compromise your storage account.",
+      "pos": [
+        9806,
+        9921
+      ]
+    },
+    {
+      "content": "If a SAS provided to a client application expires and the application is unable to retrieve a new SAS from your service, then the application's functionality may be hindered.",
+      "pos": [
+        9924,
+        10098
+      ]
+    },
+    {
+      "content": "The following recommendations for using shared access signatures will help balance these risks:",
+      "pos": [
+        10102,
+        10197
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Always use HTTPS<ept id=\"p1\">**</ept> to create a SAS or to distribute a SAS.",
+      "pos": [
+        10202,
+        10262
+      ]
+    },
+    {
+      "content": "If a SAS is passed over HTTP and intercepted, an attacker performing a man-in-the-middle attack will be able to read the SAS and then use it just as the intended user could have, potentially compromising sensitive data or allowing for data corruption by the malicious user.",
+      "pos": [
+        10264,
+        10537
+      ]
+    },
+    {
+      "content": "Reference stored access policies where possible.",
+      "pos": [
+        10543,
+        10591
+      ]
+    },
+    {
+      "content": "Stored access policies give you the option to revoke permissions without having to regenerate the storage account keys.",
+      "pos": [
+        10594,
+        10713
+      ]
+    },
+    {
+      "content": "Set the expiration on these to be a very long time (or infinite)  and make sure that it is regularly updated to move it farther into the future.",
+      "pos": [
+        10715,
+        10859
+      ]
+    },
+    {
+      "content": "Use near-term expiration times on an ad hoc SAS.",
+      "pos": [
+        10865,
+        10913
+      ]
+    },
+    {
+      "content": "In this way, even if a SAS is compromised unknowingly, it will only be viable for a short time duration.",
+      "pos": [
+        10916,
+        11020
+      ]
+    },
+    {
+      "content": "This practice is especially important if you cannot reference a stored access policy.",
+      "pos": [
+        11021,
+        11106
+      ]
+    },
+    {
+      "content": "This practice also helps limit the amount of data that can be written to a blob by limiting the time available to upload to it.",
+      "pos": [
+        11107,
+        11234
+      ]
+    },
+    {
+      "content": "Have clients automatically renew the SAS if necessary.",
+      "pos": [
+        11240,
+        11294
+      ]
+    },
+    {
+      "content": "Clients should renew the SAS well before the expected expiration, in order to allow time for retries if the service providing the SAS is unavailable.",
+      "pos": [
+        11297,
+        11446
+      ]
+    },
+    {
+      "content": "If your SAS is meant to be used for a small number of immediate, short-lived operations, which are expected to be completed within the expiration time given, then this may not be necessary, as the SAS is not expected be renewed.",
+      "pos": [
+        11448,
+        11676
+      ]
+    },
+    {
+      "content": "However, if you have client that is routinely making requests via SAS, then the possibility of expiration comes into play.",
+      "pos": [
+        11678,
+        11800
+      ]
+    },
+    {
+      "content": "The key consideration is to balance the need for the SAS to be short-lived (as stated above) with the need to ensure that the client is requesting renewal early enough to avoid disruption due to the SAS expiring prior to successful renewal.",
+      "pos": [
+        11802,
+        12042
+      ]
+    },
+    {
+      "content": "Be careful with SAS start time.",
+      "pos": [
+        12048,
+        12079
+      ]
+    },
+    {
+      "content": "If you set the start time for a SAS to <bpt id=\"p1\">**</bpt>now<ept id=\"p1\">**</ept>, then due to clock skew (differences in current time according to different machines), failures may be observed intermittently for the first few minutes.",
+      "pos": [
+        12082,
+        12282
+      ]
+    },
+    {
+      "content": "In general, set the start time to be at least 15 minutes ago, or don't set it at all, which will make it valid immediately in all cases.",
+      "pos": [
+        12284,
+        12420
+      ]
+    },
+    {
+      "content": "The same generally applies to expiry time as well - remember that you may observe up to 15 minutes of clock skew in either direction on any request.",
+      "pos": [
+        12422,
+        12570
+      ]
+    },
+    {
+      "content": "Note for clients using a REST version prior to 2012-02-12, the maximum duration for a SAS that does not reference a stored access policy is 1 hour, and any policies specifying longer term than that will fail.",
+      "pos": [
+        12572,
+        12780
+      ]
+    },
+    {
+      "content": "Be specific with the resource to be accessed.",
+      "pos": [
+        12787,
+        12832
+      ]
+    },
+    {
+      "content": "A typical security best practice is to provide a user with the minimum required privileges.",
+      "pos": [
+        12835,
+        12926
+      ]
+    },
+    {
+      "content": "If a user only needs read access to a single entity, then grant them read access to that single entity, and not read/write/delete access to all entities.",
+      "pos": [
+        12928,
+        13081
+      ]
+    },
+    {
+      "content": "This also helps mitigate the threat of the SAS being compromised, as the SAS has less power in the hands of an attacker.",
+      "pos": [
+        13083,
+        13203
+      ]
+    },
+    {
+      "content": "Understand that your account will be billed for any usage, including that done with SAS.",
+      "pos": [
+        13210,
+        13298
+      ]
+    },
+    {
+      "content": "If you provide write access to a blob, a user may choose to upload a 200GB blob.",
+      "pos": [
+        13301,
+        13381
+      ]
+    },
+    {
+      "content": "If you've given them read access as well, they may choose do download it 10 times, incurring 2TB in egress costs for you.",
+      "pos": [
+        13383,
+        13504
+      ]
+    },
+    {
+      "content": "Again, provide limited permissions, to help mitigate the potential of malicious users.",
+      "pos": [
+        13506,
+        13592
+      ]
+    },
+    {
+      "content": "Use short-lived SAS to reduce this threat (but be mindful of clock skew on the end time).",
+      "pos": [
+        13594,
+        13683
+      ]
+    },
+    {
+      "content": "Validate data written using SAS.",
+      "pos": [
+        13690,
+        13722
+      ]
+    },
+    {
+      "content": "When a client application writes data to your storage account, keep in mind that there can be problems with that data.",
+      "pos": [
+        13725,
+        13843
+      ]
+    },
+    {
+      "content": "If your application requires that that data be validated or authorized before it is ready to use, you should perform this validation after the data is written and before it is used by your application.",
+      "pos": [
+        13844,
+        14045
+      ]
+    },
+    {
+      "content": "This practice also protects against corrupt or malicious data being written to your account, either by a user who properly acquired the SAS, or by a user exploiting a leaked SAS.",
+      "pos": [
+        14046,
+        14224
+      ]
+    },
+    {
+      "content": "Don't always use SAS.",
+      "pos": [
+        14230,
+        14251
+      ]
+    },
+    {
+      "content": "Sometimes the risks associated with a particular operation against your storage account outweigh the benefits of SAS.",
+      "pos": [
+        14254,
+        14371
+      ]
+    },
+    {
+      "content": "For such operations, create a middle-tier service that writes to your storage account after performing business rule validation, authentication, and auditing.",
+      "pos": [
+        14373,
+        14531
+      ]
+    },
+    {
+      "content": "Also, sometimes it's simpler to manage access in other ways.",
+      "pos": [
+        14532,
+        14592
+      ]
+    },
+    {
+      "content": "For example, if you want to make all blobs in a container publically readable, you can make the container Public, rather than providing a SAS to every client for access.",
+      "pos": [
+        14593,
+        14762
+      ]
+    },
+    {
+      "content": "Use Storage Analytics to monitor your application.",
+      "pos": [
+        14769,
+        14819
+      ]
+    },
+    {
+      "content": "You can use logging and metrics to observe any spike in authentication failures due to an outage in your SAS provider service or or to the inadvertent removal of a stored access policy.",
+      "pos": [
+        14822,
+        15007
+      ]
+    },
+    {
+      "content": "See the <bpt id=\"p1\">[</bpt>Azure Storage Team Blog<ept id=\"p1\">](http://blogs.msdn.com/b/windowsazurestorage/archive/2011/08/03/windows-azure-storage-logging-using-logs-to-track-storage-requests.aspx)</ept> for additional information.",
+      "pos": [
+        15008,
+        15205
+      ]
+    },
+    {
+      "content": "Conclusion",
+      "pos": [
+        15210,
+        15220
+      ]
+    },
+    {
+      "content": "Shared access signatures are useful for providing limited permissions to your storage account to clients that should not have the account key.",
+      "pos": [
+        15225,
+        15367
+      ]
+    },
+    {
+      "content": "As such, they are a vital part of the security model for any application using Azure Storage.",
+      "pos": [
+        15369,
+        15462
+      ]
+    },
+    {
+      "content": "If you follow the best practices listed here, you can use SAS to provide greater flexibility of access to resources in your storage account, without compromising the security of your application.",
+      "pos": [
+        15464,
+        15659
+      ]
+    },
+    {
+      "content": "Next Steps",
+      "pos": [
+        15664,
+        15674
+      ]
+    },
+    {
+      "content": "Shared Access Signatures, Part 2: Create and Use a SAS with the Blob Service",
+      "pos": [
+        15682,
+        15758
+      ]
+    },
+    {
+      "content": "How to use Azure File storage with PowerShell and .NET",
+      "pos": [
+        15813,
+        15867
+      ]
+    },
+    {
+      "content": "Manage Access to Azure Storage Resources",
+      "pos": [
+        15908,
+        15948
+      ]
+    },
+    {
+      "content": "Delegating Access with a Shared Access Signature (REST API)",
+      "pos": [
+        15992,
+        16051
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt>Introducing Table and Queue SAS<ept id=\"p1\">](http://blogs.msdn.com/b/windowsazurestorage/archive/2012/06/12/introducing-table-sas-shared-access-signature-queue-sas-and-update-to-blob-sas.aspx)</ept>",
+      "pos": [
+        16110,
+        16291
+      ]
+    },
+    {
+      "content": "[sas-storage-fe-proxy-service]: ./media/storage-dotnet-shared-access-signature-part-1/sas-storage-fe-proxy-service.png",
+      "pos": [
+        16292,
+        16410
+      ]
+    },
+    {
+      "content": "[sas-storage-provider-service]: ./media/storage-dotnet-shared-access-signature-part-1/sas-storage-provider-service.png",
+      "pos": [
+        16411,
+        16529
+      ]
+    }
+  ],
+  "content": "<properties \n    pageTitle=\"Shared Access Signatures: Understanding the SAS Model | Microsoft Azure\" \n    description=\"Learn about delegating access to Azure Storage resources, including blobs, queues, tables, and files, using shared access signatures (SAS). With shared access signatures, you can protect your storage account key while granting access to resources in your account to other users. You can control the permissions that you grant and the interval over which the SAS is valid. If you also establish a stored access policy, you can revoke the SAS should you fear your account security is compromised.\" \n    services=\"storage\" \n    documentationCenter=\"\" \n    authors=\"tamram\" \n    manager=\"adinah\" \n    editor=\"\"/>\n\n<tags \n    ms.service=\"storage\" \n    ms.workload=\"storage\" \n    ms.tgt_pltfrm=\"na\" \n    ms.devlang=\"dotnet\" \n    ms.topic=\"article\" \n    ms.date=\"08/04/2015\" \n    ms.author=\"tamram\"/>\n\n\n\n# Shared Access Signatures, Part 1: Understanding the SAS Model\n\n## Overview\n\nUsing a shared access signature (SAS) is a powerful way to grant limited access to objects in your storage account to other clients, without having to expose your account key. In Part 1 of this tutorial on shared access signatures, we'll provide an overview of the SAS model and review SAS best practices. [Part 2](storage-dotnet-shared-access-signature-part-2.md) of the tutorial walks you through the process of creating shared access signatures with the Blob service.\n\n## What Is a Shared Access Signature? ##\n\nA shared access signature provides delegated access to resources in your storage account. This means that you can grant a client limited permissions to objects in your storage account for a specified period of time and with a specified set of permissions, without having to share your account access keys. The SAS is a URI that encompasses in its query parameters all of the information necessary for authenticated access to a storage resource. To access storage resources with the SAS, the client only needs to pass in the SAS to the appropriate constructor or method.\n\n## When Should You Use a Shared Access Signature? ##\n\nYou can use a SAS when you want to provide access to resources in your storage account to a client that can't be trusted with the account key. Your storage account keys include both a primary and secondary key, both of which grant administrative access to your account and all of the resources in it. Exposing either of your account keys opens your account to the possibility of malicious or negligent use. Shared access signatures provide a safe alternative that allows other clients to read, write, and delete data in your storage account according to the permissions you've granted, and without need for the account key.\n\nA common scenario where a SAS is useful is a service where users read and write their own data to your storage account. In a scenario where a storage account stores user data, there are two typical design patterns:\n\n\n1\\. Clients upload and download data via a front-end proxy service, which performs authentication. This front-end proxy service has the advantage of allowing validation of business rules, but for large amounts of data or high-volume transactions, creating a service that can scale to match demand may be expensive or difficult.\n\n![sas-storage-fe-proxy-service][sas-storage-fe-proxy-service]\n\n2\\. A lightweight service authenticates the client as needed and then generates a SAS. Once the client receives the SAS, they can access storage account resources directly with the permissions defined by the SAS and for the interval allowed by the SAS. The SAS mitigates the need for routing all data through the front-end proxy service.\n\n![sas-storage-provider-service][sas-storage-provider-service]\n\nMany real-world services may use a hybrid of these two approaches, depending on the scenario involved, with some data processed and validated via the front-end proxy while other data is saved and/or read directly using SAS.\n\nAdditionally, you will need to use a SAS to authenticate the source object in a copy operation in certain scenarios:\n\n- When you copy a blob to another blob that resides in a different storage account, you must use a SAS to authenticate the source blob. You can optionally use a SAS to authenticate the destination blob, so long as you are using version 2013-08-15 of the storage services or later.\n- When you copy a file to another file that resides in a different storage account, you must use a SAS to authenticate the source file. You can optionally use a SAS to authenticate the destination file.\n- When you copy a blob to a file, or a file to a blob, you must use a SAS to authenticate the source object, even if the source and destination objects reside within the same storage account.\n\n## How a Shared Access Signature Works ##\n\nA shared access signature is a URI that points to a storage resource and includes a special set of query parameters that indicate how the resource may be accessed by the client. One of these parameters, the signature, is constructed from the SAS parameters and signed with the account key. This signature is used by Azure Storage to authenticate the SAS.\n\nA shared access signature has the following constraints that define it, each of which is represented as a parameter on the URI:\n\n- **The storage resource.** Storage resources for which you can delegate access include:\n    - Containers and blobs\n    - File shares and files\n    - Queues\n    - Tables and ranges of table entities.\n- **Start time.** This is the time at which the SAS becomes valid. The start time for a shared access signature is optional; if omitted, the SAS is effective immediately. \n- **Expiry time.** This is the time after which the SAS is no longer valid. Best practices recommend that you either specify an expiry time for a SAS, or associate it with a stored access policy (see more below).\n- **Permissions.** The permissions specified on the SAS indicate what operations the client can perform against the storage resource using the SAS. \n\nHere is an example of a SAS URI that provides read and write permissions to a blob. The table breaks down each part of the URI to understand how it contributes to the SAS:\n\n    https://myaccount.blob.core.windows.net/sascontainer/sasblob.txt?sv=2012-02-12&st=2013-04-29T22%3A18%3A26Z&se=2013-04-30T02%3A23%3A26Z&sr=b&sp=rw&sig=Z%2FRHIX5Xcg0Mq2rqI3OlWTjEg2tYkboXr1P9ZUXDtkk%3D\n\nName|Link section|Description\n---|---|---\nBlob URI|https://myaccount.blob.core.windows.net/sascontainer/sasblob.txt | The address of the blob. Note that using HTTPS is highly recommended.\nStorage services version|sv=2012-02-12|For storage services version 2012-02-12 and later, this parameter indicates the version to use.\nStart time|st=2013-04-29T22%3A18%3A26Z|Specified in an ISO 8061 format. If you want the SAS to be valid immediately, omit the start time.\nExpiry time|se=2013-04-30T02%3A23%3A26Z|Specified in an ISO 8061 format.\nResource|sr=b|The resource is a blob.\nPermissions|sp=rw|The permissions granted by the SAS include Read (r) and Write (w).\nSignature|sig=Z%2FRHIX5Xcg0Mq2rqI3OlWTjEg2tYkboXr1P9ZUXDtkk%3D|Used to authenticate access to the blob. The signature is an HMAC computed over a string-to-sign and key using the SHA256 algorithm, and then encoded using Base64 encoding.\n\n## Controlling Shared Access Signatures with a Stored Access Policy ##\n\nA shared access signature can take one of two forms:\n\n- **Ad hoc SAS:** When you create an ad hoc SAS, the start time, expiry time, and permissions for the SAS are all specified on the SAS URI (or implied, in the case where start time is omitted). This type of SAS may be created on a container, blob, file share, file, table, or queue.\n- **SAS with stored access policy:** A stored access policy is defined on a resource container - a blob container, table, queue, or file share - and can be used to manage constraints for one or more shared access signatures. When you associate a SAS with a stored access policy, the SAS inherits the constraints - the start time, expiry time, and permissions - defined for the stored access policy.\n\nThe difference between the two forms is important for one key scenario: revocation. A SAS is a URL, so anyone who obtains the SAS can use it, regardless of who requested it to begin with. If a SAS is published publically, it can be used by anyone in the world. A SAS that is distributed is valid until one of four things happens:\n\n1.  The expiry time specified on the SAS is reached.\n2.  The expiry time specified on the stored access policy referenced by the SAS is reached (if a stored access policy is referenced, and if it specifies an expiry time). This can either occur because the interval elapses, or because you have modified the stored access policy to have an expiry time in the past, which is one way to revoke the SAS.\n3.  The stored access policy referenced by the SAS is deleted, which is another way to revoke the SAS. Note that if you recreate the stored access policy with exactly the same name, all existing SAS tokens will again be valid according to the permissions associated with that stored access policy (assuming that the expiry time on the SAS has not passed). If you are intending to revoke the SAS, be sure to use a different name if you recreate the access policy with an expiry time in the future.\n4.  The account key that was used to create the SAS is regenerated.  Note that doing this will cause all application components using that account key to fail to authenticate until they are updated to use either the other valid account key or the newly regenerated account key.\n \n## Best Practices for Using Shared Access Signatures ##\n\nWhen you use shared access signatures in your applications, you need to be aware of two potential risks:\n\n- If a SAS is leaked, it can be used by anyone who obtains it, which can potentially compromise your storage account.\n- If a SAS provided to a client application expires and the application is unable to retrieve a new SAS from your service, then the application's functionality may be hindered.  \n\nThe following recommendations for using shared access signatures will help balance these risks:\n\n1. **Always use HTTPS** to create a SAS or to distribute a SAS.  If a SAS is passed over HTTP and intercepted, an attacker performing a man-in-the-middle attack will be able to read the SAS and then use it just as the intended user could have, potentially compromising sensitive data or allowing for data corruption by the malicious user.\n2. **Reference stored access policies where possible.** Stored access policies give you the option to revoke permissions without having to regenerate the storage account keys.  Set the expiration on these to be a very long time (or infinite)  and make sure that it is regularly updated to move it farther into the future.\n3. **Use near-term expiration times on an ad hoc SAS.** In this way, even if a SAS is compromised unknowingly, it will only be viable for a short time duration. This practice is especially important if you cannot reference a stored access policy. This practice also helps limit the amount of data that can be written to a blob by limiting the time available to upload to it.\n4. **Have clients automatically renew the SAS if necessary.** Clients should renew the SAS well before the expected expiration, in order to allow time for retries if the service providing the SAS is unavailable.  If your SAS is meant to be used for a small number of immediate, short-lived operations, which are expected to be completed within the expiration time given, then this may not be necessary, as the SAS is not expected be renewed.  However, if you have client that is routinely making requests via SAS, then the possibility of expiration comes into play.  The key consideration is to balance the need for the SAS to be short-lived (as stated above) with the need to ensure that the client is requesting renewal early enough to avoid disruption due to the SAS expiring prior to successful renewal.\n5. **Be careful with SAS start time.** If you set the start time for a SAS to **now**, then due to clock skew (differences in current time according to different machines), failures may be observed intermittently for the first few minutes.  In general, set the start time to be at least 15 minutes ago, or don't set it at all, which will make it valid immediately in all cases.  The same generally applies to expiry time as well - remember that you may observe up to 15 minutes of clock skew in either direction on any request.  Note for clients using a REST version prior to 2012-02-12, the maximum duration for a SAS that does not reference a stored access policy is 1 hour, and any policies specifying longer term than that will fail.\n6.  **Be specific with the resource to be accessed.** A typical security best practice is to provide a user with the minimum required privileges.  If a user only needs read access to a single entity, then grant them read access to that single entity, and not read/write/delete access to all entities.  This also helps mitigate the threat of the SAS being compromised, as the SAS has less power in the hands of an attacker.\n7.  **Understand that your account will be billed for any usage, including that done with SAS.** If you provide write access to a blob, a user may choose to upload a 200GB blob.  If you've given them read access as well, they may choose do download it 10 times, incurring 2TB in egress costs for you.  Again, provide limited permissions, to help mitigate the potential of malicious users.  Use short-lived SAS to reduce this threat (but be mindful of clock skew on the end time).\n8.  **Validate data written using SAS.** When a client application writes data to your storage account, keep in mind that there can be problems with that data. If your application requires that that data be validated or authorized before it is ready to use, you should perform this validation after the data is written and before it is used by your application. This practice also protects against corrupt or malicious data being written to your account, either by a user who properly acquired the SAS, or by a user exploiting a leaked SAS.\n9. **Don't always use SAS.** Sometimes the risks associated with a particular operation against your storage account outweigh the benefits of SAS.  For such operations, create a middle-tier service that writes to your storage account after performing business rule validation, authentication, and auditing. Also, sometimes it's simpler to manage access in other ways. For example, if you want to make all blobs in a container publically readable, you can make the container Public, rather than providing a SAS to every client for access.\n10. **Use Storage Analytics to monitor your application.** You can use logging and metrics to observe any spike in authentication failures due to an outage in your SAS provider service or or to the inadvertent removal of a stored access policy. See the [Azure Storage Team Blog](http://blogs.msdn.com/b/windowsazurestorage/archive/2011/08/03/windows-azure-storage-logging-using-logs-to-track-storage-requests.aspx) for additional information.\n\n## Conclusion ##\n\nShared access signatures are useful for providing limited permissions to your storage account to clients that should not have the account key.  As such, they are a vital part of the security model for any application using Azure Storage.  If you follow the best practices listed here, you can use SAS to provide greater flexibility of access to resources in your storage account, without compromising the security of your application.\n\n## Next Steps ##\n\n- [Shared Access Signatures, Part 2: Create and Use a SAS with the Blob Service](storage-dotnet-shared-access-signature-part-2.md)\n- [How to use Azure File storage with PowerShell and .NET](storage-dotnet-how-to-use-files.md)\n- [Manage Access to Azure Storage Resources](storage-manage-access-to-resources.md)\n- [Delegating Access with a Shared Access Signature (REST API)](http://msdn.microsoft.com/library/azure/ee395415.aspx)\n- [Introducing Table and Queue SAS](http://blogs.msdn.com/b/windowsazurestorage/archive/2012/06/12/introducing-table-sas-shared-access-signature-queue-sas-and-update-to-blob-sas.aspx)\n[sas-storage-fe-proxy-service]: ./media/storage-dotnet-shared-access-signature-part-1/sas-storage-fe-proxy-service.png\n[sas-storage-provider-service]: ./media/storage-dotnet-shared-access-signature-part-1/sas-storage-provider-service.png\n\n\n \n"
+}

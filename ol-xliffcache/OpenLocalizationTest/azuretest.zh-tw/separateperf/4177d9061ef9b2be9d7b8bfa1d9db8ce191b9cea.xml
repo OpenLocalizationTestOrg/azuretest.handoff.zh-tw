@@ -1,0 +1,355 @@
+{
+  "nodes": [
+    {
+      "content": "Microsoft Azure Service Fabric How to communicate with services",
+      "pos": [
+        26,
+        89
+      ]
+    },
+    {
+      "content": "This article describes how you can connect to and communicate with services in Service Fabric applications.",
+      "pos": [
+        107,
+        214
+      ]
+    },
+    {
+      "content": "Communicating with services",
+      "pos": [
+        512,
+        539
+      ]
+    },
+    {
+      "content": "In the microservices world the overall solution is composed of many different services where each one performs a specialized task.",
+      "pos": [
+        540,
+        670
+      ]
+    },
+    {
+      "content": "These microservices communicate with each other to enable the end-end workflow.",
+      "pos": [
+        671,
+        750
+      ]
+    },
+    {
+      "content": "There are also client applications that connect to and communicate with services.",
+      "pos": [
+        751,
+        832
+      ]
+    },
+    {
+      "content": "This document discusses how Service Fabric makes it easy for you to setup communication with services that you write with Service Fabric.",
+      "pos": [
+        833,
+        970
+      ]
+    },
+    {
+      "content": "Key concepts",
+      "pos": [
+        975,
+        987
+      ]
+    },
+    {
+      "content": "These are some of the key concepts that you need to be aware of as you setup communication to services.",
+      "pos": [
+        988,
+        1091
+      ]
+    },
+    {
+      "content": "Communication is represented as Client-Server",
+      "pos": [
+        1096,
+        1141
+      ]
+    },
+    {
+      "content": "Service Fabric Communication APIs represent client-service type of interaction, even in the case where it is between two services running in the same cluster.",
+      "pos": [
+        1142,
+        1300
+      ]
+    },
+    {
+      "content": "A target service that will be connected to from a client or another service acts as a server and listens for incoming requests.",
+      "pos": [
+        1301,
+        1428
+      ]
+    },
+    {
+      "content": "The client, which can be just another service in the cluster, connects to the server and makes calls to it.",
+      "pos": [
+        1429,
+        1536
+      ]
+    },
+    {
+      "content": "Movement of services",
+      "pos": [
+        1541,
+        1561
+      ]
+    },
+    {
+      "content": "In a distributed system the service instances that you run may move from one machine to another over time for various reasons such as load balancing when configured with load metrics for resource balancing or due to upgrades, failovers, scale-out, and other various situations.",
+      "pos": [
+        1562,
+        1839
+      ]
+    },
+    {
+      "content": "The impact of this is that the endpoint addresses of a service instance can change and to setup communication with the service instance the following loop needs to be executed.",
+      "pos": [
+        1840,
+        2016
+      ]
+    },
+    {
+      "content": "These details are abstracted from you if you use the Communication APIs provided by Service Fabric.",
+      "pos": [
+        2017,
+        2116
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Resolve<ept id=\"p1\">**</ept>: All services instances in Service Fabric have unique URIs, for example \"fabric:/MyApplication/MyService\" and these URIs do not change over time.",
+      "pos": [
+        2120,
+        2277
+      ]
+    },
+    {
+      "content": "Each service instance also exposes endpoints which can change when service instances are moved.",
+      "pos": [
+        2278,
+        2373
+      ]
+    },
+    {
+      "content": "This is analogous to websites which have constant URLs but the IP Address may change.",
+      "pos": [
+        2374,
+        2459
+      ]
+    },
+    {
+      "content": "And similar to the DNS in the world wide web which resolves website URLs to IP Addresses the Service Fabric platform also has a system service that resolves the URIs to the endpoints.",
+      "pos": [
+        2460,
+        2643
+      ]
+    },
+    {
+      "content": "This step involves resolving the URI of the service instance to an endpoint.",
+      "pos": [
+        2644,
+        2720
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Connect<ept id=\"p1\">**</ept>: Once the Service URI has been resolved to endpoint addresses the next step is to attempt a connection with that service.",
+      "pos": [
+        2724,
+        2857
+      ]
+    },
+    {
+      "content": "This connection may fail if the endpoint address has changed due to a service movement, which, for example, may have been caused by a machine failure or due to load balancing.",
+      "pos": [
+        2858,
+        3033
+      ]
+    },
+    {
+      "pos": [
+        3037,
+        3196
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Retry<ept id=\"p1\">**</ept>: If the connection attempt fails the preceding resolve and connect steps need to be retried and this cycle is repeated until the connection succeeds."
+    },
+    {
+      "content": "Deciding the Communication API to use",
+      "pos": [
+        3201,
+        3238
+      ]
+    },
+    {
+      "content": "As part of Service Fabric we provide a few different options for Communication APIs and the decision for which one will work best for you depends on the choice of the programming model, communication framework and programming language that your services are written in.",
+      "pos": [
+        3239,
+        3508
+      ]
+    },
+    {
+      "content": "Communication for Reliable Actors",
+      "pos": [
+        3513,
+        3546
+      ]
+    },
+    {
+      "content": "For services written using Reliable Actors API all the communication details are abstracted and the communication happens as method calls on the ActorProxy and you can stop reading here.",
+      "pos": [
+        3547,
+        3733
+      ]
+    },
+    {
+      "content": "Communication options for Reliable Services",
+      "pos": [
+        3739,
+        3782
+      ]
+    },
+    {
+      "content": "There are a couple of different options if your service was written using Reliable Services API.",
+      "pos": [
+        3783,
+        3879
+      ]
+    },
+    {
+      "content": "Your choice of a communication protocol will guide as to what Service Fabric communication APIs you may use.",
+      "pos": [
+        3880,
+        3988
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>There isn't a specific communication protocol that I need to use and I want something up and running quickly<ept id=\"p1\">**</ept>: If you don't have a particular choice of communication framework then the ideal option for you is to use the <bpt id=\"p2\">[</bpt>Default stack<ept id=\"p2\">](service-fabric-reliable-services-communication-default.md)</ept> that allows for a similar model as the Actor communication model.",
+      "pos": [
+        3992,
+        4355
+      ]
+    },
+    {
+      "content": "This is the easiest and fastest way to get started with service communication.",
+      "pos": [
+        4356,
+        4434
+      ]
+    },
+    {
+      "content": "It provides strongly typed RPC communication that abstracts most of the communication details away so that invoking a method on a remote service in your code looks like calling a method on a local object instance.",
+      "pos": [
+        4435,
+        4648
+      ]
+    },
+    {
+      "content": "These classes abstract the resolution, connection, retry and error handling while setting up the communication channel and allows for a method call based communication model.",
+      "pos": [
+        4649,
+        4823
+      ]
+    },
+    {
+      "content": "For this the <ph id=\"ph1\">`ServiceCommunicationListener`</ph> class is to be used for the server side and the <ph id=\"ph2\">`ServiceProxy`</ph> class on the client side of the communication.",
+      "pos": [
+        4824,
+        4977
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>HTTP<ept id=\"p1\">**</ept>: To leverage the flexibility that HTTP based communication provides you can use Service Fabric communication APIs that allow the communication mechanism to be defined while resolution, connection and retry logic is still abstracted from you.",
+      "pos": [
+        4981,
+        5231
+      ]
+    },
+    {
+      "content": "For example you can use Web API for specifying the communication mechanism and leverage the <bpt id=\"p1\">[</bpt><ph id=\"ph1\">`ICommunicationClient`</ph> and <ph id=\"ph2\">`ServicePartitionClient`</ph> classes<ept id=\"p1\">](service-fabric-reliable-services-communication.md)</ept> to setup communication.",
+      "pos": [
+        5232,
+        5460
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>WCF<ept id=\"p1\">**</ept>: If you have existing code that uses WCF as your communication framework then you can use the WcfCommunicationListener for the server side, and WcfCommunicationClient and ServicePartitionClient classes for the client.",
+      "pos": [
+        5463,
+        5688
+      ]
+    },
+    {
+      "content": "For more details see <bpt id=\"p1\">[</bpt>this article<ept id=\"p1\">](service-fabric-reliable-services-communication-wcf.md)</ept>.",
+      "pos": [
+        5689,
+        5780
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Other communication frameworks including custom  protocols<ept id=\"p1\">**</ept>: If you are planning on using any other communication framework including custom communication protocols there are Service Fabric communication APIs which you can plugin your communication stack into while all the work to discover and connect is abstracted from you.",
+      "pos": [
+        5784,
+        6113
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt>this article<ept id=\"p1\">](service-fabric-reliable-services-communication.md)</ept> for more details.",
+      "pos": [
+        6114,
+        6201
+      ]
+    },
+    {
+      "content": "Communication between services written in different programming languages",
+      "pos": [
+        6207,
+        6280
+      ]
+    },
+    {
+      "content": "All ServiceFabric communication APIs are currently only available in C# so if have a service that is written in some other programming language such as Java or Node.JS then you will have to write your own communication mechanism.",
+      "pos": [
+        6281,
+        6510
+      ]
+    },
+    {
+      "content": "Next Steps",
+      "pos": [
+        6515,
+        6525
+      ]
+    },
+    {
+      "content": "Default communication stack provided by Reliable Services Framework",
+      "pos": [
+        6529,
+        6596
+      ]
+    },
+    {
+      "content": "Reliable Services communication model",
+      "pos": [
+        6661,
+        6698
+      ]
+    },
+    {
+      "content": "Getting Started with Microsoft Azure Service Fabric Web API services with OWIN self-host",
+      "pos": [
+        6754,
+        6842
+      ]
+    },
+    {
+      "content": "WCF based communication stack for Reliable Services",
+      "pos": [
+        6905,
+        6956
+      ]
+    }
+  ],
+  "content": "<properties\n   pageTitle=\"Microsoft Azure Service Fabric How to communicate with services\"\n   description=\"This article describes how you can connect to and communicate with services in Service Fabric applications.\"\n   services=\"service-fabric\"\n   documentationCenter=\".net\"\n   authors=\"kunaldsingh\"\n   manager=\"timlt\"\n   editor=\"\"/>\n\n<tags\n   ms.service=\"service-fabric\"\n   ms.devlang=\"dotnet\"\n   ms.topic=\"article\"\n   ms.tgt_pltfrm=\"NA\"\n   ms.workload=\"NA\"\n   ms.date=\"08/21/2015\"\n   ms.author=\"kunalds\"/>\n\n\n# Communicating with services\nIn the microservices world the overall solution is composed of many different services where each one performs a specialized task. These microservices communicate with each other to enable the end-end workflow. There are also client applications that connect to and communicate with services. This document discusses how Service Fabric makes it easy for you to setup communication with services that you write with Service Fabric.\n\n## Key concepts\nThese are some of the key concepts that you need to be aware of as you setup communication to services.\n### Communication is represented as Client-Server\nService Fabric Communication APIs represent client-service type of interaction, even in the case where it is between two services running in the same cluster. A target service that will be connected to from a client or another service acts as a server and listens for incoming requests. The client, which can be just another service in the cluster, connects to the server and makes calls to it.\n### Movement of services\nIn a distributed system the service instances that you run may move from one machine to another over time for various reasons such as load balancing when configured with load metrics for resource balancing or due to upgrades, failovers, scale-out, and other various situations. The impact of this is that the endpoint addresses of a service instance can change and to setup communication with the service instance the following loop needs to be executed. These details are abstracted from you if you use the Communication APIs provided by Service Fabric.\n\n* **Resolve**: All services instances in Service Fabric have unique URIs, for example \"fabric:/MyApplication/MyService\" and these URIs do not change over time. Each service instance also exposes endpoints which can change when service instances are moved. This is analogous to websites which have constant URLs but the IP Address may change. And similar to the DNS in the world wide web which resolves website URLs to IP Addresses the Service Fabric platform also has a system service that resolves the URIs to the endpoints. This step involves resolving the URI of the service instance to an endpoint.\n\n* **Connect**: Once the Service URI has been resolved to endpoint addresses the next step is to attempt a connection with that service. This connection may fail if the endpoint address has changed due to a service movement, which, for example, may have been caused by a machine failure or due to load balancing.\n\n* **Retry**: If the connection attempt fails the preceding resolve and connect steps need to be retried and this cycle is repeated until the connection succeeds.\n\n## Deciding the Communication API to use\nAs part of Service Fabric we provide a few different options for Communication APIs and the decision for which one will work best for you depends on the choice of the programming model, communication framework and programming language that your services are written in.\n### Communication for Reliable Actors\nFor services written using Reliable Actors API all the communication details are abstracted and the communication happens as method calls on the ActorProxy and you can stop reading here.\n\n### Communication options for Reliable Services\nThere are a couple of different options if your service was written using Reliable Services API. Your choice of a communication protocol will guide as to what Service Fabric communication APIs you may use.\n\n* **There isn't a specific communication protocol that I need to use and I want something up and running quickly**: If you don't have a particular choice of communication framework then the ideal option for you is to use the [Default stack](service-fabric-reliable-services-communication-default.md) that allows for a similar model as the Actor communication model. This is the easiest and fastest way to get started with service communication. It provides strongly typed RPC communication that abstracts most of the communication details away so that invoking a method on a remote service in your code looks like calling a method on a local object instance. These classes abstract the resolution, connection, retry and error handling while setting up the communication channel and allows for a method call based communication model. For this the `ServiceCommunicationListener` class is to be used for the server side and the `ServiceProxy` class on the client side of the communication.\n\n* **HTTP**: To leverage the flexibility that HTTP based communication provides you can use Service Fabric communication APIs that allow the communication mechanism to be defined while resolution, connection and retry logic is still abstracted from you. For example you can use Web API for specifying the communication mechanism and leverage the [`ICommunicationClient` and `ServicePartitionClient` classes](service-fabric-reliable-services-communication.md) to setup communication.\n* **WCF**: If you have existing code that uses WCF as your communication framework then you can use the WcfCommunicationListener for the server side, and WcfCommunicationClient and ServicePartitionClient classes for the client. For more details see [this article](service-fabric-reliable-services-communication-wcf.md).\n\n* **Other communication frameworks including custom  protocols**: If you are planning on using any other communication framework including custom communication protocols there are Service Fabric communication APIs which you can plugin your communication stack into while all the work to discover and connect is abstracted from you. See [this article](service-fabric-reliable-services-communication.md) for more details.\n\n### Communication between services written in different programming languages\nAll ServiceFabric communication APIs are currently only available in C# so if have a service that is written in some other programming language such as Java or Node.JS then you will have to write your own communication mechanism.\n\n## Next Steps\n* [Default communication stack provided by Reliable Services Framework ](service-fabric-reliable-services-communication-default.md)\n* [Reliable Services communication model](service-fabric-reliable-services-communication.md)\n* [Getting Started with Microsoft Azure Service Fabric Web API services with OWIN self-host](service-fabric-reliable-services-communication-webapi.md)\n* [WCF based communication stack for Reliable Services](service-fabric-reliable-services-communication-wcf.md)\n"
+}

@@ -1,0 +1,4781 @@
+{
+  "nodes": [
+    {
+      "content": "Run Cassandra with Linux on Azure",
+      "pos": [
+        28,
+        61
+      ]
+    },
+    {
+      "content": "How to run a Cassandra cluster on Linux in Azure Virtual Machines from a Node.js app",
+      "pos": [
+        81,
+        165
+      ]
+    },
+    {
+      "content": "Running Cassandra with Linux on Azure and Accessing it from Node.js",
+      "pos": [
+        521,
+        588
+      ]
+    },
+    {
+      "content": "Overview",
+      "pos": [
+        594,
+        602
+      ]
+    },
+    {
+      "content": "Microsoft Azure is an open cloud platform that runs both Microsoft as well as non-Microsoft software which  includes operating systems, application servers, messaging middleware as well as SQL and NoSQL databases from both commercial and open source models.",
+      "pos": [
+        603,
+        860
+      ]
+    },
+    {
+      "content": "Building resilient services on public clouds including Azure requires careful planning and deliberate architecture for both applications servers as well storage layers.",
+      "pos": [
+        861,
+        1029
+      ]
+    },
+    {
+      "content": "Cassandra’s distributed storage architecture naturally helps in building highly available systems that are fault tolerant for cluster failures.",
+      "pos": [
+        1030,
+        1173
+      ]
+    },
+    {
+      "content": "Cassandra is a cloud scale NoSQL database maintained by Apache Software Foundation at cassandra.apache.org; Cassandra is written in Java and hence runs on both on Windows as well as Linux platforms.",
+      "pos": [
+        1174,
+        1372
+      ]
+    },
+    {
+      "content": "The focus of this article is to show Cassandra deployment on Ubuntu as a single and multi-data center cluster leveraging Microsoft Azure Virtual Machines and Virtual Networks.",
+      "pos": [
+        1375,
+        1550
+      ]
+    },
+    {
+      "content": "The cluster deployment for production optimized workloads is out of scope of this article as it requires multi-disk node configuration, appropriate ring topology design and data modeling to support the needed replication, data consistency, throughput and high availability requirements.",
+      "pos": [
+        1551,
+        1837
+      ]
+    },
+    {
+      "content": "This article takes a fundamental approach to show what is involved in building the Cassandra cluster compared Docker, Chef or Puppet which can make the infrastructure deployment a lot easier.",
+      "pos": [
+        1840,
+        2031
+      ]
+    },
+    {
+      "content": "The Deployment Models",
+      "pos": [
+        2038,
+        2059
+      ]
+    },
+    {
+      "content": "Microsoft Azure networking allows the deployment of isolated private clusters, the access of which can be restricted to attain fine grained network security.",
+      "pos": [
+        2061,
+        2218
+      ]
+    },
+    {
+      "content": "Since this article is about showing the Cassandra deployment at a fundamental level, we will not focus on the consistency level and the optimal storage design for throughput.",
+      "pos": [
+        2220,
+        2394
+      ]
+    },
+    {
+      "content": "Here is the list of networking requirements for our hypothetical cluster:",
+      "pos": [
+        2395,
+        2468
+      ]
+    },
+    {
+      "content": "External systems can’t access Cassandra database from within or outside Azure",
+      "pos": [
+        2472,
+        2549
+      ]
+    },
+    {
+      "content": "Cassandra cluster has to be behind a load balancer for thrift traffic",
+      "pos": [
+        2552,
+        2621
+      ]
+    },
+    {
+      "content": "Deploy Cassandra nodes in two groups in each data center for an enhanced cluster availability",
+      "pos": [
+        2624,
+        2717
+      ]
+    },
+    {
+      "content": "Lock down the cluster so that only application server farm has access to the database directly",
+      "pos": [
+        2721,
+        2815
+      ]
+    },
+    {
+      "content": "No public networking endpoints other than SSH",
+      "pos": [
+        2818,
+        2863
+      ]
+    },
+    {
+      "content": "Each Cassandra node needs a fixed internal IP address",
+      "pos": [
+        2866,
+        2919
+      ]
+    },
+    {
+      "content": "Cassandra can be deployed to a single Azure region or to multiple regions based on the distributed nature of the workload.",
+      "pos": [
+        2921,
+        3043
+      ]
+    },
+    {
+      "content": "Multi-region deployment model can be leveraged to serve end users closer to a particular geography through the same Cassandra infrastructure.",
+      "pos": [
+        3044,
+        3185
+      ]
+    },
+    {
+      "content": "Cassandra’s built-in node replication takes care of the synchronization of multi-master writes originating from multiple data centers and presents a consistent view of the data to applications.",
+      "pos": [
+        3186,
+        3379
+      ]
+    },
+    {
+      "content": "Multi-region deployment can also help with the risk mitigation of the broader Azure service outages.",
+      "pos": [
+        3380,
+        3480
+      ]
+    },
+    {
+      "content": "Cassandra’s tunable consistency and replication topology will help in meeting diverse RPO needs of applications.",
+      "pos": [
+        3481,
+        3593
+      ]
+    },
+    {
+      "content": "Single Region Deployment",
+      "pos": [
+        3601,
+        3625
+      ]
+    },
+    {
+      "content": "We will start with a single region deployment and harvest the learnings in creating a multi-region model.",
+      "pos": [
+        3626,
+        3731
+      ]
+    },
+    {
+      "content": "Azure virtual networking will be used to create isolated subnets so that the network security requirements mentioned above can be met.",
+      "pos": [
+        3732,
+        3866
+      ]
+    },
+    {
+      "content": "The process described in creating the single region deployment uses Ubuntu 14.04 LTS and Cassandra 2.08; however, the process can easily be adopted to the other Linux variants.",
+      "pos": [
+        3868,
+        4044
+      ]
+    },
+    {
+      "content": "The following are some of the systemic characteristics of the single region deployment.",
+      "pos": [
+        4045,
+        4132
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>High Availability:<ept id=\"p1\">**</ept> The Cassandra nodes shown in the Figure 1 are deployed to two availability sets so that the nodes are spread between multiple fault domains for high availability.",
+      "pos": [
+        4136,
+        4321
+      ]
+    },
+    {
+      "content": "VMs annotated with each availability set is mapped to 2 fault domains.",
+      "pos": [
+        4322,
+        4392
+      ]
+    },
+    {
+      "content": "Microsoft Azure uses the concept of fault domain to manage unplanned down time (e.g. hardware or software failures) while the concept of upgrade domain (e.g. host or guest OS patching/upgrades, application upgrades) is used for managing scheduled down time.",
+      "pos": [
+        4394,
+        4651
+      ]
+    },
+    {
+      "content": "Please see <bpt id=\"p1\">[</bpt>Disaster Recovery and High Availability for Azure Applications<ept id=\"p1\">](http://msdn.microsoft.com/library/dn251004.aspx)</ept> for the role of fault and upgrade domains in attaining high availability.",
+      "pos": [
+        4652,
+        4850
+      ]
+    },
+    {
+      "content": "Single region deployment",
+      "pos": [
+        4855,
+        4879
+      ]
+    },
+    {
+      "content": "Figure 1: Single region deployment",
+      "pos": [
+        4960,
+        4994
+      ]
+    },
+    {
+      "content": "Note that at the time of this writing, Azure doesn’t allow the explicit mapping of a group of VMs to a specific fault domain; consequently, even with the deployment model shown in Figure 1, it is statistically probable that all the virtual machines may be mapped to two fault domains instead of four.",
+      "pos": [
+        4996,
+        5296
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Load Balancing Thrift Traffic:<ept id=\"p1\">**</ept> Thrift client libraries inside the web server connect to the cluster through an internal load balancer.",
+      "pos": [
+        5299,
+        5437
+      ]
+    },
+    {
+      "content": "This requires the process of adding the internal load balancer to the “data” subnet (refer Figure 1) in the context of the cloud service hosting the Cassandra cluster.",
+      "pos": [
+        5438,
+        5605
+      ]
+    },
+    {
+      "content": "Once the internal load balancer is defined, each node requires the load balanced endpoint to be added with the annotations of a load balanced set with previously defined load balancer name.",
+      "pos": [
+        5606,
+        5795
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt>Azure Internal Load Balancing <ept id=\"p1\">](../load-balancer/load-balancer-internal-overview.md)</ept>for more details.",
+      "pos": [
+        5796,
+        5902
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Cluster Seeds:<ept id=\"p1\">**</ept> It is important to select the most highly available nodes for seeds as the new nodes will communicate with seed nodes to discover the topology of the cluster.",
+      "pos": [
+        5904,
+        6081
+      ]
+    },
+    {
+      "content": "One node from each availability set is designated as seed nodes to avoid single point of failure.",
+      "pos": [
+        6082,
+        6179
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Replication Factor and Consistency Level:<ept id=\"p1\">**</ept> Cassandra’s build-in high-availability and data durability is characterized by the Replication Factor (RF - number of copies of each row stored on the cluster) and Consistency Level (number of replicas to be read/written before returning the result to the caller).",
+      "pos": [
+        6182,
+        6492
+      ]
+    },
+    {
+      "content": "Replication factor is specified during the KEYSPACE (similar to a relational database) creation whereas the consistency level is specified while issuing the CRUD query.",
+      "pos": [
+        6493,
+        6661
+      ]
+    },
+    {
+      "content": "See Cassandra documentation at <bpt id=\"p1\">[</bpt>Configuring for Consistency<ept id=\"p1\">](http://www.datastax.com/documentation/cassandra/2.0/cassandra/dml/dml_config_consistency_c.html)</ept> for consistency details and the formula for quorum computation.",
+      "pos": [
+        6662,
+        6883
+      ]
+    },
+    {
+      "content": "Cassandra supports two types of data integrity models – Consistency and Eventual Consistency; the Replication Factor and Consistency Level will together determine if the data will be consistent as soon as a write operation is complete or it will be eventually consistent.",
+      "pos": [
+        6885,
+        7156
+      ]
+    },
+    {
+      "content": "For example, specifying QUORUM as the Consistency Level will always ensures data Consistency while any consistency level, below the number of replicas to be written as needed to attain QUORUM (e.g. ONE) results in data being eventually consistent.",
+      "pos": [
+        7157,
+        7404
+      ]
+    },
+    {
+      "content": "The 8-node cluster shown above, with a replication factor of 3 and QUORUM (2 nodes are read or written for consistency) read/write consistency level, can survive the theoretical loss of at the most 1 node per replication group before the application start noticing the failure.",
+      "pos": [
+        7407,
+        7684
+      ]
+    },
+    {
+      "content": "This assumes that all the key spaces have well balanced read/write requests.",
+      "pos": [
+        7685,
+        7761
+      ]
+    },
+    {
+      "content": "The following are the parameters we will use for the deployed cluster:",
+      "pos": [
+        7763,
+        7833
+      ]
+    },
+    {
+      "content": "Single region Cassandra cluster configuration:",
+      "pos": [
+        7836,
+        7882
+      ]
+    },
+    {
+      "content": "Cluster Parameter",
+      "pos": [
+        7886,
+        7903
+      ]
+    },
+    {
+      "content": "Value",
+      "pos": [
+        7906,
+        7911
+      ]
+    },
+    {
+      "content": "Remarks",
+      "pos": [
+        7914,
+        7921
+      ]
+    },
+    {
+      "content": "Number of Nodes (N)",
+      "pos": [
+        7966,
+        7985
+      ]
+    },
+    {
+      "content": "8",
+      "pos": [
+        7988,
+        7989
+      ]
+    },
+    {
+      "content": "Total number of nodes in the cluster",
+      "pos": [
+        7994,
+        8030
+      ]
+    },
+    {
+      "content": "Replication Factor (RF)",
+      "pos": [
+        8035,
+        8058
+      ]
+    },
+    {
+      "content": "3",
+      "pos": [
+        8061,
+        8062
+      ]
+    },
+    {
+      "content": "Number of replicas of a given row",
+      "pos": [
+        8065,
+        8098
+      ]
+    },
+    {
+      "content": "Consistency Level (Write)",
+      "pos": [
+        8103,
+        8128
+      ]
+    },
+    {
+      "content": "QUORUM[(RF/2) +1) = 2] The result of the formula is rounded down",
+      "pos": [
+        8131,
+        8195
+      ]
+    },
+    {
+      "content": "Writes at the most 2 replicas before the response is sent to the caller; 3rd replica is written in an eventually consistent manner.",
+      "pos": [
+        8198,
+        8329
+      ]
+    },
+    {
+      "content": "Consistency Level (Read)",
+      "pos": [
+        8334,
+        8358
+      ]
+    },
+    {
+      "content": "QUORUM [(RF/2) +1= 2] The result of the formula is rounded down",
+      "pos": [
+        8361,
+        8424
+      ]
+    },
+    {
+      "content": "Reads 2 replicas before sending response to the caller.",
+      "pos": [
+        8427,
+        8482
+      ]
+    },
+    {
+      "content": "Replication Strategy",
+      "pos": [
+        8487,
+        8507
+      ]
+    },
+    {
+      "pos": [
+        8510,
+        8725
+      ],
+      "content": "NetworkTopologyStrategy see <bpt id=\"p1\">[</bpt>Data Replication<ept id=\"p1\">](http://www.datastax.com/documentation/cassandra/2.0/cassandra/architecture/architectureDataDistributeReplication_c.html)</ept> in Cassandra documentation for more information"
+    },
+    {
+      "content": "Understands the deployment topology and places replicas on nodes so that all the replicas don’t end up on the same rack",
+      "pos": [
+        8728,
+        8847
+      ]
+    },
+    {
+      "content": "Snitch",
+      "pos": [
+        8852,
+        8858
+      ]
+    },
+    {
+      "pos": [
+        8861,
+        9060
+      ],
+      "content": "GossipingPropertyFileSnitch see <bpt id=\"p1\">[</bpt>Snitches<ept id=\"p1\">](http://www.datastax.com/documentation/cassandra/2.0/cassandra/architecture/architectureSnitchesAbout_c.html)</ept> in Cassandra documentation for more information"
+    },
+    {
+      "content": "NetworkTopologyStrategy uses a concept of snitch to understand the topology.",
+      "pos": [
+        9063,
+        9139
+      ]
+    },
+    {
+      "content": "GossipingPropertyFileSnitch gives better control in mapping each node to data center and rack.",
+      "pos": [
+        9140,
+        9234
+      ]
+    },
+    {
+      "content": "The cluster then uses gossip to propagate this information.",
+      "pos": [
+        9235,
+        9294
+      ]
+    },
+    {
+      "content": "This is much simpler in dynamic IP setting relative to PropertyFileSnitch",
+      "pos": [
+        9295,
+        9368
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Azure Considerations for Cassandra Cluster:<ept id=\"p1\">**</ept> Microsoft Azure Virtual Machines capability uses Azure Blob storage for disk persistence; Azure Storage saves 3 replicas of each disk for high durability.",
+      "pos": [
+        9373,
+        9575
+      ]
+    },
+    {
+      "content": "That means each row of data inserted into a Cassandra table is already stored in 3 replicas and hence data consistency is already taken care of even if the Replication Factor (RF) is 1.",
+      "pos": [
+        9576,
+        9761
+      ]
+    },
+    {
+      "content": "The main problem with Replication Factor being 1 is that the application will experience downtime even if a single Cassandra node fails.",
+      "pos": [
+        9762,
+        9898
+      ]
+    },
+    {
+      "content": "However, if a node is down for the problems (e.g. hardware, system software failures) recognized by Azure Fabric Controller, it will provision a new node in its place using the same storage drives.",
+      "pos": [
+        9899,
+        10096
+      ]
+    },
+    {
+      "content": "Provisioning a new node to replace the old one may take a few minutes.",
+      "pos": [
+        10097,
+        10167
+      ]
+    },
+    {
+      "content": "Similarly for planned maintenance activities like guest OS changes, Cassandra upgrades and application changes Azure Fabric Controller performs rolling upgrades of the nodes in the cluster.",
+      "pos": [
+        10169,
+        10358
+      ]
+    },
+    {
+      "content": "Rolling upgrades also may take down a few nodes at a time and hence the cluster may experience brief downtime for a few partitions.",
+      "pos": [
+        10360,
+        10491
+      ]
+    },
+    {
+      "content": "However, the data will not be lost due to the built-in Azure Storage redundancy.",
+      "pos": [
+        10492,
+        10572
+      ]
+    },
+    {
+      "content": "For systems deployed to Azure that doesn’t require high availability (e.g. around 99.9 which is equivalent to 8.76 hrs/year; see <bpt id=\"p1\">[</bpt>High Availability<ept id=\"p1\">](http://en.wikipedia.org/wiki/High_availability)</ept> for details) you may be able to run with RF=1 and Consistency Level=ONE.",
+      "pos": [
+        10576,
+        10845
+      ]
+    },
+    {
+      "content": "For applications with high availability requirements, RF=3 and Consistency Level=QUORUM will tolerate the down time of one of the nodes one of the replicas.",
+      "pos": [
+        10847,
+        11003
+      ]
+    },
+    {
+      "content": "RF=1 in traditional deployments (e.g. on-premise) can’t be used due to the possible data loss resulting from problems like disk failures.",
+      "pos": [
+        11004,
+        11141
+      ]
+    },
+    {
+      "content": "Multi-region Deployment",
+      "pos": [
+        11149,
+        11172
+      ]
+    },
+    {
+      "content": "Cassandra’s data center aware replication and consistency model described above helps with the multi-region deployment out of the box without the need for any external tooling.",
+      "pos": [
+        11173,
+        11349
+      ]
+    },
+    {
+      "content": "This is quite different from the traditional relational databases where the setup for database mirroring for multi-master writes can be quite complex.",
+      "pos": [
+        11350,
+        11500
+      ]
+    },
+    {
+      "content": "Cassandra in a multi-region set up can help with the usage scenarios including the following:",
+      "pos": [
+        11501,
+        11594
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Proximity based deployment:<ept id=\"p1\">**</ept> Multi-tenant applications, with clear mapping of tenant users -to-region, can be benefited by the multi-region cluster’s low latencies.",
+      "pos": [
+        11597,
+        11764
+      ]
+    },
+    {
+      "content": "For example a learning management systems for educational institutions can deploy a distributed cluster in East US and West US regions to serve the respective campuses for transactional as well as analytics.",
+      "pos": [
+        11765,
+        11972
+      ]
+    },
+    {
+      "content": "The data can be locally consistent at the time reads and writes and can be eventually consistent across both the regions.",
+      "pos": [
+        11973,
+        12094
+      ]
+    },
+    {
+      "content": "There are other examples like media distribution, e-commerce and anything and everything that serves geo concentrated user base is a good use case for this deployment model.",
+      "pos": [
+        12095,
+        12268
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>High Availability:<ept id=\"p1\">**</ept> Redundancy is a key factor in attaining high availability of software and hardware; see Building Reliable Cloud Systems on Microsoft Azure for details.",
+      "pos": [
+        12271,
+        12445
+      ]
+    },
+    {
+      "content": "On Microsoft Azure, the only reliable way of achieving true redundancy is by deploying a multi-region cluster.",
+      "pos": [
+        12446,
+        12556
+      ]
+    },
+    {
+      "content": "Applications can be deployed in an active-active or active-passive mode and if one of the regions is down, Azure Traffic Manager can redirect traffic to the active region.",
+      "pos": [
+        12557,
+        12728
+      ]
+    },
+    {
+      "content": "With the single region deployment, if the availability is 99.9, a two-region deployment can attain an availability of 99.9999 computed by the formula: (1-(1-0.999) * (1-0.999))*100); see the above paper for details.",
+      "pos": [
+        12730,
+        12945
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Disaster Recovery:<ept id=\"p1\">**</ept> Multi-region Cassandra cluster, if properly designed, can withstand catastrophic data center outages.",
+      "pos": [
+        12948,
+        13072
+      ]
+    },
+    {
+      "content": "If one region is down, the application deployed to other regions can start serving the end users.",
+      "pos": [
+        13073,
+        13170
+      ]
+    },
+    {
+      "content": "Like any other business continuity implementations, the application has to be tolerant for some data loss resulting from the data in the asynchronous pipeline.",
+      "pos": [
+        13171,
+        13330
+      ]
+    },
+    {
+      "content": "However, Cassandra makes the recovery much swifter than the time taken by traditional database recovery processes.",
+      "pos": [
+        13331,
+        13445
+      ]
+    },
+    {
+      "content": "Figure 2 shows the typical multi-region deployment model with eight nodes in each region.",
+      "pos": [
+        13446,
+        13535
+      ]
+    },
+    {
+      "content": "Both regions are mirror images of each other for the same of symmetry; real world designs depend on the workload type (e.g. transactional or analytical), RPO, RTO, data consistency and availability requirements.",
+      "pos": [
+        13536,
+        13747
+      ]
+    },
+    {
+      "content": "Multi region deployment",
+      "pos": [
+        13752,
+        13775
+      ]
+    },
+    {
+      "content": "Figure 2: Multi-region Cassandra deployment",
+      "pos": [
+        13856,
+        13899
+      ]
+    },
+    {
+      "content": "Network Integration",
+      "pos": [
+        13905,
+        13924
+      ]
+    },
+    {
+      "content": "Sets of virtual machines deployed to private networks located on two regions communicates with each other using a VPN tunnel.",
+      "pos": [
+        13925,
+        14050
+      ]
+    },
+    {
+      "content": "The VPN tunnel connects two software gateways provisioned during the network deployment process.",
+      "pos": [
+        14051,
+        14147
+      ]
+    },
+    {
+      "content": "Both regions have similar network architecture in terms of “web” and “data” subnets; Azure networking allows the creation of as many subnets as needed and apply ACLs as needed by network security.",
+      "pos": [
+        14148,
+        14344
+      ]
+    },
+    {
+      "content": "While designing the cluster topology inter data center communication latency and the economic impact of the network traffic need to be considered.",
+      "pos": [
+        14345,
+        14491
+      ]
+    },
+    {
+      "content": "Data Consistency for Multi-Data Center Deployment",
+      "pos": [
+        14498,
+        14547
+      ]
+    },
+    {
+      "content": "Distributed deployments need to be aware of the cluster topology impact on throughput and high availability.",
+      "pos": [
+        14548,
+        14656
+      ]
+    },
+    {
+      "content": "The RF and Consistency Level need to be selected in such way that the quorum doesn’t depend on the availability of all the data centers.",
+      "pos": [
+        14657,
+        14793
+      ]
+    },
+    {
+      "content": "For a system that needs high consistency, a LOCAL_QUORUM for consistency level (for reads and writes) will make sure that the local reads and writes are satisfied from the local nodes while data is replicated asynchronously to the remote data centers.",
+      "pos": [
+        14795,
+        15046
+      ]
+    },
+    {
+      "content": "Table 2 summarizes the configuration details for the multi-region cluster outlined later in the write up.",
+      "pos": [
+        15048,
+        15153
+      ]
+    },
+    {
+      "content": "Two-region Cassandra cluster configuration",
+      "pos": [
+        15158,
+        15200
+      ]
+    },
+    {
+      "content": "Cluster Parameter",
+      "pos": [
+        15207,
+        15224
+      ]
+    },
+    {
+      "content": "Value",
+      "pos": [
+        15227,
+        15232
+      ]
+    },
+    {
+      "content": "Remarks",
+      "pos": [
+        15235,
+        15242
+      ]
+    },
+    {
+      "content": "Number of Nodes (N)",
+      "pos": [
+        15287,
+        15306
+      ]
+    },
+    {
+      "content": "8 + 8",
+      "pos": [
+        15309,
+        15314
+      ]
+    },
+    {
+      "content": "Total number of nodes in the cluster",
+      "pos": [
+        15317,
+        15353
+      ]
+    },
+    {
+      "content": "Replication Factor (RF)",
+      "pos": [
+        15358,
+        15381
+      ]
+    },
+    {
+      "content": "3",
+      "pos": [
+        15384,
+        15385
+      ]
+    },
+    {
+      "content": "Number of replicas of a given row",
+      "pos": [
+        15388,
+        15421
+      ]
+    },
+    {
+      "content": "Consistency Level (Write)",
+      "pos": [
+        15426,
+        15451
+      ]
+    },
+    {
+      "content": "LOCAL_QUORUM [(sum(RF)/2) +1) = 4] The result of the formula is rounded down",
+      "pos": [
+        15454,
+        15530
+      ]
+    },
+    {
+      "content": "2 nodes will be written to the first data center synchronously; the additional 2 nodes needed for quorum will be written asynchronously to the 2nd data center.",
+      "pos": [
+        15533,
+        15692
+      ]
+    },
+    {
+      "content": "Consistency Level (Read)",
+      "pos": [
+        15697,
+        15721
+      ]
+    },
+    {
+      "content": "LOCAL_QUORUM ((RF/2) +1) = 2 The result of the formula is rounded down",
+      "pos": [
+        15724,
+        15794
+      ]
+    },
+    {
+      "content": "Read requests are satisfied from only one region; 2 nodes are read before the response is sent back to the client.",
+      "pos": [
+        15797,
+        15911
+      ]
+    },
+    {
+      "content": "Replication Strategy",
+      "pos": [
+        15916,
+        15936
+      ]
+    },
+    {
+      "pos": [
+        15939,
+        16154
+      ],
+      "content": "NetworkTopologyStrategy see <bpt id=\"p1\">[</bpt>Data Replication<ept id=\"p1\">](http://www.datastax.com/documentation/cassandra/2.0/cassandra/architecture/architectureDataDistributeReplication_c.html)</ept> in Cassandra documentation for more information"
+    },
+    {
+      "content": "Understands the deployment topology and places replicas on nodes so that all the replicas don’t end up on the same rack",
+      "pos": [
+        16157,
+        16276
+      ]
+    },
+    {
+      "content": "Snitch",
+      "pos": [
+        16281,
+        16287
+      ]
+    },
+    {
+      "pos": [
+        16290,
+        16489
+      ],
+      "content": "GossipingPropertyFileSnitch see <bpt id=\"p1\">[</bpt>Snitches<ept id=\"p1\">](http://www.datastax.com/documentation/cassandra/2.0/cassandra/architecture/architectureSnitchesAbout_c.html)</ept> in Cassandra documentation for more information"
+    },
+    {
+      "content": "NetworkTopologyStrategy uses a concept of snitch to understand the topology.",
+      "pos": [
+        16492,
+        16568
+      ]
+    },
+    {
+      "content": "GossipingPropertyFileSnitch gives better control in mapping each node to data center and rack.",
+      "pos": [
+        16569,
+        16663
+      ]
+    },
+    {
+      "content": "The cluster then uses gossip to propagate this information.",
+      "pos": [
+        16664,
+        16723
+      ]
+    },
+    {
+      "content": "This is much simpler in dynamic IP setting relative to PropertyFileSnitch",
+      "pos": [
+        16724,
+        16797
+      ]
+    },
+    {
+      "content": "THE SOFTWARE CONFIGURATION",
+      "pos": [
+        16806,
+        16832
+      ]
+    },
+    {
+      "content": "The following software versions are used during the deployment:",
+      "pos": [
+        16833,
+        16896
+      ]
+    },
+    {
+      "content": "Software",
+      "pos": [
+        16914,
+        16922
+      ]
+    },
+    {
+      "content": "Source",
+      "pos": [
+        16931,
+        16937
+      ]
+    },
+    {
+      "content": "Version",
+      "pos": [
+        16946,
+        16953
+      ]
+    },
+    {
+      "content": "JRE",
+      "pos": [
+        16972,
+        16975
+      ]
+    },
+    {
+      "content": "8U5",
+      "pos": [
+        17094,
+        17097
+      ]
+    },
+    {
+      "content": "JNA",
+      "pos": [
+        17116,
+        17119
+      ]
+    },
+    {
+      "content": "3.2.7",
+      "pos": [
+        17175,
+        17180
+      ]
+    },
+    {
+      "content": "Cassandra",
+      "pos": [
+        17199,
+        17208
+      ]
+    },
+    {
+      "content": "2.0.8",
+      "pos": [
+        17329,
+        17334
+      ]
+    },
+    {
+      "content": "Ubuntu",
+      "pos": [
+        17353,
+        17359
+      ]
+    },
+    {
+      "content": "14.04 LTS",
+      "pos": [
+        17431,
+        17440
+      ]
+    },
+    {
+      "content": "Since downloading of JRE requires manual acceptance of Oracle license, to simplify the deployment, download all the required software to the desktop for later uploading into the Ubuntu template image we will be creating as a precursor to the cluster deployment.",
+      "pos": [
+        17461,
+        17722
+      ]
+    },
+    {
+      "content": "Download the above software into a well-known downloads (e.g. %TEMP%/downloads on Windows or ~/downloads on Linux or Mac) directory on the local desktop.",
+      "pos": [
+        17725,
+        17878
+      ]
+    },
+    {
+      "content": "CREATE UBUNTU VM",
+      "pos": [
+        17885,
+        17901
+      ]
+    },
+    {
+      "content": "In this step of the process we will create Ubuntu image with the pre-requisite software so that the image can be reused for provisioning several Cassandra nodes.",
+      "pos": [
+        17902,
+        18063
+      ]
+    },
+    {
+      "content": "STEP 1: Generate SSH key pair",
+      "pos": [
+        18070,
+        18099
+      ]
+    },
+    {
+      "content": "Azure needs an X509 public key that is either PEM or DER encoded at the provisioning time.",
+      "pos": [
+        18100,
+        18190
+      ]
+    },
+    {
+      "content": "Generate a public/private key pair using the instructions located at How to Use SSH with Linux on Azure.",
+      "pos": [
+        18191,
+        18295
+      ]
+    },
+    {
+      "content": "If you plan to use putty.exe as an SSH client either on Windows or Linux, you have to convert the PEM encoded RSA private key to PPK format using puttygen.exe; the instructions for this can be found in the above web page.",
+      "pos": [
+        18296,
+        18517
+      ]
+    },
+    {
+      "content": "STEP 2: Create Ubuntu template VM",
+      "pos": [
+        18524,
+        18557
+      ]
+    },
+    {
+      "content": "To create the template VM, log into the azure.microsoft.com portal and use the following sequence: Click NEW, COMPUTE, VIRTUAL MACHINE, FROM GALLERY, UBUNTU, Ubuntu Server 14.04 LTS, and then click the right arrow.",
+      "pos": [
+        18558,
+        18772
+      ]
+    },
+    {
+      "content": "For a tutorial that describes how to create a Linux VM, see Create a Virtual Machine Running Linux.",
+      "pos": [
+        18773,
+        18872
+      ]
+    },
+    {
+      "content": "Enter the following information on the “Virtual machine configuration” screen #1:",
+      "pos": [
+        18874,
+        18955
+      ]
+    },
+    {
+      "content": "FIELD NAME",
+      "pos": [
+        18974,
+        18984
+      ]
+    },
+    {
+      "content": "VERSION RELEASE DATE",
+      "pos": [
+        19099,
+        19119
+      ]
+    },
+    {
+      "content": "Select a date from the drow down",
+      "pos": [
+        19133,
+        19165
+      ]
+    },
+    {
+      "content": "VIRTUAL MACHINE NAME",
+      "pos": [
+        19192,
+        19212
+      ]
+    },
+    {
+      "content": "cass-template",
+      "pos": [
+        19226,
+        19239
+      ]
+    },
+    {
+      "content": "This is the hostname of the VM",
+      "pos": [
+        19265,
+        19295
+      ]
+    },
+    {
+      "content": "TIER",
+      "pos": [
+        19314,
+        19318
+      ]
+    },
+    {
+      "content": "STANDARD",
+      "pos": [
+        19349,
+        19357
+      ]
+    },
+    {
+      "content": "Leave the default",
+      "pos": [
+        19391,
+        19408
+      ]
+    },
+    {
+      "content": "SIZE",
+      "pos": [
+        19440,
+        19444
+      ]
+    },
+    {
+      "content": "A1",
+      "pos": [
+        19475,
+        19477
+      ]
+    },
+    {
+      "content": "Select the VM based on the IO needs; for this purpose leave the default",
+      "pos": [
+        19516,
+        19587
+      ]
+    },
+    {
+      "content": "NEW USER NAME",
+      "pos": [
+        19607,
+        19620
+      ]
+    },
+    {
+      "content": "localadmin",
+      "pos": [
+        19641,
+        19651
+      ]
+    },
+    {
+      "content": "\"admin\" is a reserved user name in Ubuntu 12.xx and after",
+      "pos": [
+        19683,
+        19740
+      ]
+    },
+    {
+      "content": "AUTHENTICATION",
+      "pos": [
+        19759,
+        19773
+      ]
+    },
+    {
+      "content": "Click check box",
+      "pos": [
+        19789,
+        19804
+      ]
+    },
+    {
+      "content": "Check if you want to secure with an SSH key",
+      "pos": [
+        19830,
+        19873
+      ]
+    },
+    {
+      "content": "CERTIFICATE",
+      "pos": [
+        19893,
+        19904
+      ]
+    },
+    {
+      "content": "file name of the public key certificate",
+      "pos": [
+        19927,
+        19966
+      ]
+    },
+    {
+      "content": "Use the public key generated previously",
+      "pos": [
+        19977,
+        20016
+      ]
+    },
+    {
+      "content": "New Password",
+      "pos": [
+        20035,
+        20047
+      ]
+    },
+    {
+      "content": "strong password",
+      "pos": [
+        20060,
+        20075
+      ]
+    },
+    {
+      "content": "Confirm Password",
+      "pos": [
+        20105,
+        20121
+      ]
+    },
+    {
+      "content": "strong password",
+      "pos": [
+        20134,
+        20149
+      ]
+    },
+    {
+      "content": "Enter the following information on the “Virtual machine configuration” screen #2:",
+      "pos": [
+        20179,
+        20260
+      ]
+    },
+    {
+      "content": "FIELD NAME",
+      "pos": [
+        20279,
+        20289
+      ]
+    },
+    {
+      "content": "FIELD VALUE",
+      "pos": [
+        20312,
+        20323
+      ]
+    },
+    {
+      "content": "REMARKS",
+      "pos": [
+        20356,
+        20363
+      ]
+    },
+    {
+      "content": "CLOUD SERVICE",
+      "pos": [
+        20416,
+        20429
+      ]
+    },
+    {
+      "content": "Create a new cloud service",
+      "pos": [
+        20441,
+        20467
+      ]
+    },
+    {
+      "content": "Cloud service is a container compute resources like virtual machines",
+      "pos": [
+        20480,
+        20548
+      ]
+    },
+    {
+      "content": "CLOUD SERVICE DNS NAME",
+      "pos": [
+        20568,
+        20590
+      ]
+    },
+    {
+      "content": "ubuntu-template.cloudapp.net",
+      "pos": [
+        20600,
+        20628
+      ]
+    },
+    {
+      "content": "Give a machine agnostic load balancer name",
+      "pos": [
+        20640,
+        20682
+      ]
+    },
+    {
+      "content": "REGION/AFFINITY GROUP/VIRTUAL NETWORK",
+      "pos": [
+        20702,
+        20739
+      ]
+    },
+    {
+      "content": "Select a region from which your web applications access the Cassandra cluster",
+      "pos": [
+        20771,
+        20848
+      ]
+    },
+    {
+      "content": "STORAGE ACCOUNT",
+      "pos": [
+        20867,
+        20882
+      ]
+    },
+    {
+      "content": "Use default",
+      "pos": [
+        20895,
+        20906
+      ]
+    },
+    {
+      "content": "Use the default storage account  or a pre-created storage account in a particular region",
+      "pos": [
+        20916,
+        21004
+      ]
+    },
+    {
+      "content": "AVAILABILITY SET",
+      "pos": [
+        21023,
+        21039
+      ]
+    },
+    {
+      "content": "None",
+      "pos": [
+        21051,
+        21055
+      ]
+    },
+    {
+      "content": "Leave it blank",
+      "pos": [
+        21067,
+        21081
+      ]
+    },
+    {
+      "content": "ENDPOINTS",
+      "pos": [
+        21100,
+        21109
+      ]
+    },
+    {
+      "content": "Use default",
+      "pos": [
+        21121,
+        21132
+      ]
+    },
+    {
+      "content": "Use the default SSH configuration",
+      "pos": [
+        21144,
+        21177
+      ]
+    },
+    {
+      "content": "Click right arrow, leave the defaults on the screen #3 and click the “check” button to complete the VM provisioning process.",
+      "pos": [
+        21199,
+        21323
+      ]
+    },
+    {
+      "content": "After a few minutes, the VM with the name “ubuntu-template” should be in a “running” status.",
+      "pos": [
+        21324,
+        21416
+      ]
+    },
+    {
+      "content": "INSTALL THE NECESSARY SOFTWARE",
+      "pos": [
+        21422,
+        21452
+      ]
+    },
+    {
+      "content": "STEP 1: Upload tarballs",
+      "pos": [
+        21457,
+        21480
+      ]
+    },
+    {
+      "content": "Using scp or pscp, copy the previously downloaded software to ~/downloads directory using the following command format:",
+      "pos": [
+        21482,
+        21601
+      ]
+    },
+    {
+      "content": "pscp server-jre-8u5-linux-x64.tar.gz localadmin@hk-cas-template.cloudapp.net:/home/localadmin/downloads/server-jre-8u5-linux-x64.tar.gz",
+      "pos": [
+        21609,
+        21744
+      ]
+    },
+    {
+      "content": "Repeat the above command for JRE as well as for the Cassandra bits.",
+      "pos": [
+        21746,
+        21813
+      ]
+    },
+    {
+      "content": "STEP 2: Prepare the directory structure and extract the archives",
+      "pos": [
+        21820,
+        21884
+      ]
+    },
+    {
+      "content": "Log into the VM and create the directory structure and extract software as a super user using the bash script below:",
+      "pos": [
+        21885,
+        22001
+      ]
+    },
+    {
+      "content": "If you paste this script into vim window, make sure to remove the carriage return (‘\\r”) using the following command:",
+      "pos": [
+        23759,
+        23876
+      ]
+    },
+    {
+      "content": "Step 3: Edit etc/profile",
+      "pos": [
+        23921,
+        23945
+      ]
+    },
+    {
+      "content": "Append the following at the end:",
+      "pos": [
+        23946,
+        23978
+      ]
+    },
+    {
+      "content": "Step 4: Install JNA for production systems",
+      "pos": [
+        24189,
+        24231
+      ]
+    },
+    {
+      "content": "Use the following command sequence:",
+      "pos": [
+        24232,
+        24267
+      ]
+    },
+    {
+      "content": "The following command will install jna-3.2.7.jar and jna-platform-3.2.7.jar to /usr/share.java directory",
+      "pos": [
+        24269,
+        24373
+      ]
+    },
+    {
+      "content": "sudo apt-get install libjna-java",
+      "pos": [
+        24374,
+        24406
+      ]
+    },
+    {
+      "content": "Create symbolic links in $CASS_HOME/lib directory so that Cassandra startup script can find these jars:",
+      "pos": [
+        24409,
+        24512
+      ]
+    },
+    {
+      "content": "Step 5: Configure cassandra.yaml",
+      "pos": [
+        24664,
+        24696
+      ]
+    },
+    {
+      "content": "Edit cassandra.yaml on each VM to reflect configuration needed by all the virtual machines [we will tweak this during the actual provisioning]:",
+      "pos": [
+        24697,
+        24840
+      ]
+    },
+    {
+      "content": "Field Name",
+      "pos": [
+        24859,
+        24869
+      ]
+    },
+    {
+      "content": "Value",
+      "pos": [
+        24882,
+        24887
+      ]
+    },
+    {
+      "content": "Remarks",
+      "pos": [
+        24899,
+        24906
+      ]
+    },
+    {
+      "content": "cluster_name",
+      "pos": [
+        24926,
+        24938
+      ]
+    },
+    {
+      "content": "“CustomerService”",
+      "pos": [
+        24950,
+        24967
+      ]
+    },
+    {
+      "content": "Use the name that reflects your deployment",
+      "pos": [
+        24980,
+        25022
+      ]
+    },
+    {
+      "content": "listen_address",
+      "pos": [
+        25042,
+        25056
+      ]
+    },
+    {
+      "content": "[leave it blank]",
+      "pos": [
+        25067,
+        25083
+      ]
+    },
+    {
+      "content": "Delete “localhost”",
+      "pos": [
+        25096,
+        25114
+      ]
+    },
+    {
+      "content": "rpc_addres",
+      "pos": [
+        25134,
+        25144
+      ]
+    },
+    {
+      "content": "[leave it blank]",
+      "pos": [
+        25156,
+        25172
+      ]
+    },
+    {
+      "content": "Delete “localhost”",
+      "pos": [
+        25184,
+        25202
+      ]
+    },
+    {
+      "content": "seeds",
+      "pos": [
+        25222,
+        25227
+      ]
+    },
+    {
+      "content": "\"10.1.2.4, 10.1.2.6, 10.1.2.8\"",
+      "pos": [
+        25239,
+        25269
+      ]
+    },
+    {
+      "content": "List of  all the IP addresses which are designated as seeds.",
+      "pos": [
+        25279,
+        25339
+      ]
+    },
+    {
+      "content": "endpoint_snitch",
+      "pos": [
+        25358,
+        25373
+      ]
+    },
+    {
+      "content": "org.apache.cassandra.locator.GossipingPropertyFileSnitch",
+      "pos": [
+        25384,
+        25440
+      ]
+    },
+    {
+      "content": "This is used by the NetworkTopologyStrateg for inferring the data center and the rack of the VM",
+      "pos": [
+        25451,
+        25546
+      ]
+    },
+    {
+      "content": "Step 6: Capture the VM image",
+      "pos": [
+        25571,
+        25599
+      ]
+    },
+    {
+      "content": "Log into the virtual machine using the hostname (hk-cas-template.cloudapp.net) and the SSH private key previously created.",
+      "pos": [
+        25600,
+        25722
+      ]
+    },
+    {
+      "content": "See How to Use SSH with Linux on Azure for details on how to log in using the command ssh or putty.exe.",
+      "pos": [
+        25723,
+        25826
+      ]
+    },
+    {
+      "content": "Execute the following sequence of actions to capture the image:",
+      "pos": [
+        25829,
+        25892
+      ]
+    },
+    {
+      "content": "1.",
+      "pos": [
+        25898,
+        25900
+      ]
+    },
+    {
+      "content": "Deprovision",
+      "pos": [
+        25901,
+        25912
+      ]
+    },
+    {
+      "content": "Use the command “sudo waagent –deprovision+user” to remove Virtual Machine instance specific information.",
+      "pos": [
+        25913,
+        26018
+      ]
+    },
+    {
+      "content": "See for <bpt id=\"p1\">[</bpt>How to Capture a Linux Virtual Machine<ept id=\"p1\">](virtual-machines-linux-capture-image.md)</ept> to Use as a Template more details on the image capture process.",
+      "pos": [
+        26019,
+        26172
+      ]
+    },
+    {
+      "content": "2: Shutdown the VM",
+      "pos": [
+        26180,
+        26198
+      ]
+    },
+    {
+      "content": "Make sure that the virtual machine is highlighted and click the SHUTDOWN link from the bottom command bar.",
+      "pos": [
+        26199,
+        26305
+      ]
+    },
+    {
+      "content": "3: Capture the image",
+      "pos": [
+        26312,
+        26332
+      ]
+    },
+    {
+      "content": "Make sure that the virtual machine is highlighted and click the CAPTURE link from the bottom command bar.",
+      "pos": [
+        26333,
+        26438
+      ]
+    },
+    {
+      "content": "In the next screen, give an IMAGE NAME (e.g. hk-cas-2-08-ub-14-04-2014071), appropriate IMAGE DESCRIPTION, and click the “check” mark to finish the CAPTURE process.",
+      "pos": [
+        26439,
+        26603
+      ]
+    },
+    {
+      "content": "This will take a few seconds and the image should be available in MY IMAGES section of the image gallery.",
+      "pos": [
+        26605,
+        26710
+      ]
+    },
+    {
+      "content": "The source VM will be automatically delated after the image is successfully captured.",
+      "pos": [
+        26711,
+        26796
+      ]
+    },
+    {
+      "content": "Single Region Deployment Process",
+      "pos": [
+        26801,
+        26833
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Step 1: Create the Virtual Network<ept id=\"p1\">**</ept>",
+      "pos": [
+        26834,
+        26872
+      ]
+    },
+    {
+      "content": "Log into the management portal and create a Virtual Network with the attributes show in the table.",
+      "pos": [
+        26873,
+        26971
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt>Configure a Cloud-Only Virtual Network in the Management Portal<ept id=\"p1\">](../virtual-network/virtual-networks-create-vnet.md)</ept> for detailed steps of the process.",
+      "pos": [
+        26972,
+        27128
+      ]
+    },
+    {
+      "content": "VM Attribute Name",
+      "pos": [
+        27152,
+        27169
+      ]
+    },
+    {
+      "content": "Value",
+      "pos": [
+        27178,
+        27183
+      ]
+    },
+    {
+      "content": "Remarks",
+      "pos": [
+        27192,
+        27199
+      ]
+    },
+    {
+      "content": "Name",
+      "pos": [
+        27218,
+        27222
+      ]
+    },
+    {
+      "content": "vnet-cass-west-us",
+      "pos": [
+        27231,
+        27248
+      ]
+    },
+    {
+      "content": "Region",
+      "pos": [
+        27279,
+        27285
+      ]
+    },
+    {
+      "content": "West US",
+      "pos": [
+        27294,
+        27301
+      ]
+    },
+    {
+      "content": "DNS Servers",
+      "pos": [
+        27332,
+        27343
+      ]
+    },
+    {
+      "content": "None",
+      "pos": [
+        27353,
+        27357
+      ]
+    },
+    {
+      "content": "Ignore this as we are not using a DNS Server",
+      "pos": [
+        27366,
+        27410
+      ]
+    },
+    {
+      "content": "Configure a point-to-site VPN",
+      "pos": [
+        27429,
+        27458
+      ]
+    },
+    {
+      "content": "None",
+      "pos": [
+        27467,
+        27471
+      ]
+    },
+    {
+      "content": "Ignore this",
+      "pos": [
+        27481,
+        27492
+      ]
+    },
+    {
+      "content": "Configure a site-to-site VPN",
+      "pos": [
+        27511,
+        27539
+      ]
+    },
+    {
+      "content": "Nnone",
+      "pos": [
+        27548,
+        27553
+      ]
+    },
+    {
+      "content": "Ignore this",
+      "pos": [
+        27563,
+        27574
+      ]
+    },
+    {
+      "content": "Address Space",
+      "pos": [
+        27593,
+        27606
+      ]
+    },
+    {
+      "content": "10.1.0.0/16",
+      "pos": [
+        27615,
+        27626
+      ]
+    },
+    {
+      "content": "Starting IP",
+      "pos": [
+        27658,
+        27669
+      ]
+    },
+    {
+      "content": "10.1.0.0",
+      "pos": [
+        27678,
+        27686
+      ]
+    },
+    {
+      "content": "CIDR",
+      "pos": [
+        27715,
+        27719
+      ]
+    },
+    {
+      "content": "/16 (65531)",
+      "pos": [
+        27729,
+        27740
+      ]
+    },
+    {
+      "content": "Add the following subnets:",
+      "pos": [
+        27770,
+        27796
+      ]
+    },
+    {
+      "content": "Name",
+      "pos": [
+        27815,
+        27819
+      ]
+    },
+    {
+      "content": "Starting IP",
+      "pos": [
+        27828,
+        27839
+      ]
+    },
+    {
+      "content": "CIDR",
+      "pos": [
+        27848,
+        27852
+      ]
+    },
+    {
+      "content": "Remarks",
+      "pos": [
+        27861,
+        27868
+      ]
+    },
+    {
+      "content": "web",
+      "pos": [
+        27887,
+        27890
+      ]
+    },
+    {
+      "content": "10.1.1.0",
+      "pos": [
+        27899,
+        27907
+      ]
+    },
+    {
+      "content": "/24 (251)",
+      "pos": [
+        27916,
+        27925
+      ]
+    },
+    {
+      "content": "Subnet for the web farm",
+      "pos": [
+        27934,
+        27957
+      ]
+    },
+    {
+      "content": "data",
+      "pos": [
+        27976,
+        27980
+      ]
+    },
+    {
+      "content": "10.1.2.0",
+      "pos": [
+        27989,
+        27997
+      ]
+    },
+    {
+      "content": "/24 (251)",
+      "pos": [
+        28006,
+        28015
+      ]
+    },
+    {
+      "content": "Subnet for the database nodes",
+      "pos": [
+        28024,
+        28053
+      ]
+    },
+    {
+      "content": "Data and Web subnets can be protected through network security groups the coverage of which is out of scope for this article.",
+      "pos": [
+        28074,
+        28199
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Step 2: Provision Virtual Machines<ept id=\"p1\">**</ept>",
+      "pos": [
+        28203,
+        28241
+      ]
+    },
+    {
+      "content": "Using the image created previously, we will create the following virtual machines in the cloud server “hk-c-svc-west” and bind them to the respective subnets as shown below:",
+      "pos": [
+        28243,
+        28416
+      ]
+    },
+    {
+      "content": "Machine Name",
+      "pos": [
+        28435,
+        28447
+      ]
+    },
+    {
+      "content": "Subnet",
+      "pos": [
+        28460,
+        28466
+      ]
+    },
+    {
+      "content": "IP Address",
+      "pos": [
+        28476,
+        28486
+      ]
+    },
+    {
+      "content": "Availability set",
+      "pos": [
+        28496,
+        28512
+      ]
+    },
+    {
+      "content": "DC/Rack",
+      "pos": [
+        28521,
+        28528
+      ]
+    },
+    {
+      "content": "Seed?",
+      "pos": [
+        28537,
+        28542
+      ]
+    },
+    {
+      "content": "hk-c1-west-us",
+      "pos": [
+        28561,
+        28574
+      ]
+    },
+    {
+      "content": "data",
+      "pos": [
+        28586,
+        28590
+      ]
+    },
+    {
+      "content": "10.1.2.4",
+      "pos": [
+        28602,
+        28610
+      ]
+    },
+    {
+      "content": "hk-c-aset-1",
+      "pos": [
+        28622,
+        28633
+      ]
+    },
+    {
+      "content": "dc =WESTUS rack =rack1",
+      "pos": [
+        28646,
+        28668
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        28678,
+        28681
+      ]
+    },
+    {
+      "content": "hk-c2-west-us",
+      "pos": [
+        28700,
+        28713
+      ]
+    },
+    {
+      "content": "data",
+      "pos": [
+        28725,
+        28729
+      ]
+    },
+    {
+      "content": "10.1.2.5",
+      "pos": [
+        28741,
+        28749
+      ]
+    },
+    {
+      "content": "hk-c-aset-1",
+      "pos": [
+        28761,
+        28772
+      ]
+    },
+    {
+      "content": "dc =WESTUS rack =rack1",
+      "pos": [
+        28785,
+        28807
+      ]
+    },
+    {
+      "content": "No",
+      "pos": [
+        28817,
+        28819
+      ]
+    },
+    {
+      "content": "hk-c3-west-us",
+      "pos": [
+        28839,
+        28852
+      ]
+    },
+    {
+      "content": "data",
+      "pos": [
+        28864,
+        28868
+      ]
+    },
+    {
+      "content": "10.1.2.6",
+      "pos": [
+        28880,
+        28888
+      ]
+    },
+    {
+      "content": "hk-c-aset-1",
+      "pos": [
+        28900,
+        28911
+      ]
+    },
+    {
+      "content": "dc =WESTUS rack =rack2",
+      "pos": [
+        28924,
+        28946
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        28956,
+        28959
+      ]
+    },
+    {
+      "content": "hk-c4-west-us",
+      "pos": [
+        28978,
+        28991
+      ]
+    },
+    {
+      "content": "data",
+      "pos": [
+        29003,
+        29007
+      ]
+    },
+    {
+      "content": "10.1.2.7",
+      "pos": [
+        29019,
+        29027
+      ]
+    },
+    {
+      "content": "hk-c-aset-1",
+      "pos": [
+        29039,
+        29050
+      ]
+    },
+    {
+      "content": "dc =WESTUS rack =rack2",
+      "pos": [
+        29063,
+        29085
+      ]
+    },
+    {
+      "content": "No",
+      "pos": [
+        29095,
+        29097
+      ]
+    },
+    {
+      "content": "hk-c5-west-us",
+      "pos": [
+        29117,
+        29130
+      ]
+    },
+    {
+      "content": "data",
+      "pos": [
+        29142,
+        29146
+      ]
+    },
+    {
+      "content": "10.1.2.8",
+      "pos": [
+        29158,
+        29166
+      ]
+    },
+    {
+      "content": "hk-c-aset-2",
+      "pos": [
+        29178,
+        29189
+      ]
+    },
+    {
+      "content": "dc =WESTUS rack =rack3",
+      "pos": [
+        29202,
+        29224
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        29234,
+        29237
+      ]
+    },
+    {
+      "content": "hk-c6-west-us",
+      "pos": [
+        29256,
+        29269
+      ]
+    },
+    {
+      "content": "data",
+      "pos": [
+        29281,
+        29285
+      ]
+    },
+    {
+      "content": "10.1.2.9",
+      "pos": [
+        29297,
+        29305
+      ]
+    },
+    {
+      "content": "hk-c-aset-2",
+      "pos": [
+        29317,
+        29328
+      ]
+    },
+    {
+      "content": "dc =WESTUS rack =rack3",
+      "pos": [
+        29341,
+        29363
+      ]
+    },
+    {
+      "content": "No",
+      "pos": [
+        29373,
+        29375
+      ]
+    },
+    {
+      "content": "hk-c7-west-us",
+      "pos": [
+        29395,
+        29408
+      ]
+    },
+    {
+      "content": "data",
+      "pos": [
+        29420,
+        29424
+      ]
+    },
+    {
+      "content": "10.1.2.10",
+      "pos": [
+        29436,
+        29445
+      ]
+    },
+    {
+      "content": "hk-c-aset-2",
+      "pos": [
+        29456,
+        29467
+      ]
+    },
+    {
+      "content": "dc =WESTUS rack =rack4",
+      "pos": [
+        29480,
+        29502
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        29512,
+        29515
+      ]
+    },
+    {
+      "content": "hk-c8-west-us",
+      "pos": [
+        29534,
+        29547
+      ]
+    },
+    {
+      "content": "data",
+      "pos": [
+        29559,
+        29563
+      ]
+    },
+    {
+      "content": "10.1.2.11",
+      "pos": [
+        29575,
+        29584
+      ]
+    },
+    {
+      "content": "hk-c-aset-2",
+      "pos": [
+        29595,
+        29606
+      ]
+    },
+    {
+      "content": "dc =WESTUS rack =rack4",
+      "pos": [
+        29619,
+        29641
+      ]
+    },
+    {
+      "content": "No",
+      "pos": [
+        29651,
+        29653
+      ]
+    },
+    {
+      "content": "hk-w1-west-us",
+      "pos": [
+        29673,
+        29686
+      ]
+    },
+    {
+      "content": "web",
+      "pos": [
+        29698,
+        29701
+      ]
+    },
+    {
+      "content": "10.1.1.4",
+      "pos": [
+        29714,
+        29722
+      ]
+    },
+    {
+      "content": "hk-w-aset-1",
+      "pos": [
+        29734,
+        29745
+      ]
+    },
+    {
+      "content": "N/A",
+      "pos": [
+        29790,
+        29793
+      ]
+    },
+    {
+      "content": "hk-w2-west-us",
+      "pos": [
+        29812,
+        29825
+      ]
+    },
+    {
+      "content": "web",
+      "pos": [
+        29837,
+        29840
+      ]
+    },
+    {
+      "content": "10.1.1.5",
+      "pos": [
+        29853,
+        29861
+      ]
+    },
+    {
+      "content": "hk-w-aset-1",
+      "pos": [
+        29873,
+        29884
+      ]
+    },
+    {
+      "content": "N/A",
+      "pos": [
+        29929,
+        29932
+      ]
+    },
+    {
+      "content": "Creation of the above list of VMs requires the following process:",
+      "pos": [
+        29953,
+        30018
+      ]
+    },
+    {
+      "content": "Create an empty cloud service in a particular region",
+      "pos": [
+        30024,
+        30076
+      ]
+    },
+    {
+      "content": "Create a VM from the previously captured image and attach it to the virtual network created previously; repeat this for all the VMs",
+      "pos": [
+        30081,
+        30212
+      ]
+    },
+    {
+      "content": "Add an internal load balancer to the cloud service and attach it to the “data” subnet",
+      "pos": [
+        30217,
+        30302
+      ]
+    },
+    {
+      "content": "For each VM created previously, add a load balanced endpoint for thrift traffic through a load balanced set connected to the previously created internal load balancer",
+      "pos": [
+        30307,
+        30473
+      ]
+    },
+    {
+      "content": "The above process can be executed using Azure Management portal; use a Windows machine (use a VM on Azure if you don't have access to a Windows machine), use the following PowerShell script to provision all 8 VMs automatically.",
+      "pos": [
+        30475,
+        30702
+      ]
+    },
+    {
+      "content": "List1: PowerShell script for provisioning virtual machines",
+      "pos": [
+        30706,
+        30764
+      ]
+    },
+    {
+      "content": "Step 3: Configure Cassandra on each VM",
+      "pos": [
+        33618,
+        33656
+      ]
+    },
+    {
+      "content": "Log into the VM and perform the following:",
+      "pos": [
+        33660,
+        33702
+      ]
+    },
+    {
+      "content": "Edit $CASS_HOME/conf/cassandra-rackdc.properties to specify the data center and rack properties:",
+      "pos": [
+        33707,
+        33803
+      ]
+    },
+    {
+      "content": "Edit cassandra.yaml to configure seed nodes as below:",
+      "pos": [
+        33845,
+        33898
+      ]
+    },
+    {
+      "content": "Step 4: Start the VMs and test the cluster",
+      "pos": [
+        33961,
+        34003
+      ]
+    },
+    {
+      "content": "Log into one of the nodes (e.g. hk-c1-west-us) and run the following command to see the status of the cluster:",
+      "pos": [
+        34007,
+        34117
+      ]
+    },
+    {
+      "content": "You should see the display similar to the one below for an 8-node cluster:",
+      "pos": [
+        34172,
+        34246
+      ]
+    },
+    {
+      "content": "Status",
+      "pos": [
+        34265,
+        34271
+      ]
+    },
+    {
+      "content": "Address",
+      "pos": [
+        34281,
+        34288
+      ]
+    },
+    {
+      "content": "Load",
+      "pos": [
+        34298,
+        34302
+      ]
+    },
+    {
+      "content": "Tokens",
+      "pos": [
+        34314,
+        34320
+      ]
+    },
+    {
+      "content": "Owns",
+      "pos": [
+        34330,
+        34334
+      ]
+    },
+    {
+      "content": "Host ID",
+      "pos": [
+        34344,
+        34351
+      ]
+    },
+    {
+      "content": "Rack",
+      "pos": [
+        34362,
+        34366
+      ]
+    },
+    {
+      "content": "UN",
+      "pos": [
+        34385,
+        34387
+      ]
+    },
+    {
+      "content": "10.1.2.4",
+      "pos": [
+        34398,
+        34406
+      ]
+    },
+    {
+      "content": "87.81 KB",
+      "pos": [
+        34418,
+        34426
+      ]
+    },
+    {
+      "content": "256",
+      "pos": [
+        34438,
+        34441
+      ]
+    },
+    {
+      "content": "38.0%",
+      "pos": [
+        34454,
+        34459
+      ]
+    },
+    {
+      "content": "Guid (removed)",
+      "pos": [
+        34470,
+        34484
+      ]
+    },
+    {
+      "content": "rack1",
+      "pos": [
+        34493,
+        34498
+      ]
+    },
+    {
+      "content": "UN",
+      "pos": [
+        34517,
+        34519
+      ]
+    },
+    {
+      "content": "10.1.2.5",
+      "pos": [
+        34530,
+        34538
+      ]
+    },
+    {
+      "content": "41.08 KB",
+      "pos": [
+        34550,
+        34558
+      ]
+    },
+    {
+      "content": "256",
+      "pos": [
+        34570,
+        34573
+      ]
+    },
+    {
+      "content": "68.9%",
+      "pos": [
+        34586,
+        34591
+      ]
+    },
+    {
+      "content": "Guid (removed)",
+      "pos": [
+        34602,
+        34616
+      ]
+    },
+    {
+      "content": "rack1",
+      "pos": [
+        34625,
+        34630
+      ]
+    },
+    {
+      "content": "UN",
+      "pos": [
+        34649,
+        34651
+      ]
+    },
+    {
+      "content": "10.1.2.6",
+      "pos": [
+        34662,
+        34670
+      ]
+    },
+    {
+      "content": "55.29 KB",
+      "pos": [
+        34682,
+        34690
+      ]
+    },
+    {
+      "content": "256",
+      "pos": [
+        34702,
+        34705
+      ]
+    },
+    {
+      "content": "68.8%",
+      "pos": [
+        34718,
+        34723
+      ]
+    },
+    {
+      "content": "Guid (removed)",
+      "pos": [
+        34734,
+        34748
+      ]
+    },
+    {
+      "content": "rack2",
+      "pos": [
+        34757,
+        34762
+      ]
+    },
+    {
+      "content": "UN",
+      "pos": [
+        34781,
+        34783
+      ]
+    },
+    {
+      "content": "10.1.2.7",
+      "pos": [
+        34794,
+        34802
+      ]
+    },
+    {
+      "content": "55.29 KB",
+      "pos": [
+        34814,
+        34822
+      ]
+    },
+    {
+      "content": "256",
+      "pos": [
+        34834,
+        34837
+      ]
+    },
+    {
+      "content": "68.8%",
+      "pos": [
+        34850,
+        34855
+      ]
+    },
+    {
+      "content": "Guid (removed)",
+      "pos": [
+        34866,
+        34880
+      ]
+    },
+    {
+      "content": "rack2",
+      "pos": [
+        34889,
+        34894
+      ]
+    },
+    {
+      "content": "UN",
+      "pos": [
+        34913,
+        34915
+      ]
+    },
+    {
+      "content": "10.1.2.8",
+      "pos": [
+        34926,
+        34934
+      ]
+    },
+    {
+      "content": "55.29 KB",
+      "pos": [
+        34946,
+        34954
+      ]
+    },
+    {
+      "content": "256",
+      "pos": [
+        34966,
+        34969
+      ]
+    },
+    {
+      "content": "68.8%",
+      "pos": [
+        34982,
+        34987
+      ]
+    },
+    {
+      "content": "Guid (removed)",
+      "pos": [
+        34998,
+        35012
+      ]
+    },
+    {
+      "content": "rack3",
+      "pos": [
+        35021,
+        35026
+      ]
+    },
+    {
+      "content": "UN",
+      "pos": [
+        35045,
+        35047
+      ]
+    },
+    {
+      "content": "10.1.2.9",
+      "pos": [
+        35058,
+        35066
+      ]
+    },
+    {
+      "content": "55.29 KB",
+      "pos": [
+        35078,
+        35086
+      ]
+    },
+    {
+      "content": "256",
+      "pos": [
+        35098,
+        35101
+      ]
+    },
+    {
+      "content": "68.8%",
+      "pos": [
+        35114,
+        35119
+      ]
+    },
+    {
+      "content": "Guid (removed)",
+      "pos": [
+        35130,
+        35144
+      ]
+    },
+    {
+      "content": "rack3",
+      "pos": [
+        35153,
+        35158
+      ]
+    },
+    {
+      "content": "UN",
+      "pos": [
+        35177,
+        35179
+      ]
+    },
+    {
+      "content": "10.1.2.10",
+      "pos": [
+        35190,
+        35199
+      ]
+    },
+    {
+      "content": "55.29 KB",
+      "pos": [
+        35210,
+        35218
+      ]
+    },
+    {
+      "content": "256",
+      "pos": [
+        35230,
+        35233
+      ]
+    },
+    {
+      "content": "68.8%",
+      "pos": [
+        35246,
+        35251
+      ]
+    },
+    {
+      "content": "Guid (removed)",
+      "pos": [
+        35262,
+        35276
+      ]
+    },
+    {
+      "content": "rack4",
+      "pos": [
+        35285,
+        35290
+      ]
+    },
+    {
+      "content": "UN",
+      "pos": [
+        35309,
+        35311
+      ]
+    },
+    {
+      "content": "10.1.2.11",
+      "pos": [
+        35322,
+        35331
+      ]
+    },
+    {
+      "content": "55.29 KB",
+      "pos": [
+        35342,
+        35350
+      ]
+    },
+    {
+      "content": "256",
+      "pos": [
+        35362,
+        35365
+      ]
+    },
+    {
+      "content": "68.8%",
+      "pos": [
+        35378,
+        35383
+      ]
+    },
+    {
+      "content": "Guid (removed)",
+      "pos": [
+        35394,
+        35408
+      ]
+    },
+    {
+      "content": "rack4",
+      "pos": [
+        35417,
+        35422
+      ]
+    },
+    {
+      "content": "Test the Single Region Cluster",
+      "pos": [
+        35446,
+        35476
+      ]
+    },
+    {
+      "content": "Use the following steps to test the cluster:",
+      "pos": [
+        35477,
+        35521
+      ]
+    },
+    {
+      "content": "Using the Powershell command Get-AzureInternalLoadbalancer commandlet, obtain the IP address of the internal load balancer (e.g.  10.1.2.101).",
+      "pos": [
+        35529,
+        35671
+      ]
+    },
+    {
+      "content": "The syntax of the command is shown below: Get-AzureLoadbalancer –ServiceName \"hk-c-svc-west-us” [displays the details of the internal load balancer along with its IP address]",
+      "pos": [
+        35672,
+        35846
+      ]
+    },
+    {
+      "content": "Log into the web farm VM (e.g. hk-w1-west-us) using Putty or ssh",
+      "pos": [
+        35851,
+        35915
+      ]
+    },
+    {
+      "content": "Execute $CASS_HOME/bin/cqlsh 10.1.2.101 9160",
+      "pos": [
+        35920,
+        35964
+      ]
+    },
+    {
+      "content": "Use the following CQL commands to verify if the cluster is working:",
+      "pos": [
+        35970,
+        36037
+      ]
+    },
+    {
+      "content": "You should see a display like the one below:",
+      "pos": [
+        36498,
+        36542
+      ]
+    },
+    {
+      "content": "customer_id",
+      "pos": [
+        36563,
+        36574
+      ]
+    },
+    {
+      "content": "firstname",
+      "pos": [
+        36585,
+        36594
+      ]
+    },
+    {
+      "content": "lastname",
+      "pos": [
+        36605,
+        36613
+      ]
+    },
+    {
+      "content": "1",
+      "pos": [
+        36636,
+        36637
+      ]
+    },
+    {
+      "content": "John",
+      "pos": [
+        36648,
+        36652
+      ]
+    },
+    {
+      "content": "Doe",
+      "pos": [
+        36663,
+        36666
+      ]
+    },
+    {
+      "content": "2",
+      "pos": [
+        36689,
+        36690
+      ]
+    },
+    {
+      "content": "Jane",
+      "pos": [
+        36701,
+        36705
+      ]
+    },
+    {
+      "content": "Doe",
+      "pos": [
+        36716,
+        36719
+      ]
+    },
+    {
+      "content": "Please note that the keyspace created in step 4 uses SimpleStrategy with a  replication_factor of 3.",
+      "pos": [
+        36741,
+        36841
+      ]
+    },
+    {
+      "content": "SimpleStrategy is recommended for single data center deployments whereas NetworkTopologyStrategy for multi-data center deployments.",
+      "pos": [
+        36842,
+        36973
+      ]
+    },
+    {
+      "content": "A replication_factor of 3 will give tolerance for node failures.",
+      "pos": [
+        36974,
+        37038
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">&lt;a id=\"tworegion\"&gt;</ph> <ph id=\"ph2\">&lt;/a&gt;</ph>Multi-Region Deployment Process",
+      "pos": [
+        37043,
+        37097
+      ]
+    },
+    {
+      "content": "Will leverage the single region deployment completed and repeat the same process for installing the second region.",
+      "pos": [
+        37098,
+        37212
+      ]
+    },
+    {
+      "content": "The key difference between the single and multiple region deployment is the VPN tunnel setup for inter-region communication; we will start with the network installation, provision the VMs and configure Cassandra.",
+      "pos": [
+        37213,
+        37425
+      ]
+    },
+    {
+      "content": "Step 1: Create the Virtual Network at the 2nd Region",
+      "pos": [
+        37431,
+        37483
+      ]
+    },
+    {
+      "content": "Log into the management portal and create a Virtual Network with the attributes show in the table.",
+      "pos": [
+        37484,
+        37582
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt>Configure a Cloud-Only Virtual Network in the Management Portal<ept id=\"p1\">](../virtual-network/virtual-networks-create-vnet.md)</ept> for detailed steps of the process.",
+      "pos": [
+        37583,
+        37739
+      ]
+    },
+    {
+      "content": "Attribute Name",
+      "pos": [
+        37763,
+        37777
+      ]
+    },
+    {
+      "content": "Value",
+      "pos": [
+        37790,
+        37795
+      ]
+    },
+    {
+      "content": "Remarks",
+      "pos": [
+        37808,
+        37815
+      ]
+    },
+    {
+      "content": "Name",
+      "pos": [
+        37834,
+        37838
+      ]
+    },
+    {
+      "content": "vnet-cass-east-us",
+      "pos": [
+        37851,
+        37868
+      ]
+    },
+    {
+      "content": "Region",
+      "pos": [
+        37899,
+        37905
+      ]
+    },
+    {
+      "content": "East US",
+      "pos": [
+        37916,
+        37923
+      ]
+    },
+    {
+      "content": "DNS Servers",
+      "pos": [
+        37952,
+        37963
+      ]
+    },
+    {
+      "content": "Ignore this as we are not using a DNS Server",
+      "pos": [
+        37986,
+        38030
+      ]
+    },
+    {
+      "content": "Configure a point-to-site VPN",
+      "pos": [
+        38049,
+        38078
+      ]
+    },
+    {
+      "content": "Configure a site-to-site VPN",
+      "pos": [
+        38131,
+        38159
+      ]
+    },
+    {
+      "content": "Address Space",
+      "pos": [
+        38213,
+        38226
+      ]
+    },
+    {
+      "content": "10.2.0.0/16",
+      "pos": [
+        38238,
+        38249
+      ]
+    },
+    {
+      "content": "Starting IP",
+      "pos": [
+        38278,
+        38289
+      ]
+    },
+    {
+      "content": "10.2.0.0",
+      "pos": [
+        38299,
+        38307
+      ]
+    },
+    {
+      "content": "CIDR",
+      "pos": [
+        38338,
+        38342
+      ]
+    },
+    {
+      "content": "/16 (65531)",
+      "pos": [
+        38355,
+        38366
+      ]
+    },
+    {
+      "content": "Add the following subnets:",
+      "pos": [
+        38400,
+        38426
+      ]
+    },
+    {
+      "content": "Name",
+      "pos": [
+        38444,
+        38448
+      ]
+    },
+    {
+      "content": "Starting IP",
+      "pos": [
+        38461,
+        38472
+      ]
+    },
+    {
+      "content": "CIDR",
+      "pos": [
+        38485,
+        38489
+      ]
+    },
+    {
+      "content": "Remarks",
+      "pos": [
+        38501,
+        38508
+      ]
+    },
+    {
+      "content": "web",
+      "pos": [
+        38527,
+        38530
+      ]
+    },
+    {
+      "content": "10.2.1.0",
+      "pos": [
+        38540,
+        38548
+      ]
+    },
+    {
+      "content": "/24 (251)",
+      "pos": [
+        38560,
+        38569
+      ]
+    },
+    {
+      "content": "Subnet for the web farm",
+      "pos": [
+        38580,
+        38603
+      ]
+    },
+    {
+      "content": "data",
+      "pos": [
+        38622,
+        38626
+      ]
+    },
+    {
+      "content": "10.2.2.0",
+      "pos": [
+        38639,
+        38647
+      ]
+    },
+    {
+      "content": "/24 (251)",
+      "pos": [
+        38659,
+        38668
+      ]
+    },
+    {
+      "content": "Subnet for the database nodes",
+      "pos": [
+        38679,
+        38708
+      ]
+    },
+    {
+      "content": "Step 2: Create Local Networks",
+      "pos": [
+        38733,
+        38762
+      ]
+    },
+    {
+      "content": "A Local Network in Azure virtual networking is a proxy address space that maps to a remote site including a private cloud or another Azure region.",
+      "pos": [
+        38763,
+        38909
+      ]
+    },
+    {
+      "content": "This proxy address space is bound to a remote gateway for routing network to the right networking destinations.",
+      "pos": [
+        38910,
+        39021
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt>Configure a VNet to VNet Connection<ept id=\"p1\">](../vpn-gateway/virtual-networks-configure-vnet-to-vnet-connection.md)</ept> for the instructions on establishing VNET-to-VNET connection.",
+      "pos": [
+        39022,
+        39195
+      ]
+    },
+    {
+      "content": "Create two local networks per the following details:",
+      "pos": [
+        39198,
+        39250
+      ]
+    },
+    {
+      "content": "Network Name",
+      "pos": [
+        39254,
+        39266
+      ]
+    },
+    {
+      "content": "VPN Gateway Address",
+      "pos": [
+        39269,
+        39288
+      ]
+    },
+    {
+      "content": "Address Space",
+      "pos": [
+        39291,
+        39304
+      ]
+    },
+    {
+      "content": "Remarks",
+      "pos": [
+        39307,
+        39314
+      ]
+    },
+    {
+      "content": "hk-lnet-map-to-east-us",
+      "pos": [
+        39384,
+        39406
+      ]
+    },
+    {
+      "content": "23.1.1.1",
+      "pos": [
+        39409,
+        39417
+      ]
+    },
+    {
+      "content": "10.2.0.0/16",
+      "pos": [
+        39421,
+        39432
+      ]
+    },
+    {
+      "content": "While creating the Local Network give a placeholder gateway address.",
+      "pos": [
+        39437,
+        39505
+      ]
+    },
+    {
+      "content": "The real gateway address is filled once the gateway is created.",
+      "pos": [
+        39506,
+        39569
+      ]
+    },
+    {
+      "content": "Make sure the address space exactly matches the respective remote VNET; in this case the VNET created in the East US region.",
+      "pos": [
+        39570,
+        39694
+      ]
+    },
+    {
+      "content": "hk-lnet-map-to-west-us",
+      "pos": [
+        39699,
+        39721
+      ]
+    },
+    {
+      "content": "23.2.2.2",
+      "pos": [
+        39724,
+        39732
+      ]
+    },
+    {
+      "content": "10.1.0.0/16",
+      "pos": [
+        39736,
+        39747
+      ]
+    },
+    {
+      "content": "While creating the Local Network give a placeholder gateway address.",
+      "pos": [
+        39752,
+        39820
+      ]
+    },
+    {
+      "content": "The real gateway address is filled once the gateway is created.",
+      "pos": [
+        39821,
+        39884
+      ]
+    },
+    {
+      "content": "Make sure the address space exactly matches the respective remote VNET; in this case the VNET created in the West US region.",
+      "pos": [
+        39885,
+        40009
+      ]
+    },
+    {
+      "content": "Step 3: Map “Local” network to the respective VNETs",
+      "pos": [
+        40017,
+        40068
+      ]
+    },
+    {
+      "content": "From the service management portal, select each vnet, click “Configure”, check “Connect to the local network”, and select the Local Networks per the following details:",
+      "pos": [
+        40069,
+        40236
+      ]
+    },
+    {
+      "content": "Virtual Network",
+      "pos": [
+        40242,
+        40257
+      ]
+    },
+    {
+      "content": "Local Network",
+      "pos": [
+        40260,
+        40273
+      ]
+    },
+    {
+      "content": "hk-vnet-west-us",
+      "pos": [
+        40314,
+        40329
+      ]
+    },
+    {
+      "content": "hk-lnet-map-to-east-us",
+      "pos": [
+        40332,
+        40354
+      ]
+    },
+    {
+      "content": "hk-vnet-east-us",
+      "pos": [
+        40359,
+        40374
+      ]
+    },
+    {
+      "content": "hk-lnet-map-to-west-us",
+      "pos": [
+        40377,
+        40399
+      ]
+    },
+    {
+      "content": "Step 4: Create Gateways on VNET1 and VNET2",
+      "pos": [
+        40407,
+        40449
+      ]
+    },
+    {
+      "content": "From the dashboard of both the virtual networks, click CREATE GATEWAY which will trigger the VPN gateway provisioning process.",
+      "pos": [
+        40450,
+        40576
+      ]
+    },
+    {
+      "content": "After a few minutes the dashboard of each virtual network should display the actual gateway address.",
+      "pos": [
+        40577,
+        40677
+      ]
+    },
+    {
+      "content": "Step 5: Update “Local” networks with the respective “Gateway” addresses",
+      "pos": [
+        40682,
+        40753
+      ]
+    },
+    {
+      "content": "Edit both the local networks to replace the placeholder gateway IP address with the real IP address of the just provisioned gateways.",
+      "pos": [
+        40757,
+        40890
+      ]
+    },
+    {
+      "content": "Use the following mapping:",
+      "pos": [
+        40891,
+        40917
+      ]
+    },
+    {
+      "content": "Local Network",
+      "pos": [
+        40936,
+        40949
+      ]
+    },
+    {
+      "content": "Virtual Network Gateway",
+      "pos": [
+        40962,
+        40985
+      ]
+    },
+    {
+      "content": "hk-lnet-map-to-east-us",
+      "pos": [
+        41004,
+        41026
+      ]
+    },
+    {
+      "content": "Gateway of hk-vnet-west-us",
+      "pos": [
+        41036,
+        41062
+      ]
+    },
+    {
+      "content": "hk-lnet-map-to-west-us",
+      "pos": [
+        41081,
+        41103
+      ]
+    },
+    {
+      "content": "Gateway of hk-vnet-east-us",
+      "pos": [
+        41113,
+        41139
+      ]
+    },
+    {
+      "content": "Step 6: Update the shared key",
+      "pos": [
+        41163,
+        41192
+      ]
+    },
+    {
+      "content": "Use the following Powershell script to update the IPSec key of each VPN gateway [use the sake key for both the gateways]:",
+      "pos": [
+        41193,
+        41314
+      ]
+    },
+    {
+      "content": "Set-AzureVNetGatewayKey -VNetName hk-vnet-east-us -LocalNetworkSiteName hk-lnet-map-to-west-us -SharedKey D9E76BKK",
+      "pos": [
+        41316,
+        41430
+      ]
+    },
+    {
+      "content": "Set-AzureVNetGatewayKey -VNetName hk-vnet-west-us -LocalNetworkSiteName hk-lnet-map-to-east-us -SharedKey D9E76BKK",
+      "pos": [
+        41431,
+        41545
+      ]
+    },
+    {
+      "content": "Step 6: Establish the VNET-to-VNET connection",
+      "pos": [
+        41551,
+        41596
+      ]
+    },
+    {
+      "content": "From the Azure service management portal, use the “DASHBOARD” menu of both the virtual networks to establish gateway-to-gateway connection.",
+      "pos": [
+        41597,
+        41736
+      ]
+    },
+    {
+      "content": "Use the “CONNECT” menu items in the bottom toolbar.",
+      "pos": [
+        41737,
+        41788
+      ]
+    },
+    {
+      "content": "After a few minutes the dashboard should display the connection details graphically.",
+      "pos": [
+        41789,
+        41873
+      ]
+    },
+    {
+      "content": "Step 7: Create the virtual machines in region #2",
+      "pos": [
+        41878,
+        41926
+      ]
+    },
+    {
+      "content": "Create the Ubuntu image as described in region #1 deployment by following the same steps or copy the image VHD file to the Azure storage account located in region #2 and create the image.",
+      "pos": [
+        41928,
+        42115
+      ]
+    },
+    {
+      "content": "Use this image and create the following list of virtual machines into a new cloud service hk-c-svc-east-us:",
+      "pos": [
+        42116,
+        42223
+      ]
+    },
+    {
+      "content": "Machine Name",
+      "pos": [
+        42229,
+        42241
+      ]
+    },
+    {
+      "content": "Subnet",
+      "pos": [
+        42244,
+        42250
+      ]
+    },
+    {
+      "content": "IP Address",
+      "pos": [
+        42253,
+        42263
+      ]
+    },
+    {
+      "content": "Availability set",
+      "pos": [
+        42266,
+        42282
+      ]
+    },
+    {
+      "content": "DC/Rack",
+      "pos": [
+        42285,
+        42292
+      ]
+    },
+    {
+      "content": "Seed?",
+      "pos": [
+        42295,
+        42300
+      ]
+    },
+    {
+      "content": "hk-c1-east-us",
+      "pos": [
+        42381,
+        42394
+      ]
+    },
+    {
+      "content": "data",
+      "pos": [
+        42397,
+        42401
+      ]
+    },
+    {
+      "content": "10.2.2.4",
+      "pos": [
+        42405,
+        42413
+      ]
+    },
+    {
+      "content": "hk-c-aset-1",
+      "pos": [
+        42418,
+        42429
+      ]
+    },
+    {
+      "content": "dc =EASTUS rack =rack1",
+      "pos": [
+        42437,
+        42459
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        42462,
+        42465
+      ]
+    },
+    {
+      "content": "hk-c2-east-us",
+      "pos": [
+        42470,
+        42483
+      ]
+    },
+    {
+      "content": "data",
+      "pos": [
+        42486,
+        42490
+      ]
+    },
+    {
+      "content": "10.2.2.5",
+      "pos": [
+        42494,
+        42502
+      ]
+    },
+    {
+      "content": "hk-c-aset-1",
+      "pos": [
+        42507,
+        42518
+      ]
+    },
+    {
+      "content": "dc =EASTUS rack =rack1",
+      "pos": [
+        42526,
+        42548
+      ]
+    },
+    {
+      "content": "No",
+      "pos": [
+        42551,
+        42553
+      ]
+    },
+    {
+      "content": "hk-c3-east-us",
+      "pos": [
+        42559,
+        42572
+      ]
+    },
+    {
+      "content": "data",
+      "pos": [
+        42575,
+        42579
+      ]
+    },
+    {
+      "content": "10.2.2.6",
+      "pos": [
+        42583,
+        42591
+      ]
+    },
+    {
+      "content": "hk-c-aset-1",
+      "pos": [
+        42596,
+        42607
+      ]
+    },
+    {
+      "content": "dc =EASTUS rack =rack2",
+      "pos": [
+        42615,
+        42637
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        42640,
+        42643
+      ]
+    },
+    {
+      "content": "hk-c5-east-us",
+      "pos": [
+        42648,
+        42661
+      ]
+    },
+    {
+      "content": "data",
+      "pos": [
+        42664,
+        42668
+      ]
+    },
+    {
+      "content": "10.2.2.8",
+      "pos": [
+        42672,
+        42680
+      ]
+    },
+    {
+      "content": "hk-c-aset-2",
+      "pos": [
+        42685,
+        42696
+      ]
+    },
+    {
+      "content": "dc =EASTUS rack =rack3",
+      "pos": [
+        42704,
+        42726
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        42729,
+        42732
+      ]
+    },
+    {
+      "content": "hk-c6-east-us",
+      "pos": [
+        42737,
+        42750
+      ]
+    },
+    {
+      "content": "data",
+      "pos": [
+        42753,
+        42757
+      ]
+    },
+    {
+      "content": "10.2.2.9",
+      "pos": [
+        42761,
+        42769
+      ]
+    },
+    {
+      "content": "hk-c-aset-2",
+      "pos": [
+        42774,
+        42785
+      ]
+    },
+    {
+      "content": "dc =EASTUS rack =rack3",
+      "pos": [
+        42793,
+        42815
+      ]
+    },
+    {
+      "content": "No",
+      "pos": [
+        42818,
+        42820
+      ]
+    },
+    {
+      "content": "hk-c7-east-us",
+      "pos": [
+        42826,
+        42839
+      ]
+    },
+    {
+      "content": "data",
+      "pos": [
+        42842,
+        42846
+      ]
+    },
+    {
+      "content": "10.2.2.10",
+      "pos": [
+        42850,
+        42859
+      ]
+    },
+    {
+      "content": "hk-c-aset-2",
+      "pos": [
+        42863,
+        42874
+      ]
+    },
+    {
+      "content": "dc =EASTUS rack =rack4",
+      "pos": [
+        42882,
+        42904
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        42907,
+        42910
+      ]
+    },
+    {
+      "content": "hk-c8-east-us",
+      "pos": [
+        42915,
+        42928
+      ]
+    },
+    {
+      "content": "data",
+      "pos": [
+        42931,
+        42935
+      ]
+    },
+    {
+      "content": "10.2.2.11",
+      "pos": [
+        42939,
+        42948
+      ]
+    },
+    {
+      "content": "hk-c-aset-2",
+      "pos": [
+        42952,
+        42963
+      ]
+    },
+    {
+      "content": "dc =EASTUS rack =rack4",
+      "pos": [
+        42971,
+        42993
+      ]
+    },
+    {
+      "content": "No",
+      "pos": [
+        42996,
+        42998
+      ]
+    },
+    {
+      "content": "hk-w1-east-us",
+      "pos": [
+        43004,
+        43017
+      ]
+    },
+    {
+      "content": "web",
+      "pos": [
+        43020,
+        43023
+      ]
+    },
+    {
+      "content": "10.2.1.4",
+      "pos": [
+        43028,
+        43036
+      ]
+    },
+    {
+      "content": "hk-w-aset-1",
+      "pos": [
+        43041,
+        43052
+      ]
+    },
+    {
+      "content": "N/A",
+      "pos": [
+        43060,
+        43063
+      ]
+    },
+    {
+      "content": "N/A",
+      "pos": [
+        43085,
+        43088
+      ]
+    },
+    {
+      "content": "hk-w2-east-us",
+      "pos": [
+        43093,
+        43106
+      ]
+    },
+    {
+      "content": "web",
+      "pos": [
+        43109,
+        43112
+      ]
+    },
+    {
+      "content": "10.2.1.5",
+      "pos": [
+        43117,
+        43125
+      ]
+    },
+    {
+      "content": "hk-w-aset-1",
+      "pos": [
+        43130,
+        43141
+      ]
+    },
+    {
+      "content": "N/A",
+      "pos": [
+        43149,
+        43152
+      ]
+    },
+    {
+      "content": "N/A",
+      "pos": [
+        43174,
+        43177
+      ]
+    },
+    {
+      "content": "Follow the same instructions as region #1 but use 10.2.xxx.xxx address space.",
+      "pos": [
+        43182,
+        43259
+      ]
+    },
+    {
+      "content": "Step 8: Configure Cassandra on each VM",
+      "pos": [
+        43264,
+        43302
+      ]
+    },
+    {
+      "content": "Log into the VM and perform the following:",
+      "pos": [
+        43303,
+        43345
+      ]
+    },
+    {
+      "pos": [
+        43351,
+        43492
+      ],
+      "content": "Edit $CASS_HOME/conf/cassandra-rackdc.properties to specify the data center and rack properties in the format:\n dc =EASTUS\n rack =rack1",
+      "leadings": [
+        "",
+        "   ",
+        "   "
+      ],
+      "nodes": [
+        {
+          "content": "Edit $CASS_HOME/conf/cassandra-rackdc.properties to specify the data center and rack properties in the format:",
+          "pos": [
+            0,
+            110
+          ]
+        },
+        {
+          "content": "dc =EASTUS",
+          "pos": [
+            112,
+            122
+          ]
+        },
+        {
+          "content": "rack =rack1",
+          "pos": [
+            124,
+            135
+          ]
+        }
+      ]
+    },
+    {
+      "pos": [
+        43496,
+        43769
+      ],
+      "content": "Edit cassandra.yaml to configure seed nodes: \n Seeds: \"10.1.2.4,10.1.2.6,10.1.2.8,10.1.2.10,10.2.2.4,10.2.2.6,10.2.2.8,10.2.2.10\"\n###Step 9: Start Cassandra\nLog into each VM and start Cassandra in the background by running the following command:\n$CASS_HOME/bin/cassandra",
+      "leadings": [
+        "",
+        "   ",
+        "",
+        "",
+        ""
+      ],
+      "nodes": [
+        {
+          "content": "Edit cassandra.yaml to configure seed nodes:",
+          "pos": [
+            0,
+            44
+          ]
+        },
+        {
+          "content": "Seeds: \"10.1.2.4,10.1.2.6,10.1.2.8,10.1.2.10,10.2.2.4,10.2.2.6,10.2.2.8,10.2.2.10\"",
+          "pos": [
+            47,
+            129
+          ]
+        },
+        {
+          "content": "Step 9: Start Cassandra",
+          "pos": [
+            133,
+            156
+          ]
+        },
+        {
+          "content": "Log into each VM and start Cassandra in the background by running the following command:",
+          "pos": [
+            157,
+            245
+          ]
+        },
+        {
+          "content": "$CASS_HOME/bin/cassandra",
+          "pos": [
+            246,
+            270
+          ]
+        }
+      ]
+    },
+    {
+      "content": "Test the Multi-Region Cluster",
+      "pos": [
+        43774,
+        43803
+      ]
+    },
+    {
+      "content": "By now Cassandra has been deployed to 16 nodes with 8 nodes in each Azure region.",
+      "pos": [
+        43804,
+        43885
+      ]
+    },
+    {
+      "content": "These nodes are in the same cluster by virtue of the common cluster name and the seed node configuration.",
+      "pos": [
+        43886,
+        43991
+      ]
+    },
+    {
+      "content": "Use the following process to test the cluster:",
+      "pos": [
+        43992,
+        44038
+      ]
+    },
+    {
+      "content": "Step 1: Get the internal load balancer IP for both the regions using PowerShell",
+      "pos": [
+        44042,
+        44121
+      ]
+    },
+    {
+      "content": "Get-AzureInternalLoadbalancer -ServiceName \"hk-c-svc-west-us\"",
+      "pos": [
+        44124,
+        44185
+      ]
+    },
+    {
+      "content": "Get-AzureInternalLoadbalancer -ServiceName \"hk-c-svc-east-us\"",
+      "pos": [
+        44188,
+        44249
+      ]
+    },
+    {
+      "content": "Note the IP addresses (e.g. west - 10.1.2.101, east - 10.2.2.101) displayed.",
+      "pos": [
+        44257,
+        44333
+      ]
+    },
+    {
+      "content": "Step 2: Execute the following in the west region after logging into hk-w1-west-us",
+      "pos": [
+        44338,
+        44419
+      ]
+    },
+    {
+      "content": "Execute $CASS_HOME/bin/cqlsh 10.1.2.101 9160",
+      "pos": [
+        44426,
+        44470
+      ]
+    },
+    {
+      "content": "Execute the following CQL commands:",
+      "pos": [
+        44476,
+        44511
+      ]
+    },
+    {
+      "content": "You should see a display like the one below:",
+      "pos": [
+        44977,
+        45021
+      ]
+    },
+    {
+      "content": "customer_id",
+      "pos": [
+        45025,
+        45036
+      ]
+    },
+    {
+      "content": "firstname",
+      "pos": [
+        45039,
+        45048
+      ]
+    },
+    {
+      "content": "Lastname",
+      "pos": [
+        45051,
+        45059
+      ]
+    },
+    {
+      "content": "1",
+      "pos": [
+        45103,
+        45104
+      ]
+    },
+    {
+      "content": "John",
+      "pos": [
+        45117,
+        45121
+      ]
+    },
+    {
+      "content": "Doe",
+      "pos": [
+        45129,
+        45132
+      ]
+    },
+    {
+      "content": "2",
+      "pos": [
+        45142,
+        45143
+      ]
+    },
+    {
+      "content": "Jane",
+      "pos": [
+        45156,
+        45160
+      ]
+    },
+    {
+      "content": "Doe",
+      "pos": [
+        45168,
+        45171
+      ]
+    },
+    {
+      "content": "Step 3: Execute the following in the east region after logging into hk-w1-east-us:",
+      "pos": [
+        45184,
+        45266
+      ]
+    },
+    {
+      "content": "Execute $CASS_HOME/bin/cqlsh 10.2.2.101 9160",
+      "pos": [
+        45273,
+        45317
+      ]
+    },
+    {
+      "content": "Execute the following CQL commands:",
+      "pos": [
+        45323,
+        45358
+      ]
+    },
+    {
+      "content": "You should see the same display as seen for the West region:",
+      "pos": [
+        45693,
+        45753
+      ]
+    },
+    {
+      "content": "customer_id",
+      "pos": [
+        45758,
+        45769
+      ]
+    },
+    {
+      "content": "firstname",
+      "pos": [
+        45772,
+        45781
+      ]
+    },
+    {
+      "content": "Lastname",
+      "pos": [
+        45784,
+        45792
+      ]
+    },
+    {
+      "content": "1",
+      "pos": [
+        45840,
+        45841
+      ]
+    },
+    {
+      "content": "John",
+      "pos": [
+        45854,
+        45858
+      ]
+    },
+    {
+      "content": "Doe",
+      "pos": [
+        45866,
+        45869
+      ]
+    },
+    {
+      "content": "2",
+      "pos": [
+        45881,
+        45882
+      ]
+    },
+    {
+      "content": "Jane",
+      "pos": [
+        45895,
+        45899
+      ]
+    },
+    {
+      "content": "Doe",
+      "pos": [
+        45907,
+        45910
+      ]
+    },
+    {
+      "content": "Execute a few more inserts and see that those get replicated to west-us part of the cluster.",
+      "pos": [
+        45922,
+        46014
+      ]
+    },
+    {
+      "content": "Test Cassandra Cluster from Node.js",
+      "pos": [
+        46020,
+        46055
+      ]
+    },
+    {
+      "content": "Using one of the Linux VMs crated in the \"web\" tier previously, we will execute a simple Node.js script to read the previously inserted data",
+      "pos": [
+        46056,
+        46196
+      ]
+    },
+    {
+      "content": "Step 1: Install Node.js and Cassandra Client",
+      "pos": [
+        46201,
+        46245
+      ]
+    },
+    {
+      "content": "Install Node.js and npm",
+      "pos": [
+        46252,
+        46275
+      ]
+    },
+    {
+      "content": "Install node package \"cassandra-client\" using npm",
+      "pos": [
+        46279,
+        46328
+      ]
+    },
+    {
+      "content": "Execute the following script at the shell prompt which displays the json string of the retrieved data:",
+      "pos": [
+        46332,
+        46434
+      ]
+    },
+    {
+      "content": "Conclusion",
+      "pos": [
+        49605,
+        49615
+      ]
+    },
+    {
+      "content": "Microsoft Azure is a flexible platform that allows the running of both Microsoft as well as open source software as demonstrated by this exercise.",
+      "pos": [
+        49617,
+        49763
+      ]
+    },
+    {
+      "content": "Highly available Cassandra clusters can be deployed on a single data center through the spreading of the cluster nodes across multiple fault domains.",
+      "pos": [
+        49764,
+        49913
+      ]
+    },
+    {
+      "content": "Cassandra clusters can also be deployed across multiple geographically distant Azure regions for disaster proof systems.",
+      "pos": [
+        49914,
+        50034
+      ]
+    },
+    {
+      "content": "Azure and Cassandra together enables the construction of highly scalable, highly available and disaster recoverable cloud services needed by today's internet scale services.",
+      "pos": [
+        50035,
+        50208
+      ]
+    },
+    {
+      "content": "References",
+      "pos": [
+        50214,
+        50224
+      ]
+    },
+    {
+      "content": "http://cassandra.apache.org",
+      "pos": [
+        50230,
+        50257
+      ]
+    },
+    {
+      "content": "http://www.datastax.com",
+      "pos": [
+        50291,
+        50314
+      ]
+    },
+    {
+      "content": "http://www.nodejs.org",
+      "pos": [
+        50345,
+        50366
+      ]
+    }
+  ],
+  "content": "<properties \n    pageTitle=\"Run Cassandra with Linux on Azure\" \n    description=\"How to run a Cassandra cluster on Linux in Azure Virtual Machines from a Node.js app\" \n    services=\"virtual-machines\" \n    documentationCenter=\"nodejs\" \n    authors=\"MikeWasson\" \n    manager=\"wpickett\" \n    editor=\"\"/>\n\n<tags \n    ms.service=\"virtual-machines\" \n    ms.workload=\"infrastructure-services\" \n    ms.tgt_pltfrm=\"vm-linux\" \n    ms.devlang=\"na\" \n    ms.topic=\"article\" \n    ms.date=\"08/30/2015\" \n    ms.author=\"mwasson\"/>\n\n\n\n\n\n# Running Cassandra with Linux on Azure and Accessing it from Node.js \n\n## Overview\nMicrosoft Azure is an open cloud platform that runs both Microsoft as well as non-Microsoft software which  includes operating systems, application servers, messaging middleware as well as SQL and NoSQL databases from both commercial and open source models. Building resilient services on public clouds including Azure requires careful planning and deliberate architecture for both applications servers as well storage layers. Cassandra’s distributed storage architecture naturally helps in building highly available systems that are fault tolerant for cluster failures. Cassandra is a cloud scale NoSQL database maintained by Apache Software Foundation at cassandra.apache.org; Cassandra is written in Java and hence runs on both on Windows as well as Linux platforms. \n\nThe focus of this article is to show Cassandra deployment on Ubuntu as a single and multi-data center cluster leveraging Microsoft Azure Virtual Machines and Virtual Networks. The cluster deployment for production optimized workloads is out of scope of this article as it requires multi-disk node configuration, appropriate ring topology design and data modeling to support the needed replication, data consistency, throughput and high availability requirements. \n\nThis article takes a fundamental approach to show what is involved in building the Cassandra cluster compared Docker, Chef or Puppet which can make the infrastructure deployment a lot easier.  \n\n## The Deployment Models \nMicrosoft Azure networking allows the deployment of isolated private clusters, the access of which can be restricted to attain fine grained network security.  Since this article is about showing the Cassandra deployment at a fundamental level, we will not focus on the consistency level and the optimal storage design for throughput. Here is the list of networking requirements for our hypothetical cluster:\n\n- External systems can’t access Cassandra database from within or outside Azure\n- Cassandra cluster has to be behind a load balancer for thrift traffic\n- Deploy Cassandra nodes in two groups in each data center for an enhanced cluster availability \n- Lock down the cluster so that only application server farm has access to the database directly\n- No public networking endpoints other than SSH\n- Each Cassandra node needs a fixed internal IP address\n\nCassandra can be deployed to a single Azure region or to multiple regions based on the distributed nature of the workload. Multi-region deployment model can be leveraged to serve end users closer to a particular geography through the same Cassandra infrastructure. Cassandra’s built-in node replication takes care of the synchronization of multi-master writes originating from multiple data centers and presents a consistent view of the data to applications. Multi-region deployment can also help with the risk mitigation of the broader Azure service outages. Cassandra’s tunable consistency and replication topology will help in meeting diverse RPO needs of applications. \n\n\n### Single Region Deployment\nWe will start with a single region deployment and harvest the learnings in creating a multi-region model. Azure virtual networking will be used to create isolated subnets so that the network security requirements mentioned above can be met.  The process described in creating the single region deployment uses Ubuntu 14.04 LTS and Cassandra 2.08; however, the process can easily be adopted to the other Linux variants. The following are some of the systemic characteristics of the single region deployment.  \n\n**High Availability:** The Cassandra nodes shown in the Figure 1 are deployed to two availability sets so that the nodes are spread between multiple fault domains for high availability. VMs annotated with each availability set is mapped to 2 fault domains.  Microsoft Azure uses the concept of fault domain to manage unplanned down time (e.g. hardware or software failures) while the concept of upgrade domain (e.g. host or guest OS patching/upgrades, application upgrades) is used for managing scheduled down time. Please see [Disaster Recovery and High Availability for Azure Applications](http://msdn.microsoft.com/library/dn251004.aspx) for the role of fault and upgrade domains in attaining high availability. \n\n![Single region deployment](./media/virtual-machines-linux-nodejs-running-cassandra/cassandra-linux1.png)\n\nFigure 1: Single region deployment\n\nNote that at the time of this writing, Azure doesn’t allow the explicit mapping of a group of VMs to a specific fault domain; consequently, even with the deployment model shown in Figure 1, it is statistically probable that all the virtual machines may be mapped to two fault domains instead of four. \n\n**Load Balancing Thrift Traffic:** Thrift client libraries inside the web server connect to the cluster through an internal load balancer. This requires the process of adding the internal load balancer to the “data” subnet (refer Figure 1) in the context of the cloud service hosting the Cassandra cluster. Once the internal load balancer is defined, each node requires the load balanced endpoint to be added with the annotations of a load balanced set with previously defined load balancer name. See [Azure Internal Load Balancing ](../load-balancer/load-balancer-internal-overview.md)for more details.\n\n**Cluster Seeds:** It is important to select the most highly available nodes for seeds as the new nodes will communicate with seed nodes to discover the topology of the cluster. One node from each availability set is designated as seed nodes to avoid single point of failure. \n\n**Replication Factor and Consistency Level:** Cassandra’s build-in high-availability and data durability is characterized by the Replication Factor (RF - number of copies of each row stored on the cluster) and Consistency Level (number of replicas to be read/written before returning the result to the caller). Replication factor is specified during the KEYSPACE (similar to a relational database) creation whereas the consistency level is specified while issuing the CRUD query. See Cassandra documentation at [Configuring for Consistency](http://www.datastax.com/documentation/cassandra/2.0/cassandra/dml/dml_config_consistency_c.html) for consistency details and the formula for quorum computation.\n\nCassandra supports two types of data integrity models – Consistency and Eventual Consistency; the Replication Factor and Consistency Level will together determine if the data will be consistent as soon as a write operation is complete or it will be eventually consistent. For example, specifying QUORUM as the Consistency Level will always ensures data Consistency while any consistency level, below the number of replicas to be written as needed to attain QUORUM (e.g. ONE) results in data being eventually consistent. \n\nThe 8-node cluster shown above, with a replication factor of 3 and QUORUM (2 nodes are read or written for consistency) read/write consistency level, can survive the theoretical loss of at the most 1 node per replication group before the application start noticing the failure. This assumes that all the key spaces have well balanced read/write requests.  The following are the parameters we will use for the deployed cluster: \n\nSingle region Cassandra cluster configuration:\n\n| Cluster Parameter | Value | Remarks |\n| ----------------- | ----- | ------- |\n| Number of Nodes (N) | 8   | Total number of nodes in the cluster |\n| Replication Factor (RF) | 3 | Number of replicas of a given row |\n| Consistency Level (Write) | QUORUM[(RF/2) +1) = 2] The result of the formula is rounded down | Writes at the most 2 replicas before the response is sent to the caller; 3rd replica is written in an eventually consistent manner. |\n| Consistency Level (Read) | QUORUM [(RF/2) +1= 2] The result of the formula is rounded down | Reads 2 replicas before sending response to the caller. |\n| Replication Strategy | NetworkTopologyStrategy see [Data Replication](http://www.datastax.com/documentation/cassandra/2.0/cassandra/architecture/architectureDataDistributeReplication_c.html) in Cassandra documentation for more information | Understands the deployment topology and places replicas on nodes so that all the replicas don’t end up on the same rack |\n| Snitch | GossipingPropertyFileSnitch see [Snitches](http://www.datastax.com/documentation/cassandra/2.0/cassandra/architecture/architectureSnitchesAbout_c.html) in Cassandra documentation for more information | NetworkTopologyStrategy uses a concept of snitch to understand the topology. GossipingPropertyFileSnitch gives better control in mapping each node to data center and rack. The cluster then uses gossip to propagate this information. This is much simpler in dynamic IP setting relative to PropertyFileSnitch |\n\n\n**Azure Considerations for Cassandra Cluster:** Microsoft Azure Virtual Machines capability uses Azure Blob storage for disk persistence; Azure Storage saves 3 replicas of each disk for high durability. That means each row of data inserted into a Cassandra table is already stored in 3 replicas and hence data consistency is already taken care of even if the Replication Factor (RF) is 1. The main problem with Replication Factor being 1 is that the application will experience downtime even if a single Cassandra node fails. However, if a node is down for the problems (e.g. hardware, system software failures) recognized by Azure Fabric Controller, it will provision a new node in its place using the same storage drives. Provisioning a new node to replace the old one may take a few minutes.  Similarly for planned maintenance activities like guest OS changes, Cassandra upgrades and application changes Azure Fabric Controller performs rolling upgrades of the nodes in the cluster.  Rolling upgrades also may take down a few nodes at a time and hence the cluster may experience brief downtime for a few partitions. However, the data will not be lost due to the built-in Azure Storage redundancy.  \n\nFor systems deployed to Azure that doesn’t require high availability (e.g. around 99.9 which is equivalent to 8.76 hrs/year; see [High Availability](http://en.wikipedia.org/wiki/High_availability) for details) you may be able to run with RF=1 and Consistency Level=ONE.  For applications with high availability requirements, RF=3 and Consistency Level=QUORUM will tolerate the down time of one of the nodes one of the replicas. RF=1 in traditional deployments (e.g. on-premise) can’t be used due to the possible data loss resulting from problems like disk failures.   \n\n## Multi-region Deployment\nCassandra’s data center aware replication and consistency model described above helps with the multi-region deployment out of the box without the need for any external tooling. This is quite different from the traditional relational databases where the setup for database mirroring for multi-master writes can be quite complex. Cassandra in a multi-region set up can help with the usage scenarios including the following: \n\n**Proximity based deployment:** Multi-tenant applications, with clear mapping of tenant users -to-region, can be benefited by the multi-region cluster’s low latencies. For example a learning management systems for educational institutions can deploy a distributed cluster in East US and West US regions to serve the respective campuses for transactional as well as analytics. The data can be locally consistent at the time reads and writes and can be eventually consistent across both the regions. There are other examples like media distribution, e-commerce and anything and everything that serves geo concentrated user base is a good use case for this deployment model. \n\n**High Availability:** Redundancy is a key factor in attaining high availability of software and hardware; see Building Reliable Cloud Systems on Microsoft Azure for details. On Microsoft Azure, the only reliable way of achieving true redundancy is by deploying a multi-region cluster. Applications can be deployed in an active-active or active-passive mode and if one of the regions is down, Azure Traffic Manager can redirect traffic to the active region.  With the single region deployment, if the availability is 99.9, a two-region deployment can attain an availability of 99.9999 computed by the formula: (1-(1-0.999) * (1-0.999))*100); see the above paper for details. \n\n**Disaster Recovery:** Multi-region Cassandra cluster, if properly designed, can withstand catastrophic data center outages. If one region is down, the application deployed to other regions can start serving the end users. Like any other business continuity implementations, the application has to be tolerant for some data loss resulting from the data in the asynchronous pipeline. However, Cassandra makes the recovery much swifter than the time taken by traditional database recovery processes. Figure 2 shows the typical multi-region deployment model with eight nodes in each region. Both regions are mirror images of each other for the same of symmetry; real world designs depend on the workload type (e.g. transactional or analytical), RPO, RTO, data consistency and availability requirements. \n\n![Multi region deployment](./media/virtual-machines-linux-nodejs-running-cassandra/cassandra-linux2.png)\n\nFigure 2: Multi-region Cassandra deployment\n\n### Network Integration\nSets of virtual machines deployed to private networks located on two regions communicates with each other using a VPN tunnel. The VPN tunnel connects two software gateways provisioned during the network deployment process. Both regions have similar network architecture in terms of “web” and “data” subnets; Azure networking allows the creation of as many subnets as needed and apply ACLs as needed by network security. While designing the cluster topology inter data center communication latency and the economic impact of the network traffic need to be considered. \n\n### Data Consistency for Multi-Data Center Deployment\nDistributed deployments need to be aware of the cluster topology impact on throughput and high availability. The RF and Consistency Level need to be selected in such way that the quorum doesn’t depend on the availability of all the data centers. \nFor a system that needs high consistency, a LOCAL_QUORUM for consistency level (for reads and writes) will make sure that the local reads and writes are satisfied from the local nodes while data is replicated asynchronously to the remote data centers.  Table 2 summarizes the configuration details for the multi-region cluster outlined later in the write up. \n\n**Two-region Cassandra cluster configuration**\n\n\n| Cluster Parameter | Value | Remarks |\n| ----------------- | ----- | ------- |\n| Number of Nodes (N) | 8 + 8 | Total number of nodes in the cluster |\n| Replication Factor (RF) | 3 | Number of replicas of a given row |\n| Consistency Level (Write) | LOCAL_QUORUM [(sum(RF)/2) +1) = 4] The result of the formula is rounded down | 2 nodes will be written to the first data center synchronously; the additional 2 nodes needed for quorum will be written asynchronously to the 2nd data center. |\n| Consistency Level (Read) | LOCAL_QUORUM ((RF/2) +1) = 2 The result of the formula is rounded down | Read requests are satisfied from only one region; 2 nodes are read before the response is sent back to the client. |\n| Replication Strategy | NetworkTopologyStrategy see [Data Replication](http://www.datastax.com/documentation/cassandra/2.0/cassandra/architecture/architectureDataDistributeReplication_c.html) in Cassandra documentation for more information | Understands the deployment topology and places replicas on nodes so that all the replicas don’t end up on the same rack |\n| Snitch | GossipingPropertyFileSnitch see [Snitches](http://www.datastax.com/documentation/cassandra/2.0/cassandra/architecture/architectureSnitchesAbout_c.html) in Cassandra documentation for more information | NetworkTopologyStrategy uses a concept of snitch to understand the topology. GossipingPropertyFileSnitch gives better control in mapping each node to data center and rack. The cluster then uses gossip to propagate this information. This is much simpler in dynamic IP setting relative to PropertyFileSnitch | \n \n\n##THE SOFTWARE CONFIGURATION\nThe following software versions are used during the deployment:\n\n<table>\n<tr><th>Software</th><th>Source</th><th>Version</th></tr>\n<tr><td>JRE </td><td>[JRE 8](http://www.oracle.com/technetwork/java/javase/downloads/server-jre8-downloads-2133154.html) </td><td>8U5</td></tr>\n<tr><td>JNA </td><td>[JNA](https://github.com/twall/jna) </td><td> 3.2.7</td></tr>\n<tr><td>Cassandra</td><td>[Apache Cassandra 2.0.8](http://www.apache.org/dist/cassandra/2.0.8/apache-cassandra-2.0.8-bin.tar.gz)</td><td> 2.0.8</td></tr>\n<tr><td>Ubuntu  </td><td>[Mcrosoft Azure Portal](http://azure.microsoft.com) </td><td>14.04 LTS</td></tr>\n</table>\n\nSince downloading of JRE requires manual acceptance of Oracle license, to simplify the deployment, download all the required software to the desktop for later uploading into the Ubuntu template image we will be creating as a precursor to the cluster deployment. \n\nDownload the above software into a well-known downloads (e.g. %TEMP%/downloads on Windows or ~/downloads on Linux or Mac) directory on the local desktop. \n\n### CREATE UBUNTU VM\nIn this step of the process we will create Ubuntu image with the pre-requisite software so that the image can be reused for provisioning several Cassandra nodes.  \n####STEP 1: Generate SSH key pair\nAzure needs an X509 public key that is either PEM or DER encoded at the provisioning time. Generate a public/private key pair using the instructions located at How to Use SSH with Linux on Azure. If you plan to use putty.exe as an SSH client either on Windows or Linux, you have to convert the PEM encoded RSA private key to PPK format using puttygen.exe; the instructions for this can be found in the above web page. \n\n####STEP 2: Create Ubuntu template VM\nTo create the template VM, log into the azure.microsoft.com portal and use the following sequence: Click NEW, COMPUTE, VIRTUAL MACHINE, FROM GALLERY, UBUNTU, Ubuntu Server 14.04 LTS, and then click the right arrow. For a tutorial that describes how to create a Linux VM, see Create a Virtual Machine Running Linux.\n\nEnter the following information on the “Virtual machine configuration” screen #1: \n\n<table>\n<tr><th>FIELD NAME              </td><td>       FIELD VALUE               </td><td>         REMARKS                </td><tr>\n<tr><td>VERSION RELEASE DATE    </td><td> Select a date from the drow down</td><td></td><tr>\n<tr><td>VIRTUAL MACHINE NAME    </td><td> cass-template                </td><td> This is the hostname of the VM </td><tr>\n<tr><td>TIER                     </td><td> STANDARD                        </td><td> Leave the default              </td><tr>\n<tr><td>SIZE                     </td><td> A1                              </td><td>Select the VM based on the IO needs; for this purpose leave the default </td><tr>\n<tr><td> NEW USER NAME           </td><td> localadmin                      </td><td> \"admin\" is a reserved user name in Ubuntu 12.xx and after</td><tr>\n<tr><td> AUTHENTICATION      </td><td> Click check box                 </td><td>Check if you want to secure with an SSH key </td><tr>\n<tr><td> CERTIFICATE             </td><td> file name of the public key certificate </td><td> Use the public key generated previously</td><tr>\n<tr><td> New Password   </td><td> strong password </td><td> </td><tr>\n<tr><td> Confirm Password   </td><td> strong password </td><td></td><tr>\n</table>\n\nEnter the following information on the “Virtual machine configuration” screen #2: \n\n<table>\n<tr><th>FIELD NAME             </th><th> FIELD VALUE                       </th><th> REMARKS                                 </th></tr>\n<tr><td> CLOUD SERVICE  </td><td> Create a new cloud service    </td><td>Cloud service is a container compute resources like virtual machines</td></tr>\n<tr><td> CLOUD SERVICE DNS NAME </td><td>ubuntu-template.cloudapp.net   </td><td>Give a machine agnostic load balancer name</td></tr>\n<tr><td> REGION/AFFINITY GROUP/VIRTUAL NETWORK </td><td>    West US </td><td> Select a region from which your web applications access the Cassandra cluster</td></tr>\n<tr><td>STORAGE ACCOUNT </td><td>   Use default </td><td>Use the default storage account  or a pre-created storage account in a particular region</td></tr>\n<tr><td>AVAILABILITY SET </td><td>  None </td><td>  Leave it blank</td></tr>\n<tr><td>ENDPOINTS   </td><td>Use default </td><td>  Use the default SSH configuration </td></tr>\n</table>\n\nClick right arrow, leave the defaults on the screen #3 and click the “check” button to complete the VM provisioning process. After a few minutes, the VM with the name “ubuntu-template” should be in a “running” status. \n\n###INSTALL THE NECESSARY SOFTWARE\n####STEP 1: Upload tarballs \nUsing scp or pscp, copy the previously downloaded software to ~/downloads directory using the following command format: \n\n#####pscp server-jre-8u5-linux-x64.tar.gz localadmin@hk-cas-template.cloudapp.net:/home/localadmin/downloads/server-jre-8u5-linux-x64.tar.gz\n\nRepeat the above command for JRE as well as for the Cassandra bits. \n\n####STEP 2: Prepare the directory structure and extract the archives\nLog into the VM and create the directory structure and extract software as a super user using the bash script below:\n\n    #!/bin/bash\n    CASS_INSTALL_DIR=\"/opt/cassandra\"\n    JRE_INSTALL_DIR=\"/opt/java\"\n    CASS_DATA_DIR=\"/var/lib/cassandra\"\n    CASS_LOG_DIR=\"/var/log/cassandra\"\n    DOWNLOADS_DIR=\"~/downloads\"\n    JRE_TARBALL=\"server-jre-8u5-linux-x64.tar.gz\"\n    CASS_TARBALL=\"apache-cassandra-2.0.8-bin.tar.gz\"\n    SVC_USER=\"localadmin\"\n    \n    RESET_ERROR=1\n    MKDIR_ERROR=2\n    \n    reset_installation ()\n    {\n       rm -rf $CASS_INSTALL_DIR 2> /dev/null\n       rm -rf $JRE_INSTALL_DIR 2> /dev/null\n       rm -rf $CASS_DATA_DIR 2> /dev/null\n       rm -rf $CASS_LOG_DIR 2> /dev/null\n    }\n    make_dir ()\n    {\n       if [ -z \"$1\" ]\n       then\n          echo \"make_dir: invalid directory name\"\n          exit $MKDIR_ERROR\n       fi\n       \n       if [ -d \"$1\" ]\n       then\n          echo \"make_dir: directory already exists\"\n          exit $MKDIR_ERROR\n       fi\n    \n       mkdir $1 2>/dev/null\n       if [ $? != 0 ]\n       then\n          echo \"directory creation failed\"\n          exit $MKDIR_ERROR\n       fi\n    }\n    \n    unzip()\n    {\n       if [ $# == 2 ]\n       then\n          tar xzf $1 -C $2\n       else\n          echo \"archive error\"\n       fi\n       \n    }\n    \n    if [ -n \"$1\" ]\n    then\n       SVC_USER=$1\n    fi\n    \n    reset_installation \n    make_dir $CASS_INSTALL_DIR\n    make_dir $JRE_INSTALL_DIR\n    make_dir $CASS_DATA_DIR\n    make_dir $CASS_LOG_DIR\n    \n    #unzip JRE and Cassandra \n    unzip $HOME/downloads/$JRE_TARBALL $JRE_INSTALL_DIR\n    unzip $HOME/downloads/$CASS_TARBALL $CASS_INSTALL_DIR\n    \n    #Change the ownership to the service credentials\n    \n    chown -R $SVC_USER:$GROUP $CASS_DATA_DIR\n    chown -R $SVC_USER:$GROUP $CASS_LOG_DIR\n    echo \"edit /etc/profile to add JRE to the PATH\"\n    echo \"installation is complete\"\n\n\nIf you paste this script into vim window, make sure to remove the carriage return (‘\\r”) using the following command:\n\n    tr -d '\\r' <infile.sh >outfile.sh\n\n####Step 3: Edit etc/profile\nAppend the following at the end: \n\n    JAVA_HOME=/opt/java/jdk1.8.0_05 \n    CASS_HOME= /opt/cassandra/apache-cassandra-2.0.8\n    PATH=$PATH:$HOME/bin:$JAVA_HOME/bin:$CASS_HOME/bin\n    export JAVA_HOME\n    export CASS_HOME\n    export PATH\n\n####Step 4: Install JNA for production systems\nUse the following command sequence: \nThe following command will install jna-3.2.7.jar and jna-platform-3.2.7.jar to /usr/share.java directory\nsudo apt-get install libjna-java \n\nCreate symbolic links in $CASS_HOME/lib directory so that Cassandra startup script can find these jars:\n\n    ln -s /usr/share/java/jna-3.2.7.jar $CASS_HOME/lib/jna.jar\n\n    ln -s /usr/share/java/jna-platform-3.2.7.jar $CASS_HOME/lib/jna-platform.jar\n\n####Step 5: Configure cassandra.yaml\nEdit cassandra.yaml on each VM to reflect configuration needed by all the virtual machines [we will tweak this during the actual provisioning]: \n\n<table>\n<tr><th>Field Name   </th><th> Value  </th><th> Remarks </th></tr>\n<tr><td>cluster_name </td><td>  “CustomerService”   </td><td> Use the name that reflects your deployment</td></tr> \n<tr><td>listen_address  </td><td>[leave it blank]   </td><td> Delete “localhost” </td></tr>\n<tr><td>rpc_addres   </td><td>[leave it blank]  </td><td> Delete “localhost” </td></tr>\n<tr><td>seeds   </td><td>\"10.1.2.4, 10.1.2.6, 10.1.2.8\" </td><td>List of  all the IP addresses which are designated as seeds.</td></tr>\n<tr><td>endpoint_snitch </td><td> org.apache.cassandra.locator.GossipingPropertyFileSnitch </td><td> This is used by the NetworkTopologyStrateg for inferring the data center and the rack of the VM</td></tr>\n</table>\n\n####Step 6: Capture the VM image\nLog into the virtual machine using the hostname (hk-cas-template.cloudapp.net) and the SSH private key previously created. See How to Use SSH with Linux on Azure for details on how to log in using the command ssh or putty.exe. \n\nExecute the following sequence of actions to capture the image:\n#####1. Deprovision\nUse the command “sudo waagent –deprovision+user” to remove Virtual Machine instance specific information. See for [How to Capture a Linux Virtual Machine](virtual-machines-linux-capture-image.md) to Use as a Template more details on the image capture process. \n\n#####2: Shutdown the VM\nMake sure that the virtual machine is highlighted and click the SHUTDOWN link from the bottom command bar.\n\n#####3: Capture the image\nMake sure that the virtual machine is highlighted and click the CAPTURE link from the bottom command bar. In the next screen, give an IMAGE NAME (e.g. hk-cas-2-08-ub-14-04-2014071), appropriate IMAGE DESCRIPTION, and click the “check” mark to finish the CAPTURE process.\n\nThis will take a few seconds and the image should be available in MY IMAGES section of the image gallery. The source VM will be automatically delated after the image is successfully captured. \n\n##Single Region Deployment Process\n**Step 1: Create the Virtual Network**\nLog into the management portal and create a Virtual Network with the attributes show in the table. See [Configure a Cloud-Only Virtual Network in the Management Portal](../virtual-network/virtual-networks-create-vnet.md) for detailed steps of the process.      \n\n<table>\n<tr><th>VM Attribute Name</th><th>Value</th><th>Remarks</th></tr>\n<tr><td>Name</td><td>vnet-cass-west-us</td><td></td></tr>   \n<tr><td>Region</td><td>West US</td><td></td></tr>   \n<tr><td>DNS Servers </td><td>None</td><td>Ignore this as we are not using a DNS Server</td></tr>\n<tr><td>Configure a point-to-site VPN</td><td>None</td><td> Ignore this</td></tr>\n<tr><td>Configure a site-to-site VPN</td><td>Nnone</td><td> Ignore this</td></tr>\n<tr><td>Address Space</td><td>10.1.0.0/16</td><td></td></tr>    \n<tr><td>Starting IP</td><td>10.1.0.0</td><td></td></tr> \n<tr><td>CIDR </td><td>/16 (65531)</td><td></td></tr>\n</table>\n\nAdd the following subnets: \n\n<table>\n<tr><th>Name</th><th>Starting IP</th><th>CIDR</th><th>Remarks</th></tr>\n<tr><td>web</td><td>10.1.1.0</td><td>/24 (251)</td><td>Subnet for the web farm</td></tr>\n<tr><td>data</td><td>10.1.2.0</td><td>/24 (251)</td><td>Subnet for the database nodes</td></tr>\n</table>\n\nData and Web subnets can be protected through network security groups the coverage of which is out of scope for this article.  \n\n**Step 2: Provision Virtual Machines** \nUsing the image created previously, we will create the following virtual machines in the cloud server “hk-c-svc-west” and bind them to the respective subnets as shown below: \n\n<table>\n<tr><th>Machine Name    </th><th>Subnet </th><th>IP Address </th><th>Availability set</th><th>DC/Rack</th><th>Seed?</th></tr>\n<tr><td>hk-c1-west-us   </td><td>data   </td><td>10.1.2.4   </td><td>hk-c-aset-1    </td><td>dc =WESTUS rack =rack1 </td><td>Yes</td></tr>\n<tr><td>hk-c2-west-us   </td><td>data   </td><td>10.1.2.5   </td><td>hk-c-aset-1    </td><td>dc =WESTUS rack =rack1 </td><td>No </td></tr>\n<tr><td>hk-c3-west-us   </td><td>data   </td><td>10.1.2.6   </td><td>hk-c-aset-1    </td><td>dc =WESTUS rack =rack2 </td><td>Yes</td></tr>\n<tr><td>hk-c4-west-us   </td><td>data   </td><td>10.1.2.7   </td><td>hk-c-aset-1    </td><td>dc =WESTUS rack =rack2 </td><td>No </td></tr>\n<tr><td>hk-c5-west-us   </td><td>data   </td><td>10.1.2.8   </td><td>hk-c-aset-2    </td><td>dc =WESTUS rack =rack3 </td><td>Yes</td></tr>\n<tr><td>hk-c6-west-us   </td><td>data   </td><td>10.1.2.9   </td><td>hk-c-aset-2    </td><td>dc =WESTUS rack =rack3 </td><td>No </td></tr>\n<tr><td>hk-c7-west-us   </td><td>data   </td><td>10.1.2.10  </td><td>hk-c-aset-2    </td><td>dc =WESTUS rack =rack4 </td><td>Yes</td></tr>\n<tr><td>hk-c8-west-us   </td><td>data   </td><td>10.1.2.11  </td><td>hk-c-aset-2    </td><td>dc =WESTUS rack =rack4 </td><td>No </td></tr>\n<tr><td>hk-w1-west-us   </td><td>web    </td><td>10.1.1.4   </td><td>hk-w-aset-1    </td><td>                       </td><td>N/A</td></tr>\n<tr><td>hk-w2-west-us   </td><td>web    </td><td>10.1.1.5   </td><td>hk-w-aset-1    </td><td>                       </td><td>N/A</td></tr>\n</table>\n\nCreation of the above list of VMs requires the following process:\n\n1.  Create an empty cloud service in a particular region\n2.  Create a VM from the previously captured image and attach it to the virtual network created previously; repeat this for all the VMs\n3.  Add an internal load balancer to the cloud service and attach it to the “data” subnet\n4.  For each VM created previously, add a load balanced endpoint for thrift traffic through a load balanced set connected to the previously created internal load balancer\n\nThe above process can be executed using Azure Management portal; use a Windows machine (use a VM on Azure if you don't have access to a Windows machine), use the following PowerShell script to provision all 8 VMs automatically.\n\n**List1: PowerShell script for provisioning virtual machines**\n        \n        #Tested with Azure Powershell - November 2014   \n        #This powershell script deployes a number of VMs from an existing image inside an Azure region\n        #Import your Azure subscription into the current Powershell session before proceeding\n        #The process: 1. create Azure Storage account, 2. create virtual network, 3.create the VM template, 2. crate a list of VMs from the template\n        \n        #fundamental variables - change these to reflect your subscription\n        $country=\"us\"; $region=\"west\"; $vnetName = \"your_vnet_name\";$storageAccount=\"your_storage_account\"\n        $numVMs=8;$prefix = \"hk-cass\";$ilbIP=\"your_ilb_ip\"\n        $subscriptionName = \"Azure_subscription_name\"; \n        $vmSize=\"ExtraSmall\"; $imageName=\"your_linux_image_name\"\n        $ilbName=\"ThriftInternalLB\"; $thriftEndPoint=\"ThriftEndPoint\"\n        \n        #generated variables\n        $serviceName = \"$prefix-svc-$region-$country\"; $azureRegion = \"$region $country\"\n        \n        $vmNames = @()\n        for ($i=0; $i -lt $numVMs; $i++)\n        {\n           $vmNames+=(\"$prefix-vm\"+($i+1) + \"-$region-$country\" );\n        }\n        \n        #select an Azure subscription already imported into Powershell session\n        Select-AzureSubscription -SubscriptionName $subscriptionName -Current\n        Set-AzureSubscription -SubscriptionName $subscriptionName -CurrentStorageAccountName $storageAccount\n        \n        #create an empty cloud service\n        New-AzureService -ServiceName $serviceName -Label \"hkcass$region\" -Location $azureRegion\n        Write-Host \"Created $serviceName\"\n        \n        $VMList= @()   # stores the list of azure vm configuration objects\n        #create the list of VMs\n        foreach($vmName in $vmNames)\n        {\n           $VMList += New-AzureVMConfig -Name $vmName -InstanceSize ExtraSmall -ImageName $imageName |\n           Add-AzureProvisioningConfig -Linux -LinuxUser \"localadmin\" -Password \"Local123\" |\n           Set-AzureSubnet \"data\"\n        }\n        \n        New-AzureVM -ServiceName $serviceName -VNetName $vnetName -VMs $VMList\n        \n        #Create internal load balancer\n        Add-AzureInternalLoadBalancer -ServiceName $serviceName -InternalLoadBalancerName $ilbName -SubnetName \"data\" -StaticVNetIPAddress \"$ilbIP\"\n        Write-Host \"Created $ilbName\"\n        #Add add the thrift endpoint to the internal load balancer for all the VMs\n        foreach($vmName in $vmNames)\n        {\n            Get-AzureVM -ServiceName $serviceName -Name $vmName |\n                Add-AzureEndpoint -Name $thriftEndPoint -LBSetName \"ThriftLBSet\" -Protocol tcp -LocalPort 9160 -PublicPort 9160 -ProbePort 9160 -ProbeProtocol tcp -ProbeIntervalInSeconds 10 -InternalLoadBalancerName $ilbName | \n                Update-AzureVM \n        \n            Write-Host \"created $vmName\"     \n        }\n\n**Step 3: Configure Cassandra on each VM**\n\nLog into the VM and perform the following: \n\n* Edit $CASS_HOME/conf/cassandra-rackdc.properties to specify the data center and rack properties:\n      \n       dc =EASTUS, rack =rack1\n\n* Edit cassandra.yaml to configure seed nodes as below:\n     \n       Seeds: \"10.1.2.4,10.1.2.6,10.1.2.8,10.1.2.10\"\n\n**Step 4: Start the VMs and test the cluster**\n\nLog into one of the nodes (e.g. hk-c1-west-us) and run the following command to see the status of the cluster: \n       \n       nodetool –h 10.1.2.4 –p 7199 status \n\nYou should see the display similar to the one below for an 8-node cluster: \n\n<table>\n<tr><th>Status</th></th>Address </th><th>Load   </th><th>Tokens </th><th>Owns </th><th>Host ID  </th><th>Rack</th></tr>\n<tr><th>UN  </td><td>10.1.2.4   </td><td>87.81 KB   </td><td>256    </td><td>38.0%  </td><td>Guid (removed)</td><td>rack1</td></tr>\n<tr><th>UN  </td><td>10.1.2.5   </td><td>41.08 KB   </td><td>256    </td><td>68.9%  </td><td>Guid (removed)</td><td>rack1</td></tr>\n<tr><th>UN  </td><td>10.1.2.6   </td><td>55.29 KB   </td><td>256    </td><td>68.8%  </td><td>Guid (removed)</td><td>rack2</td></tr>\n<tr><th>UN  </td><td>10.1.2.7   </td><td>55.29 KB   </td><td>256    </td><td>68.8%  </td><td>Guid (removed)</td><td>rack2</td></tr>\n<tr><th>UN  </td><td>10.1.2.8   </td><td>55.29 KB   </td><td>256    </td><td>68.8%  </td><td>Guid (removed)</td><td>rack3</td></tr>\n<tr><th>UN  </td><td>10.1.2.9   </td><td>55.29 KB   </td><td>256    </td><td>68.8%  </td><td>Guid (removed)</td><td>rack3</td></tr>\n<tr><th>UN  </td><td>10.1.2.10  </td><td>55.29 KB   </td><td>256    </td><td>68.8%  </td><td>Guid (removed)</td><td>rack4</td></tr>\n<tr><th>UN  </td><td>10.1.2.11  </td><td>55.29 KB   </td><td>256    </td><td>68.8%  </td><td>Guid (removed)</td><td>rack4</td></tr>\n</table>\n\n## Test the Single Region Cluster\nUse the following steps to test the cluster:\n\n1.    Using the Powershell command Get-AzureInternalLoadbalancer commandlet, obtain the IP address of the internal load balancer (e.g.  10.1.2.101). The syntax of the command is shown below: Get-AzureLoadbalancer –ServiceName \"hk-c-svc-west-us” [displays the details of the internal load balancer along with its IP address]\n2.  Log into the web farm VM (e.g. hk-w1-west-us) using Putty or ssh\n3.  Execute $CASS_HOME/bin/cqlsh 10.1.2.101 9160 \n4.  Use the following CQL commands to verify if the cluster is working:\n\n        CREATE KEYSPACE customers_ks WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 3 };   \n        USE customers_ks;\n        CREATE TABLE Customers(customer_id int PRIMARY KEY, firstname text, lastname text);\n        INSERT INTO Customers(customer_id, firstname, lastname) VALUES(1, 'John', 'Doe');\n        INSERT INTO Customers(customer_id, firstname, lastname) VALUES (2, 'Jane', 'Doe');\n        \n        SELECT * FROM Customers;\n\nYou should see a display like the one below:\n\n<table>\n  <tr><th> customer_id </th><th> firstname </th><th> lastname </th></tr>\n  <tr><td> 1 </td><td> John </td><td> Doe </td></tr>\n  <tr><td> 2 </td><td> Jane </td><td> Doe </td></tr>\n</table>\n\nPlease note that the keyspace created in step 4 uses SimpleStrategy with a  replication_factor of 3. SimpleStrategy is recommended for single data center deployments whereas NetworkTopologyStrategy for multi-data center deployments. A replication_factor of 3 will give tolerance for node failures. \n\n##<a id=\"tworegion\"> </a>Multi-Region Deployment Process\nWill leverage the single region deployment completed and repeat the same process for installing the second region. The key difference between the single and multiple region deployment is the VPN tunnel setup for inter-region communication; we will start with the network installation, provision the VMs and configure Cassandra. \n\n###Step 1: Create the Virtual Network at the 2nd Region\nLog into the management portal and create a Virtual Network with the attributes show in the table. See [Configure a Cloud-Only Virtual Network in the Management Portal](../virtual-network/virtual-networks-create-vnet.md) for detailed steps of the process.      \n\n<table>\n<tr><th>Attribute Name    </th><th>Value    </th><th>Remarks</th></tr>\n<tr><td>Name    </td><td>vnet-cass-east-us</td><td></td></tr>   \n<tr><td>Region  </td><td>East US</td><td></td></tr> \n<tr><td>DNS Servers     </td><td></td><td>Ignore this as we are not using a DNS Server</td></tr>\n<tr><td>Configure a point-to-site VPN</td><td></td><td>     Ignore this</td></tr>\n<tr><td>Configure a site-to-site VPN</td><td></td><td>      Ignore this</td></tr>\n<tr><td>Address Space   </td><td>10.2.0.0/16</td><td></td></tr> \n<tr><td>Starting IP </td><td>10.2.0.0   </td><td></td></tr>\n<tr><td>CIDR    </td><td>/16 (65531)</td><td></td></tr>\n</table>    \n\nAdd the following subnets: \n<table>\n<tr><th>Name    </th><th>Starting IP    </th><th>CIDR   </th><th>Remarks</th></tr>\n<tr><td>web </td><td>10.2.1.0   </td><td>/24 (251)  </td><td>Subnet for the web farm</td></tr>\n<tr><td>data    </td><td>10.2.2.0   </td><td>/24 (251)  </td><td>Subnet for the database nodes</td></tr>\n</table>\n\n\n###Step 2: Create Local Networks\nA Local Network in Azure virtual networking is a proxy address space that maps to a remote site including a private cloud or another Azure region. This proxy address space is bound to a remote gateway for routing network to the right networking destinations. See [Configure a VNet to VNet Connection](../vpn-gateway/virtual-networks-configure-vnet-to-vnet-connection.md) for the instructions on establishing VNET-to-VNET connection. \n\nCreate two local networks per the following details:\n\n| Network Name | VPN Gateway Address | Address Space | Remarks |\n| ------------ | ------------------- | ------------- | ------- |\n| hk-lnet-map-to-east-us | 23.1.1.1  | 10.2.0.0/16   | While creating the Local Network give a placeholder gateway address. The real gateway address is filled once the gateway is created. Make sure the address space exactly matches the respective remote VNET; in this case the VNET created in the East US region. |\n| hk-lnet-map-to-west-us | 23.2.2.2  | 10.1.0.0/16   | While creating the Local Network give a placeholder gateway address. The real gateway address is filled once the gateway is created. Make sure the address space exactly matches the respective remote VNET; in this case the VNET created in the West US region. |\n\n\n###Step 3: Map “Local” network to the respective VNETs\nFrom the service management portal, select each vnet, click “Configure”, check “Connect to the local network”, and select the Local Networks per the following details: \n\n\n| Virtual Network | Local Network |\n| --------------- | ------------- |\n| hk-vnet-west-us | hk-lnet-map-to-east-us |\n| hk-vnet-east-us | hk-lnet-map-to-west-us |\n\n\n###Step 4: Create Gateways on VNET1 and VNET2\nFrom the dashboard of both the virtual networks, click CREATE GATEWAY which will trigger the VPN gateway provisioning process. After a few minutes the dashboard of each virtual network should display the actual gateway address. \n###Step 5: Update “Local” networks with the respective “Gateway” addresses###\nEdit both the local networks to replace the placeholder gateway IP address with the real IP address of the just provisioned gateways. Use the following mapping: \n\n<table>\n<tr><th>Local Network    </th><th>Virtual Network Gateway</th></tr>\n<tr><td>hk-lnet-map-to-east-us </td><td>Gateway of hk-vnet-west-us</td></tr>\n<tr><td>hk-lnet-map-to-west-us </td><td>Gateway of hk-vnet-east-us</td></tr>\n</table>\n\n###Step 6: Update the shared key\nUse the following Powershell script to update the IPSec key of each VPN gateway [use the sake key for both the gateways]: \nSet-AzureVNetGatewayKey -VNetName hk-vnet-east-us -LocalNetworkSiteName hk-lnet-map-to-west-us -SharedKey D9E76BKK\nSet-AzureVNetGatewayKey -VNetName hk-vnet-west-us -LocalNetworkSiteName hk-lnet-map-to-east-us -SharedKey D9E76BKK \n\n###Step 6: Establish the VNET-to-VNET connection\nFrom the Azure service management portal, use the “DASHBOARD” menu of both the virtual networks to establish gateway-to-gateway connection. Use the “CONNECT” menu items in the bottom toolbar. After a few minutes the dashboard should display the connection details graphically.\n\n###Step 7: Create the virtual machines in region #2 \nCreate the Ubuntu image as described in region #1 deployment by following the same steps or copy the image VHD file to the Azure storage account located in region #2 and create the image. Use this image and create the following list of virtual machines into a new cloud service hk-c-svc-east-us: \n\n\n| Machine Name | Subnet | IP Address | Availability set | DC/Rack | Seed? |\n| ------------ | ------ | ---------- | ---------------- | ------- | ----- |\n| hk-c1-east-us | data  | 10.2.2.4   | hk-c-aset-1      | dc =EASTUS rack =rack1 | Yes |\n| hk-c2-east-us | data  | 10.2.2.5   | hk-c-aset-1      | dc =EASTUS rack =rack1 | No  |\n| hk-c3-east-us | data  | 10.2.2.6   | hk-c-aset-1      | dc =EASTUS rack =rack2 | Yes |\n| hk-c5-east-us | data  | 10.2.2.8   | hk-c-aset-2      | dc =EASTUS rack =rack3 | Yes |\n| hk-c6-east-us | data  | 10.2.2.9   | hk-c-aset-2      | dc =EASTUS rack =rack3 | No  |\n| hk-c7-east-us | data  | 10.2.2.10  | hk-c-aset-2      | dc =EASTUS rack =rack4 | Yes |\n| hk-c8-east-us | data  | 10.2.2.11  | hk-c-aset-2      | dc =EASTUS rack =rack4 | No  |\n| hk-w1-east-us | web   | 10.2.1.4   | hk-w-aset-1      | N/A                    | N/A |\n| hk-w2-east-us | web   | 10.2.1.5   | hk-w-aset-1      | N/A                    | N/A |\n\n\nFollow the same instructions as region #1 but use 10.2.xxx.xxx address space. \n###Step 8: Configure Cassandra on each VM\nLog into the VM and perform the following: \n\n1. Edit $CASS_HOME/conf/cassandra-rackdc.properties to specify the data center and rack properties in the format:\n    dc =EASTUS\n    rack =rack1\n2. Edit cassandra.yaml to configure seed nodes: \n    Seeds: \"10.1.2.4,10.1.2.6,10.1.2.8,10.1.2.10,10.2.2.4,10.2.2.6,10.2.2.8,10.2.2.10\"\n###Step 9: Start Cassandra\nLog into each VM and start Cassandra in the background by running the following command:\n$CASS_HOME/bin/cassandra\n\n## Test the Multi-Region Cluster\nBy now Cassandra has been deployed to 16 nodes with 8 nodes in each Azure region. These nodes are in the same cluster by virtue of the common cluster name and the seed node configuration. Use the following process to test the cluster:\n###Step 1: Get the internal load balancer IP for both the regions using PowerShell\n- Get-AzureInternalLoadbalancer -ServiceName \"hk-c-svc-west-us\"\n- Get-AzureInternalLoadbalancer -ServiceName \"hk-c-svc-east-us\"  \n\n    Note the IP addresses (e.g. west - 10.1.2.101, east - 10.2.2.101) displayed.\n\n###Step 2: Execute the following in the west region after logging into hk-w1-west-us\n1.    Execute $CASS_HOME/bin/cqlsh 10.1.2.101 9160 \n2.  Execute the following CQL commands:\n\n        CREATE KEYSPACE customers_ks\n        WITH REPLICATION = { 'class' : 'NetworkToplogyStrategy', 'WESTUS' : 3, 'EASTUS' : 3};\n        USE customers_ks;\n        CREATE TABLE Customers(customer_id int PRIMARY KEY, firstname text, lastname text);\n        INSERT INTO Customers(customer_id, firstname, lastname) VALUES(1, 'John', 'Doe');\n        INSERT INTO Customers(customer_id, firstname, lastname) VALUES (2, 'Jane', 'Doe');\n        SELECT * FROM Customers;\n\nYou should see a display like the one below:\n\n| customer_id | firstname | Lastname |\n| ----------- | --------- | -------- |\n| 1           | John      | Doe      |\n| 2           | Jane      | Doe      |\n\n\n###Step 3: Execute the following in the east region after logging into hk-w1-east-us:\n1.    Execute $CASS_HOME/bin/cqlsh 10.2.2.101 9160 \n2.  Execute the following CQL commands:\n\n        USE customers_ks;\n        CREATE TABLE Customers(customer_id int PRIMARY KEY, firstname text, lastname text);\n        INSERT INTO Customers(customer_id, firstname, lastname) VALUES(1, 'John', 'Doe');\n        INSERT INTO Customers(customer_id, firstname, lastname) VALUES (2, 'Jane', 'Doe');\n        SELECT * FROM Customers;\n\nYou should see the same display as seen for the West region:\n\n\n| customer_id | firstname | Lastname   |\n|------------ | --------- | ---------- |\n| 1           | John      | Doe        |\n| 2           | Jane      | Doe        |\n\n\nExecute a few more inserts and see that those get replicated to west-us part of the cluster. \n\n## Test Cassandra Cluster from Node.js\nUsing one of the Linux VMs crated in the \"web\" tier previously, we will execute a simple Node.js script to read the previously inserted data \n\n**Step 1: Install Node.js and Cassandra Client**\n\n1. Install Node.js and npm\n2. Install node package \"cassandra-client\" using npm\n3. Execute the following script at the shell prompt which displays the json string of the retrieved data: \n\n        var pooledCon = require('cassandra-client').PooledConnection;\n        var ksName = \"custsupport_ks\";\n        var cfName = \"customers_cf\";\n        var hostList = ['internal_loadbalancer_ip:9160'];\n        var ksConOptions = { hosts: hostList,\n                             keyspace: ksName, use_bigints: false };\n        \n        function createKeyspace(callback){\n           var cql = 'CREATE KEYSPACE ' + ksName + ' WITH strategy_class=SimpleStrategy AND strategy_options:replication_factor=1';\n           var sysConOptions = { hosts: hostList,  \n                                 keyspace: 'system', use_bigints: false };\n           var con = new pooledCon(sysConOptions);\n           con.execute(cql,[],function(err) {\n           if (err) {\n             console.log(\"Failed to create Keyspace: \" + ksName);\n             console.log(err);\n           }\n           else {\n             console.log(\"Created Keyspace: \" + ksName);\n             callback(ksConOptions, populateCustomerData);\n           }\n           });\n           con.shutdown();\n        } \n        \n        function createColumnFamily(ksConOptions, callback){\n          var params = ['customers_cf','custid','varint','custname',\n                        'text','custaddress','text'];\n          var cql = 'CREATE COLUMNFAMILY ? (? ? PRIMARY KEY,? ?, ? ?)';\n        var con =  new pooledCon(ksConOptions);\n          con.execute(cql,params,function(err) {\n              if (err) {\n                 console.log(\"Failed to create column family: \" + params[0]);\n                 console.log(err);\n              }\n              else {\n                 console.log(\"Created column family: \" + params[0]);\n                 callback();\n              }\n          });\n          con.shutdown();\n        } \n        \n        //populate Data\n        function populateCustomerData() {\n           var params = ['John','Infinity Dr, TX', 1];\n           updateCustomer(ksConOptions,params);\n        \n           params = ['Tom','Fermat Ln, WA', 2];\n           updateCustomer(ksConOptions,params);\n        }\n        \n        //update will also insert the record if none exists\n        function updateCustomer(ksConOptions,params)\n        {\n          var cql = 'UPDATE customers_cf SET custname=?,custaddress=? where custid=?';\n          var con = new pooledCon(ksConOptions);\n          con.execute(cql,params,function(err) {\n              if (err) console.log(err);\n              else console.log(\"Inserted customer : \" + params[0]);\n          });\n          con.shutdown();\n        }\n        \n        //read the two rows inserted above\n        function readCustomer(ksConOptions)\n        {\n          var cql = 'SELECT * FROM customers_cf WHERE custid IN (1,2)';\n          var con = new pooledCon(ksConOptions);\n          con.execute(cql,[],function(err,rows) {\n              if (err) \n                 console.log(err);\n              else \n                 for (var i=0; i<rows.length; i++)\n                    console.log(JSON.stringify(rows[i]));\n            });\n           con.shutdown();\n        }\n        \n        //exectue the code\n        createKeyspace(createColumnFamily);\n        readCustomer(ksConOptions)\n\n\n## Conclusion \nMicrosoft Azure is a flexible platform that allows the running of both Microsoft as well as open source software as demonstrated by this exercise. Highly available Cassandra clusters can be deployed on a single data center through the spreading of the cluster nodes across multiple fault domains. Cassandra clusters can also be deployed across multiple geographically distant Azure regions for disaster proof systems. Azure and Cassandra together enables the construction of highly scalable, highly available and disaster recoverable cloud services needed by today's internet scale services.  \n\n##References##\n- [http://cassandra.apache.org](http://cassandra.apache.org)\n- [http://www.datastax.com](http://www.datastax.com) \n- [http://www.nodejs.org](http://www.nodejs.org) \n\n \n"
+}

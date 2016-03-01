@@ -1,0 +1,2623 @@
+{
+  "nodes": [
+    {
+      "content": "Application Patterns and Development Strategies for SQL Server in Azure Virtual Machines",
+      "pos": [
+        28,
+        116
+      ]
+    },
+    {
+      "content": "This article covers a series of application patterns related to SQL Server running on Azure VMs.",
+      "pos": [
+        135,
+        231
+      ]
+    },
+    {
+      "content": "It provides solution architects and developers a foundation for good application architecture and design.",
+      "pos": [
+        232,
+        337
+      ]
+    },
+    {
+      "content": "Application Patterns and Development Strategies for SQL Server in Azure Virtual Machines",
+      "pos": [
+        689,
+        777
+      ]
+    },
+    {
+      "content": "Summary:",
+      "pos": [
+        782,
+        790
+      ]
+    },
+    {
+      "content": "Determining which application pattern or patterns to use for your SQL Server based applications in Azure environment is an important design decision and it requires a solid understanding of how SQL Server and each infrastructure component of Azure work together.",
+      "pos": [
+        792,
+        1054
+      ]
+    },
+    {
+      "content": "With SQL Server in Azure Infrastructure Services, you can easily migrate, maintain, and monitor your existing SQL Server applications built-on Windows Server to virtual machines in Azure.",
+      "pos": [
+        1055,
+        1242
+      ]
+    },
+    {
+      "content": "The goal of this article is to provide solution architects and developers a foundation for good application architecture and design, which they can follow when migrating existing applications to Azure as well as developing new applications in Azure.",
+      "pos": [
+        1244,
+        1493
+      ]
+    },
+    {
+      "content": "For each application pattern, you will find an on-premises scenario, its respective cloud-enabled solution, and the related technical recommendations.",
+      "pos": [
+        1495,
+        1645
+      ]
+    },
+    {
+      "content": "In addition, the article discusses Azure specific development strategies so that you can design your applications correctly.",
+      "pos": [
+        1646,
+        1770
+      ]
+    },
+    {
+      "content": "Due to the many possible application patterns, it’s recommended that architects and developers should choose the most appropriate pattern for their applications and users.",
+      "pos": [
+        1771,
+        1942
+      ]
+    },
+    {
+      "pos": [
+        1944,
+        2028
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Technical Contributors:<ept id=\"p1\">**</ept> Luis Carlos Vargas Herring, Madhan Arumugam Ramakrishnan"
+    },
+    {
+      "pos": [
+        2030,
+        2200
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Technical Reviewers:<ept id=\"p1\">**</ept> Corey Sanders, Drew McDaniel, Narayan Annamalai, Nir Mashkowski, Sanjay Mishra, Silvano Coriani, Stefan Schackow, Tim Hickey, Tim Wieman, Xin Jin"
+    },
+    {
+      "content": "Introduction",
+      "pos": [
+        2205,
+        2217
+      ]
+    },
+    {
+      "content": "You can develop many types of n-tier applications by separating the components of the different application layers on different machines as well as in separate components.",
+      "pos": [
+        2219,
+        2390
+      ]
+    },
+    {
+      "content": "For example, you can place the client application and business rules components in one machine, front-end web tier and data access tier components in another machine, and a back-end database tier in another machine.",
+      "pos": [
+        2391,
+        2606
+      ]
+    },
+    {
+      "content": "This kind of structuring helps isolate each tier from each other.",
+      "pos": [
+        2607,
+        2672
+      ]
+    },
+    {
+      "content": "If you change where data comes from, you don’t need to change the client or web application but only the data access tier components.",
+      "pos": [
+        2673,
+        2806
+      ]
+    },
+    {
+      "pos": [
+        2808,
+        2908
+      ],
+      "content": "A typical <bpt id=\"p1\">*</bpt>n-tier<ept id=\"p1\">*</ept> application includes the presentation tier, the business tier, and the data tier:"
+    },
+    {
+      "content": "Tier",
+      "pos": [
+        2913,
+        2917
+      ]
+    },
+    {
+      "content": "Description",
+      "pos": [
+        2933,
+        2944
+      ]
+    },
+    {
+      "content": "Presentation",
+      "pos": [
+        3315,
+        3327
+      ]
+    },
+    {
+      "pos": [
+        3332,
+        3440
+      ],
+      "content": "The <bpt id=\"p1\">*</bpt>presentation tier<ept id=\"p1\">*</ept> (web tier, front-end tier) is the layer in which users interact with an application."
+    },
+    {
+      "content": "Business",
+      "pos": [
+        3516,
+        3524
+      ]
+    },
+    {
+      "pos": [
+        3533,
+        3710
+      ],
+      "content": "The <bpt id=\"p1\">*</bpt>business tier<ept id=\"p1\">*</ept> (middle tier) is the layer that the presentation tier and the data tier use to communicate with each other and includes the core functionality of the system."
+    },
+    {
+      "content": "Data",
+      "pos": [
+        3717,
+        3721
+      ]
+    },
+    {
+      "pos": [
+        3734,
+        3851
+      ],
+      "content": "The <bpt id=\"p1\">*</bpt>data tier<ept id=\"p1\">*</ept> is basically the server that stores an application's data (for example, a server running SQL Server)."
+    },
+    {
+      "content": "Application layers describe the logical groupings of the functionality and components in an application; whereas tiers describe the physical distribution of the functionality and components on separate physical servers, computers, networks, or remote locations.",
+      "pos": [
+        3915,
+        4176
+      ]
+    },
+    {
+      "content": "The layers of an application may reside on the same physical computer (the same tier) or may be distributed over separate computers (n-tier), and the components in each layer communicate with components in other layers through well-defined interfaces.",
+      "pos": [
+        4177,
+        4428
+      ]
+    },
+    {
+      "content": "You can think of the term tier as referring to physical distribution patterns such as two-tier, three-tier, and n-tier.",
+      "pos": [
+        4429,
+        4548
+      ]
+    },
+    {
+      "content": "A <bpt id=\"p1\">**</bpt>2-tier application pattern<ept id=\"p1\">**</ept> contains two application tiers: application server and database server.",
+      "pos": [
+        4549,
+        4653
+      ]
+    },
+    {
+      "content": "The direct communication happens between the application server and the database server.",
+      "pos": [
+        4654,
+        4742
+      ]
+    },
+    {
+      "content": "The application server contains both web-tier and business-tier components.",
+      "pos": [
+        4743,
+        4818
+      ]
+    },
+    {
+      "content": "In <bpt id=\"p1\">**</bpt>3-tier application pattern<ept id=\"p1\">**</ept>, there are three application tiers: web server, application server, which contains the business logic tier and/or business tier data access components, and the database server.",
+      "pos": [
+        4819,
+        5029
+      ]
+    },
+    {
+      "content": "The communication between the web server and the database server happens over the application server.",
+      "pos": [
+        5030,
+        5131
+      ]
+    },
+    {
+      "content": "For detailed information on application layers and tiers, see <bpt id=\"p1\">[</bpt>Microsoft Application Architecture Guide<ept id=\"p1\">](https://msdn.microsoft.com/library/ff650706.aspx)</ept>.",
+      "pos": [
+        5132,
+        5287
+      ]
+    },
+    {
+      "content": "Before you start reading this article, you should have knowledge on the fundamental concepts of SQL Server and Azure.",
+      "pos": [
+        5289,
+        5406
+      ]
+    },
+    {
+      "content": "For information, see <bpt id=\"p1\">[</bpt>SQL Server Books Online<ept id=\"p1\">](https://msdn.microsoft.com/library/bb545450.aspx)</ept>, <bpt id=\"p2\">[</bpt>SQL Server in Azure Virtual Machines<ept id=\"p2\">](virtual-machines-sql-server-infrastructure-services.md)</ept> and <bpt id=\"p3\">[</bpt>Azure.com<ept id=\"p3\">](http://azure.microsoft.com)</ept>.",
+      "pos": [
+        5407,
+        5644
+      ]
+    },
+    {
+      "content": "This article describes several application patterns that can be suitable for your simple applications as well as the highly complex enterprise applications.",
+      "pos": [
+        5646,
+        5802
+      ]
+    },
+    {
+      "content": "Before detailing each pattern, we recommend that you should familiarize yourself with the available data storage services in Azure, such as <bpt id=\"p1\">[</bpt>Azure Storage<ept id=\"p1\">](../storage/storage-introduction.md)</ept>, <bpt id=\"p2\">[</bpt>Azure SQL Database<ept id=\"p2\">](../sql-database/sql-database-technical-overview.md)</ept>, and <bpt id=\"p3\">[</bpt>SQL Server in an Azure Virtual Machine<ept id=\"p3\">](virtual-machines-sql-server-infrastructure-services.md)</ept>.",
+      "pos": [
+        5803,
+        6171
+      ]
+    },
+    {
+      "content": "To make the best design decisions for your applications, understand when to use which data storage service clearly.",
+      "pos": [
+        6172,
+        6287
+      ]
+    },
+    {
+      "content": "Choose SQL Server in an Azure Virtual Machine, when:",
+      "pos": [
+        6293,
+        6345
+      ]
+    },
+    {
+      "content": "You need control on SQL Server and Windows.",
+      "pos": [
+        6349,
+        6392
+      ]
+    },
+    {
+      "content": "For example, this might include the SQL Server version, special hotfixes, performance configuration, etc.",
+      "pos": [
+        6393,
+        6498
+      ]
+    },
+    {
+      "content": "You need a full compatibility with SQL Server on-premises and want to move existing applications to Azure as-is.",
+      "pos": [
+        6502,
+        6614
+      ]
+    },
+    {
+      "content": "You want to leverage the capabilities of the Azure environment but Azure SQL Database does not support all the features that your application requires.",
+      "pos": [
+        6618,
+        6769
+      ]
+    },
+    {
+      "content": "This could include the following areas:",
+      "pos": [
+        6770,
+        6809
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Database size<ept id=\"p1\">**</ept>: At the time this article was updated, SQL Database supports a database of up to 500 GB of data.",
+      "pos": [
+        6817,
+        6931
+      ]
+    },
+    {
+      "content": "If your application requires more than 500 GB of data and you don’t want to implement custom sharding solutions, it’s recommended that you use SQL Server in an Azure Virtual Machine.",
+      "pos": [
+        6932,
+        7114
+      ]
+    },
+    {
+      "content": "For the latest information, see <bpt id=\"p1\">[</bpt>Scaling Out Azure SQL Databases<ept id=\"p1\">](https://msdn.microsoft.com/library/azure/dn495641.aspx)</ept> and <bpt id=\"p2\">[</bpt>Azure SQL Database Service Tiers and Performance Levels<ept id=\"p2\">](https://msdn.microsoft.com/library/azure/dn741336.aspx)</ept>.",
+      "pos": [
+        7115,
+        7355
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>HIPAA compliance<ept id=\"p1\">**</ept>: Healthcare customers and Independent Software Vendors (ISVs) might choose <bpt id=\"p2\">[</bpt>SQL Server in Azure Virtual Machines<ept id=\"p2\">](virtual-machines-sql-server-infrastructure-services.md)</ept> instead of <bpt id=\"p3\">[</bpt>Azure SQL Database<ept id=\"p3\">](../sql-database/sql-database-technical-overview.md)</ept> because SQL Server in an Azure Virtual Machine is covered by HIPAA Business Associate Agreement (BAA).",
+      "pos": [
+        7362,
+        7739
+      ]
+    },
+    {
+      "content": "For information on compliance, see <bpt id=\"p1\">[</bpt>Microsoft Azure Trust Center: Compliance<ept id=\"p1\">](http://azure.microsoft.com/support/trust-center/compliance/)</ept>.",
+      "pos": [
+        7740,
+        7879
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Instance-level features<ept id=\"p1\">**</ept>: At this time, SQL Database doesn’t support features that live outside of the database (such as Linked Servers, Agent jobs, FileStream, Service Broker, etc).",
+      "pos": [
+        7886,
+        8071
+      ]
+    },
+    {
+      "content": "For more information, see <bpt id=\"p1\">[</bpt>Azure SQL Database Guidelines and Limitations<ept id=\"p1\">](https://msdn.microsoft.com/library/azure/ff394102.aspx)</ept>.",
+      "pos": [
+        8072,
+        8202
+      ]
+    },
+    {
+      "content": "1-tier (simple): single virtual machine",
+      "pos": [
+        8207,
+        8246
+      ]
+    },
+    {
+      "content": "In this application pattern, you deploy your SQL Server application and database to a standalone virtual machine in Azure.",
+      "pos": [
+        8248,
+        8370
+      ]
+    },
+    {
+      "content": "The same virtual machine contains your client/web application, business components, data access layer, and the database server.",
+      "pos": [
+        8371,
+        8498
+      ]
+    },
+    {
+      "content": "The presentation, business, and data access code are logically separated but are physically located in a single server machine.",
+      "pos": [
+        8499,
+        8626
+      ]
+    },
+    {
+      "content": "Most customers start with this application pattern and then, they scale out by adding more web roles or virtual machines to their system.",
+      "pos": [
+        8627,
+        8764
+      ]
+    },
+    {
+      "content": "This application pattern is useful when:",
+      "pos": [
+        8766,
+        8806
+      ]
+    },
+    {
+      "content": "You want to perform a simple migration to Azure platform to evaluate whether the platform answers your application’s requirements or not.",
+      "pos": [
+        8810,
+        8947
+      ]
+    },
+    {
+      "content": "You want to keep all the application tiers hosted in the same virtual machine in the same Azure data center to reduce the latency between tiers.",
+      "pos": [
+        8951,
+        9095
+      ]
+    },
+    {
+      "content": "You want to quickly provision development and test environments for short periods of time.",
+      "pos": [
+        9099,
+        9189
+      ]
+    },
+    {
+      "content": "You want to perform stress testing for varying workload levels but at the same time you do not want to own and maintain many physical machines all the time.",
+      "pos": [
+        9193,
+        9349
+      ]
+    },
+    {
+      "content": "The following diagram demonstrates a simple on-premises scenario and how you can deploy its cloud enabled solution in a single virtual machine in Azure.",
+      "pos": [
+        9351,
+        9503
+      ]
+    },
+    {
+      "content": "1-tier application pattern",
+      "pos": [
+        9507,
+        9533
+      ]
+    },
+    {
+      "content": "Deploying the business layer (business logic and data access components) on the same physical tier as the presentation layer can maximize application performance, unless you must use a separate tier due to scalability or security concerns.",
+      "pos": [
+        9634,
+        9873
+      ]
+    },
+    {
+      "pos": [
+        9875,
+        10128
+      ],
+      "content": "Since this is a very common pattern to start with, you might find the following article on migration useful for moving your data to your SQL Server VM: <bpt id=\"p1\">[</bpt>Migrating a Database to SQL Server on an Azure VM<ept id=\"p1\">](virtual-machines-migrate-onpremises-database.md)</ept>."
+    },
+    {
+      "content": "3-tier (simple): multiple virtual machines",
+      "pos": [
+        10133,
+        10175
+      ]
+    },
+    {
+      "content": "In this application pattern, you deploy a 3-tier application in Azure by placing each application tier in a different virtual machine.",
+      "pos": [
+        10177,
+        10311
+      ]
+    },
+    {
+      "content": "This provides a flexible environment for an easy scale-up and scale-out scenarios.",
+      "pos": [
+        10312,
+        10394
+      ]
+    },
+    {
+      "content": "When one virtual machine contains your client/web application, the other one hosts your business components, and the other one hosts the database server.",
+      "pos": [
+        10395,
+        10548
+      ]
+    },
+    {
+      "content": "This application pattern is useful when:",
+      "pos": [
+        10550,
+        10590
+      ]
+    },
+    {
+      "content": "You want to perform a migration of complex database applications to Azure Virtual Machines.",
+      "pos": [
+        10594,
+        10685
+      ]
+    },
+    {
+      "content": "You want different application tiers to be hosted in different regions.",
+      "pos": [
+        10689,
+        10760
+      ]
+    },
+    {
+      "content": "For example, you might have shared databases that are deployed to multiple regions for reporting purposes.",
+      "pos": [
+        10761,
+        10867
+      ]
+    },
+    {
+      "content": "You want to move enterprise applications from on-premises virtualized platforms to Azure Virtual Machines.",
+      "pos": [
+        10871,
+        10977
+      ]
+    },
+    {
+      "content": "For a detailed discussion on enterprise applications, see <bpt id=\"p1\">[</bpt>What is an Enterprise Application<ept id=\"p1\">](https://msdn.microsoft.com/library/aa267045.aspx)</ept>.",
+      "pos": [
+        10978,
+        11122
+      ]
+    },
+    {
+      "content": "You want to quickly provision development and test environments for short periods of time.",
+      "pos": [
+        11126,
+        11216
+      ]
+    },
+    {
+      "content": "You want to perform stress testing for varying workload levels but at the same time you do not want to own and maintain many physical machines all the time.",
+      "pos": [
+        11220,
+        11376
+      ]
+    },
+    {
+      "content": "The following diagram demonstrates how you can place a simple 3-tier application in Azure by placing each application tier in a different virtual machine.",
+      "pos": [
+        11378,
+        11532
+      ]
+    },
+    {
+      "content": "3-tier application pattern",
+      "pos": [
+        11536,
+        11562
+      ]
+    },
+    {
+      "content": "In this application pattern, there is only one virtual machine (VM) in each tier.",
+      "pos": [
+        11663,
+        11744
+      ]
+    },
+    {
+      "content": "If you have multiple VMs in Azure, we recommend that you set up a virtual network.",
+      "pos": [
+        11745,
+        11827
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt>Azure Virtual Network<ept id=\"p1\">](../virtual-network/virtual-networks-overview.md)</ept> creates a trusted security boundary and also allows VMs to communicate among themselves over the private IP address.",
+      "pos": [
+        11828,
+        12017
+      ]
+    },
+    {
+      "content": "In addition, always make sure that all Internet connections only go to the presentation tier.",
+      "pos": [
+        12018,
+        12111
+      ]
+    },
+    {
+      "content": "This means that you should open up a public endpoint on the presentation tier but not on the other tiers.",
+      "pos": [
+        12112,
+        12217
+      ]
+    },
+    {
+      "content": "When following this application pattern, you also need to set up the network access control list (ACL) on that public port to allow for access certain IP addresses.",
+      "pos": [
+        12218,
+        12382
+      ]
+    },
+    {
+      "content": "For more information, see <bpt id=\"p1\">[</bpt>Manage the ACL on an endpoint<ept id=\"p1\">](virtual-machines-set-up-endpoints.md/#manage-the-acl-on-an-endpoint)</ept>.",
+      "pos": [
+        12383,
+        12510
+      ]
+    },
+    {
+      "content": "In the diagram, Internet Protocols can be TCP, UDP, HTTP, or HTTPS.",
+      "pos": [
+        12512,
+        12579
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> Setting up a virtual network in Azure is free of charge.",
+      "pos": [
+        12582,
+        12651
+      ]
+    },
+    {
+      "content": "However, you are charged for the VPN gateway that connects to on-premises.",
+      "pos": [
+        12652,
+        12726
+      ]
+    },
+    {
+      "content": "This charge is based on the amount of time that connection is provisioned and available.",
+      "pos": [
+        12727,
+        12815
+      ]
+    },
+    {
+      "content": "2-tier and 3-tier with presentation tier scale-out",
+      "pos": [
+        12820,
+        12870
+      ]
+    },
+    {
+      "content": "In this application pattern, you deploy 2-tier or 3-tier database application to Azure Virtual Machines by placing each application tier in a different virtual machine.",
+      "pos": [
+        12872,
+        13040
+      ]
+    },
+    {
+      "content": "In addition, you scale out the presentation tier due to increased volume of incoming client requests.",
+      "pos": [
+        13041,
+        13142
+      ]
+    },
+    {
+      "content": "This application pattern is useful when:",
+      "pos": [
+        13144,
+        13184
+      ]
+    },
+    {
+      "content": "You want to move enterprise applications from on-premises virtualized platforms to Azure Virtual Machines.",
+      "pos": [
+        13188,
+        13294
+      ]
+    },
+    {
+      "content": "You want to scale out the presentation tier due to increased volume of incoming client requests.",
+      "pos": [
+        13298,
+        13394
+      ]
+    },
+    {
+      "content": "You want to quickly provision development and test environments for short periods of time.",
+      "pos": [
+        13398,
+        13488
+      ]
+    },
+    {
+      "content": "You want to perform stress testing for varying workload levels but at the same time you do not want to own and maintain many physical machines all the time.",
+      "pos": [
+        13492,
+        13648
+      ]
+    },
+    {
+      "content": "You want to own an infrastructure environment that can scale up and down on demand.",
+      "pos": [
+        13652,
+        13735
+      ]
+    },
+    {
+      "content": "The following diagram demonstrates how you can place the application tiers in multiple virtual machines in Azure by scaling out the presentation tier due to increased volume of incoming client requests.",
+      "pos": [
+        13737,
+        13939
+      ]
+    },
+    {
+      "content": "As seen in the diagram, Azure Load Balancer is responsible for distributing traffic across multiple virtual machines and also determining which web server to connect to.",
+      "pos": [
+        13940,
+        14109
+      ]
+    },
+    {
+      "content": "Having multiple instances of the web servers behind a load balancer ensures the high availability of the presentation tier.",
+      "pos": [
+        14110,
+        14233
+      ]
+    },
+    {
+      "content": "Application pattern - presentation tier scale out",
+      "pos": [
+        14237,
+        14286
+      ]
+    },
+    {
+      "content": "Best practices for 2-tier, 3-tier, or n-tier patterns that have multiple VMs in one tier",
+      "pos": [
+        14391,
+        14479
+      ]
+    },
+    {
+      "content": "It’s recommended that you place the virtual machines that belong to the same tier in the same cloud service and in the same the availability set.",
+      "pos": [
+        14481,
+        14626
+      ]
+    },
+    {
+      "content": "For example, place a set of web servers in <bpt id=\"p1\">**</bpt>CloudService1<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>AvailabilitySet1<ept id=\"p2\">**</ept> and a set of database servers in <bpt id=\"p3\">**</bpt>CloudService2<ept id=\"p3\">**</ept> and <bpt id=\"p4\">**</bpt>AvailabilitySet2<ept id=\"p4\">**</ept>.",
+      "pos": [
+        14627,
+        14789
+      ]
+    },
+    {
+      "content": "An availability set in Azure enables you to place the high availability nodes into separate fault domains and upgrade domains.",
+      "pos": [
+        14790,
+        14916
+      ]
+    },
+    {
+      "content": "To leverage multiple VM instances of a tier, you need to configure Azure Load Balancer between application tiers.",
+      "pos": [
+        14918,
+        15031
+      ]
+    },
+    {
+      "content": "To configure Load Balancer in each tier, create a load-balanced endpoint on each tier’s VMs separately.",
+      "pos": [
+        15032,
+        15135
+      ]
+    },
+    {
+      "content": "For a specific tier, first create VMs in the same cloud service.",
+      "pos": [
+        15136,
+        15200
+      ]
+    },
+    {
+      "content": "This will make sure that they all have the same public Virtual IP address.",
+      "pos": [
+        15201,
+        15275
+      ]
+    },
+    {
+      "content": "Next, create an endpoint on one of the virtual machines on that tier.",
+      "pos": [
+        15276,
+        15345
+      ]
+    },
+    {
+      "content": "Then, assign the same endpoint to the other virtual machines on that tier for load balancing.",
+      "pos": [
+        15346,
+        15439
+      ]
+    },
+    {
+      "content": "By creating a load-balanced set, you distribute traffic across multiple virtual machines and also allow the Load Balancer to determine which node to connect when a backend VM node fails.",
+      "pos": [
+        15440,
+        15626
+      ]
+    },
+    {
+      "content": "For example, having multiple instances of the web servers behind a load balancer ensures the high availability of the presentation tier.",
+      "pos": [
+        15627,
+        15763
+      ]
+    },
+    {
+      "content": "As a best practice, always make sure that all internet connections first go to the presentation tier.",
+      "pos": [
+        15765,
+        15866
+      ]
+    },
+    {
+      "content": "The presentation layer accesses the business tier, and then the business tier accesses the data tier.",
+      "pos": [
+        15867,
+        15968
+      ]
+    },
+    {
+      "content": "For example, open up an endpoint on the presentation tier.",
+      "pos": [
+        15969,
+        16027
+      ]
+    },
+    {
+      "content": "Each endpoint has a public port and a private port.",
+      "pos": [
+        16028,
+        16079
+      ]
+    },
+    {
+      "content": "The private port is used internally by the virtual machine to listen for traffic on that endpoint.",
+      "pos": [
+        16080,
+        16178
+      ]
+    },
+    {
+      "content": "The public port is the entry point for communication from outside of Azure and is used by the Azure Load Balancer.",
+      "pos": [
+        16179,
+        16293
+      ]
+    },
+    {
+      "content": "It is recommended to set up the network access control list (ACL) to define rules that help isolate and control the incoming traffic on any public port on any public endpoint on any application tier.",
+      "pos": [
+        16294,
+        16493
+      ]
+    },
+    {
+      "content": "For more information, see <bpt id=\"p1\">[</bpt>Manage the ACL on an endpoint<ept id=\"p1\">](virtual-machines-set-up-endpoints.md/#manage-the-acl-on-an-endpoint)</ept>.",
+      "pos": [
+        16494,
+        16621
+      ]
+    },
+    {
+      "content": "Note that the Load Balancer in Azure works similar to load balancers in an on-premises environment.",
+      "pos": [
+        16623,
+        16722
+      ]
+    },
+    {
+      "content": "For more information, see <bpt id=\"p1\">[</bpt>Load balancing for Azure infrastructure services<ept id=\"p1\">](virtual-machines-load-balance.md)</ept>.",
+      "pos": [
+        16723,
+        16834
+      ]
+    },
+    {
+      "content": "In addition, we recommend that you set up a private network for your virtual machines by using Azure Virtual Network.",
+      "pos": [
+        16836,
+        16953
+      ]
+    },
+    {
+      "content": "This allows them to communicate among themselves over the private IP address.",
+      "pos": [
+        16954,
+        17031
+      ]
+    },
+    {
+      "content": "For more information, see <bpt id=\"p1\">[</bpt>Azure Virtual Network<ept id=\"p1\">](../virtual-network/virtual-networks-overview.md)</ept>.",
+      "pos": [
+        17032,
+        17131
+      ]
+    },
+    {
+      "content": "2-tier and 3-tier with business tier scale-out",
+      "pos": [
+        17136,
+        17182
+      ]
+    },
+    {
+      "content": "In this application pattern, you deploy 2-tier or 3-tier database application to Azure Virtual Machines by placing each application tier in a different virtual machine.",
+      "pos": [
+        17184,
+        17352
+      ]
+    },
+    {
+      "content": "In addition, you might want to distribute the application server components to multiple virtual machines due to the complexity of your application.",
+      "pos": [
+        17353,
+        17500
+      ]
+    },
+    {
+      "content": "This application pattern is useful when:",
+      "pos": [
+        17502,
+        17542
+      ]
+    },
+    {
+      "content": "You want to move enterprise applications from on-premises virtualized platforms to Azure Virtual Machines.",
+      "pos": [
+        17546,
+        17652
+      ]
+    },
+    {
+      "content": "You want to distribute the application server components to multiple virtual machines due to the complexity of your application.",
+      "pos": [
+        17656,
+        17784
+      ]
+    },
+    {
+      "content": "You want to move business logic heavy on-premises LOB (line-of-business) applications to Azure Virtual Machines.",
+      "pos": [
+        17788,
+        17900
+      ]
+    },
+    {
+      "content": "LOB applications are a set of critical computer applications that are vital to running an enterprise, such as accounting, human resources (HR), payroll, supply chain management, and resource planning applications.",
+      "pos": [
+        17901,
+        18114
+      ]
+    },
+    {
+      "content": "You want to quickly provision development and test environments for short periods of time.",
+      "pos": [
+        18118,
+        18208
+      ]
+    },
+    {
+      "content": "You want to perform stress testing for varying workload levels but at the same time you do not want to own and maintain many physical machines all the time.",
+      "pos": [
+        18212,
+        18368
+      ]
+    },
+    {
+      "content": "You want to own an infrastructure environment that can scale up and down on demand.",
+      "pos": [
+        18372,
+        18455
+      ]
+    },
+    {
+      "content": "The following diagram demonstrates an on-premises scenario and its cloud enabled solution.",
+      "pos": [
+        18457,
+        18547
+      ]
+    },
+    {
+      "content": "In this scenario, you place the application tiers in multiple virtual machines in Azure by scaling out the business tier, which contains the business logic tier and data access components.",
+      "pos": [
+        18548,
+        18736
+      ]
+    },
+    {
+      "content": "As seen in the diagram, Azure Load Balancer is responsible for distributing traffic across multiple virtual machines and also determining which web server to connect to.",
+      "pos": [
+        18737,
+        18906
+      ]
+    },
+    {
+      "content": "Having multiple instances of the application servers behind a load balancer ensures the high availability of the business tier.",
+      "pos": [
+        18907,
+        19034
+      ]
+    },
+    {
+      "content": "For more information, see <bpt id=\"p1\">[</bpt>Best practices for 2-tier, 3-tier, or n-tier application patterns that have multiple virtual machines in one tier<ept id=\"p1\">](#best-practices-for-2-tier-3-tier-or-n-tier-patterns-that-have-multiple-vms-in-one-tier)</ept>.",
+      "pos": [
+        19035,
+        19266
+      ]
+    },
+    {
+      "content": "Application pattern with business tier scale out",
+      "pos": [
+        19270,
+        19318
+      ]
+    },
+    {
+      "content": "2-tier and 3-tier with presentation and business tiers scale-out and HADR",
+      "pos": [
+        19422,
+        19495
+      ]
+    },
+    {
+      "content": "In this application pattern, you deploy 2-tier or 3-tier database application to Azure Virtual Machines by distributing the presentation tier (web server) and the business tier (application server) components to multiple virtual machines.",
+      "pos": [
+        19497,
+        19735
+      ]
+    },
+    {
+      "content": "In addition, you implement high-availability and disaster recovery solutions for your databases in Azure virtual machines.",
+      "pos": [
+        19736,
+        19858
+      ]
+    },
+    {
+      "content": "This application pattern is useful when:",
+      "pos": [
+        19860,
+        19900
+      ]
+    },
+    {
+      "content": "You want to move enterprise applications from virtualized platforms on-premises to Azure by implementing SQL Server high availability and disaster recovery capabilities.",
+      "pos": [
+        19904,
+        20073
+      ]
+    },
+    {
+      "content": "You want to scale out the presentation tier and the business tier due to increased volume of incoming client requests and the complexity of your application.",
+      "pos": [
+        20077,
+        20234
+      ]
+    },
+    {
+      "content": "You want to quickly provision development and test environments for short periods of time.",
+      "pos": [
+        20238,
+        20328
+      ]
+    },
+    {
+      "content": "You want to perform stress testing for varying workload levels but at the same time you do not want to own and maintain many physical machines all the time.",
+      "pos": [
+        20332,
+        20488
+      ]
+    },
+    {
+      "content": "You want to own an infrastructure environment that can scale up and down on demand.",
+      "pos": [
+        20492,
+        20575
+      ]
+    },
+    {
+      "content": "The following diagram demonstrates an on-premises scenario and its cloud enabled solution.",
+      "pos": [
+        20577,
+        20667
+      ]
+    },
+    {
+      "content": "In this scenario, you scale out the presentation tier and the business tier components in multiple virtual machines in Azure.",
+      "pos": [
+        20668,
+        20793
+      ]
+    },
+    {
+      "content": "In addition, you implement high availability and disaster recovery (HADR) techniques for SQL Server databases in Azure.",
+      "pos": [
+        20794,
+        20913
+      ]
+    },
+    {
+      "content": "Running multiple copies of an application in different VMs make sure that you are load balancing requests across them.",
+      "pos": [
+        20915,
+        21033
+      ]
+    },
+    {
+      "content": "When you have multiple virtual machines, you need to make sure that all your VMs are accessible and running at one point in time.",
+      "pos": [
+        21034,
+        21163
+      ]
+    },
+    {
+      "content": "If you configure load balancing, Azure Load Balancer track the health of VMs and directs incoming calls to the healthy functioning VM nodes properly.",
+      "pos": [
+        21164,
+        21313
+      ]
+    },
+    {
+      "content": "For information on how to set up load balancing of the virtual machines, see <bpt id=\"p1\">[</bpt>Load balancing for Azure infrastructure services<ept id=\"p1\">](virtual-machines-load-balance.md)</ept>.",
+      "pos": [
+        21314,
+        21476
+      ]
+    },
+    {
+      "content": "Having multiple instances of web and application servers behind a load balancer ensures the high availability of the presentation and business tiers.",
+      "pos": [
+        21477,
+        21626
+      ]
+    },
+    {
+      "content": "Scale out and high availability",
+      "pos": [
+        21630,
+        21661
+      ]
+    },
+    {
+      "content": "Best practices for application patterns requiring SQL HADR",
+      "pos": [
+        21766,
+        21824
+      ]
+    },
+    {
+      "content": "When you set up SQL Server high availability and disaster recovery solutions in Azure Virtual Machines, setting up a virtual network for your virtual machines using <bpt id=\"p1\">[</bpt>Azure Virtual Network<ept id=\"p1\">](../virtual-network/virtual-networks-overview.md)</ept> is mandatory.",
+      "pos": [
+        21826,
+        22077
+      ]
+    },
+    {
+      "content": "Virtual machines within a Virtual Network will have a stable private IP address even after a service downtime, thus you can avoid the update time required for DNS name resolution.",
+      "pos": [
+        22079,
+        22258
+      ]
+    },
+    {
+      "content": "In addition, the virtual network allows you to extend your on-premises network to Azure and creates a trusted security boundary.",
+      "pos": [
+        22259,
+        22387
+      ]
+    },
+    {
+      "content": "For example, if your application has corporate domain restrictions (such as, Windows authentication, Active Directory), setting up <bpt id=\"p1\">[</bpt>Azure Virtual Network<ept id=\"p1\">](../virtual-network/virtual-networks-overview.md)</ept> is necessary.",
+      "pos": [
+        22388,
+        22605
+      ]
+    },
+    {
+      "content": "Most of customers, who are running production code on Azure, are keeping both primary and secondary replicas in Azure.",
+      "pos": [
+        22607,
+        22725
+      ]
+    },
+    {
+      "pos": [
+        22727,
+        22995
+      ],
+      "content": "For comprehensive information and tutorials on high availability and disaster recovery techniques, see <bpt id=\"p1\">[</bpt>High Availability and Disaster Recovery for SQL Server in Azure Virtual Machines<ept id=\"p1\">](virtual-machines-sql-server-high-availability-and-disaster-recovery-solutions.md)</ept>."
+    },
+    {
+      "content": "2-tier and 3-tier using Azure VMs and Cloud Services",
+      "pos": [
+        23000,
+        23052
+      ]
+    },
+    {
+      "content": "In this application pattern, you deploy 2-tier or 3-tier application to Azure by using both <bpt id=\"p1\">[</bpt>Azure Cloud Services<ept id=\"p1\">](cloud-services-choose-me.md#tellmecs)</ept> (web and worker roles - Platform as a Service (PaaS)) and <bpt id=\"p2\">[</bpt>Azure Virtual Machines<ept id=\"p2\">](virtual-machines/)</ept> (Infrastructure as a Service (IaaS)).",
+      "pos": [
+        23054,
+        23346
+      ]
+    },
+    {
+      "content": "Using <bpt id=\"p1\">[</bpt>Azure Cloud Services<ept id=\"p1\">](http://azure.microsoft.com/documentation/services/cloud-services/)</ept> for the presentation tier/business tier and SQL Server in <bpt id=\"p2\">[</bpt>Azure Virtual Machines<ept id=\"p2\">](virtual-machines-about.md)</ept> for the data tier is beneficial for most applications running on Azure.",
+      "pos": [
+        23347,
+        23624
+      ]
+    },
+    {
+      "content": "The reason is that having a compute instance running on Cloud Services provides an easy management, deployment, monitoring, and scale-out.",
+      "pos": [
+        23625,
+        23763
+      ]
+    },
+    {
+      "content": "With Cloud Services, Azure maintains the infrastructure for you, performs routine maintenance, patches the operating systems, and attempts to recover from service and hardware failures.",
+      "pos": [
+        23765,
+        23950
+      ]
+    },
+    {
+      "content": "When your application needs scale-out, automatic, and manual scale out options are available for your cloud service project by increasing or decreasing the number of instances or virtual machines that are used by your application.",
+      "pos": [
+        23951,
+        24181
+      ]
+    },
+    {
+      "content": "In addition, you can use on-premises Visual Studio to deploy your application to a cloud service project in Azure.",
+      "pos": [
+        24182,
+        24296
+      ]
+    },
+    {
+      "content": "In summary, if you don’t want to own extensive administrative tasks for the presentation/business tier and your application does not require any complex configuration of software or the operating system, use Azure Cloud Services.",
+      "pos": [
+        24298,
+        24527
+      ]
+    },
+    {
+      "content": "If Azure SQL Database does not support all the features you are looking for, use SQL Server in an Azure Virtual Machine for the data tier.",
+      "pos": [
+        24528,
+        24666
+      ]
+    },
+    {
+      "content": "Running an application on Azure Cloud Services and storing data in Azure Virtual Machines combines the benefits of both services.",
+      "pos": [
+        24667,
+        24796
+      ]
+    },
+    {
+      "content": "For a detailed comparison, see the section in this topic on <bpt id=\"p1\">[</bpt>Comparing development strategies in Azure<ept id=\"p1\">](#comparing-development-strategies-in-azure)</ept>.",
+      "pos": [
+        24797,
+        24945
+      ]
+    },
+    {
+      "content": "In this application pattern, the presentation tier includes a web role, which is a Cloud Services component running in the Azure execution environment and it is customized for web application programming as supported by IIS and ASP.NET.",
+      "pos": [
+        24947,
+        25183
+      ]
+    },
+    {
+      "content": "The business or backend tier includes a worker role, which is a Cloud Services component running in the Azure execution environment and it is useful for generalized development, and may perform background processing for a web role.",
+      "pos": [
+        25184,
+        25415
+      ]
+    },
+    {
+      "content": "The database tier resides in a SQL Server virtual machine in Azure.",
+      "pos": [
+        25416,
+        25483
+      ]
+    },
+    {
+      "content": "The communication between the presentation tier and the database tier happens directly or over the business tier – worker role components.",
+      "pos": [
+        25484,
+        25622
+      ]
+    },
+    {
+      "content": "This application pattern is useful when:",
+      "pos": [
+        25624,
+        25664
+      ]
+    },
+    {
+      "content": "You want to move enterprise applications from virtualized platforms on-premises to Azure by implementing SQL Server high availability and disaster recovery capabilities.",
+      "pos": [
+        25668,
+        25837
+      ]
+    },
+    {
+      "content": "You want to own an infrastructure environment that can scale up and down on demand.",
+      "pos": [
+        25841,
+        25924
+      ]
+    },
+    {
+      "content": "Azure SQL Database does not support all the features that your application or database needs.",
+      "pos": [
+        25928,
+        26021
+      ]
+    },
+    {
+      "content": "You want to perform stress testing for varying workload levels but at the same time you do not want to own and maintain many physical machines all the time.",
+      "pos": [
+        26025,
+        26181
+      ]
+    },
+    {
+      "content": "The following diagram demonstrates an on-premises scenario and its cloud enabled solution.",
+      "pos": [
+        26183,
+        26273
+      ]
+    },
+    {
+      "content": "In this scenario, you place the presentation tier in web roles, the business tier in worker roles but the data tier in virtual machines in Azure.",
+      "pos": [
+        26274,
+        26419
+      ]
+    },
+    {
+      "content": "Running multiple copies of the presentation tier in different web roles ensures to load balance requests across them.",
+      "pos": [
+        26420,
+        26537
+      ]
+    },
+    {
+      "content": "When you combine Azure Cloud Services with Azure Virtual Machines, we recommend that you set up up <bpt id=\"p1\">[</bpt>Azure Virtual Network<ept id=\"p1\">](../virtual-network/virtual-networks-overview.md)</ept> as well.",
+      "pos": [
+        26538,
+        26718
+      ]
+    },
+    {
+      "content": "With <bpt id=\"p1\">[</bpt>Azure Virtual Network<ept id=\"p1\">](../virtual-network/virtual-networks-overview.md)</ept>, you can have stable and persistent private IP addresses within the same cloud service in the cloud.",
+      "pos": [
+        26719,
+        26897
+      ]
+    },
+    {
+      "content": "Once you define a virtual network for your virtual machines and cloud services, they can start communicating among themselves over the private IP address.",
+      "pos": [
+        26898,
+        27052
+      ]
+    },
+    {
+      "content": "In addition, having virtual machines and Azure web/worker roles in the same <bpt id=\"p1\">[</bpt>Azure Virtual Network<ept id=\"p1\">](../virtual-network/virtual-networks-overview.md)</ept> provides low latency and more secure connectivity.",
+      "pos": [
+        27053,
+        27252
+      ]
+    },
+    {
+      "content": "For more information, see <bpt id=\"p1\">[</bpt>What is a cloud service<ept id=\"p1\">](../cloud-services/fundamentals-application-models.md)</ept>.",
+      "pos": [
+        27253,
+        27359
+      ]
+    },
+    {
+      "content": "As seen in the diagram, Azure Load Balancer distributes traffic across multiple virtual machines and also determines which web server or application server to connect to.",
+      "pos": [
+        27361,
+        27531
+      ]
+    },
+    {
+      "content": "Having multiple instances of the web and application servers behind a load balancer ensures the high availability of the presentation tier and the business tier.",
+      "pos": [
+        27532,
+        27693
+      ]
+    },
+    {
+      "content": "For more information, see <bpt id=\"p1\">[</bpt>Best practices for application patterns requiring SQL HADR<ept id=\"p1\">](#best-practices-for-application-patterns-requiring-sql-hadr)</ept>.",
+      "pos": [
+        27694,
+        27842
+      ]
+    },
+    {
+      "content": "Application patterns with Cloud Services",
+      "pos": [
+        27846,
+        27886
+      ]
+    },
+    {
+      "content": "Another approach to implement this application pattern is to use a consolidated web role that contains both presentation tier and business tier components as shown in the following diagram.",
+      "pos": [
+        27987,
+        28176
+      ]
+    },
+    {
+      "content": "This application pattern is useful for applications that require stateful design.",
+      "pos": [
+        28177,
+        28258
+      ]
+    },
+    {
+      "content": "Since Azure provides stateless compute nodes on web and worker roles, we recommend that you implement a logic to store session state using one of the following technologies: <bpt id=\"p1\">[</bpt>Azure Caching<ept id=\"p1\">](http://azure.microsoft.com/documentation/services/redis-cache/)</ept>, <bpt id=\"p2\">[</bpt>Azure Table Storage<ept id=\"p2\">](../storage/storage-dotnet-how-to-use-tables.md)</ept> or <bpt id=\"p3\">[</bpt>Azure SQL Database<ept id=\"p3\">](../sql-database/sql-database-technical-overview.md)</ept>.",
+      "pos": [
+        28259,
+        28660
+      ]
+    },
+    {
+      "content": "Application patterns with Cloud Services",
+      "pos": [
+        28664,
+        28704
+      ]
+    },
+    {
+      "content": "Pattern with Azure VMs, Azure SQL Database, and Azure Web Apps",
+      "pos": [
+        28808,
+        28870
+      ]
+    },
+    {
+      "content": "The primary goal of this application pattern is to show you how to combine Azure infrastructure as a service (IaaS) components with Azure platform-as-a-service components (PaaS) in your solution.",
+      "pos": [
+        28872,
+        29067
+      ]
+    },
+    {
+      "content": "This pattern is focused on Azure SQL Database for relational data storage.",
+      "pos": [
+        29068,
+        29142
+      ]
+    },
+    {
+      "content": "It does not include SQL Server in an Azure virtual machine, which is part of the Azure infrastructure as a service offering.",
+      "pos": [
+        29143,
+        29267
+      ]
+    },
+    {
+      "content": "In this application pattern, you deploy a database application to Azure by placing the presentation and business tiers in the same virtual machine and accessing a database in Azure SQL Database (SQL Database) servers.",
+      "pos": [
+        29269,
+        29486
+      ]
+    },
+    {
+      "content": "You can implement the presentation tier by using traditional IIS-based web solutions.",
+      "pos": [
+        29487,
+        29572
+      ]
+    },
+    {
+      "content": "Or, you can implement a combined presentation and business tier by using <bpt id=\"p1\">[</bpt>Azure Web Apps<ept id=\"p1\">](http://azure.microsoft.com/documentation/services/app-service/web/)</ept>.",
+      "pos": [
+        29573,
+        29731
+      ]
+    },
+    {
+      "content": "This application pattern is useful when:",
+      "pos": [
+        29733,
+        29773
+      ]
+    },
+    {
+      "content": "You already have an existing SQL Database server configured in Azure and you want to test your application quickly.",
+      "pos": [
+        29777,
+        29892
+      ]
+    },
+    {
+      "content": "You want to test the capabilities of Azure environment.",
+      "pos": [
+        29896,
+        29951
+      ]
+    },
+    {
+      "content": "You want to quickly provision development and test environments for short periods of time.",
+      "pos": [
+        29955,
+        30045
+      ]
+    },
+    {
+      "content": "Your business logic and data access components can be self-contained within a web application.",
+      "pos": [
+        30049,
+        30143
+      ]
+    },
+    {
+      "content": "The following diagram demonstrates an on-premises scenario and its cloud enabled solution.",
+      "pos": [
+        30145,
+        30235
+      ]
+    },
+    {
+      "content": "In this scenario, you place the application tiers in a single virtual machine in Azure and access data in Azure SQL Database.",
+      "pos": [
+        30236,
+        30361
+      ]
+    },
+    {
+      "content": "Mixed application pattern",
+      "pos": [
+        30365,
+        30390
+      ]
+    },
+    {
+      "content": "If you choose to implement a combined web and application tier by using Azure Web Apps, we recommend that you keep the middle-tier or application tier as dynamic-link libraries (DLLs) in the context of a web application.",
+      "pos": [
+        30491,
+        30711
+      ]
+    },
+    {
+      "pos": [
+        30713,
+        30940
+      ],
+      "content": "In addition, review the recommendations given in the <bpt id=\"p1\">[</bpt>Comparing web development strategies in Azure<ept id=\"p1\">](#comparing-web-development-strategies-in-azure)</ept> section at the end of this article to learn more about programming techniques."
+    },
+    {
+      "content": "N-tier hybrid application pattern",
+      "pos": [
+        30945,
+        30978
+      ]
+    },
+    {
+      "content": "In n-tier hybrid application pattern, you implement your application in multiple tiers distributed between on-premises and Azure.",
+      "pos": [
+        30980,
+        31109
+      ]
+    },
+    {
+      "content": "Therefore, you create a flexible and reusable hybrid system, which you can modify or add a specific tier without changing the other tiers.",
+      "pos": [
+        31110,
+        31248
+      ]
+    },
+    {
+      "content": "To extend your corporate network to the cloud, you use <bpt id=\"p1\">[</bpt>Azure Virtual Network<ept id=\"p1\">](../virtual-network/virtual-networks-overview.md)</ept> service.",
+      "pos": [
+        31249,
+        31385
+      ]
+    },
+    {
+      "content": "This hybrid application pattern is useful when:",
+      "pos": [
+        31387,
+        31434
+      ]
+    },
+    {
+      "content": "You want to build applications that run partly in the cloud and partly on-premises.",
+      "pos": [
+        31438,
+        31521
+      ]
+    },
+    {
+      "content": "You want to migrate some or all elements of an existing on-premises application to the cloud.",
+      "pos": [
+        31525,
+        31618
+      ]
+    },
+    {
+      "content": "You want to move enterprise applications from on-premises virtualized platforms to Azure.",
+      "pos": [
+        31622,
+        31711
+      ]
+    },
+    {
+      "content": "You want to own an infrastructure environment that can scale up and down on demand.",
+      "pos": [
+        31715,
+        31798
+      ]
+    },
+    {
+      "content": "You want to quickly provision development and test environments for short periods of time.",
+      "pos": [
+        31802,
+        31892
+      ]
+    },
+    {
+      "content": "You want a cost effective way to take backups for enterprise database applications.",
+      "pos": [
+        31896,
+        31979
+      ]
+    },
+    {
+      "content": "The following diagram demonstrates an n-tier hybrid application pattern that spans across on-premises and Azure.",
+      "pos": [
+        31981,
+        32093
+      ]
+    },
+    {
+      "content": "As shown in the diagram, on-premises infrastructure includes <bpt id=\"p1\">[</bpt>Active Directory Domain Services<ept id=\"p1\">](https://technet.microsoft.com/library/hh831484.aspx)</ept> domain controller to support user authentication and authorization.",
+      "pos": [
+        32094,
+        32310
+      ]
+    },
+    {
+      "content": "Note that the diagram demonstrates a scenario, where some parts of the data tier live in an on-premises data center whereas some parts of the data tier live in Azure.",
+      "pos": [
+        32311,
+        32477
+      ]
+    },
+    {
+      "content": "Depending on your application’s needs, you can implement several other hybrid scenarios.",
+      "pos": [
+        32478,
+        32566
+      ]
+    },
+    {
+      "content": "For example, you might keep the presentation tier and the business tier in an on-premises environment but the data tier in Azure.",
+      "pos": [
+        32567,
+        32696
+      ]
+    },
+    {
+      "content": "N-tier application pattern",
+      "pos": [
+        32700,
+        32726
+      ]
+    },
+    {
+      "content": "In Azure, you can use Active Directory as a standalone cloud directory for your organization, or you can also integrate existing on-premises Active Directory with <bpt id=\"p1\">[</bpt>Azure Active Directory<ept id=\"p1\">](http://azure.microsoft.com/documentation/services/active-directory/)</ept>.",
+      "pos": [
+        32827,
+        33084
+      ]
+    },
+    {
+      "content": "As seen in the diagram, the business tier components can access to multiple data sources, such as to <bpt id=\"p1\">[</bpt>SQL Server in Azure<ept id=\"p1\">](virtual-machines-sql-server-infrastructure-services.md)</ept> via a private internal IP address, to on-premises SQL Server via <bpt id=\"p2\">[</bpt>Azure Virtual Network<ept id=\"p2\">](../virtual-network/virtual-networks-overview.md)</ept>, or to <bpt id=\"p3\">[</bpt>SQL Database<ept id=\"p3\">](../sql-database/sql-database-technical-overview)</ept> using the .NET Framework data provider technologies.",
+      "pos": [
+        33085,
+        33525
+      ]
+    },
+    {
+      "content": "In this diagram, Azure SQL Database is an optional data storage service.",
+      "pos": [
+        33526,
+        33598
+      ]
+    },
+    {
+      "content": "In n-tier hybrid application pattern, you can implement the following workflow in the order specified:",
+      "pos": [
+        33600,
+        33702
+      ]
+    },
+    {
+      "content": "Identify enterprise database applications that need to be moved up to cloud by using the <bpt id=\"p1\">[</bpt>Microsoft Assessment and Planning (MAP) Toolkit<ept id=\"p1\">](http://microsoft.com/map)</ept>.",
+      "pos": [
+        33707,
+        33872
+      ]
+    },
+    {
+      "content": "The MAP Toolkit gathers inventory and performance data from computers you are considering for virtualization and provides recommendations on capacity and assessment planning.",
+      "pos": [
+        33873,
+        34047
+      ]
+    },
+    {
+      "content": "Plan the resources and configuration needed in the Azure platform, such as storage accounts and virtual machines.",
+      "pos": [
+        34052,
+        34165
+      ]
+    },
+    {
+      "content": "Set up network connectivity between the corporate network on-premises and <bpt id=\"p1\">[</bpt>Azure Virtual Network<ept id=\"p1\">](../virtual-network/virtual-networks-overview.md)</ept>.",
+      "pos": [
+        34170,
+        34317
+      ]
+    },
+    {
+      "content": "To set up the connection between the corporate network on-premises and a virtual machine in Azure, use one of the following two methods:",
+      "pos": [
+        34318,
+        34454
+      ]
+    },
+    {
+      "content": "Establish a connection between on-premises and Azure via public end points on a virtual machine in Azure.",
+      "pos": [
+        34499,
+        34604
+      ]
+    },
+    {
+      "content": "This method provides an easy setup and enables you to use SQL Server authentication in your virtual machine.",
+      "pos": [
+        34605,
+        34713
+      ]
+    },
+    {
+      "content": "In addition, set up the network access control list (ACL) on the public ports to allow for access certain IP addresses.",
+      "pos": [
+        34714,
+        34833
+      ]
+    },
+    {
+      "content": "For more information, see <bpt id=\"p1\">[</bpt>Manage the ACL on an endpoint<ept id=\"p1\">](virtual-machines-set-up-endpoints.md/#manage-the-acl-on-an-endpoint)</ept>.",
+      "pos": [
+        34834,
+        34961
+      ]
+    },
+    {
+      "content": "Establish a connection between on-premises and Azure via Azure Virtual Private network (VPN) tunnel.",
+      "pos": [
+        34974,
+        35074
+      ]
+    },
+    {
+      "content": "This method allows you to extend domain policies to a virtual machine in Azure.",
+      "pos": [
+        35075,
+        35154
+      ]
+    },
+    {
+      "content": "In addition, you can set up firewall rules and use Windows authentication in your virtual machine.",
+      "pos": [
+        35155,
+        35253
+      ]
+    },
+    {
+      "content": "Currently, Azure supports secure site-to-site VPN and point-to-site VPN connections:",
+      "pos": [
+        35254,
+        35338
+      ]
+    },
+    {
+      "content": "With secure site-to-site connection, you can establish network connectivity between your on-premises network and your virtual network in Azure.",
+      "pos": [
+        35354,
+        35497
+      ]
+    },
+    {
+      "content": "It is recommended for connecting your on-premises data center environment to Azure.",
+      "pos": [
+        35498,
+        35581
+      ]
+    },
+    {
+      "content": "With secure point-to-site connection, you can establish network connectivity between your virtual network in Azure and your individual computers running anywhere.",
+      "pos": [
+        35601,
+        35763
+      ]
+    },
+    {
+      "content": "It is mostly recommended for development and test purposes.",
+      "pos": [
+        35764,
+        35823
+      ]
+    },
+    {
+      "pos": [
+        35829,
+        35987
+      ],
+      "content": "For information on how to connect to SQL Server in Azure, see <bpt id=\"p1\">[</bpt>Connect to a SQL Server Virtual Machine on Azure<ept id=\"p1\">](virtual-machines-sql-server-connectivity.md)</ept>."
+    },
+    {
+      "content": "Set up scheduled jobs and alerts that would backup on-premises data in a virtual machine disk in Azure.",
+      "pos": [
+        35992,
+        36095
+      ]
+    },
+    {
+      "content": "For more information, see <bpt id=\"p1\">[</bpt>SQL Server Backup and Restore with Azure Blob Storage Service<ept id=\"p1\">](https://msdn.microsoft.com/library/jj919148.aspx)</ept> and <bpt id=\"p2\">[</bpt>Backup and Restore for SQL Server in Azure Virtual Machines<ept id=\"p2\">](virtual-machines-sql-server-backup-and-restore.md)</ept>.",
+      "pos": [
+        36096,
+        36353
+      ]
+    },
+    {
+      "content": "Depending on your application’s needs, you can implement one of the following three common scenarios:",
+      "pos": [
+        36358,
+        36459
+      ]
+    },
+    {
+      "content": "You can keep your web server, application server, and insensitive data in a database server in Azure whereas you keep the sensitive data on-premises.",
+      "pos": [
+        36468,
+        36617
+      ]
+    },
+    {
+      "content": "You can keep your web server and application server on-premises whereas the database server in a virtual machine in Azure.",
+      "pos": [
+        36630,
+        36752
+      ]
+    },
+    {
+      "content": "You can keep your database server, web server, and application server on-premises whereas you keep the database replicas in virtual machines in Azure.",
+      "pos": [
+        36765,
+        36915
+      ]
+    },
+    {
+      "content": "This setting allows the on-premises web servers or reporting applications to access the database replicas in Azure.",
+      "pos": [
+        36916,
+        37031
+      ]
+    },
+    {
+      "content": "Therefore, you can achieve to lower the workload in an on-premises database.",
+      "pos": [
+        37032,
+        37108
+      ]
+    },
+    {
+      "content": "We recommend that you implement this scenario for heavy read workloads and developmental purposes.",
+      "pos": [
+        37109,
+        37207
+      ]
+    },
+    {
+      "content": "For information on creating database replicas in Azure, see AlwaysOn Availability Groups at <bpt id=\"p1\">[</bpt>High Availability and Disaster Recovery for SQL Server in Azure Virtual Machines<ept id=\"p1\">](virtual-machines-sql-server-high-availability-and-disaster-recovery-solutions.md)</ept>.",
+      "pos": [
+        37208,
+        37465
+      ]
+    },
+    {
+      "content": "Comparing web development strategies in Azure",
+      "pos": [
+        37470,
+        37515
+      ]
+    },
+    {
+      "content": "To implement and deploy a multi-tier SQL Server based application in Azure, you can use one of the following two programming methods:",
+      "pos": [
+        37517,
+        37650
+      ]
+    },
+    {
+      "content": "Set up a traditional web server (IIS - Internet Information Services) in Azure and access databases in SQL Server in Azure Virtual Machines.",
+      "pos": [
+        37654,
+        37794
+      ]
+    },
+    {
+      "content": "Implement and deploy a cloud service to Azure.",
+      "pos": [
+        37798,
+        37844
+      ]
+    },
+    {
+      "content": "Then, make sure that this cloud service can access databases in SQL Server in Azure Virtual machines.",
+      "pos": [
+        37845,
+        37946
+      ]
+    },
+    {
+      "content": "A cloud service can include multiple web and worker roles.",
+      "pos": [
+        37947,
+        38005
+      ]
+    },
+    {
+      "content": "The following table provides a comparison of traditional web development with Azure Cloud Services and Azure Web Apps with respect to SQL Server in Azure Virtual Machines.",
+      "pos": [
+        38007,
+        38178
+      ]
+    },
+    {
+      "content": "The table includes Azure Web Apps as it is possible to use SQL Server in Azure VM as a data source for Azure Web Apps via its public virtual IP address or DNS name.",
+      "pos": [
+        38179,
+        38343
+      ]
+    },
+    {
+      "content": "Traditional web development in Azure Virtual Machines",
+      "pos": [
+        38347,
+        38400
+      ]
+    },
+    {
+      "content": "Cloud Services in Azure",
+      "pos": [
+        38401,
+        38424
+      ]
+    },
+    {
+      "content": "Web Hosting with Azure Web Apps",
+      "pos": [
+        38425,
+        38456
+      ]
+    },
+    {
+      "content": "Application Migration from on-premises",
+      "pos": [
+        38479,
+        38517
+      ]
+    },
+    {
+      "content": "Existing applications as-is.",
+      "pos": [
+        38520,
+        38548
+      ]
+    },
+    {
+      "content": "Applications need web and worker roles.",
+      "pos": [
+        38549,
+        38588
+      ]
+    },
+    {
+      "content": "Existing applications as-is but suited for self-contained web applications and web services that require quick scalability.",
+      "pos": [
+        38589,
+        38712
+      ]
+    },
+    {
+      "content": "Development and Deployment",
+      "pos": [
+        38717,
+        38743
+      ]
+    },
+    {
+      "content": "Visual Studio, WebMatrix, Visual Web Developer, WebDeploy, FTP, TFS, IIS Manager, PowerShell.",
+      "pos": [
+        38746,
+        38839
+      ]
+    },
+    {
+      "content": "Visual Studio, Azure SDK, TFS, PowerShell.",
+      "pos": [
+        38840,
+        38882
+      ]
+    },
+    {
+      "content": "Each cloud service has two environments to which you can deploy your service package and configuration: staging and production.",
+      "pos": [
+        38883,
+        39010
+      ]
+    },
+    {
+      "content": "You can deploy a cloud service to the staging environment to test it before you promote it to production.",
+      "pos": [
+        39011,
+        39116
+      ]
+    },
+    {
+      "content": "Visual Studio, WebMatrix, Visual Web Developer, FTP, GIT, BitBucket, CodePlex, DropBox, GitHub, Mercurial, TFS, Web Deploy, PowerShell.",
+      "pos": [
+        39117,
+        39252
+      ]
+    },
+    {
+      "content": "Administration and Setup",
+      "pos": [
+        39257,
+        39281
+      ]
+    },
+    {
+      "content": "You are responsible for administrative tasks on the application, data, firewall rules, virtual network, and operating system.",
+      "pos": [
+        39284,
+        39409
+      ]
+    },
+    {
+      "content": "You are responsible for administrative tasks on the application, data, firewall rules, and virtual network.",
+      "pos": [
+        39410,
+        39517
+      ]
+    },
+    {
+      "content": "You are responsible for administrative tasks on the application and data only.",
+      "pos": [
+        39518,
+        39596
+      ]
+    },
+    {
+      "content": "High Availability and Disaster Recovery (HADR)",
+      "pos": [
+        39601,
+        39647
+      ]
+    },
+    {
+      "content": "We recommend that you place virtual machines in the same availability set and in the same cloud service.",
+      "pos": [
+        39650,
+        39754
+      ]
+    },
+    {
+      "content": "Keeping your VMs in the same availability set allows Azure to place the high availability nodes into separate fault domains and upgrade domains.",
+      "pos": [
+        39755,
+        39899
+      ]
+    },
+    {
+      "content": "Similarly, keeping your VMs in the same cloud service enables load balancing and VMs can communicate directly with one another over the local network within an Azure data center.",
+      "pos": [
+        39900,
+        40078
+      ]
+    },
+    {
+      "content": "You are responsible for implementing a high availability and disaster recovery solution for SQL Server in Azure Virtual Machines to avoid any downtime.",
+      "pos": [
+        40088,
+        40239
+      ]
+    },
+    {
+      "content": "For supported HADR technologies, see <bpt id=\"p1\">[</bpt>High Availability and Disaster Recovery for SQL Server in Azure Virtual Machines<ept id=\"p1\">](virtual-machines-sql-server-high-availability-and-disaster-recovery-solutions.md)</ept>.",
+      "pos": [
+        40240,
+        40442
+      ]
+    },
+    {
+      "content": "You are responsible for backing up your own data and application.",
+      "pos": [
+        40452,
+        40517
+      ]
+    },
+    {
+      "content": "Azure can move your virtual machines if the host machine in the data center fails due to hardware issues.",
+      "pos": [
+        40527,
+        40632
+      ]
+    },
+    {
+      "content": "In addition, there could be planned downtime of your VM when the host machine is updated for security or software updates.",
+      "pos": [
+        40633,
+        40755
+      ]
+    },
+    {
+      "content": "Therefore, we recommend that you maintain at least two VMs in each application tier to ensure the continuous availability.",
+      "pos": [
+        40756,
+        40878
+      ]
+    },
+    {
+      "content": "Azure does not provide SLA for a single virtual machine.",
+      "pos": [
+        40879,
+        40935
+      ]
+    },
+    {
+      "content": "For more information, see <bpt id=\"p1\">[</bpt>Azure Business Continuity Technical Guidance<ept id=\"p1\">](https://msdn.microsoft.com/library/azure/hh873027.aspx)</ept>.",
+      "pos": [
+        40936,
+        41065
+      ]
+    },
+    {
+      "content": "Azure manages the failures resulting from the underlying hardware or operating system software.",
+      "pos": [
+        41066,
+        41161
+      ]
+    },
+    {
+      "content": "We recommend that you implement multiple instances of a web or worker role to ensure the high availability of your application.",
+      "pos": [
+        41162,
+        41289
+      ]
+    },
+    {
+      "content": "For information, see <bpt id=\"p1\">[</bpt>Cloud Services, Virtual Machines, and Virtual Network Service Level Agreement<ept id=\"p1\">](http://www.microsoft.com/download/details.aspx?id=38427)</ept> and <bpt id=\"p2\">[</bpt>Disaster Recovery and High Availability for Azure Applications<ept id=\"p2\">](https://msdn.microsoft.com/library/azure/dn251004.aspx)</ept>",
+      "pos": [
+        41290,
+        41572
+      ]
+    },
+    {
+      "content": "You are responsible for backing up your own data and application.",
+      "pos": [
+        41582,
+        41647
+      ]
+    },
+    {
+      "content": "For databases residing in a SQL Server database in an Azure VM, you are responsible for implementing a high availability and disaster recovery solution to avoid any downtime.",
+      "pos": [
+        41657,
+        41831
+      ]
+    },
+    {
+      "content": "For supported HDAR technologies, see High Availability and Disaster Recovery for SQL Server in Azure Virtual Machines.",
+      "pos": [
+        41832,
+        41950
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>SQL Server Database Mirroring<ept id=\"p1\">**</ept>: Use with Azure Cloud Services (web/worker roles).",
+      "pos": [
+        41960,
+        42044
+      ]
+    },
+    {
+      "content": "SQL Server VMs and a cloud service project can be in the same Azure Virtual Network.",
+      "pos": [
+        42045,
+        42129
+      ]
+    },
+    {
+      "content": "If SQL Server VM is not in the same Virtual Network, you need to create a SQL Server Alias to route communication to the instance of SQL Server.",
+      "pos": [
+        42130,
+        42274
+      ]
+    },
+    {
+      "content": "In addition, the alias name must match the SQL Server name.",
+      "pos": [
+        42275,
+        42334
+      ]
+    },
+    {
+      "content": "High Availability is inherited from Azure worker roles, Azure blob storage, and Azure SQL Database.",
+      "pos": [
+        42335,
+        42434
+      ]
+    },
+    {
+      "content": "For example, Azure Storage maintains three replicas of all blob, table, and queue data.",
+      "pos": [
+        42435,
+        42522
+      ]
+    },
+    {
+      "content": "At any one time, Azure SQL Database keeps three replicas of data running—one primary replica and two secondary replicas.",
+      "pos": [
+        42523,
+        42643
+      ]
+    },
+    {
+      "content": "For more information, see <bpt id=\"p1\">[</bpt>Azure Storage<ept id=\"p1\">](http://azure.microsoft.com/documentation/services/storage)</ept> and <bpt id=\"p2\">[</bpt>Azure SQL Database<ept id=\"p2\">](../sql-database/sql-database-technical-overview.md)</ept>.",
+      "pos": [
+        42644,
+        42822
+      ]
+    },
+    {
+      "content": "When using SQL Server in Azure VM as a data source for Azure Web Apps, keep in mind that Azure Web Apps does not support Azure Virtual Network.",
+      "pos": [
+        42832,
+        42975
+      ]
+    },
+    {
+      "content": "In other words, all connections from Azure Web Apps to SQL Server VMs in Azure must go through public end points of virtual machines.",
+      "pos": [
+        42976,
+        43109
+      ]
+    },
+    {
+      "content": "This might cause some limitations for high availability and disaster recovery scenarios.",
+      "pos": [
+        43110,
+        43198
+      ]
+    },
+    {
+      "content": "For example, the client application on Azure Web Apps connecting to SQL Server VM with database mirroring would not be able to connect to the new primary server as database mirroring requires that you set up Azure Virtual Network between SQL Server host VMs in Azure.",
+      "pos": [
+        43199,
+        43466
+      ]
+    },
+    {
+      "content": "Therefore, using <bpt id=\"p1\">**</bpt>SQL Server Database Mirroring<ept id=\"p1\">**</ept> with Azure Web Apps is not supported currently.",
+      "pos": [
+        43467,
+        43565
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>SQL Server AlwaysOn Availability Groups<ept id=\"p1\">**</ept>: You can setup AlwaysOn Availability Groups when using Azure Web Apps with SQL Server VMs in Azure.",
+      "pos": [
+        43575,
+        43718
+      ]
+    },
+    {
+      "content": "But you need to configure AlwaysOn Availability Group Listener to route the communication to the primary replica via public load-balanced endpoints.",
+      "pos": [
+        43719,
+        43867
+      ]
+    },
+    {
+      "content": "Cross-premise Connectivity",
+      "pos": [
+        43872,
+        43898
+      ]
+    },
+    {
+      "content": "You can use Azure Virtual Network to connect to on-premises.",
+      "pos": [
+        43901,
+        43961
+      ]
+    },
+    {
+      "content": "You can use Azure Virtual Network to connect to on-premises.",
+      "pos": [
+        43962,
+        44022
+      ]
+    },
+    {
+      "content": "Azure Virtual Network is supported.",
+      "pos": [
+        44023,
+        44058
+      ]
+    },
+    {
+      "content": "For more information, see <bpt id=\"p1\">[</bpt>Web Apps Virtual Network Integration<ept id=\"p1\">](http://azure.microsoft.com/blog/2014/09/15/azure-websites-virtual-network-integration/)</ept>.",
+      "pos": [
+        44059,
+        44212
+      ]
+    },
+    {
+      "content": "Scalability",
+      "pos": [
+        44217,
+        44228
+      ]
+    },
+    {
+      "content": "Scale-up is available by increasing the virtual machine sizes or adding more disks.",
+      "pos": [
+        44231,
+        44314
+      ]
+    },
+    {
+      "content": "For more information about virtual machine sizes, see <bpt id=\"p1\">[</bpt>Virtual Machine Sizes for Azure<ept id=\"p1\">](virtual-machines-size-specs.md)</ept>.",
+      "pos": [
+        44315,
+        44435
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>For Database Server<ept id=\"p1\">**</ept>: Scale-out is available via database partitioning techniques and SQL Server AlwaysOn Availability groups.",
+      "pos": [
+        44445,
+        44574
+      ]
+    },
+    {
+      "content": "For heavy read workloads, you can use <bpt id=\"p1\">[</bpt>AlwaysOn Availability Groups<ept id=\"p1\">](https://msdn.microsoft.com/library/hh510230.aspx)</ept> on multiple secondary nodes as well as SQL Server Replication.",
+      "pos": [
+        44584,
+        44765
+      ]
+    },
+    {
+      "content": "For heavy write workloads, you can implement horizontal partitioning data across multiple physical servers to provide application scale-out.",
+      "pos": [
+        44775,
+        44915
+      ]
+    },
+    {
+      "content": "In addition, you can implement a scale out by using <bpt id=\"p1\">[</bpt>SQL Server with Data Dependent Routing<ept id=\"p1\">](https://technet.microsoft.com/library/cc966448.aspx)</ept>.",
+      "pos": [
+        44925,
+        45071
+      ]
+    },
+    {
+      "content": "With Data Dependent Routing (DDR), you need to implement the partitioning mechanism in the client application, typically in the business tier layer, to route the database requests to multiple SQL Server nodes.",
+      "pos": [
+        45072,
+        45281
+      ]
+    },
+    {
+      "content": "The business tier contains mappings to how the data is partitioned and which node contains the data.",
+      "pos": [
+        45282,
+        45382
+      ]
+    },
+    {
+      "content": "You can scale applications that are running virtual machines.",
+      "pos": [
+        45392,
+        45453
+      ]
+    },
+    {
+      "content": "For more information, see <bpt id=\"p1\">[</bpt>How to Scale an Application<ept id=\"p1\">](../cloud-services/cloud-services-how-to-scale.md)</ept>.",
+      "pos": [
+        45454,
+        45560
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Important Note<ept id=\"p1\">**</ept>: The <bpt id=\"p2\">**</bpt>AutoScale<ept id=\"p2\">**</ept> feature in Azure allows you to automatically increase or decrease the Virtual Machines that are used by your application.",
+      "pos": [
+        45570,
+        45729
+      ]
+    },
+    {
+      "content": "This feature guarantees that the end-user experience is not affected negatively during peak periods, and VMs are shut down when the demand is low.",
+      "pos": [
+        45730,
+        45876
+      ]
+    },
+    {
+      "content": "It’s recommended that you do not set the AutoScale option for your cloud service if it includes SQL Server VMs.",
+      "pos": [
+        45877,
+        45988
+      ]
+    },
+    {
+      "content": "The reason is that the AutoScale feature lets Azure to turn on a virtual machine when the CPU usage in that VM is higher than some threshold, and to turn off a virtual machine when the CPU usage goes lower than it.",
+      "pos": [
+        45989,
+        46203
+      ]
+    },
+    {
+      "content": "The AutoScale feature is useful for stateless applications, such as web servers, where any VM can manage the workload without any references to any previous state.",
+      "pos": [
+        46204,
+        46367
+      ]
+    },
+    {
+      "content": "However, the AutoScale feature is not useful for stateful applications, such as SQL Server, where only one instance allows writing to the database.",
+      "pos": [
+        46368,
+        46515
+      ]
+    },
+    {
+      "content": "Scale-up is available by using multiple web and worker roles.",
+      "pos": [
+        46516,
+        46577
+      ]
+    },
+    {
+      "content": "For more information about virtual machine sizes for web roles and worker roles, see <bpt id=\"p1\">[</bpt>Configure Sizes for Cloud Services<ept id=\"p1\">](../cloud-services/cloud-services-sizes-specs.md)</ept>.",
+      "pos": [
+        46578,
+        46749
+      ]
+    },
+    {
+      "content": "When using <bpt id=\"p1\">**</bpt>Cloud Services<ept id=\"p1\">**</ept>, you can define multiple roles to distribute processing and also achieve flexible scaling of your application.",
+      "pos": [
+        46759,
+        46899
+      ]
+    },
+    {
+      "content": "Each cloud service includes one or more web roles and/or worker roles, each with its own application files and configuration.",
+      "pos": [
+        46900,
+        47025
+      ]
+    },
+    {
+      "content": "You can scale-up a cloud service by increasing the number of role instances (virtual machines) deployed for a role and scale-down a cloud service by decreasing the number of role instances.",
+      "pos": [
+        47026,
+        47215
+      ]
+    },
+    {
+      "content": "For detailed information, see <bpt id=\"p1\">[</bpt>Azure Execution Models<ept id=\"p1\">](fundamentals-application-models.md)</ept>.",
+      "pos": [
+        47216,
+        47307
+      ]
+    },
+    {
+      "content": "Scale-out is available via built-in Azure high availability support through <bpt id=\"p1\">[</bpt>Cloud Services, Virtual Machines, and Virtual Network Service Level Agreement<ept id=\"p1\">](http://www.microsoft.com/download/details.aspx?id=38427)</ept> and Load Balancer.",
+      "pos": [
+        47317,
+        47548
+      ]
+    },
+    {
+      "content": "For a multi-tier application, we recommend that you connect web/worker roles application to database server VMs vian Azure Virtual Network.",
+      "pos": [
+        47558,
+        47697
+      ]
+    },
+    {
+      "content": "In addition, Azure provides load balancing for VMs in the same cloud service, spreading user requests across them.",
+      "pos": [
+        47698,
+        47812
+      ]
+    },
+    {
+      "content": "Virtual machines connected in this way can communicate directly with one another over the local network within an Azure data center.",
+      "pos": [
+        47813,
+        47945
+      ]
+    },
+    {
+      "content": "You can set up <bpt id=\"p1\">**</bpt>AutoScale<ept id=\"p1\">**</ept> on the Management Portal as well as the schedule times.",
+      "pos": [
+        47955,
+        48039
+      ]
+    },
+    {
+      "content": "For more information, see <bpt id=\"p1\">[</bpt>How to Scale an Application<ept id=\"p1\">](../cloud-services/cloud-services-how-to-scale.md)</ept>.",
+      "pos": [
+        48040,
+        48146
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Scale up and down<ept id=\"p1\">**</ept>: You can increase/decrease the size of the instance (VM) reserved for your web site.",
+      "pos": [
+        48147,
+        48253
+      ]
+    },
+    {
+      "content": "Scale out: You can add more reserved instances (VMs) for your web site.",
+      "pos": [
+        48263,
+        48334
+      ]
+    },
+    {
+      "content": "You can set up <bpt id=\"p1\">**</bpt>AutoScale<ept id=\"p1\">**</ept> on the Management Portal as well as the schedule times.",
+      "pos": [
+        48344,
+        48428
+      ]
+    },
+    {
+      "content": "For more information, see <bpt id=\"p1\">[</bpt>How to Scale Web Apps<ept id=\"p1\">](../app-service-web/web-sites-scale.md)</ept>.",
+      "pos": [
+        48429,
+        48518
+      ]
+    },
+    {
+      "pos": [
+        48521,
+        48711
+      ],
+      "content": "For more information on choosing between these programming methods, see <bpt id=\"p1\">[</bpt>Azure Web Apps, Cloud Services, and VMs: When to use which?<ept id=\"p1\">](../app-service-web/choose-web-site-cloud-service-vm.md)</ept>."
+    },
+    {
+      "content": "Next Steps",
+      "pos": [
+        48716,
+        48726
+      ]
+    },
+    {
+      "pos": [
+        48728,
+        48906
+      ],
+      "content": "For more information on running SQL Server in Azure Virtual machines, see <bpt id=\"p1\">[</bpt>SQL Server on Azure Virtual Machines Overview<ept id=\"p1\">](virtual-machines-sql-server-infrastructure-services.md)</ept>."
+    }
+  ],
+  "content": "<properties \n    pageTitle=\"Application Patterns and Development Strategies for SQL Server in Azure Virtual Machines\"\n    description=\"This article covers a series of application patterns related to SQL Server running on Azure VMs. It provides solution architects and developers a foundation for good application architecture and design.\"\n    services=\"virtual-machines\"\n    documentationCenter=\"na\"\n    authors=\"rothja\"\n    manager=\"jeffreyg\"\n    editor=\"monicar\" />\n<tags \n    ms.service=\"virtual-machines\"\n    ms.devlang=\"na\"\n    ms.topic=\"article\"\n    ms.tgt_pltfrm=\"vm-windows-sql-server\"\n    ms.workload=\"infrastructure-services\"\n    ms.date=\"08/20/2015\"\n    ms.author=\"jroth\" />\n\n# Application Patterns and Development Strategies for SQL Server in Azure Virtual Machines\n\n## Summary: \nDetermining which application pattern or patterns to use for your SQL Server based applications in Azure environment is an important design decision and it requires a solid understanding of how SQL Server and each infrastructure component of Azure work together. With SQL Server in Azure Infrastructure Services, you can easily migrate, maintain, and monitor your existing SQL Server applications built-on Windows Server to virtual machines in Azure.\n\nThe goal of this article is to provide solution architects and developers a foundation for good application architecture and design, which they can follow when migrating existing applications to Azure as well as developing new applications in Azure.\n\nFor each application pattern, you will find an on-premises scenario, its respective cloud-enabled solution, and the related technical recommendations. In addition, the article discusses Azure specific development strategies so that you can design your applications correctly. Due to the many possible application patterns, it’s recommended that architects and developers should choose the most appropriate pattern for their applications and users.\n\n**Technical Contributors:** Luis Carlos Vargas Herring, Madhan Arumugam Ramakrishnan\n\n**Technical Reviewers:** Corey Sanders, Drew McDaniel, Narayan Annamalai, Nir Mashkowski, Sanjay Mishra, Silvano Coriani, Stefan Schackow, Tim Hickey, Tim Wieman, Xin Jin\n\n## Introduction\n\nYou can develop many types of n-tier applications by separating the components of the different application layers on different machines as well as in separate components. For example, you can place the client application and business rules components in one machine, front-end web tier and data access tier components in another machine, and a back-end database tier in another machine. This kind of structuring helps isolate each tier from each other. If you change where data comes from, you don’t need to change the client or web application but only the data access tier components.\n\nA typical *n-tier* application includes the presentation tier, the business tier, and the data tier:\n\n\n| Tier              | Description                                                                                                                                                                     |\n|-------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|\n| **Presentation** | The *presentation tier* (web tier, front-end tier) is the layer in which users interact with an application.                                                                      |\n| **Business**     | The *business tier* (middle tier) is the layer that the presentation tier and the data tier use to communicate with each other and includes the core functionality of the system. |\n| **Data**         | The *data tier* is basically the server that stores an application's data (for example, a server running SQL Server).                                                             |\n\nApplication layers describe the logical groupings of the functionality and components in an application; whereas tiers describe the physical distribution of the functionality and components on separate physical servers, computers, networks, or remote locations. The layers of an application may reside on the same physical computer (the same tier) or may be distributed over separate computers (n-tier), and the components in each layer communicate with components in other layers through well-defined interfaces. You can think of the term tier as referring to physical distribution patterns such as two-tier, three-tier, and n-tier. A **2-tier application pattern** contains two application tiers: application server and database server. The direct communication happens between the application server and the database server. The application server contains both web-tier and business-tier components. In **3-tier application pattern**, there are three application tiers: web server, application server, which contains the business logic tier and/or business tier data access components, and the database server. The communication between the web server and the database server happens over the application server. For detailed information on application layers and tiers, see [Microsoft Application Architecture Guide](https://msdn.microsoft.com/library/ff650706.aspx).\n\nBefore you start reading this article, you should have knowledge on the fundamental concepts of SQL Server and Azure. For information, see [SQL Server Books Online](https://msdn.microsoft.com/library/bb545450.aspx), [SQL Server in Azure Virtual Machines](virtual-machines-sql-server-infrastructure-services.md) and [Azure.com](http://azure.microsoft.com).\n\nThis article describes several application patterns that can be suitable for your simple applications as well as the highly complex enterprise applications. Before detailing each pattern, we recommend that you should familiarize yourself with the available data storage services in Azure, such as [Azure Storage](../storage/storage-introduction.md), [Azure SQL Database](../sql-database/sql-database-technical-overview.md), and [SQL Server in an Azure Virtual Machine](virtual-machines-sql-server-infrastructure-services.md). To make the best design decisions for your applications, understand when to use which data storage service clearly.\n\n### Choose SQL Server in an Azure Virtual Machine, when:\n\n- You need control on SQL Server and Windows. For example, this might include the SQL Server version, special hotfixes, performance configuration, etc.\n\n- You need a full compatibility with SQL Server on-premises and want to move existing applications to Azure as-is.\n\n- You want to leverage the capabilities of the Azure environment but Azure SQL Database does not support all the features that your application requires. This could include the following areas:\n\n    - **Database size**: At the time this article was updated, SQL Database supports a database of up to 500 GB of data. If your application requires more than 500 GB of data and you don’t want to implement custom sharding solutions, it’s recommended that you use SQL Server in an Azure Virtual Machine. For the latest information, see [Scaling Out Azure SQL Databases](https://msdn.microsoft.com/library/azure/dn495641.aspx) and [Azure SQL Database Service Tiers and Performance Levels](https://msdn.microsoft.com/library/azure/dn741336.aspx).\n    - **HIPAA compliance**: Healthcare customers and Independent Software Vendors (ISVs) might choose [SQL Server in Azure Virtual Machines](virtual-machines-sql-server-infrastructure-services.md) instead of [Azure SQL Database](../sql-database/sql-database-technical-overview.md) because SQL Server in an Azure Virtual Machine is covered by HIPAA Business Associate Agreement (BAA). For information on compliance, see [Microsoft Azure Trust Center: Compliance](http://azure.microsoft.com/support/trust-center/compliance/).\n    - **Instance-level features**: At this time, SQL Database doesn’t support features that live outside of the database (such as Linked Servers, Agent jobs, FileStream, Service Broker, etc). For more information, see [Azure SQL Database Guidelines and Limitations](https://msdn.microsoft.com/library/azure/ff394102.aspx).\n\n## 1-tier (simple): single virtual machine\n\nIn this application pattern, you deploy your SQL Server application and database to a standalone virtual machine in Azure. The same virtual machine contains your client/web application, business components, data access layer, and the database server. The presentation, business, and data access code are logically separated but are physically located in a single server machine. Most customers start with this application pattern and then, they scale out by adding more web roles or virtual machines to their system.\n\nThis application pattern is useful when:\n\n- You want to perform a simple migration to Azure platform to evaluate whether the platform answers your application’s requirements or not.\n\n- You want to keep all the application tiers hosted in the same virtual machine in the same Azure data center to reduce the latency between tiers.\n\n- You want to quickly provision development and test environments for short periods of time.\n\n- You want to perform stress testing for varying workload levels but at the same time you do not want to own and maintain many physical machines all the time.\n\nThe following diagram demonstrates a simple on-premises scenario and how you can deploy its cloud enabled solution in a single virtual machine in Azure.\n\n![1-tier application pattern](./media/virtual-machines-sql-server-application-patterns-and-development-strategies/IC728008.png)\n\nDeploying the business layer (business logic and data access components) on the same physical tier as the presentation layer can maximize application performance, unless you must use a separate tier due to scalability or security concerns.\n\nSince this is a very common pattern to start with, you might find the following article on migration useful for moving your data to your SQL Server VM: [Migrating a Database to SQL Server on an Azure VM](virtual-machines-migrate-onpremises-database.md).\n\n## 3-tier (simple): multiple virtual machines\n\nIn this application pattern, you deploy a 3-tier application in Azure by placing each application tier in a different virtual machine. This provides a flexible environment for an easy scale-up and scale-out scenarios. When one virtual machine contains your client/web application, the other one hosts your business components, and the other one hosts the database server.\n\nThis application pattern is useful when:\n\n- You want to perform a migration of complex database applications to Azure Virtual Machines.\n\n- You want different application tiers to be hosted in different regions. For example, you might have shared databases that are deployed to multiple regions for reporting purposes.\n\n- You want to move enterprise applications from on-premises virtualized platforms to Azure Virtual Machines. For a detailed discussion on enterprise applications, see [What is an Enterprise Application](https://msdn.microsoft.com/library/aa267045.aspx).\n\n- You want to quickly provision development and test environments for short periods of time.\n\n- You want to perform stress testing for varying workload levels but at the same time you do not want to own and maintain many physical machines all the time.\n\nThe following diagram demonstrates how you can place a simple 3-tier application in Azure by placing each application tier in a different virtual machine.\n\n![3-tier application pattern](./media/virtual-machines-sql-server-application-patterns-and-development-strategies/IC728009.png)\n\nIn this application pattern, there is only one virtual machine (VM) in each tier. If you have multiple VMs in Azure, we recommend that you set up a virtual network. [Azure Virtual Network](../virtual-network/virtual-networks-overview.md) creates a trusted security boundary and also allows VMs to communicate among themselves over the private IP address. In addition, always make sure that all Internet connections only go to the presentation tier. This means that you should open up a public endpoint on the presentation tier but not on the other tiers. When following this application pattern, you also need to set up the network access control list (ACL) on that public port to allow for access certain IP addresses. For more information, see [Manage the ACL on an endpoint](virtual-machines-set-up-endpoints.md/#manage-the-acl-on-an-endpoint).\n\nIn the diagram, Internet Protocols can be TCP, UDP, HTTP, or HTTPS.\n\n>[AZURE.NOTE] Setting up a virtual network in Azure is free of charge. However, you are charged for the VPN gateway that connects to on-premises. This charge is based on the amount of time that connection is provisioned and available.\n\n## 2-tier and 3-tier with presentation tier scale-out\n\nIn this application pattern, you deploy 2-tier or 3-tier database application to Azure Virtual Machines by placing each application tier in a different virtual machine. In addition, you scale out the presentation tier due to increased volume of incoming client requests.\n\nThis application pattern is useful when:\n\n- You want to move enterprise applications from on-premises virtualized platforms to Azure Virtual Machines.\n\n- You want to scale out the presentation tier due to increased volume of incoming client requests.\n\n- You want to quickly provision development and test environments for short periods of time.\n\n- You want to perform stress testing for varying workload levels but at the same time you do not want to own and maintain many physical machines all the time.\n\n- You want to own an infrastructure environment that can scale up and down on demand.\n\nThe following diagram demonstrates how you can place the application tiers in multiple virtual machines in Azure by scaling out the presentation tier due to increased volume of incoming client requests. As seen in the diagram, Azure Load Balancer is responsible for distributing traffic across multiple virtual machines and also determining which web server to connect to. Having multiple instances of the web servers behind a load balancer ensures the high availability of the presentation tier.\n\n![Application pattern - presentation tier scale out](./media/virtual-machines-sql-server-application-patterns-and-development-strategies/IC728010.png)\n\n### Best practices for 2-tier, 3-tier, or n-tier patterns that have multiple VMs in one tier\n\nIt’s recommended that you place the virtual machines that belong to the same tier in the same cloud service and in the same the availability set. For example, place a set of web servers in **CloudService1** and **AvailabilitySet1** and a set of database servers in **CloudService2** and **AvailabilitySet2**. An availability set in Azure enables you to place the high availability nodes into separate fault domains and upgrade domains.\n\nTo leverage multiple VM instances of a tier, you need to configure Azure Load Balancer between application tiers. To configure Load Balancer in each tier, create a load-balanced endpoint on each tier’s VMs separately. For a specific tier, first create VMs in the same cloud service. This will make sure that they all have the same public Virtual IP address. Next, create an endpoint on one of the virtual machines on that tier. Then, assign the same endpoint to the other virtual machines on that tier for load balancing. By creating a load-balanced set, you distribute traffic across multiple virtual machines and also allow the Load Balancer to determine which node to connect when a backend VM node fails. For example, having multiple instances of the web servers behind a load balancer ensures the high availability of the presentation tier.\n\nAs a best practice, always make sure that all internet connections first go to the presentation tier. The presentation layer accesses the business tier, and then the business tier accesses the data tier. For example, open up an endpoint on the presentation tier. Each endpoint has a public port and a private port. The private port is used internally by the virtual machine to listen for traffic on that endpoint. The public port is the entry point for communication from outside of Azure and is used by the Azure Load Balancer. It is recommended to set up the network access control list (ACL) to define rules that help isolate and control the incoming traffic on any public port on any public endpoint on any application tier. For more information, see [Manage the ACL on an endpoint](virtual-machines-set-up-endpoints.md/#manage-the-acl-on-an-endpoint).\n\nNote that the Load Balancer in Azure works similar to load balancers in an on-premises environment. For more information, see [Load balancing for Azure infrastructure services](virtual-machines-load-balance.md).\n\nIn addition, we recommend that you set up a private network for your virtual machines by using Azure Virtual Network. This allows them to communicate among themselves over the private IP address. For more information, see [Azure Virtual Network](../virtual-network/virtual-networks-overview.md).\n\n## 2-tier and 3-tier with business tier scale-out\n\nIn this application pattern, you deploy 2-tier or 3-tier database application to Azure Virtual Machines by placing each application tier in a different virtual machine. In addition, you might want to distribute the application server components to multiple virtual machines due to the complexity of your application.\n\nThis application pattern is useful when:\n\n- You want to move enterprise applications from on-premises virtualized platforms to Azure Virtual Machines.\n\n- You want to distribute the application server components to multiple virtual machines due to the complexity of your application.\n\n- You want to move business logic heavy on-premises LOB (line-of-business) applications to Azure Virtual Machines. LOB applications are a set of critical computer applications that are vital to running an enterprise, such as accounting, human resources (HR), payroll, supply chain management, and resource planning applications.\n\n- You want to quickly provision development and test environments for short periods of time.\n\n- You want to perform stress testing for varying workload levels but at the same time you do not want to own and maintain many physical machines all the time.\n\n- You want to own an infrastructure environment that can scale up and down on demand.\n\nThe following diagram demonstrates an on-premises scenario and its cloud enabled solution. In this scenario, you place the application tiers in multiple virtual machines in Azure by scaling out the business tier, which contains the business logic tier and data access components. As seen in the diagram, Azure Load Balancer is responsible for distributing traffic across multiple virtual machines and also determining which web server to connect to. Having multiple instances of the application servers behind a load balancer ensures the high availability of the business tier. For more information, see [Best practices for 2-tier, 3-tier, or n-tier application patterns that have multiple virtual machines in one tier](#best-practices-for-2-tier-3-tier-or-n-tier-patterns-that-have-multiple-vms-in-one-tier).\n\n![Application pattern with business tier scale out](./media/virtual-machines-sql-server-application-patterns-and-development-strategies/IC728011.png)\n\n## 2-tier and 3-tier with presentation and business tiers scale-out and HADR\n\nIn this application pattern, you deploy 2-tier or 3-tier database application to Azure Virtual Machines by distributing the presentation tier (web server) and the business tier (application server) components to multiple virtual machines. In addition, you implement high-availability and disaster recovery solutions for your databases in Azure virtual machines.\n\nThis application pattern is useful when:\n\n- You want to move enterprise applications from virtualized platforms on-premises to Azure by implementing SQL Server high availability and disaster recovery capabilities.\n\n- You want to scale out the presentation tier and the business tier due to increased volume of incoming client requests and the complexity of your application.\n\n- You want to quickly provision development and test environments for short periods of time.\n\n- You want to perform stress testing for varying workload levels but at the same time you do not want to own and maintain many physical machines all the time.\n\n- You want to own an infrastructure environment that can scale up and down on demand.\n\nThe following diagram demonstrates an on-premises scenario and its cloud enabled solution. In this scenario, you scale out the presentation tier and the business tier components in multiple virtual machines in Azure. In addition, you implement high availability and disaster recovery (HADR) techniques for SQL Server databases in Azure.\n\nRunning multiple copies of an application in different VMs make sure that you are load balancing requests across them. When you have multiple virtual machines, you need to make sure that all your VMs are accessible and running at one point in time. If you configure load balancing, Azure Load Balancer track the health of VMs and directs incoming calls to the healthy functioning VM nodes properly. For information on how to set up load balancing of the virtual machines, see [Load balancing for Azure infrastructure services](virtual-machines-load-balance.md). Having multiple instances of web and application servers behind a load balancer ensures the high availability of the presentation and business tiers.\n\n![Scale out and high availability](./media/virtual-machines-sql-server-application-patterns-and-development-strategies/IC728012.png)\n\n### Best practices for application patterns requiring SQL HADR\n\nWhen you set up SQL Server high availability and disaster recovery solutions in Azure Virtual Machines, setting up a virtual network for your virtual machines using [Azure Virtual Network](../virtual-network/virtual-networks-overview.md) is mandatory.  Virtual machines within a Virtual Network will have a stable private IP address even after a service downtime, thus you can avoid the update time required for DNS name resolution. In addition, the virtual network allows you to extend your on-premises network to Azure and creates a trusted security boundary. For example, if your application has corporate domain restrictions (such as, Windows authentication, Active Directory), setting up [Azure Virtual Network](../virtual-network/virtual-networks-overview.md) is necessary.\n\nMost of customers, who are running production code on Azure, are keeping both primary and secondary replicas in Azure.\n\nFor comprehensive information and tutorials on high availability and disaster recovery techniques, see [High Availability and Disaster Recovery for SQL Server in Azure Virtual Machines](virtual-machines-sql-server-high-availability-and-disaster-recovery-solutions.md).\n\n## 2-tier and 3-tier using Azure VMs and Cloud Services\n\nIn this application pattern, you deploy 2-tier or 3-tier application to Azure by using both [Azure Cloud Services](cloud-services-choose-me.md#tellmecs) (web and worker roles - Platform as a Service (PaaS)) and [Azure Virtual Machines](virtual-machines/) (Infrastructure as a Service (IaaS)). Using [Azure Cloud Services](http://azure.microsoft.com/documentation/services/cloud-services/) for the presentation tier/business tier and SQL Server in [Azure Virtual Machines](virtual-machines-about.md) for the data tier is beneficial for most applications running on Azure. The reason is that having a compute instance running on Cloud Services provides an easy management, deployment, monitoring, and scale-out.\n\nWith Cloud Services, Azure maintains the infrastructure for you, performs routine maintenance, patches the operating systems, and attempts to recover from service and hardware failures. When your application needs scale-out, automatic, and manual scale out options are available for your cloud service project by increasing or decreasing the number of instances or virtual machines that are used by your application. In addition, you can use on-premises Visual Studio to deploy your application to a cloud service project in Azure.\n\nIn summary, if you don’t want to own extensive administrative tasks for the presentation/business tier and your application does not require any complex configuration of software or the operating system, use Azure Cloud Services. If Azure SQL Database does not support all the features you are looking for, use SQL Server in an Azure Virtual Machine for the data tier. Running an application on Azure Cloud Services and storing data in Azure Virtual Machines combines the benefits of both services. For a detailed comparison, see the section in this topic on [Comparing development strategies in Azure](#comparing-development-strategies-in-azure).\n\nIn this application pattern, the presentation tier includes a web role, which is a Cloud Services component running in the Azure execution environment and it is customized for web application programming as supported by IIS and ASP.NET. The business or backend tier includes a worker role, which is a Cloud Services component running in the Azure execution environment and it is useful for generalized development, and may perform background processing for a web role. The database tier resides in a SQL Server virtual machine in Azure. The communication between the presentation tier and the database tier happens directly or over the business tier – worker role components.\n\nThis application pattern is useful when:\n\n- You want to move enterprise applications from virtualized platforms on-premises to Azure by implementing SQL Server high availability and disaster recovery capabilities.\n\n- You want to own an infrastructure environment that can scale up and down on demand.\n\n- Azure SQL Database does not support all the features that your application or database needs.\n\n- You want to perform stress testing for varying workload levels but at the same time you do not want to own and maintain many physical machines all the time.\n\nThe following diagram demonstrates an on-premises scenario and its cloud enabled solution. In this scenario, you place the presentation tier in web roles, the business tier in worker roles but the data tier in virtual machines in Azure. Running multiple copies of the presentation tier in different web roles ensures to load balance requests across them. When you combine Azure Cloud Services with Azure Virtual Machines, we recommend that you set up up [Azure Virtual Network](../virtual-network/virtual-networks-overview.md) as well. With [Azure Virtual Network](../virtual-network/virtual-networks-overview.md), you can have stable and persistent private IP addresses within the same cloud service in the cloud. Once you define a virtual network for your virtual machines and cloud services, they can start communicating among themselves over the private IP address. In addition, having virtual machines and Azure web/worker roles in the same [Azure Virtual Network](../virtual-network/virtual-networks-overview.md) provides low latency and more secure connectivity. For more information, see [What is a cloud service](../cloud-services/fundamentals-application-models.md).\n\nAs seen in the diagram, Azure Load Balancer distributes traffic across multiple virtual machines and also determines which web server or application server to connect to. Having multiple instances of the web and application servers behind a load balancer ensures the high availability of the presentation tier and the business tier. For more information, see [Best practices for application patterns requiring SQL HADR](#best-practices-for-application-patterns-requiring-sql-hadr).\n\n![Application patterns with Cloud Services](./media/virtual-machines-sql-server-application-patterns-and-development-strategies/IC728013.png)\n\nAnother approach to implement this application pattern is to use a consolidated web role that contains both presentation tier and business tier components as shown in the following diagram. This application pattern is useful for applications that require stateful design. Since Azure provides stateless compute nodes on web and worker roles, we recommend that you implement a logic to store session state using one of the following technologies: [Azure Caching](http://azure.microsoft.com/documentation/services/redis-cache/), [Azure Table Storage](../storage/storage-dotnet-how-to-use-tables.md) or [Azure SQL Database](../sql-database/sql-database-technical-overview.md).\n\n![Application patterns with Cloud Services](./media/virtual-machines-sql-server-application-patterns-and-development-strategies/IC728014.png)\n\n## Pattern with Azure VMs, Azure SQL Database, and Azure Web Apps\n\nThe primary goal of this application pattern is to show you how to combine Azure infrastructure as a service (IaaS) components with Azure platform-as-a-service components (PaaS) in your solution. This pattern is focused on Azure SQL Database for relational data storage. It does not include SQL Server in an Azure virtual machine, which is part of the Azure infrastructure as a service offering.\n\nIn this application pattern, you deploy a database application to Azure by placing the presentation and business tiers in the same virtual machine and accessing a database in Azure SQL Database (SQL Database) servers. You can implement the presentation tier by using traditional IIS-based web solutions. Or, you can implement a combined presentation and business tier by using [Azure Web Apps](http://azure.microsoft.com/documentation/services/app-service/web/).\n\nThis application pattern is useful when:\n\n- You already have an existing SQL Database server configured in Azure and you want to test your application quickly.\n\n- You want to test the capabilities of Azure environment.\n\n- You want to quickly provision development and test environments for short periods of time.\n\n- Your business logic and data access components can be self-contained within a web application.\n\nThe following diagram demonstrates an on-premises scenario and its cloud enabled solution. In this scenario, you place the application tiers in a single virtual machine in Azure and access data in Azure SQL Database.\n\n![Mixed application pattern](./media/virtual-machines-sql-server-application-patterns-and-development-strategies/IC728015.png)\n\nIf you choose to implement a combined web and application tier by using Azure Web Apps, we recommend that you keep the middle-tier or application tier as dynamic-link libraries (DLLs) in the context of a web application.\n\nIn addition, review the recommendations given in the [Comparing web development strategies in Azure](#comparing-web-development-strategies-in-azure) section at the end of this article to learn more about programming techniques.\n\n## N-tier hybrid application pattern\n\nIn n-tier hybrid application pattern, you implement your application in multiple tiers distributed between on-premises and Azure. Therefore, you create a flexible and reusable hybrid system, which you can modify or add a specific tier without changing the other tiers. To extend your corporate network to the cloud, you use [Azure Virtual Network](../virtual-network/virtual-networks-overview.md) service.\n\nThis hybrid application pattern is useful when:\n\n- You want to build applications that run partly in the cloud and partly on-premises.\n\n- You want to migrate some or all elements of an existing on-premises application to the cloud.\n\n- You want to move enterprise applications from on-premises virtualized platforms to Azure.\n\n- You want to own an infrastructure environment that can scale up and down on demand.\n\n- You want to quickly provision development and test environments for short periods of time.\n\n- You want a cost effective way to take backups for enterprise database applications.\n\nThe following diagram demonstrates an n-tier hybrid application pattern that spans across on-premises and Azure. As shown in the diagram, on-premises infrastructure includes [Active Directory Domain Services](https://technet.microsoft.com/library/hh831484.aspx) domain controller to support user authentication and authorization. Note that the diagram demonstrates a scenario, where some parts of the data tier live in an on-premises data center whereas some parts of the data tier live in Azure. Depending on your application’s needs, you can implement several other hybrid scenarios. For example, you might keep the presentation tier and the business tier in an on-premises environment but the data tier in Azure.\n\n![N-tier application pattern](./media/virtual-machines-sql-server-application-patterns-and-development-strategies/IC728016.png)\n\nIn Azure, you can use Active Directory as a standalone cloud directory for your organization, or you can also integrate existing on-premises Active Directory with [Azure Active Directory](http://azure.microsoft.com/documentation/services/active-directory/). As seen in the diagram, the business tier components can access to multiple data sources, such as to [SQL Server in Azure](virtual-machines-sql-server-infrastructure-services.md) via a private internal IP address, to on-premises SQL Server via [Azure Virtual Network](../virtual-network/virtual-networks-overview.md), or to [SQL Database](../sql-database/sql-database-technical-overview) using the .NET Framework data provider technologies. In this diagram, Azure SQL Database is an optional data storage service.\n\nIn n-tier hybrid application pattern, you can implement the following workflow in the order specified:\n\n1. Identify enterprise database applications that need to be moved up to cloud by using the [Microsoft Assessment and Planning (MAP) Toolkit](http://microsoft.com/map). The MAP Toolkit gathers inventory and performance data from computers you are considering for virtualization and provides recommendations on capacity and assessment planning.\n\n1. Plan the resources and configuration needed in the Azure platform, such as storage accounts and virtual machines.\n\n1. Set up network connectivity between the corporate network on-premises and [Azure Virtual Network](../virtual-network/virtual-networks-overview.md). To set up the connection between the corporate network on-premises and a virtual machine in Azure, use one of the following two methods:\n                                    \n    1. Establish a connection between on-premises and Azure via public end points on a virtual machine in Azure. This method provides an easy setup and enables you to use SQL Server authentication in your virtual machine. In addition, set up the network access control list (ACL) on the public ports to allow for access certain IP addresses. For more information, see [Manage the ACL on an endpoint](virtual-machines-set-up-endpoints.md/#manage-the-acl-on-an-endpoint).\n    \n    1. Establish a connection between on-premises and Azure via Azure Virtual Private network (VPN) tunnel. This method allows you to extend domain policies to a virtual machine in Azure. In addition, you can set up firewall rules and use Windows authentication in your virtual machine. Currently, Azure supports secure site-to-site VPN and point-to-site VPN connections:\n    \n        - With secure site-to-site connection, you can establish network connectivity between your on-premises network and your virtual network in Azure. It is recommended for connecting your on-premises data center environment to Azure.\n        \n        - With secure point-to-site connection, you can establish network connectivity between your virtual network in Azure and your individual computers running anywhere. It is mostly recommended for development and test purposes.\n\n    For information on how to connect to SQL Server in Azure, see [Connect to a SQL Server Virtual Machine on Azure](virtual-machines-sql-server-connectivity.md).\n\n1. Set up scheduled jobs and alerts that would backup on-premises data in a virtual machine disk in Azure. For more information, see [SQL Server Backup and Restore with Azure Blob Storage Service](https://msdn.microsoft.com/library/jj919148.aspx) and [Backup and Restore for SQL Server in Azure Virtual Machines](virtual-machines-sql-server-backup-and-restore.md).\n\n1. Depending on your application’s needs, you can implement one of the following three common scenarios:\n\n    1. You can keep your web server, application server, and insensitive data in a database server in Azure whereas you keep the sensitive data on-premises.\n    \n    1. You can keep your web server and application server on-premises whereas the database server in a virtual machine in Azure.\n    \n    1. You can keep your database server, web server, and application server on-premises whereas you keep the database replicas in virtual machines in Azure. This setting allows the on-premises web servers or reporting applications to access the database replicas in Azure. Therefore, you can achieve to lower the workload in an on-premises database. We recommend that you implement this scenario for heavy read workloads and developmental purposes. For information on creating database replicas in Azure, see AlwaysOn Availability Groups at [High Availability and Disaster Recovery for SQL Server in Azure Virtual Machines](virtual-machines-sql-server-high-availability-and-disaster-recovery-solutions.md).\n\n## Comparing web development strategies in Azure\n\nTo implement and deploy a multi-tier SQL Server based application in Azure, you can use one of the following two programming methods:\n\n- Set up a traditional web server (IIS - Internet Information Services) in Azure and access databases in SQL Server in Azure Virtual Machines.\n\n- Implement and deploy a cloud service to Azure. Then, make sure that this cloud service can access databases in SQL Server in Azure Virtual machines. A cloud service can include multiple web and worker roles.\n\nThe following table provides a comparison of traditional web development with Azure Cloud Services and Azure Web Apps with respect to SQL Server in Azure Virtual Machines. The table includes Azure Web Apps as it is possible to use SQL Server in Azure VM as a data source for Azure Web Apps via its public virtual IP address or DNS name.\n\n||Traditional web development in Azure Virtual Machines|Cloud Services in Azure|Web Hosting with Azure Web Apps|\n|---|---|---|---|\n|**Application Migration from on-premises**|Existing applications as-is.|Applications need web and worker roles.|Existing applications as-is but suited for self-contained web applications and web services that require quick scalability.|\n|**Development and Deployment**|Visual Studio, WebMatrix, Visual Web Developer, WebDeploy, FTP, TFS, IIS Manager, PowerShell.|Visual Studio, Azure SDK, TFS, PowerShell. Each cloud service has two environments to which you can deploy your service package and configuration: staging and production. You can deploy a cloud service to the staging environment to test it before you promote it to production.|Visual Studio, WebMatrix, Visual Web Developer, FTP, GIT, BitBucket, CodePlex, DropBox, GitHub, Mercurial, TFS, Web Deploy, PowerShell.|\n|**Administration and Setup**|You are responsible for administrative tasks on the application, data, firewall rules, virtual network, and operating system.|You are responsible for administrative tasks on the application, data, firewall rules, and virtual network.|You are responsible for administrative tasks on the application and data only.|\n|**High Availability and Disaster Recovery (HADR)**|We recommend that you place virtual machines in the same availability set and in the same cloud service. Keeping your VMs in the same availability set allows Azure to place the high availability nodes into separate fault domains and upgrade domains. Similarly, keeping your VMs in the same cloud service enables load balancing and VMs can communicate directly with one another over the local network within an Azure data center.<br/><br/>You are responsible for implementing a high availability and disaster recovery solution for SQL Server in Azure Virtual Machines to avoid any downtime. For supported HADR technologies, see [High Availability and Disaster Recovery for SQL Server in Azure Virtual Machines](virtual-machines-sql-server-high-availability-and-disaster-recovery-solutions.md).<br/><br/>You are responsible for backing up your own data and application.<br/><br/>Azure can move your virtual machines if the host machine in the data center fails due to hardware issues. In addition, there could be planned downtime of your VM when the host machine is updated for security or software updates. Therefore, we recommend that you maintain at least two VMs in each application tier to ensure the continuous availability. Azure does not provide SLA for a single virtual machine. For more information, see [Azure Business Continuity Technical Guidance](https://msdn.microsoft.com/library/azure/hh873027.aspx).|Azure manages the failures resulting from the underlying hardware or operating system software. We recommend that you implement multiple instances of a web or worker role to ensure the high availability of your application. For information, see [Cloud Services, Virtual Machines, and Virtual Network Service Level Agreement](http://www.microsoft.com/download/details.aspx?id=38427) and [Disaster Recovery and High Availability for Azure Applications](https://msdn.microsoft.com/library/azure/dn251004.aspx)<br/><br/>You are responsible for backing up your own data and application.<br/><br/>For databases residing in a SQL Server database in an Azure VM, you are responsible for implementing a high availability and disaster recovery solution to avoid any downtime. For supported HDAR technologies, see High Availability and Disaster Recovery for SQL Server in Azure Virtual Machines.<br/><br/>**SQL Server Database Mirroring**: Use with Azure Cloud Services (web/worker roles). SQL Server VMs and a cloud service project can be in the same Azure Virtual Network. If SQL Server VM is not in the same Virtual Network, you need to create a SQL Server Alias to route communication to the instance of SQL Server. In addition, the alias name must match the SQL Server name.|High Availability is inherited from Azure worker roles, Azure blob storage, and Azure SQL Database. For example, Azure Storage maintains three replicas of all blob, table, and queue data. At any one time, Azure SQL Database keeps three replicas of data running—one primary replica and two secondary replicas. For more information, see [Azure Storage](http://azure.microsoft.com/documentation/services/storage) and [Azure SQL Database](../sql-database/sql-database-technical-overview.md).<br/><br/>When using SQL Server in Azure VM as a data source for Azure Web Apps, keep in mind that Azure Web Apps does not support Azure Virtual Network. In other words, all connections from Azure Web Apps to SQL Server VMs in Azure must go through public end points of virtual machines. This might cause some limitations for high availability and disaster recovery scenarios. For example, the client application on Azure Web Apps connecting to SQL Server VM with database mirroring would not be able to connect to the new primary server as database mirroring requires that you set up Azure Virtual Network between SQL Server host VMs in Azure. Therefore, using **SQL Server Database Mirroring** with Azure Web Apps is not supported currently.<br/><br/>**SQL Server AlwaysOn Availability Groups**: You can setup AlwaysOn Availability Groups when using Azure Web Apps with SQL Server VMs in Azure. But you need to configure AlwaysOn Availability Group Listener to route the communication to the primary replica via public load-balanced endpoints.|\n|**Cross-premise Connectivity**|You can use Azure Virtual Network to connect to on-premises.|You can use Azure Virtual Network to connect to on-premises.|Azure Virtual Network is supported. For more information, see [Web Apps Virtual Network Integration](http://azure.microsoft.com/blog/2014/09/15/azure-websites-virtual-network-integration/).|\n|**Scalability**|Scale-up is available by increasing the virtual machine sizes or adding more disks. For more information about virtual machine sizes, see [Virtual Machine Sizes for Azure](virtual-machines-size-specs.md).<br/><br/>**For Database Server**: Scale-out is available via database partitioning techniques and SQL Server AlwaysOn Availability groups.<br/><br/>For heavy read workloads, you can use [AlwaysOn Availability Groups](https://msdn.microsoft.com/library/hh510230.aspx) on multiple secondary nodes as well as SQL Server Replication.<br/><br/>For heavy write workloads, you can implement horizontal partitioning data across multiple physical servers to provide application scale-out.<br/><br/>In addition, you can implement a scale out by using [SQL Server with Data Dependent Routing](https://technet.microsoft.com/library/cc966448.aspx). With Data Dependent Routing (DDR), you need to implement the partitioning mechanism in the client application, typically in the business tier layer, to route the database requests to multiple SQL Server nodes. The business tier contains mappings to how the data is partitioned and which node contains the data.<br/><br/>You can scale applications that are running virtual machines. For more information, see [How to Scale an Application](../cloud-services/cloud-services-how-to-scale.md).<br/><br/>**Important Note**: The **AutoScale** feature in Azure allows you to automatically increase or decrease the Virtual Machines that are used by your application. This feature guarantees that the end-user experience is not affected negatively during peak periods, and VMs are shut down when the demand is low. It’s recommended that you do not set the AutoScale option for your cloud service if it includes SQL Server VMs. The reason is that the AutoScale feature lets Azure to turn on a virtual machine when the CPU usage in that VM is higher than some threshold, and to turn off a virtual machine when the CPU usage goes lower than it. The AutoScale feature is useful for stateless applications, such as web servers, where any VM can manage the workload without any references to any previous state. However, the AutoScale feature is not useful for stateful applications, such as SQL Server, where only one instance allows writing to the database.|Scale-up is available by using multiple web and worker roles. For more information about virtual machine sizes for web roles and worker roles, see [Configure Sizes for Cloud Services](../cloud-services/cloud-services-sizes-specs.md).<br/><br/>When using **Cloud Services**, you can define multiple roles to distribute processing and also achieve flexible scaling of your application. Each cloud service includes one or more web roles and/or worker roles, each with its own application files and configuration. You can scale-up a cloud service by increasing the number of role instances (virtual machines) deployed for a role and scale-down a cloud service by decreasing the number of role instances. For detailed information, see [Azure Execution Models](fundamentals-application-models.md).<br/><br/>Scale-out is available via built-in Azure high availability support through [Cloud Services, Virtual Machines, and Virtual Network Service Level Agreement](http://www.microsoft.com/download/details.aspx?id=38427) and Load Balancer.<br/><br/>For a multi-tier application, we recommend that you connect web/worker roles application to database server VMs vian Azure Virtual Network. In addition, Azure provides load balancing for VMs in the same cloud service, spreading user requests across them. Virtual machines connected in this way can communicate directly with one another over the local network within an Azure data center.<br/><br/>You can set up **AutoScale** on the Management Portal as well as the schedule times. For more information, see [How to Scale an Application](../cloud-services/cloud-services-how-to-scale.md).|**Scale up and down**: You can increase/decrease the size of the instance (VM) reserved for your web site.<br/><br/>Scale out: You can add more reserved instances (VMs) for your web site.<br/><br/>You can set up **AutoScale** on the Management Portal as well as the schedule times. For more information, see [How to Scale Web Apps](../app-service-web/web-sites-scale.md).|\n\nFor more information on choosing between these programming methods, see [Azure Web Apps, Cloud Services, and VMs: When to use which?](../app-service-web/choose-web-site-cloud-service-vm.md).\n\n## Next Steps\n\nFor more information on running SQL Server in Azure Virtual machines, see [SQL Server on Azure Virtual Machines Overview](virtual-machines-sql-server-infrastructure-services.md)."
+}

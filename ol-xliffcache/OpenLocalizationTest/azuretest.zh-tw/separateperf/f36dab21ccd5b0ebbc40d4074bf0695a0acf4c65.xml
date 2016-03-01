@@ -1,0 +1,698 @@
+{
+  "nodes": [
+    {
+      "content": "Write data to Power BI from Apache Storm | Microsoft Azure",
+      "pos": [
+        24,
+        82
+      ]
+    },
+    {
+      "content": "Write data to Power BI from a C# topology running on an Apache Storm cluster in HDInsight.",
+      "pos": [
+        98,
+        188
+      ]
+    },
+    {
+      "content": "Also, create a report and real-time dashboard using Power BI.",
+      "pos": [
+        189,
+        250
+      ]
+    },
+    {
+      "content": "Use Power BI (preview) to visualize data from an Apache Storm topology",
+      "pos": [
+        548,
+        618
+      ]
+    },
+    {
+      "content": "The Power BI preview allows you to visually display data as reports, or dashboards.",
+      "pos": [
+        620,
+        703
+      ]
+    },
+    {
+      "content": "Using the Power BI REST API, you can easily use data from a topology running on an Apache Storm on HDInsight cluster to Power BI.",
+      "pos": [
+        704,
+        833
+      ]
+    },
+    {
+      "content": "In this document, you will learn how to use Power BI to create a report and dashboard from data created by a Storm topology.",
+      "pos": [
+        835,
+        959
+      ]
+    },
+    {
+      "content": "Prerequisites",
+      "pos": [
+        964,
+        977
+      ]
+    },
+    {
+      "content": "An Azure subscription.",
+      "pos": [
+        981,
+        1003
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt>Get Azure free trial<ept id=\"p1\">](http://azure.microsoft.com/documentation/videos/get-azure-free-trial-for-testing-hadoop-in-hdinsight/)</ept>.",
+      "pos": [
+        1004,
+        1134
+      ]
+    },
+    {
+      "pos": [
+        1138,
+        1212
+      ],
+      "content": "An Azure Active Directory user with <bpt id=\"p1\">[</bpt>Power BI<ept id=\"p1\">](https://powerbi.com)</ept> access"
+    },
+    {
+      "content": "Visual Studio (one of the following versions)",
+      "pos": [
+        1216,
+        1261
+      ]
+    },
+    {
+      "pos": [
+        1269,
+        1360
+      ],
+      "content": "Visual Studio 2012 with <bpt id=\"p1\">[</bpt>update 4<ept id=\"p1\">](http://www.microsoft.com/download/details.aspx?id=39305)</ept>"
+    },
+    {
+      "pos": [
+        1368,
+        1552
+      ],
+      "content": "Visual Studio 2013 with <bpt id=\"p1\">[</bpt>update 4<ept id=\"p1\">](http://www.microsoft.com/download/details.aspx?id=44921)</ept> or <bpt id=\"p2\">[</bpt>Visual Studio 2013 Community<ept id=\"p2\">](http://go.microsoft.com/fwlink/?linkid=517284&amp;clcid=0x409)</ept>"
+    },
+    {
+      "pos": [
+        1560,
+        1646
+      ],
+      "content": "Visual Studio 2015 <bpt id=\"p1\">[</bpt>CTP6<ept id=\"p1\">](http://visualstudio.com/downloads/visual-studio-2015-ctp-vs)</ept>"
+    },
+    {
+      "pos": [
+        1650,
+        1861
+      ],
+      "content": "The HDInsight Tools for Visual Studio: See <bpt id=\"p1\">[</bpt>Get started using the HDInsight Tools for Visual Studio<ept id=\"p1\">](../HDInsight/hdinsight-hadoop-visual-studio-tools-get-started.md)</ept> for information on installation information."
+    },
+    {
+      "content": "How it works",
+      "pos": [
+        1866,
+        1878
+      ]
+    },
+    {
+      "content": "This example contains a C# Storm topology that randomly generates a sentence, splits the sentence into words, counts the words, and sends the word and count to the Power BI REST API.",
+      "pos": [
+        1880,
+        2062
+      ]
+    },
+    {
+      "content": "The <bpt id=\"p1\">[</bpt>PowerBi.Api.Client<ept id=\"p1\">](https://github.com/Vtek/PowerBI.Api.Client)</ept> Nuget package is used to communicate with Power BI.",
+      "pos": [
+        2063,
+        2183
+      ]
+    },
+    {
+      "content": "The following files in this project implement the Power BI specific functionality:",
+      "pos": [
+        2185,
+        2267
+      ]
+    },
+    {
+      "pos": [
+        2271,
+        2346
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>PowerBiBolt.cs<ept id=\"p1\">**</ept>: Implements the Storm bolt, which sends data to Power BI"
+    },
+    {
+      "pos": [
+        2350,
+        2422
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Data.cs<ept id=\"p1\">**</ept>: Describes the data object/row that will be sent to Power BI"
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.WARNING]</ph> Power BI seems to allow the creation of multiple datasets with the same name.",
+      "pos": [
+        2426,
+        2519
+      ]
+    },
+    {
+      "content": "This can occur if the dataset does not exist, and your topology creates multiple instances of the Power BI Bolt.",
+      "pos": [
+        2520,
+        2632
+      ]
+    },
+    {
+      "content": "To avoid this, either set the parallelism hint of the bolt to 1 (as this example does,) or create the dataset before deploying the topology.",
+      "pos": [
+        2633,
+        2773
+      ]
+    },
+    {
+      "pos": [
+        2778,
+        2925
+      ],
+      "content": "The <bpt id=\"p1\">**</bpt>CreateDataset<ept id=\"p1\">**</ept> console application included in this solution is provided as an example of how to create the dataset outside of the topology."
+    },
+    {
+      "content": "Register a Power BI application",
+      "pos": [
+        2930,
+        2961
+      ]
+    },
+    {
+      "pos": [
+        2966,
+        3092
+      ],
+      "content": "Follow the steps in the <bpt id=\"p1\">[</bpt>Power BI quickstart<ept id=\"p1\">](https://msdn.microsoft.com/en-US/library/dn931989.aspx)</ept> to sign up for Power BI."
+    },
+    {
+      "content": "Follow the steps in <bpt id=\"p1\">[</bpt>Register an app<ept id=\"p1\">](https://msdn.microsoft.com/en-US/library/dn877542.aspx)</ept> to create an application registration.",
+      "pos": [
+        3097,
+        3229
+      ]
+    },
+    {
+      "content": "This will be used when accessing the Power BI REST API.",
+      "pos": [
+        3230,
+        3285
+      ]
+    },
+    {
+      "pos": [
+        3293,
+        3367
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.IMPORTANT]</ph> Save the <bpt id=\"p1\">**</bpt>Client ID<ept id=\"p1\">**</ept> for the application registration."
+    },
+    {
+      "content": "Download the example",
+      "pos": [
+        3372,
+        3392
+      ]
+    },
+    {
+      "content": "Download the <bpt id=\"p1\">[</bpt>HDInsight C# Storm Power BI example<ept id=\"p1\">](https://github.com/Blackmist/hdinsight-csharp-storm-powerbi)</ept>.",
+      "pos": [
+        3394,
+        3506
+      ]
+    },
+    {
+      "content": "To download it, either fork/clone it using <bpt id=\"p1\">[</bpt>git<ept id=\"p1\">](http://git-scm.com/)</ept>, or use the <bpt id=\"p2\">**</bpt>Download<ept id=\"p2\">**</ept> link to download a .zip of the archive.",
+      "pos": [
+        3507,
+        3641
+      ]
+    },
+    {
+      "content": "Configure the sample",
+      "pos": [
+        3646,
+        3666
+      ]
+    },
+    {
+      "content": "Open the sample in Visual Studio.",
+      "pos": [
+        3671,
+        3704
+      ]
+    },
+    {
+      "content": "From <bpt id=\"p1\">**</bpt>Solution Explorer<ept id=\"p1\">**</ept>, open the <bpt id=\"p2\">**</bpt>SCPHost.exe.config<ept id=\"p2\">**</ept> file, and then find the <bpt id=\"p3\">**</bpt>&lt;OAuth .../&gt;<ept id=\"p3\">**</ept> element.",
+      "pos": [
+        3705,
+        3814
+      ]
+    },
+    {
+      "content": "Enter values for the following properties of this element.",
+      "pos": [
+        3815,
+        3873
+      ]
+    },
+    {
+      "pos": [
+        3881,
+        3960
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Client<ept id=\"p1\">**</ept>: The Client ID for the application registration you created earlier."
+    },
+    {
+      "pos": [
+        3968,
+        4040
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>User<ept id=\"p1\">**</ept>: An Azure Active Directory account that has access to Power BI."
+    },
+    {
+      "pos": [
+        4048,
+        4114
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Password<ept id=\"p1\">**</ept>: The password for the Azure Active Directory account."
+    },
+    {
+      "content": "(Optional).",
+      "pos": [
+        4119,
+        4130
+      ]
+    },
+    {
+      "content": "The default dataset name used by this project is <bpt id=\"p1\">**</bpt>Words<ept id=\"p1\">**</ept>.",
+      "pos": [
+        4131,
+        4190
+      ]
+    },
+    {
+      "content": "To change this, right click on the <bpt id=\"p1\">**</bpt>WordCount<ept id=\"p1\">**</ept> project in <bpt id=\"p2\">**</bpt>Solution Explorer<ept id=\"p2\">**</ept>, select <bpt id=\"p3\">**</bpt>Properties<ept id=\"p3\">**</ept>, and then select <bpt id=\"p4\">**</bpt>Settings<ept id=\"p4\">**</ept>.",
+      "pos": [
+        4191,
+        4326
+      ]
+    },
+    {
+      "content": "Change the <bpt id=\"p1\">**</bpt>DatasetName<ept id=\"p1\">**</ept> entry to the desired value.",
+      "pos": [
+        4327,
+        4381
+      ]
+    },
+    {
+      "content": "Save and close the files.",
+      "pos": [
+        4386,
+        4411
+      ]
+    },
+    {
+      "content": "Deploy the sample",
+      "pos": [
+        4416,
+        4433
+      ]
+    },
+    {
+      "content": "From <bpt id=\"p1\">**</bpt>Solution Explorer<ept id=\"p1\">**</ept>, right-click the <bpt id=\"p2\">**</bpt>WordCount<ept id=\"p2\">**</ept> project and select <bpt id=\"p3\">**</bpt>Submit to Storm on HDInsight<ept id=\"p3\">**</ept>.",
+      "pos": [
+        4438,
+        4548
+      ]
+    },
+    {
+      "content": "Select the HDInsight cluster from the <bpt id=\"p1\">**</bpt>Storm Cluster<ept id=\"p1\">**</ept> dropdown dialog.",
+      "pos": [
+        4549,
+        4621
+      ]
+    },
+    {
+      "pos": [
+        4629,
+        4733
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> It may take a few seconds for the <bpt id=\"p1\">**</bpt>Storm Cluster<ept id=\"p1\">**</ept> dropdown to populate with server names."
+    },
+    {
+      "content": "If prompted, enter the login credentials for your Azure subscription.",
+      "pos": [
+        4746,
+        4815
+      ]
+    },
+    {
+      "content": "If you have more than one subscription, log in to the one that contains your Storm on HDInsight cluster.",
+      "pos": [
+        4816,
+        4920
+      ]
+    },
+    {
+      "content": "When the topology has been successfully submitted, the Storm Topologies for the cluster should appear.",
+      "pos": [
+        4925,
+        5027
+      ]
+    },
+    {
+      "content": "Select the WordCount topology from the list to view information about the running topology.",
+      "pos": [
+        5028,
+        5119
+      ]
+    },
+    {
+      "content": "The topologies, with the WordCount topology selected",
+      "pos": [
+        5127,
+        5179
+      ]
+    },
+    {
+      "pos": [
+        5251,
+        5426
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> You can also view Storm Topologies from Server Explorer: Expand Azure, HDInsight, right-click a Storm on HDInsight cluster, and then select View Storm Topologies."
+    },
+    {
+      "content": "When viewing the <bpt id=\"p1\">**</bpt>Topology Summary<ept id=\"p1\">**</ept>, scroll until you see the <bpt id=\"p2\">**</bpt>Bolts<ept id=\"p2\">**</ept> section.",
+      "pos": [
+        5431,
+        5513
+      ]
+    },
+    {
+      "content": "In this section, note the <bpt id=\"p1\">**</bpt>Executed<ept id=\"p1\">**</ept> column for the <bpt id=\"p2\">**</bpt>PowerBI<ept id=\"p2\">**</ept> bolt.",
+      "pos": [
+        5514,
+        5585
+      ]
+    },
+    {
+      "content": "Use the refresh button at the top of the page to refresh until the value changes to something other than zero.",
+      "pos": [
+        5586,
+        5696
+      ]
+    },
+    {
+      "content": "When this number starts to increase, it indicates that items are being written to Power BI.",
+      "pos": [
+        5697,
+        5788
+      ]
+    },
+    {
+      "content": "Create a report",
+      "pos": [
+        5793,
+        5808
+      ]
+    },
+    {
+      "content": "In a browser, visit <bpt id=\"p1\">[</bpt>https://PowerBI.com<ept id=\"p1\">](https://powerbi.com)</ept>.",
+      "pos": [
+        5813,
+        5876
+      ]
+    },
+    {
+      "content": "Sign in with your account.",
+      "pos": [
+        5877,
+        5903
+      ]
+    },
+    {
+      "content": "On the left side of the page, expand <bpt id=\"p1\">**</bpt>Datasets<ept id=\"p1\">**</ept>.",
+      "pos": [
+        5908,
+        5958
+      ]
+    },
+    {
+      "content": "Select the <bpt id=\"p1\">**</bpt>Words<ept id=\"p1\">**</ept> entry.",
+      "pos": [
+        5959,
+        5986
+      ]
+    },
+    {
+      "content": "This is the dataset created by the example topology.",
+      "pos": [
+        5987,
+        6039
+      ]
+    },
+    {
+      "content": "Words dataset entry",
+      "pos": [
+        6047,
+        6066
+      ]
+    },
+    {
+      "content": "From the <bpt id=\"p1\">**</bpt>Fields<ept id=\"p1\">**</ept> area, expand <bpt id=\"p2\">**</bpt>WordCount<ept id=\"p2\">**</ept>.",
+      "pos": [
+        6125,
+        6172
+      ]
+    },
+    {
+      "content": "Drag the <bpt id=\"p1\">**</bpt>Count<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>Word<ept id=\"p2\">**</ept> entries to the middle part of the page.",
+      "pos": [
+        6173,
+        6244
+      ]
+    },
+    {
+      "content": "This will create a new chart that displays a bar for each word indicating how many times the word has occurred.",
+      "pos": [
+        6245,
+        6356
+      ]
+    },
+    {
+      "content": "WordCount chart",
+      "pos": [
+        6364,
+        6379
+      ]
+    },
+    {
+      "content": "From the upper left of the page, select <bpt id=\"p1\">**</bpt>Save<ept id=\"p1\">**</ept> to create a new report.",
+      "pos": [
+        6447,
+        6519
+      ]
+    },
+    {
+      "content": "Enter <bpt id=\"p1\">**</bpt>Word Count<ept id=\"p1\">**</ept> as the name of the Report.",
+      "pos": [
+        6520,
+        6567
+      ]
+    },
+    {
+      "content": "Select the Power BI logo to return to the dashboard.",
+      "pos": [
+        6572,
+        6624
+      ]
+    },
+    {
+      "content": "The <bpt id=\"p1\">**</bpt>Word Count<ept id=\"p1\">**</ept> report now appears under <bpt id=\"p2\">**</bpt>Reports<ept id=\"p2\">**</ept>.",
+      "pos": [
+        6625,
+        6681
+      ]
+    },
+    {
+      "content": "Create a live dashboard",
+      "pos": [
+        6686,
+        6709
+      ]
+    },
+    {
+      "content": "Beside <bpt id=\"p1\">**</bpt>Dashboard<ept id=\"p1\">**</ept>, select the <bpt id=\"p2\">**</bpt>+<ept id=\"p2\">**</ept> icon to create a new dashboard.",
+      "pos": [
+        6714,
+        6784
+      ]
+    },
+    {
+      "content": "Name the new dashboard <bpt id=\"p1\">**</bpt>Live Word Count<ept id=\"p1\">**</ept>.",
+      "pos": [
+        6785,
+        6828
+      ]
+    },
+    {
+      "content": "Select the <bpt id=\"p1\">**</bpt>Word Count<ept id=\"p1\">**</ept> report you created earlier.",
+      "pos": [
+        6833,
+        6886
+      ]
+    },
+    {
+      "content": "When displayed, select the chart, then select the pushpin icon to the upper right of the chart.",
+      "pos": [
+        6887,
+        6982
+      ]
+    },
+    {
+      "content": "You should receive a notification that it was pinned to the dashboard.",
+      "pos": [
+        6983,
+        7053
+      ]
+    },
+    {
+      "content": "chart with pushpin displayed",
+      "pos": [
+        7061,
+        7089
+      ]
+    },
+    {
+      "content": "Select the Power BI logo to return to the dashboard.",
+      "pos": [
+        7150,
+        7202
+      ]
+    },
+    {
+      "content": "Select the <bpt id=\"p1\">**</bpt>Live Word Count<ept id=\"p1\">**</ept> dashboard.",
+      "pos": [
+        7203,
+        7244
+      ]
+    },
+    {
+      "content": "It now contains the Word Count chart, and the chart updates as new entries are sent to Power BI from the WordCount topology running on HDInsight.",
+      "pos": [
+        7245,
+        7390
+      ]
+    },
+    {
+      "content": "The live dashboard",
+      "pos": [
+        7398,
+        7416
+      ]
+    },
+    {
+      "content": "Stop the WordCount topology",
+      "pos": [
+        7479,
+        7506
+      ]
+    },
+    {
+      "content": "The topology will continue to run until you stop it or delete the Storm on HDInsight cluster.",
+      "pos": [
+        7508,
+        7601
+      ]
+    },
+    {
+      "content": "Perform the following steps to stop the topology.",
+      "pos": [
+        7602,
+        7651
+      ]
+    },
+    {
+      "content": "In Visual Studio, open the <bpt id=\"p1\">**</bpt>Topology Summary<ept id=\"p1\">**</ept> window for the WordCount topology.",
+      "pos": [
+        7656,
+        7738
+      ]
+    },
+    {
+      "content": "If the Topology Summary is not already open, go to <bpt id=\"p1\">**</bpt>Server Explorer<ept id=\"p1\">**</ept>, expand the <bpt id=\"p2\">**</bpt>Azure<ept id=\"p2\">**</ept> and <bpt id=\"p3\">**</bpt>HDInsight<ept id=\"p3\">**</ept> entries, right-click on the Storm on HDInsight cluster and select <bpt id=\"p4\">**</bpt>View Storm Topologies<ept id=\"p4\">**</ept>.",
+      "pos": [
+        7739,
+        7942
+      ]
+    },
+    {
+      "content": "Finally, select the <bpt id=\"p1\">**</bpt>WordCount<ept id=\"p1\">**</ept> topology.",
+      "pos": [
+        7943,
+        7986
+      ]
+    },
+    {
+      "pos": [
+        7991,
+        8053
+      ],
+      "content": "Select the <bpt id=\"p1\">**</bpt>Kill<ept id=\"p1\">**</ept> button to stop the <bpt id=\"p2\">**</bpt>WordCount<ept id=\"p2\">**</ept> topology."
+    },
+    {
+      "content": "Kill button on the toplogy summary",
+      "pos": [
+        8061,
+        8095
+      ]
+    },
+    {
+      "content": "Next steps",
+      "pos": [
+        8161,
+        8171
+      ]
+    },
+    {
+      "content": "In this document, you learned how to send data from a Storm topology to Power BI using REST.",
+      "pos": [
+        8173,
+        8265
+      ]
+    },
+    {
+      "content": "For information on how to work with other Azure technologies, see the following:",
+      "pos": [
+        8266,
+        8346
+      ]
+    },
+    {
+      "content": "Example topologies for Storm on HDInsight",
+      "pos": [
+        8351,
+        8392
+      ]
+    },
+    {
+      "content": "test",
+      "pos": [
+        8432,
+        8436
+      ]
+    }
+  ],
+  "content": "<properties\n pageTitle=\"Write data to Power BI from Apache Storm | Microsoft Azure\"\n description=\"Write data to Power BI from a C# topology running on an Apache Storm cluster in HDInsight. Also, create a report and real-time dashboard using Power BI.\"\n services=\"hdinsight\"\n documentationCenter=\"\"\n authors=\"Blackmist\"\n manager=\"paulettm\"\n editor=\"cgronlun\"\n    tags=\"azure-portal\"/>\n\n<tags\n ms.service=\"hdinsight\"\n ms.devlang=\"dotnet\"\n ms.topic=\"article\"\n ms.tgt_pltfrm=\"na\"\n ms.workload=\"big-data\"\n ms.date=\"07/17/2015\"\n ms.author=\"larryfr\"/>\n\n# Use Power BI (preview) to visualize data from an Apache Storm topology\n\nThe Power BI preview allows you to visually display data as reports, or dashboards. Using the Power BI REST API, you can easily use data from a topology running on an Apache Storm on HDInsight cluster to Power BI.\n\nIn this document, you will learn how to use Power BI to create a report and dashboard from data created by a Storm topology.\n\n## Prerequisites\n\n- An Azure subscription. See [Get Azure free trial](http://azure.microsoft.com/documentation/videos/get-azure-free-trial-for-testing-hadoop-in-hdinsight/).\n\n* An Azure Active Directory user with [Power BI](https://powerbi.com) access\n\n* Visual Studio (one of the following versions)\n\n    * Visual Studio 2012 with [update 4](http://www.microsoft.com/download/details.aspx?id=39305)\n\n    * Visual Studio 2013 with [update 4](http://www.microsoft.com/download/details.aspx?id=44921) or [Visual Studio 2013 Community](http://go.microsoft.com/fwlink/?linkid=517284&clcid=0x409)\n\n    * Visual Studio 2015 [CTP6](http://visualstudio.com/downloads/visual-studio-2015-ctp-vs)\n\n* The HDInsight Tools for Visual Studio: See [Get started using the HDInsight Tools for Visual Studio](../HDInsight/hdinsight-hadoop-visual-studio-tools-get-started.md) for information on installation information.\n\n## How it works\n\nThis example contains a C# Storm topology that randomly generates a sentence, splits the sentence into words, counts the words, and sends the word and count to the Power BI REST API. The [PowerBi.Api.Client](https://github.com/Vtek/PowerBI.Api.Client) Nuget package is used to communicate with Power BI.\n\nThe following files in this project implement the Power BI specific functionality:\n\n* **PowerBiBolt.cs**: Implements the Storm bolt, which sends data to Power BI\n\n* **Data.cs**: Describes the data object/row that will be sent to Power BI\n\n> [AZURE.WARNING] Power BI seems to allow the creation of multiple datasets with the same name. This can occur if the dataset does not exist, and your topology creates multiple instances of the Power BI Bolt. To avoid this, either set the parallelism hint of the bolt to 1 (as this example does,) or create the dataset before deploying the topology.\n>\n> The **CreateDataset** console application included in this solution is provided as an example of how to create the dataset outside of the topology.\n\n## Register a Power BI application\n\n1. Follow the steps in the [Power BI quickstart](https://msdn.microsoft.com/en-US/library/dn931989.aspx) to sign up for Power BI.\n\n2. Follow the steps in [Register an app](https://msdn.microsoft.com/en-US/library/dn877542.aspx) to create an application registration. This will be used when accessing the Power BI REST API.\n\n    > [AZURE.IMPORTANT] Save the **Client ID** for the application registration.\n\n## Download the example\n\nDownload the [HDInsight C# Storm Power BI example](https://github.com/Blackmist/hdinsight-csharp-storm-powerbi). To download it, either fork/clone it using [git](http://git-scm.com/), or use the **Download** link to download a .zip of the archive.\n\n## Configure the sample\n\n1. Open the sample in Visual Studio. From **Solution Explorer**, open the **SCPHost.exe.config** file, and then find the **<OAuth .../>** element. Enter values for the following properties of this element.\n\n    * **Client**: The Client ID for the application registration you created earlier.\n\n    * **User**: An Azure Active Directory account that has access to Power BI.\n\n    * **Password**: The password for the Azure Active Directory account.\n\n2. (Optional). The default dataset name used by this project is **Words**. To change this, right click on the **WordCount** project in **Solution Explorer**, select **Properties**, and then select **Settings**. Change the **DatasetName** entry to the desired value.\n\n2. Save and close the files.\n\n## Deploy the sample\n\n1. From **Solution Explorer**, right-click the **WordCount** project and select **Submit to Storm on HDInsight**. Select the HDInsight cluster from the **Storm Cluster** dropdown dialog.\n\n    > [AZURE.NOTE] It may take a few seconds for the **Storm Cluster** dropdown to populate with server names.\n    >\n    > If prompted, enter the login credentials for your Azure subscription. If you have more than one subscription, log in to the one that contains your Storm on HDInsight cluster.\n\n2. When the topology has been successfully submitted, the Storm Topologies for the cluster should appear. Select the WordCount topology from the list to view information about the running topology.\n\n    ![The topologies, with the WordCount topology selected](./media/hdinsight-storm-power-bi-topology/topologysummary.png)\n\n    > [AZURE.NOTE] You can also view Storm Topologies from Server Explorer: Expand Azure, HDInsight, right-click a Storm on HDInsight cluster, and then select View Storm Topologies.\n\n3. When viewing the **Topology Summary**, scroll until you see the **Bolts** section. In this section, note the **Executed** column for the **PowerBI** bolt. Use the refresh button at the top of the page to refresh until the value changes to something other than zero. When this number starts to increase, it indicates that items are being written to Power BI.\n\n## Create a report\n\n1. In a browser, visit [https://PowerBI.com](https://powerbi.com). Sign in with your account.\n\n2. On the left side of the page, expand **Datasets**. Select the **Words** entry. This is the dataset created by the example topology.\n\n    ![Words dataset entry](./media/hdinsight-storm-power-bi-topology/words.png)\n\n3. From the **Fields** area, expand **WordCount**. Drag the **Count** and **Word** entries to the middle part of the page. This will create a new chart that displays a bar for each word indicating how many times the word has occurred.\n\n    ![WordCount chart](./media/hdinsight-storm-power-bi-topology/wordcountchart.png)\n\n4. From the upper left of the page, select **Save** to create a new report. Enter **Word Count** as the name of the Report.\n\n5. Select the Power BI logo to return to the dashboard. The **Word Count** report now appears under **Reports**.\n\n## Create a live dashboard\n\n1. Beside **Dashboard**, select the **+** icon to create a new dashboard. Name the new dashboard **Live Word Count**.\n\n2. Select the **Word Count** report you created earlier. When displayed, select the chart, then select the pushpin icon to the upper right of the chart. You should receive a notification that it was pinned to the dashboard.\n\n    ![chart with pushpin displayed](./media/hdinsight-storm-power-bi-topology/pushpin.png)\n\n2. Select the Power BI logo to return to the dashboard. Select the **Live Word Count** dashboard. It now contains the Word Count chart, and the chart updates as new entries are sent to Power BI from the WordCount topology running on HDInsight.\n\n    ![The live dashboard](./media/hdinsight-storm-power-bi-topology/dashboard.png)\n\n## Stop the WordCount topology\n\nThe topology will continue to run until you stop it or delete the Storm on HDInsight cluster. Perform the following steps to stop the topology.\n\n1. In Visual Studio, open the **Topology Summary** window for the WordCount topology. If the Topology Summary is not already open, go to **Server Explorer**, expand the **Azure** and **HDInsight** entries, right-click on the Storm on HDInsight cluster and select **View Storm Topologies**. Finally, select the **WordCount** topology.\n\n2. Select the **Kill** button to stop the **WordCount** topology.\n\n    ![Kill button on the toplogy summary](./media/hdinsight-storm-power-bi-topology/killtopology.png)\n\n## Next steps\n\nIn this document, you learned how to send data from a Storm topology to Power BI using REST. For information on how to work with other Azure technologies, see the following:\n\n* [Example topologies for Storm on HDInsight](hdinsight-storm-example-topology.md)\n\ntest\n"
+}

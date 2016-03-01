@@ -1,0 +1,932 @@
+{
+  "nodes": [
+    {
+      "content": "Create a Node.js chat application with Socket.IO in Azure App Service",
+      "pos": [
+        27,
+        96
+      ]
+    },
+    {
+      "content": "A tutorial that demonstrates using socket.io in a node.js web app hosted on Azure.",
+      "pos": [
+        115,
+        197
+      ]
+    },
+    {
+      "content": "Create a Node.js chat application with Socket.IO in Azure App Service",
+      "pos": [
+        524,
+        593
+      ]
+    },
+    {
+      "content": "Socket.IO provides real-time communication between your node.js server and clients using WebSockets.",
+      "pos": [
+        595,
+        695
+      ]
+    },
+    {
+      "content": "It also supports fallback to other transports (such as long polling) that work with older browsers.",
+      "pos": [
+        696,
+        795
+      ]
+    },
+    {
+      "content": "This tutorial will walk you through hosting a Socket.IO based chat application as an Azure web app, and show you how to <bpt id=\"p1\">[</bpt>scale<ept id=\"p1\">](#scale-out)</ept> the application using <bpt id=\"p2\">[</bpt>Azure Redis Cache<ept id=\"p2\">](http://azure.microsoft.com/documentation/services/cache)</ept>.",
+      "pos": [
+        796,
+        1035
+      ]
+    },
+    {
+      "content": "For more information on Socket.IO, see <bpt id=\"p1\">[</bpt>http://socket.io/<ept id=\"p1\">][socketio]</ept>.",
+      "pos": [
+        1036,
+        1105
+      ]
+    },
+    {
+      "pos": [
+        1109,
+        1415
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> The procedures in this task apply to <bpt id=\"p1\">[</bpt>App Service Web Apps<ept id=\"p1\">](http://go.microsoft.com/fwlink/?LinkId=529714)</ept>; for Cloud Services, see <ph id=\"ph2\">&lt;a href=\"http://www.windowsazure.com/develop/nodejs/tutorials/app-using-socketio/\"&gt;</ph>Build a Node.js Chat Application with Socket.IO on an Azure Cloud Service<ph id=\"ph3\">&lt;/a&gt;</ph>."
+    },
+    {
+      "content": "Download the chat example",
+      "pos": [
+        1421,
+        1446
+      ]
+    },
+    {
+      "content": "For this project, we will use the chat example from the <bpt id=\"p1\">[</bpt><ph id=\"ph1\">Socket.IO</ph>\nGitHub repository<ept id=\"p1\">]</ept>.",
+      "pos": [
+        1448,
+        1534
+      ]
+    },
+    {
+      "content": "Perform the following steps to download the example",
+      "pos": [
+        1535,
+        1586
+      ]
+    },
+    {
+      "content": "and add it to the project you previously created.",
+      "pos": [
+        1587,
+        1636
+      ]
+    },
+    {
+      "pos": [
+        1642,
+        1758
+      ],
+      "content": "Download a <bpt id=\"p1\">[</bpt>ZIP or GZ archived release<ept id=\"p1\">][release]</ept> of the Socket.IO project (version 1.3.5 was used for this document)"
+    },
+    {
+      "pos": [
+        1765,
+        1884
+      ],
+      "content": "Extract the archive and copy the **examples\\\\chat**\ndirectory to a new location. For example,\n**\\\\node\\\\chat**.",
+      "leadings": [
+        "",
+        "    ",
+        "    "
+      ],
+      "nodes": [
+        {
+          "content": "Extract the archive and copy the <bpt id=\"p1\">**</bpt>examples\\\\chat<ept id=\"p1\">**</ept>",
+          "pos": [
+            0,
+            51
+          ]
+        },
+        {
+          "content": "directory to a new location. For example,",
+          "pos": [
+            52,
+            93
+          ],
+          "nodes": [
+            {
+              "content": "directory to a new location.",
+              "pos": [
+                0,
+                28
+              ]
+            },
+            {
+              "content": "For example,",
+              "pos": [
+                29,
+                41
+              ]
+            }
+          ]
+        },
+        {
+          "content": "<bpt id=\"p1\">**</bpt>\\\\node\\\\chat<ept id=\"p1\">**</ept>.",
+          "pos": [
+            94,
+            111
+          ]
+        }
+      ]
+    },
+    {
+      "content": "Modify app.js and install modules",
+      "pos": [
+        1889,
+        1922
+      ]
+    },
+    {
+      "content": "Rename the <bpt id=\"p1\">**</bpt>index.js<ept id=\"p1\">**</ept> file to <bpt id=\"p2\">**</bpt>app.js<ept id=\"p2\">**</ept>.",
+      "pos": [
+        1928,
+        1971
+      ]
+    },
+    {
+      "content": "This allows Azure to detect that this is a Node.js application.",
+      "pos": [
+        1972,
+        2035
+      ]
+    },
+    {
+      "content": "Open the <bpt id=\"p1\">**</bpt>app.js<ept id=\"p1\">**</ept> file in a text editor.",
+      "pos": [
+        2041,
+        2083
+      ]
+    },
+    {
+      "content": "Change the line containing <ph id=\"ph1\">`var io = require('../..')(server);`</ph> as shown below:",
+      "pos": [
+        2084,
+        2163
+      ]
+    },
+    {
+      "pos": [
+        2451,
+        2552
+      ],
+      "content": "Open the <bpt id=\"p1\">**</bpt>package.json<ept id=\"p1\">**</ept> file and add a reference to socket.io under <ph id=\"ph1\">`dependencies`</ph>, as shown below:"
+    },
+    {
+      "pos": [
+        2655,
+        2783
+      ],
+      "content": "From the command-line, change to the <bpt id=\"p1\">**</bpt>\\\\node\\\\chat<ept id=\"p1\">**</ept> directory and use npm to install the modules required by this application:"
+    },
+    {
+      "pos": [
+        2810,
+        2880
+      ],
+      "content": "This will install the modules into a subfolder named <bpt id=\"p1\">**</bpt>node_modules<ept id=\"p1\">**</ept>."
+    },
+    {
+      "content": "Create an Azure Web App",
+      "pos": [
+        2885,
+        2908
+      ]
+    },
+    {
+      "content": "Follow these steps to create an Azure web app, enable Git publishing, and then enable WebSocket support for the web app.",
+      "pos": [
+        2910,
+        3030
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> To complete this tutorial, you need an Azure account.",
+      "pos": [
+        3034,
+        3100
+      ]
+    },
+    {
+      "content": "If you don't have an account, you can create a free trial account in just a couple of minutes.",
+      "pos": [
+        3101,
+        3195
+      ]
+    },
+    {
+      "content": "For details, see <ph id=\"ph1\">&lt;a href=\"http://www.windowsazure.com/pricing/free-trial/?WT.mc_id=A7171371E\" target=\"_blank\"&gt;</ph>Azure Free Trial<ph id=\"ph2\">&lt;/a&gt;</ph>.",
+      "pos": [
+        3196,
+        3327
+      ]
+    },
+    {
+      "content": "Install the Azure Command-Line Interface (Azure CLI) and connect to your Azure subscription.",
+      "pos": [
+        3332,
+        3424
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt>Install and Configure the Azure CLI<ept id=\"p1\">](xplat-cli)</ept>.",
+      "pos": [
+        3425,
+        3478
+      ]
+    },
+    {
+      "content": "If this is your first time setting up a repository in Azure, you need to create login credentials.",
+      "pos": [
+        3483,
+        3581
+      ]
+    },
+    {
+      "content": "From the Azure CLI, enter the following command:",
+      "pos": [
+        3582,
+        3630
+      ]
+    },
+    {
+      "content": "Change to the <bpt id=\"p1\">**</bpt>\\\\node\\chat<ept id=\"p1\">**</ept> directory and use the following command to create a new Azure web app and a local Git repository.",
+      "pos": [
+        3698,
+        3825
+      ]
+    },
+    {
+      "content": "This command also creates a Git remote named 'azure'.",
+      "pos": [
+        3826,
+        3879
+      ]
+    },
+    {
+      "content": "You must replace 'mysitename' with a unique name for your web app.",
+      "pos": [
+        3929,
+        3995
+      ]
+    },
+    {
+      "content": "Commit the existing files to the local repository by using the following commands:",
+      "pos": [
+        4000,
+        4082
+      ]
+    },
+    {
+      "content": "Push the files to the Azure Web Apps repository with the following command:",
+      "pos": [
+        4145,
+        4220
+      ]
+    },
+    {
+      "content": "When prompted, enter your credentials from step 2.",
+      "pos": [
+        4257,
+        4307
+      ]
+    },
+    {
+      "content": "You will receive status messages as modules are imported on the server.",
+      "pos": [
+        4308,
+        4379
+      ]
+    },
+    {
+      "content": "Once this process has completed, the application will be hosted on your Azure web app.",
+      "pos": [
+        4380,
+        4466
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> During module installation, you may notice errors that 'The imported project ... was not found'.",
+      "pos": [
+        4474,
+        4583
+      ]
+    },
+    {
+      "content": "These can safely be ignored.",
+      "pos": [
+        4584,
+        4612
+      ]
+    },
+    {
+      "content": "Socket.IO uses WebSockets, which are not enabled by default on Azure.",
+      "pos": [
+        4617,
+        4686
+      ]
+    },
+    {
+      "content": "To enable web sockets, use the following command:",
+      "pos": [
+        4687,
+        4736
+      ]
+    },
+    {
+      "content": "If prompted, enter the name of the web app.",
+      "pos": [
+        4769,
+        4812
+      ]
+    },
+    {
+      "pos": [
+        4819,
+        5039
+      ],
+      "content": "[AZURE.NOTE]\nThe 'azure site set -w' command will work only with version 0.7.4 or higher of the Azure Command-Line Interface. You can also enable WebSocket support using the [Azure Portal](https://portal.azure.com).",
+      "leadings": [
+        "",
+        "    >"
+      ],
+      "nodes": [
+        {
+          "content": "The 'azure site set -w' command will work only with version 0.7.4 or higher of the Azure Command-Line Interface. You can also enable WebSocket support using the [Azure Portal](https://portal.azure.com).",
+          "pos": [
+            13,
+            215
+          ],
+          "nodes": [
+            {
+              "content": "The 'azure site set -w' command will work only with version 0.7.4 or higher of the Azure Command-Line Interface.",
+              "pos": [
+                0,
+                112
+              ]
+            },
+            {
+              "content": "You can also enable WebSocket support using the <bpt id=\"p1\">[</bpt>Azure Portal<ept id=\"p1\">](https://portal.azure.com)</ept>.",
+              "pos": [
+                113,
+                202
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "content": "To enable WebSockets using the Azure Portal, click the web app from the Web Apps blade, click <bpt id=\"p1\">**</bpt>All settings<ept id=\"p1\">**</ept> &gt; <bpt id=\"p2\">**</bpt>Application settings<ept id=\"p2\">**</ept>.",
+      "pos": [
+        5051,
+        5189
+      ]
+    },
+    {
+      "content": "Under <bpt id=\"p1\">**</bpt>Web Sockets<ept id=\"p1\">**</ept>, click <bpt id=\"p2\">**</bpt>On<ept id=\"p2\">**</ept>.",
+      "pos": [
+        5190,
+        5226
+      ]
+    },
+    {
+      "content": "Then click <bpt id=\"p1\">**</bpt>Save<ept id=\"p1\">**</ept>.",
+      "pos": [
+        5227,
+        5247
+      ]
+    },
+    {
+      "content": "To view the web app on Azure, use the following command to launch your web browser and navigate to the hosted web app:",
+      "pos": [
+        5252,
+        5370
+      ]
+    },
+    {
+      "content": "Your app is now running on Azure, and can relay chat messages between different clients using Socket.IO.",
+      "pos": [
+        5399,
+        5503
+      ]
+    },
+    {
+      "content": "Scale out",
+      "pos": [
+        5507,
+        5516
+      ]
+    },
+    {
+      "content": "Socket.IO applications can be scaled out by using an <bpt id=\"p1\">__</bpt>adapter<ept id=\"p1\">__</ept> to distribute messages and events between multiple application instances.",
+      "pos": [
+        5518,
+        5656
+      ]
+    },
+    {
+      "content": "While there are several adapters available, the <bpt id=\"p1\">[</bpt>socket.io-redis<ept id=\"p1\">](https://github.com/automattic/socket.io-redis)</ept> adapter can be easily used with the Azure Redis Cache feature.",
+      "pos": [
+        5657,
+        5832
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> An additional requirement for scaling out a Socket.IO solution is support for sticky sessions.",
+      "pos": [
+        5836,
+        5943
+      ]
+    },
+    {
+      "content": "Sticky sessions are enabled by default for Azure Web Apps through Azure Request Routing.",
+      "pos": [
+        5944,
+        6032
+      ]
+    },
+    {
+      "content": "For more information, see <bpt id=\"p1\">[</bpt>Instance Affinity in Azure Web Sites<ept id=\"p1\">](http://azure.microsoft.com/blog/2013/11/18/disabling-arrs-instance-affinity-in-windows-azure-web-sites/)</ept>",
+      "pos": [
+        6033,
+        6202
+      ]
+    },
+    {
+      "content": "Create a Redis cache",
+      "pos": [
+        6207,
+        6227
+      ]
+    },
+    {
+      "pos": [
+        6229,
+        6371
+      ],
+      "content": "Perform the steps in <bpt id=\"p1\">[</bpt>Create a cache in Azure Redis Cache<ept id=\"p1\">](http://go.microsoft.com/fwlink/p/?linkid=398592&amp;clcid=0x409)</ept> to create a new cache."
+    },
+    {
+      "pos": [
+        6375,
+        6489
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> Save the <bpt id=\"p1\">__</bpt>Host name<ept id=\"p1\">__</ept> and <bpt id=\"p2\">__</bpt>Primary key<ept id=\"p2\">__</ept> for your cache, as these will be needed in the next steps."
+    },
+    {
+      "content": "Add the redis and socket.io-redis modules",
+      "pos": [
+        6494,
+        6535
+      ]
+    },
+    {
+      "pos": [
+        6540,
+        6632
+      ],
+      "content": "From a command-line, change to the <bpt id=\"p1\">__</bpt>\\\\node\\\\chat<ept id=\"p1\">__</ept> directory and use the following command."
+    },
+    {
+      "pos": [
+        6703,
+        6803
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> The versions specified in this command are the versions used when testing this article."
+    },
+    {
+      "pos": [
+        6808,
+        6920
+      ],
+      "content": "Modify the <bpt id=\"p1\">__</bpt>app.js<ept id=\"p1\">__</ept> file to add the following lines immediately after <ph id=\"ph1\">`var io = require('socket.io')(server);`</ph>"
+    },
+    {
+      "pos": [
+        7273,
+        7364
+      ],
+      "content": "Replace <bpt id=\"p1\">__</bpt>redishostname<ept id=\"p1\">__</ept> and <bpt id=\"p2\">__</bpt>rediskey<ept id=\"p2\">__</ept> with the host name and key for your Redis cache."
+    },
+    {
+      "content": "This will create a publish and subscribe client to the Redis cache created previously.",
+      "pos": [
+        7370,
+        7456
+      ]
+    },
+    {
+      "content": "The clients are then used with the adapter to configure Socket.IO to use the Redis cache for passing messages and events between instances of your application",
+      "pos": [
+        7457,
+        7615
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> While the <bpt id=\"p1\">__</bpt>socket.io-redis<ept id=\"p1\">__</ept> adapter can communicate directly to Redis, the current version does not support the authentication required by Azure Redis cache.",
+      "pos": [
+        7623,
+        7795
+      ]
+    },
+    {
+      "content": "So the initial connection is created using the <bpt id=\"p1\">__</bpt>redis<ept id=\"p1\">__</ept> module, then the client is passed to the <bpt id=\"p2\">__</bpt>socket.io-redis<ept id=\"p2\">__</ept> adapter.",
+      "pos": [
+        7796,
+        7922
+      ]
+    },
+    {
+      "content": "While Azure Redis Cache supports secure connections using port 6380, the modules used in this example do not support secure connections as of 7/14/2014.",
+      "pos": [
+        7935,
+        8087
+      ]
+    },
+    {
+      "content": "The above code uses the default, unsecure port of 6380.",
+      "pos": [
+        8088,
+        8143
+      ]
+    },
+    {
+      "pos": [
+        8148,
+        8176
+      ],
+      "content": "Save the modified <bpt id=\"p1\">__</bpt>app.js<ept id=\"p1\">__</ept>"
+    },
+    {
+      "content": "Commit changes and redeploy",
+      "pos": [
+        8181,
+        8208
+      ]
+    },
+    {
+      "pos": [
+        8210,
+        8341
+      ],
+      "content": "From the command-line in the <bpt id=\"p1\">__</bpt>\\\\node\\\\chat<ept id=\"p1\">__</ept> directory, use the following commands to commit changes and redeploy the application."
+    },
+    {
+      "content": "Once the changes have been pushed to the server, you can scale your site across multiple instances by using the following command.",
+      "pos": [
+        8427,
+        8557
+      ]
+    },
+    {
+      "pos": [
+        8605,
+        8654
+      ],
+      "content": "Where <bpt id=\"p1\">__</bpt>#<ept id=\"p1\">__</ept> is the number of instances to create."
+    },
+    {
+      "content": "You can connect to your web app from multiple browsers or computers to verify that messages are correctly sent to all clients.",
+      "pos": [
+        8656,
+        8782
+      ]
+    },
+    {
+      "content": "Troubleshooting",
+      "pos": [
+        8787,
+        8802
+      ]
+    },
+    {
+      "content": "Connection limits",
+      "pos": [
+        8807,
+        8824
+      ]
+    },
+    {
+      "content": "Azure Web Apps is available in multiple SKUs, which determine the resources available to your site.",
+      "pos": [
+        8826,
+        8925
+      ]
+    },
+    {
+      "content": "This includes the number of allowed WebSocket connections.",
+      "pos": [
+        8926,
+        8984
+      ]
+    },
+    {
+      "content": "For more information, see the <bpt id=\"p1\">[</bpt>Web Apps Pricing page<ept id=\"p1\">][pricing]</ept>.",
+      "pos": [
+        8985,
+        9048
+      ]
+    },
+    {
+      "content": "Messages aren't being sent using WebSockets",
+      "pos": [
+        9053,
+        9096
+      ]
+    },
+    {
+      "content": "If client browsers keep falling back to long polling instead of using WebSockets, it may be because of one of the following.",
+      "pos": [
+        9098,
+        9222
+      ]
+    },
+    {
+      "content": "Try limiting the transport to just WebSockets",
+      "pos": [
+        9228,
+        9273
+      ]
+    },
+    {
+      "content": "In order for Socket.IO to use WebSockets as the messaging transport, both the server and client must support WebSockets.",
+      "pos": [
+        9281,
+        9401
+      ]
+    },
+    {
+      "content": "If one or the other does not, Socket.IO will negotiate another transport, such as long polling.",
+      "pos": [
+        9402,
+        9497
+      ]
+    },
+    {
+      "content": "The default list of transports used by Socket.IO is <ph id=\"ph1\">` websocket, htmlfile, xhr-polling, jsonp-polling`</ph>.",
+      "pos": [
+        9498,
+        9601
+      ]
+    },
+    {
+      "content": "You can force it to only use WebSockets by adding the following code to the <bpt id=\"p1\">**</bpt>app.js<ept id=\"p1\">**</ept> file, after the line containing <ph id=\"ph1\">`, nicknames = {};`</ph>.",
+      "pos": [
+        9602,
+        9741
+      ]
+    },
+    {
+      "pos": [
+        9843,
+        10033
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> Note that older browsers that do not support WebSockets will not be able to connect to the site while the above code is active, as it restricts communication to WebSockets only."
+    },
+    {
+      "content": "Use SSL",
+      "pos": [
+        10039,
+        10046
+      ]
+    },
+    {
+      "content": "WebSockets relies on some lesser used HTTP headers, such as the <bpt id=\"p1\">**</bpt>Upgrade<ept id=\"p1\">**</ept> header.",
+      "pos": [
+        10054,
+        10137
+      ]
+    },
+    {
+      "content": "Some intermediate network devices, such as web proxies, may remove these headers.",
+      "pos": [
+        10138,
+        10219
+      ]
+    },
+    {
+      "content": "To avoid this problem, you can establish the WebSocket connection over SSL.",
+      "pos": [
+        10220,
+        10295
+      ]
+    },
+    {
+      "content": "An easy way to accomplish this is to configure Socket.IO to <ph id=\"ph1\">`match origin protocol`</ph>.",
+      "pos": [
+        10301,
+        10385
+      ]
+    },
+    {
+      "content": "This instructs Socket.IO to secure WebSockets communication the same as the originating HTTP/HTTPS request for the web page.",
+      "pos": [
+        10386,
+        10510
+      ]
+    },
+    {
+      "content": "If a browser uses an HTTPS URL to visit your website, subsequent WebSocket communications through Socket.IO will be secured over SSL.",
+      "pos": [
+        10511,
+        10644
+      ]
+    },
+    {
+      "pos": [
+        10650,
+        10795
+      ],
+      "content": "To modify this example to enable this configuration, add the following code to the <bpt id=\"p1\">**</bpt>app.js<ept id=\"p1\">**</ept> file after the line containing <ph id=\"ph1\">`, nicknames = {};`</ph>."
+    },
+    {
+      "content": "Verify web.config settings",
+      "pos": [
+        10897,
+        10923
+      ]
+    },
+    {
+      "content": "Azure web apps that host Node.js applications use the <bpt id=\"p1\">**</bpt>web.config<ept id=\"p1\">**</ept> file to route incoming requests to the Node.js application.",
+      "pos": [
+        10931,
+        11059
+      ]
+    },
+    {
+      "content": "For WebSockets to function correctly with Node.js applications, the <bpt id=\"p1\">**</bpt>web.config<ept id=\"p1\">**</ept> must contain the following entry.",
+      "pos": [
+        11060,
+        11176
+      ]
+    },
+    {
+      "content": "This disables the IIS WebSockets module, which includes its own implementation of WebSockets and conflicts with Node.js specific WebSocket modules such as Socket.IO.",
+      "pos": [
+        11220,
+        11385
+      ]
+    },
+    {
+      "content": "If this line is not present, or is set to <ph id=\"ph1\">`true`</ph>, this may be the reason that the WebSocket transport is not working for your application.",
+      "pos": [
+        11386,
+        11524
+      ]
+    },
+    {
+      "content": "Normally, Node.js applications do not include a <bpt id=\"p1\">**</bpt>web.config<ept id=\"p1\">**</ept> file, so Azure Websites will automatically generate one for Node.js applications when they are deployed.",
+      "pos": [
+        11530,
+        11697
+      ]
+    },
+    {
+      "content": "Since this file is automatically generated on the server, you must use the FTP or FTPS URL for your website to view this file.",
+      "pos": [
+        11698,
+        11824
+      ]
+    },
+    {
+      "content": "You can find the FTP and FTPS URLs for your site in the Azure Management portal by selecting your website, and then the <bpt id=\"p1\">**</bpt>Dashboard<ept id=\"p1\">**</ept> link.",
+      "pos": [
+        11825,
+        11964
+      ]
+    },
+    {
+      "content": "The URLs are displayed in the <bpt id=\"p1\">**</bpt>quick glance<ept id=\"p1\">**</ept> section.",
+      "pos": [
+        11965,
+        12020
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> The <bpt id=\"p1\">**</bpt>web.config<ept id=\"p1\">**</ept> file is only generated by Azure Websites if your application does not provide one.",
+      "pos": [
+        12028,
+        12142
+      ]
+    },
+    {
+      "content": "If you provide a <bpt id=\"p1\">**</bpt>web.config<ept id=\"p1\">**</ept> file in the root of your application project, it will be used by Azure Web Apps.",
+      "pos": [
+        12143,
+        12255
+      ]
+    },
+    {
+      "content": "If the entry is not present, or is set to a value of <ph id=\"ph1\">`true`</ph>, then you should create a <bpt id=\"p1\">**</bpt>web.config<ept id=\"p1\">**</ept> in the root of your Node.js application and specify a value of <ph id=\"ph2\">`false`</ph>.",
+      "pos": [
+        12261,
+        12433
+      ]
+    },
+    {
+      "content": "For reference, the below is a default <bpt id=\"p1\">**</bpt>web.config<ept id=\"p1\">**</ept> for an application that uses <bpt id=\"p2\">**</bpt>app.js<ept id=\"p2\">**</ept> as the entry point.",
+      "pos": [
+        12435,
+        12547
+      ]
+    },
+    {
+      "content": "If your application uses an entry point other than <bpt id=\"p1\">**</bpt>app.js<ept id=\"p1\">**</ept>, you must replace all occurrences of <bpt id=\"p2\">**</bpt>app.js<ept id=\"p2\">**</ept> with the correct entry point.",
+      "pos": [
+        15029,
+        15168
+      ]
+    },
+    {
+      "content": "For example, replacing <bpt id=\"p1\">**</bpt>app.js<ept id=\"p1\">**</ept> with <bpt id=\"p2\">**</bpt>server.js<ept id=\"p2\">**</ept>.",
+      "pos": [
+        15169,
+        15222
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> If you want to get started with Azure App Service before signing up for an Azure account, go to <bpt id=\"p1\">[</bpt>Try App Service<ept id=\"p1\">](http://go.microsoft.com/fwlink/?LinkId=523751)</ept>, where you can immediately create a short-lived starter web app in App Service.",
+      "pos": [
+        15225,
+        15478
+      ]
+    },
+    {
+      "content": "No credit cards required; no commitments.",
+      "pos": [
+        15479,
+        15520
+      ]
+    },
+    {
+      "content": "Next steps",
+      "pos": [
+        15524,
+        15534
+      ]
+    },
+    {
+      "content": "In this tutorial you learned how to create a chat application hosted in an Azure web app.",
+      "pos": [
+        15536,
+        15625
+      ]
+    },
+    {
+      "content": "You can also host this application as an Azure Cloud Service.",
+      "pos": [
+        15626,
+        15687
+      ]
+    },
+    {
+      "content": "For steps on how to accomplish this, see <bpt id=\"p1\">[</bpt>Build a Node.js Chat Application with Socket.IO on an Azure Cloud Service<ept id=\"p1\">][cloudservice]</ept>.",
+      "pos": [
+        15688,
+        15819
+      ]
+    },
+    {
+      "content": "What's changed",
+      "pos": [
+        15824,
+        15838
+      ]
+    },
+    {
+      "pos": [
+        15841,
+        16009
+      ],
+      "content": "For a guide to the change from Websites to App Service see: <bpt id=\"p1\">[</bpt>Azure App Service and Its Impact on Existing Azure Services<ept id=\"p1\">](http://go.microsoft.com/fwlink/?LinkId=529714)</ept>"
+    },
+    {
+      "pos": [
+        16012,
+        16171
+      ],
+      "content": "For a guide to the change of the old portal to the new portal see: <bpt id=\"p1\">[</bpt>Reference for navigating the preview portal<ept id=\"p1\">](http://go.microsoft.com/fwlink/?LinkId=529715)</ept>"
+    },
+    {
+      "content": "test",
+      "pos": [
+        16676,
+        16680
+      ]
+    }
+  ],
+  "content": "<properties\n    pageTitle=\"Create a Node.js chat application with Socket.IO in Azure App Service\"\n    description=\"A tutorial that demonstrates using socket.io in a node.js web app hosted on Azure.\"\n    services=\"app-service\\web\"\n    documentationCenter=\"nodejs\"\n    authors=\"MikeWasson\"\n    manager=\"wpickett\"\n    editor=\"mollybos\"/>\n\n<tags\n    ms.service=\"app-service-web\"\n    ms.workload=\"web\"\n    ms.tgt_pltfrm=\"na\"\n    ms.devlang=\"nodejs\"\n    ms.topic=\"article\"\n    ms.date=\"07/02/2015\"\n    ms.author=\"mwasson\"/>\n\n\n\n\n# Create a Node.js chat application with Socket.IO in Azure App Service\n\nSocket.IO provides real-time communication between your node.js server and clients using WebSockets. It also supports fallback to other transports (such as long polling) that work with older browsers. This tutorial will walk you through hosting a Socket.IO based chat application as an Azure web app, and show you how to [scale](#scale-out) the application using [Azure Redis Cache](http://azure.microsoft.com/documentation/services/cache). For more information on Socket.IO, see [http://socket.io/][socketio].\n\n> [AZURE.NOTE] The procedures in this task apply to [App Service Web Apps](http://go.microsoft.com/fwlink/?LinkId=529714); for Cloud Services, see <a href=\"http://www.windowsazure.com/develop/nodejs/tutorials/app-using-socketio/\">Build a Node.js Chat Application with Socket.IO on an Azure Cloud Service</a>.\n\n\n## Download the chat example\n\nFor this project, we will use the chat example from the [Socket.IO\nGitHub repository]. Perform the following steps to download the example\nand add it to the project you previously created.\n\n1.  Download a [ZIP or GZ archived release][release] of the Socket.IO project (version 1.3.5 was used for this document)\n\n\n3.  Extract the archive and copy the **examples\\\\chat**\n    directory to a new location. For example,\n    **\\\\node\\\\chat**.\n\n## Modify app.js and install modules\n\n1.  Rename the **index.js** file to **app.js**. This allows Azure to detect that this is a Node.js application.\n\n1.  Open the **app.js** file in a text editor. Change the line containing `var io = require('../..')(server);` as shown below:\n\n        var express = require('express');\n        var app = express();\n        var server = require('http').createServer(app);\n        // var io = require('../..')(server);\n        // New:\n        var io = require('socket.io')(server);\n        var port = process.env.PORT || 3000;\n\n\n3. Open the **package.json** file and add a reference to socket.io under `dependencies`, as shown below:\n\n        \"dependencies\": {\n          \"express\": \"3.4.8\",\n          \"socket.io\": \"1.3.5\"\n        }\n\n4. From the command-line, change to the **\\\\node\\\\chat** directory and use npm to install the modules required by this application:\n\n        npm install\n\n    This will install the modules into a subfolder named **node_modules**.\n\n## Create an Azure Web App\n\nFollow these steps to create an Azure web app, enable Git publishing, and then enable WebSocket support for the web app.\n\n> [AZURE.NOTE] To complete this tutorial, you need an Azure account. If you don't have an account, you can create a free trial account in just a couple of minutes. For details, see <a href=\"http://www.windowsazure.com/pricing/free-trial/?WT.mc_id=A7171371E\" target=\"_blank\">Azure Free Trial</a>.\n\n1. Install the Azure Command-Line Interface (Azure CLI) and connect to your Azure subscription. See [Install and Configure the Azure CLI](xplat-cli).\n\n2. If this is your first time setting up a repository in Azure, you need to create login credentials. From the Azure CLI, enter the following command:\n\n        azure site deployment user set [username] [password]\n\n\n3. Change to the **\\\\node\\chat** directory and use the following command to create a new Azure web app and a local Git repository. This command also creates a Git remote named 'azure'.\n\n        azure site create mysitename --git\n\n    You must replace 'mysitename' with a unique name for your web app.\n\n2. Commit the existing files to the local repository by using the following commands:\n\n        git add .\n        git commit -m \"Initial commit\"\n\n3. Push the files to the Azure Web Apps repository with the following command:\n\n        git push azure master\n\n    When prompted, enter your credentials from step 2. You will receive status messages as modules are imported on the server. Once this process has completed, the application will be hosted on your Azure web app.\n\n    > [AZURE.NOTE] During module installation, you may notice errors that 'The imported project ... was not found'. These can safely be ignored.\n\n4. Socket.IO uses WebSockets, which are not enabled by default on Azure. To enable web sockets, use the following command:\n\n        azure site set -w\n\n    If prompted, enter the name of the web app.\n\n    >[AZURE.NOTE]\n    >The 'azure site set -w' command will work only with version 0.7.4 or higher of the Azure Command-Line Interface. You can also enable WebSocket support using the [Azure Portal](https://portal.azure.com).\n    >\n    >To enable WebSockets using the Azure Portal, click the web app from the Web Apps blade, click **All settings** > **Application settings**. Under **Web Sockets**, click **On**. Then click **Save**.\n\n5. To view the web app on Azure, use the following command to launch your web browser and navigate to the hosted web app:\n\n        azure site browse\n\nYour app is now running on Azure, and can relay chat messages between different clients using Socket.IO.\n\n##Scale out\n\nSocket.IO applications can be scaled out by using an __adapter__ to distribute messages and events between multiple application instances. While there are several adapters available, the [socket.io-redis](https://github.com/automattic/socket.io-redis) adapter can be easily used with the Azure Redis Cache feature.\n\n> [AZURE.NOTE] An additional requirement for scaling out a Socket.IO solution is support for sticky sessions. Sticky sessions are enabled by default for Azure Web Apps through Azure Request Routing. For more information, see [Instance Affinity in Azure Web Sites](http://azure.microsoft.com/blog/2013/11/18/disabling-arrs-instance-affinity-in-windows-azure-web-sites/)\n\n###Create a Redis cache\n\nPerform the steps in [Create a cache in Azure Redis Cache](http://go.microsoft.com/fwlink/p/?linkid=398592&clcid=0x409) to create a new cache.\n\n> [AZURE.NOTE] Save the __Host name__ and __Primary key__ for your cache, as these will be needed in the next steps.\n\n###Add the redis and socket.io-redis modules\n\n1. From a command-line, change to the __\\\\node\\\\chat__ directory and use the following command.\n\n        npm install socket.io-redis@0.1.4 redis@0.12.1 --save\n\n    > [AZURE.NOTE] The versions specified in this command are the versions used when testing this article.\n\n2. Modify the __app.js__ file to add the following lines immediately after `var io = require('socket.io')(server);`\n\n        var pub = require('redis').createClient(6379,'redishostname', {auth_pass: 'rediskey', return_buffers: true});\n        var sub = require('redis').createClient(6379,'redishostname', {auth_pass: 'rediskey', return_buffers: true});\n\n        var redis = require('socket.io-redis');\n        io.adapter(redis({pubClient: pub, subClient: sub}));\n\n    Replace __redishostname__ and __rediskey__ with the host name and key for your Redis cache.\n\n    This will create a publish and subscribe client to the Redis cache created previously. The clients are then used with the adapter to configure Socket.IO to use the Redis cache for passing messages and events between instances of your application\n\n    > [AZURE.NOTE] While the __socket.io-redis__ adapter can communicate directly to Redis, the current version does not support the authentication required by Azure Redis cache. So the initial connection is created using the __redis__ module, then the client is passed to the __socket.io-redis__ adapter.\n    >\n    > While Azure Redis Cache supports secure connections using port 6380, the modules used in this example do not support secure connections as of 7/14/2014. The above code uses the default, unsecure port of 6380.\n\n3. Save the modified __app.js__\n\n###Commit changes and redeploy\n\nFrom the command-line in the __\\\\node\\\\chat__ directory, use the following commands to commit changes and redeploy the application.\n\n    git add .\n    git commit -m \"implementing scale out\"\n    git push azure master\n\nOnce the changes have been pushed to the server, you can scale your site across multiple instances by using the following command.\n\n    azure site scale instances --instances #\n\nWhere __#__ is the number of instances to create.\n\nYou can connect to your web app from multiple browsers or computers to verify that messages are correctly sent to all clients.\n\n## Troubleshooting\n\n###Connection limits\n\nAzure Web Apps is available in multiple SKUs, which determine the resources available to your site. This includes the number of allowed WebSocket connections. For more information, see the [Web Apps Pricing page][pricing].\n\n###Messages aren't being sent using WebSockets\n\nIf client browsers keep falling back to long polling instead of using WebSockets, it may be because of one of the following.\n\n* **Try limiting the transport to just WebSockets**\n\n    In order for Socket.IO to use WebSockets as the messaging transport, both the server and client must support WebSockets. If one or the other does not, Socket.IO will negotiate another transport, such as long polling. The default list of transports used by Socket.IO is ` websocket, htmlfile, xhr-polling, jsonp-polling`. You can force it to only use WebSockets by adding the following code to the **app.js** file, after the line containing `, nicknames = {};`.\n\n        io.configure(function() {\n          io.set('transports', ['websocket']);\n        });\n\n    > [AZURE.NOTE] Note that older browsers that do not support WebSockets will not be able to connect to the site while the above code is active, as it restricts communication to WebSockets only.\n\n* **Use SSL**\n\n    WebSockets relies on some lesser used HTTP headers, such as the **Upgrade** header. Some intermediate network devices, such as web proxies, may remove these headers. To avoid this problem, you can establish the WebSocket connection over SSL.\n\n    An easy way to accomplish this is to configure Socket.IO to `match origin protocol`. This instructs Socket.IO to secure WebSockets communication the same as the originating HTTP/HTTPS request for the web page. If a browser uses an HTTPS URL to visit your website, subsequent WebSocket communications through Socket.IO will be secured over SSL.\n\n    To modify this example to enable this configuration, add the following code to the **app.js** file after the line containing `, nicknames = {};`.\n\n        io.configure(function() {\n          io.set('match origin protocol', true);\n        });\n\n* **Verify web.config settings**\n\n    Azure web apps that host Node.js applications use the **web.config** file to route incoming requests to the Node.js application. For WebSockets to function correctly with Node.js applications, the **web.config** must contain the following entry.\n\n        <webSocket enabled=\"false\"/>\n\n    This disables the IIS WebSockets module, which includes its own implementation of WebSockets and conflicts with Node.js specific WebSocket modules such as Socket.IO. If this line is not present, or is set to `true`, this may be the reason that the WebSocket transport is not working for your application.\n\n    Normally, Node.js applications do not include a **web.config** file, so Azure Websites will automatically generate one for Node.js applications when they are deployed. Since this file is automatically generated on the server, you must use the FTP or FTPS URL for your website to view this file. You can find the FTP and FTPS URLs for your site in the Azure Management portal by selecting your website, and then the **Dashboard** link. The URLs are displayed in the **quick glance** section.\n\n    > [AZURE.NOTE] The **web.config** file is only generated by Azure Websites if your application does not provide one. If you provide a **web.config** file in the root of your application project, it will be used by Azure Web Apps.\n\n    If the entry is not present, or is set to a value of `true`, then you should create a **web.config** in the root of your Node.js application and specify a value of `false`.  For reference, the below is a default **web.config** for an application that uses **app.js** as the entry point.\n\n        <?xml version=\"1.0\" encoding=\"utf-8\"?>\n        <!--\n             This configuration file is required if iisnode is used to run node processes behind\n             IIS or IIS Express.  For more information, visit:\n\n             https://github.com/tjanczuk/iisnode/blob/master/src/samples/configuration/web.config\n        -->\n\n        <configuration>\n          <system.webServer>\n            <!-- Visit http://blogs.msdn.com/b/windowsazure/archive/2013/11/14/introduction-to-websockets-on-windows-azure-web-sites.aspx for more information on WebSocket support -->\n            <webSocket enabled=\"false\" />\n            <handlers>\n              <!-- Indicates that the server.js file is a node.js web app to be handled by the iisnode module -->\n              <add name=\"iisnode\" path=\"app.js\" verb=\"*\" modules=\"iisnode\"/>\n            </handlers>\n            <rewrite>\n              <rules>\n                <!-- Do not interfere with requests for node-inspector debugging -->\n                <rule name=\"NodeInspector\" patternSyntax=\"ECMAScript\" stopProcessing=\"true\">\n                  <match url=\"^app.js\\/debug[\\/]?\" />\n                </rule>\n\n                <!-- First we consider whether the incoming URL matches a physical file in the /public folder -->\n                <rule name=\"StaticContent\">\n                  <action type=\"Rewrite\" url=\"public{REQUEST_URI}\"/>\n                </rule>\n\n                <!-- All other URLs are mapped to the node.js web app entry point -->\n                <rule name=\"DynamicContent\">\n                  <conditions>\n                    <add input=\"{REQUEST_FILENAME}\" matchType=\"IsFile\" negate=\"True\"/>\n                  </conditions>\n                  <action type=\"Rewrite\" url=\"app.js\"/>\n                </rule>\n              </rules>\n            </rewrite>\n            <!--\n              You can control how Node is hosted within IIS using the following options:\n                * watchedFiles: semi-colon separated list of files that will be watched for changes to restart the server\n                * node_env: will be propagated to node as NODE_ENV environment variable\n                * debuggingEnabled - controls whether the built-in debugger is enabled\n\n              See https://github.com/tjanczuk/iisnode/blob/master/src/samples/configuration/web.config for a full list of options\n            -->\n            <!--<iisnode watchedFiles=\"web.config;*.js\"/>-->\n          </system.webServer>\n        </configuration>\n\n    If your application uses an entry point other than **app.js**, you must replace all occurrences of **app.js** with the correct entry point. For example, replacing **app.js** with **server.js**.\n\n>[AZURE.NOTE] If you want to get started with Azure App Service before signing up for an Azure account, go to [Try App Service](http://go.microsoft.com/fwlink/?LinkId=523751), where you can immediately create a short-lived starter web app in App Service. No credit cards required; no commitments.\n\n##Next steps\n\nIn this tutorial you learned how to create a chat application hosted in an Azure web app. You can also host this application as an Azure Cloud Service. For steps on how to accomplish this, see [Build a Node.js Chat Application with Socket.IO on an Azure Cloud Service][cloudservice].\n\n## What's changed\n* For a guide to the change from Websites to App Service see: [Azure App Service and Its Impact on Existing Azure Services](http://go.microsoft.com/fwlink/?LinkId=529714)\n* For a guide to the change of the old portal to the new portal see: [Reference for navigating the preview portal](http://go.microsoft.com/fwlink/?LinkId=529715)\n\n[socketio]: http://socket.io/\n[completed-app]: ./media/web-sites-nodejs-chat-app-socketio/websitesocketcomplete.png\n[Socket.IO GitHub repository]: https://github.com/Automattic/socket.io\n[release]: https://github.com/Automattic/socket.io/releases\n[cloudservice]: /develop/nodejs/tutorials/app-using-socketio/\n\n[chat-example-view]: ./media/web-sites-nodejs-chat-app-socketio/socketio-2.png\n[npm-output]: ./media/web-sites-nodejs-chat-app-socketio/socketio-7.png\n[pricing]: /pricing/details/web-sites/\n \n\ntest\n"
+}

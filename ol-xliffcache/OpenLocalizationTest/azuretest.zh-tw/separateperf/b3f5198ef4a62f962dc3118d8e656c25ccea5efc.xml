@@ -1,0 +1,369 @@
+{
+  "nodes": [
+    {
+      "content": "Azure Notification Hubs Secure Push",
+      "pos": [
+        27,
+        62
+      ]
+    },
+    {
+      "content": "Learn how to send secure push notifications to an Android app from Azure.",
+      "pos": [
+        81,
+        154
+      ]
+    },
+    {
+      "content": "Code samples written in Java and C#.",
+      "pos": [
+        155,
+        191
+      ]
+    },
+    {
+      "content": "Azure Notification Hubs Secure Push",
+      "pos": [
+        513,
+        548
+      ]
+    },
+    {
+      "content": "[AZURE.SELECTOR]",
+      "pos": [
+        552,
+        568
+      ]
+    },
+    {
+      "content": "Windows Universal",
+      "pos": [
+        572,
+        589
+      ]
+    },
+    {
+      "content": "iOS",
+      "pos": [
+        658,
+        661
+      ]
+    },
+    {
+      "content": "Android",
+      "pos": [
+        719,
+        726
+      ]
+    },
+    {
+      "content": "Overview",
+      "pos": [
+        788,
+        796
+      ]
+    },
+    {
+      "content": "Push notification support in Microsoft Azure enables you to access an easy-to-use, multiplatform, and scaled-out push infrastructure, which greatly simplifies the implementation of push notifications for both consumer and enterprise applications for mobile platforms.",
+      "pos": [
+        798,
+        1065
+      ]
+    },
+    {
+      "content": "Due to regulatory or security constraints, sometimes an application might want to include something in the notification that cannot be transmitted through the standard push notification infrastructure.",
+      "pos": [
+        1067,
+        1268
+      ]
+    },
+    {
+      "content": "This tutorial describes how to achieve the same experience by sending sensitive information through a secure, authenticated connection between the client device and the app backend.",
+      "pos": [
+        1269,
+        1450
+      ]
+    },
+    {
+      "content": "At a high level, the flow is as follows:",
+      "pos": [
+        1452,
+        1492
+      ]
+    },
+    {
+      "content": "The app back-end:",
+      "pos": [
+        1497,
+        1514
+      ]
+    },
+    {
+      "content": "Stores secure payload in back-end database.",
+      "pos": [
+        1521,
+        1564
+      ]
+    },
+    {
+      "content": "Sends the ID of this notification to the device (no secure information is sent).",
+      "pos": [
+        1571,
+        1651
+      ]
+    },
+    {
+      "content": "The app on the device, when receiving the notification:",
+      "pos": [
+        1655,
+        1710
+      ]
+    },
+    {
+      "content": "The device contacts the back-end requesting the secure payload.",
+      "pos": [
+        1717,
+        1780
+      ]
+    },
+    {
+      "content": "The app can show the payload as a notification on the device.",
+      "pos": [
+        1787,
+        1848
+      ]
+    },
+    {
+      "content": "It is important to note that in the preceding flow (and in this tutorial), we assume that the device stores an authentication token in local storage, after the user logs in.",
+      "pos": [
+        1850,
+        2023
+      ]
+    },
+    {
+      "content": "This guarantees a completely seamless experience, as the device can retrieve the notification’s secure payload using this token.",
+      "pos": [
+        2024,
+        2152
+      ]
+    },
+    {
+      "content": "If your application does not store authentication tokens on the device, or if these tokens can be expired, the device app, upon receiving the notification should display a generic notification prompting the user to launch the app.",
+      "pos": [
+        2153,
+        2383
+      ]
+    },
+    {
+      "content": "The app then authenticates the user and shows the notification payload.",
+      "pos": [
+        2384,
+        2455
+      ]
+    },
+    {
+      "content": "This Secure Push tutorial shows how to send a push notification securely.",
+      "pos": [
+        2457,
+        2530
+      ]
+    },
+    {
+      "content": "The tutorial builds on the <bpt id=\"p1\">**</bpt>Notify Users<ept id=\"p1\">**</ept> tutorial, so you should complete the steps in that tutorial first.",
+      "pos": [
+        2531,
+        2641
+      ]
+    },
+    {
+      "pos": [
+        2645,
+        2848
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> This tutorial assumes that you have created and configured your notification hub as described in <bpt id=\"p1\">[</bpt>Getting Started with Notification Hubs (Android)<ept id=\"p1\">](notification-hubs-android-get-started.md)</ept>."
+    },
+    {
+      "content": "Modify the Android project",
+      "pos": [
+        2979,
+        3005
+      ]
+    },
+    {
+      "content": "Now that you modified your app back-end to send just the <bpt id=\"p1\">*</bpt>id<ept id=\"p1\">*</ept> of a notification, you have to change your Android app to handle that notification and call back your back-end to retrieve the secure message to be displayed.",
+      "pos": [
+        3007,
+        3227
+      ]
+    },
+    {
+      "content": "To achieve this goal, you have to make sure that your Android app knows how to authenticate itself with your back-end when it receives the push notifications.",
+      "pos": [
+        3228,
+        3386
+      ]
+    },
+    {
+      "content": "We will now modify the <bpt id=\"p1\">*</bpt>login<ept id=\"p1\">*</ept> flow in order to save the authentication header value in the shared preferences of your app.",
+      "pos": [
+        3388,
+        3511
+      ]
+    },
+    {
+      "content": "Analogous mechanisms can be used to store any authentication token (e.g. OAuth tokens) that the app will have to use without requiring user credentials.",
+      "pos": [
+        3512,
+        3664
+      ]
+    },
+    {
+      "pos": [
+        3669,
+        3767
+      ],
+      "content": "In your Android app project, add the following constants at the top of the <bpt id=\"p1\">**</bpt>MainActivity<ept id=\"p1\">**</ept> class:"
+    },
+    {
+      "pos": [
+        3949,
+        4061
+      ],
+      "content": "Still in the <bpt id=\"p1\">**</bpt>MainActivity<ept id=\"p1\">**</ept> class, update the <ph id=\"ph1\">`getAuthorizationHeader()`</ph> method to contain the following code:"
+    },
+    {
+      "pos": [
+        4753,
+        4831
+      ],
+      "content": "Add the following <ph id=\"ph1\">`import`</ph> statements at the top of the <bpt id=\"p1\">**</bpt>MainActivity<ept id=\"p1\">**</ept> file:"
+    },
+    {
+      "content": "Now we will change the handler that is called when the notification is received.",
+      "pos": [
+        4884,
+        4964
+      ]
+    },
+    {
+      "pos": [
+        4969,
+        5039
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>MyHandler<ept id=\"p1\">**</ept> class change the <ph id=\"ph1\">`OnReceive()`</ph> method to contain:"
+    },
+    {
+      "pos": [
+        5264,
+        5424
+      ],
+      "content": "Then add the <ph id=\"ph1\">`retrieveNotification()`</ph> method, replacing the placeholder <ph id=\"ph2\">`{back-end endpoint}`</ph> with the back-end endpoint obtained while deploying your back-end:"
+    },
+    {
+      "content": "This method calls your app back-end to retrieve the notification content using the credentials stored in the shared preferences and displays it as a normal notification.",
+      "pos": [
+        7147,
+        7316
+      ]
+    },
+    {
+      "content": "The notification looks to the app user exactly like any other push notification.",
+      "pos": [
+        7317,
+        7397
+      ]
+    },
+    {
+      "content": "Note that it is preferable to handle the cases of missing authentication header property or rejection by the back-end.",
+      "pos": [
+        7399,
+        7517
+      ]
+    },
+    {
+      "content": "The specific handling of these cases depend mostly on your target user experience.",
+      "pos": [
+        7518,
+        7600
+      ]
+    },
+    {
+      "content": "One option is to display a notification with a generic prompt for the user to authenticate to retrieve the actual notification.",
+      "pos": [
+        7601,
+        7728
+      ]
+    },
+    {
+      "content": "Run the Application",
+      "pos": [
+        7733,
+        7752
+      ]
+    },
+    {
+      "content": "To run the application, do the following:",
+      "pos": [
+        7754,
+        7795
+      ]
+    },
+    {
+      "content": "Make sure <bpt id=\"p1\">**</bpt>AppBackend<ept id=\"p1\">**</ept> is deployed in Azure.",
+      "pos": [
+        7800,
+        7846
+      ]
+    },
+    {
+      "content": "If using Visual Studio, run the <bpt id=\"p1\">**</bpt>AppBackend<ept id=\"p1\">**</ept> Web API application.",
+      "pos": [
+        7847,
+        7914
+      ]
+    },
+    {
+      "content": "An ASP.NET web page is displayed.",
+      "pos": [
+        7915,
+        7948
+      ]
+    },
+    {
+      "content": "In Eclipse, run the app on a physical Android device or the emulator.",
+      "pos": [
+        7953,
+        8022
+      ]
+    },
+    {
+      "content": "In the Android app UI, enter a username and password.",
+      "pos": [
+        8027,
+        8080
+      ]
+    },
+    {
+      "content": "These can be any string, but they must be the same value.",
+      "pos": [
+        8081,
+        8138
+      ]
+    },
+    {
+      "content": "In the Android app UI, click <bpt id=\"p1\">**</bpt>Log in<ept id=\"p1\">**</ept>.",
+      "pos": [
+        8143,
+        8183
+      ]
+    },
+    {
+      "content": "Then click <bpt id=\"p1\">**</bpt>Send push<ept id=\"p1\">**</ept>.",
+      "pos": [
+        8184,
+        8209
+      ]
+    }
+  ],
+  "content": "<properties\n    pageTitle=\"Azure Notification Hubs Secure Push\"\n    description=\"Learn how to send secure push notifications to an Android app from Azure. Code samples written in Java and C#.\"\n    documentationCenter=\"android\"\n    authors=\"wesmc7777\"\n    manager=\"dwrede\"\n    editor=\"\"\n    services=\"notification-hubs\"/>\n\n<tags\n    ms.service=\"notification-hubs\"\n    ms.workload=\"mobile\"\n    ms.tgt_pltfrm=\"android\"\n    ms.devlang=\"java\"\n    ms.topic=\"article\"\n    ms.date=\"06/16/2015\" \n    ms.author=\"wesmc\"/>\n\n#Azure Notification Hubs Secure Push\n\n> [AZURE.SELECTOR]\n- [Windows Universal](notification-hubs-aspnet-backend-windows-dotnet-secure-push.md)\n- [iOS](notification-hubs-aspnet-backend-ios-secure-push.md)\n- [Android](notification-hubs-aspnet-backend-android-secure-push.md)\n\n##Overview\n\nPush notification support in Microsoft Azure enables you to access an easy-to-use, multiplatform, and scaled-out push infrastructure, which greatly simplifies the implementation of push notifications for both consumer and enterprise applications for mobile platforms.\n\nDue to regulatory or security constraints, sometimes an application might want to include something in the notification that cannot be transmitted through the standard push notification infrastructure. This tutorial describes how to achieve the same experience by sending sensitive information through a secure, authenticated connection between the client device and the app backend.\n\nAt a high level, the flow is as follows:\n\n1. The app back-end:\n    - Stores secure payload in back-end database.\n    - Sends the ID of this notification to the device (no secure information is sent).\n2. The app on the device, when receiving the notification:\n    - The device contacts the back-end requesting the secure payload.\n    - The app can show the payload as a notification on the device.\n\nIt is important to note that in the preceding flow (and in this tutorial), we assume that the device stores an authentication token in local storage, after the user logs in. This guarantees a completely seamless experience, as the device can retrieve the notification’s secure payload using this token. If your application does not store authentication tokens on the device, or if these tokens can be expired, the device app, upon receiving the notification should display a generic notification prompting the user to launch the app. The app then authenticates the user and shows the notification payload.\n\nThis Secure Push tutorial shows how to send a push notification securely. The tutorial builds on the **Notify Users** tutorial, so you should complete the steps in that tutorial first.\n\n> [AZURE.NOTE] This tutorial assumes that you have created and configured your notification hub as described in [Getting Started with Notification Hubs (Android)](notification-hubs-android-get-started.md).\n\n[AZURE.INCLUDE [notification-hubs-aspnet-backend-securepush](../../includes/notification-hubs-aspnet-backend-securepush.md)]\n\n## Modify the Android project\n\nNow that you modified your app back-end to send just the *id* of a notification, you have to change your Android app to handle that notification and call back your back-end to retrieve the secure message to be displayed.\nTo achieve this goal, you have to make sure that your Android app knows how to authenticate itself with your back-end when it receives the push notifications.\n\nWe will now modify the *login* flow in order to save the authentication header value in the shared preferences of your app. Analogous mechanisms can be used to store any authentication token (e.g. OAuth tokens) that the app will have to use without requiring user credentials.\n\n1. In your Android app project, add the following constants at the top of the **MainActivity** class:\n\n        public static final String NOTIFY_USERS_PROPERTIES = \"NotifyUsersProperties\";\n        public static final String AUTHORIZATION_HEADER_PROPERTY = \"AuthorizationHeader\";\n\n2. Still in the **MainActivity** class, update the `getAuthorizationHeader()` method to contain the following code:\n\n        private String getAuthorizationHeader() throws UnsupportedEncodingException {\n            EditText username = (EditText) findViewById(R.id.usernameText);\n            EditText password = (EditText) findViewById(R.id.passwordText);\n            String basicAuthHeader = username.getText().toString()+\":\"+password.getText().toString();\n            basicAuthHeader = Base64.encodeToString(basicAuthHeader.getBytes(\"UTF-8\"), Base64.NO_WRAP);\n\n            SharedPreferences sp = getSharedPreferences(NOTIFY_USERS_PROPERTIES, Context.MODE_PRIVATE);\n            sp.edit().putString(AUTHORIZATION_HEADER_PROPERTY, basicAuthHeader).commit();\n\n            return basicAuthHeader;\n        }\n\n3. Add the following `import` statements at the top of the **MainActivity** file:\n\n        import android.content.SharedPreferences;\n\nNow we will change the handler that is called when the notification is received.\n\n4. In the **MyHandler** class change the `OnReceive()` method to contain:\n\n        public void onReceive(Context context, Bundle bundle) {\n            ctx = context;\n            String secureMessageId = bundle.getString(\"secureId\");\n            retrieveNotification(secureMessageId);\n        }\n\n5. Then add the `retrieveNotification()` method, replacing the placeholder `{back-end endpoint}` with the back-end endpoint obtained while deploying your back-end:\n\n        private void retrieveNotification(final String secureMessageId) {\n            SharedPreferences sp = ctx.getSharedPreferences(MainActivity.NOTIFY_USERS_PROPERTIES, Context.MODE_PRIVATE);\n            final String authorizationHeader = sp.getString(MainActivity.AUTHORIZATION_HEADER_PROPERTY, null);\n\n            new AsyncTask<Object, Object, Object>() {\n                @Override\n                protected Object doInBackground(Object... params) {\n                    try {\n                        HttpUriRequest request = new HttpGet(\"{back-end endpoint}/api/notifications/\"+secureMessageId);\n                        request.addHeader(\"Authorization\", \"Basic \"+authorizationHeader);\n                        HttpResponse response = new DefaultHttpClient().execute(request);\n                        if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {\n                            Log.e(\"MainActivity\", \"Error retrieving secure notification\" + response.getStatusLine().getStatusCode());\n                            throw new RuntimeException(\"Error retrieving secure notification\");\n                        }\n                        String secureNotificationJSON = EntityUtils.toString(response.getEntity());\n                        JSONObject secureNotification = new JSONObject(secureNotificationJSON);\n                        sendNotification(secureNotification.getString(\"Payload\"));\n                    } catch (Exception e) {\n                        Log.e(\"MainActivity\", \"Failed to retrieve secure notification - \" + e.getMessage());\n                        return e;\n                    }\n                    return null;\n                }\n            }.execute(null, null, null);\n        }\n\n\nThis method calls your app back-end to retrieve the notification content using the credentials stored in the shared preferences and displays it as a normal notification. The notification looks to the app user exactly like any other push notification.\n\nNote that it is preferable to handle the cases of missing authentication header property or rejection by the back-end. The specific handling of these cases depend mostly on your target user experience. One option is to display a notification with a generic prompt for the user to authenticate to retrieve the actual notification.\n\n## Run the Application\n\nTo run the application, do the following:\n\n1. Make sure **AppBackend** is deployed in Azure. If using Visual Studio, run the **AppBackend** Web API application. An ASP.NET web page is displayed.\n\n2. In Eclipse, run the app on a physical Android device or the emulator.\n\n3. In the Android app UI, enter a username and password. These can be any string, but they must be the same value.\n\n4. In the Android app UI, click **Log in**. Then click **Send push**.\n"
+}

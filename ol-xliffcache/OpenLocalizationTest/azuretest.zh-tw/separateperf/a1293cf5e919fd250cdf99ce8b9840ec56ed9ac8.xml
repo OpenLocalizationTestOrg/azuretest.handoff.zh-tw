@@ -1,0 +1,1840 @@
+{
+  "nodes": [
+    {
+      "content": "Create a .NET MVC web app in Azure App Service with AD FS authentication",
+      "pos": [
+        28,
+        100
+      ]
+    },
+    {
+      "content": "Learn how to create an ASP.NET MVC line-of-business application in Azure App Service Web Apps that authenticates with on-premise STS.",
+      "pos": [
+        120,
+        253
+      ]
+    },
+    {
+      "content": "This tutorial targets AD FS as the on-premise STS.",
+      "pos": [
+        254,
+        304
+      ]
+    },
+    {
+      "content": "Create a .NET MVC web app in Azure App Service with AD FS authentication",
+      "pos": [
+        629,
+        701
+      ]
+    },
+    {
+      "content": "In this article, you will learn how to create an ASP.NET MVC line-of-business application in <bpt id=\"p1\">[</bpt>Azure App Service Web Apps<ept id=\"p1\">](http://go.microsoft.com/fwlink/?LinkId=529714)</ept> using an on-premises <bpt id=\"p2\">[</bpt>Active Directory Federation Services<ept id=\"p2\">](http://technet.microsoft.com/library/hh831502.aspx)</ept> as the identity provider.",
+      "pos": [
+        703,
+        1009
+      ]
+    },
+    {
+      "content": "This scenario can work when you want to create line-of-business applications in Azure App Service Web Apps but your organization requires all data to be stored on-site.",
+      "pos": [
+        1010,
+        1178
+      ]
+    },
+    {
+      "pos": [
+        1181,
+        1421
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> For an overview of the different enterprise authentication and authorization options for Azure App Service Web Apps, see <bpt id=\"p1\">[</bpt>Use Active Directory for authentication in Azure App Service<ept id=\"p1\">](web-sites-authentication-authorization.md)</ept>."
+    },
+    {
+      "content": "What you will build",
+      "pos": [
+        1452,
+        1471
+      ]
+    },
+    {
+      "content": "You will build a basic ASP.NET application in Azure App Service Web Apps with the following features:",
+      "pos": [
+        1476,
+        1577
+      ]
+    },
+    {
+      "content": "Authenticates users against AD FS",
+      "pos": [
+        1581,
+        1614
+      ]
+    },
+    {
+      "pos": [
+        1617,
+        1676
+      ],
+      "content": "Uses <ph id=\"ph1\">`[Authorize]`</ph> to authorize users for different actions"
+    },
+    {
+      "content": "Static configuration for both debugging in Visual Studio and publishing to App Service Web Apps (configure once, debug and publish anytime)",
+      "pos": [
+        1679,
+        1818
+      ]
+    },
+    {
+      "content": "What you will need",
+      "pos": [
+        1850,
+        1868
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> If you want to get started with Azure App Service before signing up for an Azure account, go to <bpt id=\"p1\">[</bpt>Try App Service<ept id=\"p1\">](http://go.microsoft.com/fwlink/?LinkId=523751)</ept>, where you can immediately create a short-lived starter web app in App Service.",
+      "pos": [
+        1944,
+        2197
+      ]
+    },
+    {
+      "content": "No credit cards required; no commitments.",
+      "pos": [
+        2198,
+        2239
+      ]
+    },
+    {
+      "content": "You need the following to complete this tutorial:",
+      "pos": [
+        2241,
+        2290
+      ]
+    },
+    {
+      "pos": [
+        2294,
+        2461
+      ],
+      "content": "An on-premises AD FS deployment (for an end-to-end walkthrough of the test lab that I use, see <bpt id=\"p1\">[</bpt>Test Lab: Standalone STS with AD FS in Azure VM (for test only)<ept id=\"p1\">](TODO)</ept>)"
+    },
+    {
+      "content": "Permissions to create relying party trusts in AD FS Management",
+      "pos": [
+        2464,
+        2526
+      ]
+    },
+    {
+      "content": "Visual Studio 2013",
+      "pos": [
+        2529,
+        2547
+      ]
+    },
+    {
+      "pos": [
+        2550,
+        2637
+      ],
+      "content": "<bpt id=\"p1\">[</bpt>Azure SDK 2.5.1<ept id=\"p1\">](http://go.microsoft.com/fwlink/p/?linkid=323510&amp;clcid=0x409)</ept> or later"
+    },
+    {
+      "content": "Use sample application for line-of-business template",
+      "pos": [
+        2669,
+        2721
+      ]
+    },
+    {
+      "content": "The sample application in this tutorial, <bpt id=\"p1\">[</bpt>WebApp-WSFederation-DotNet)<ept id=\"p1\">](https://github.com/AzureADSamples/WebApp-WSFederation-DotNet)</ept>, is created by the Azure Active Directory team.",
+      "pos": [
+        2726,
+        2906
+      ]
+    },
+    {
+      "content": "Since AD FS supports WS-Federation, you can is it as a template to create new line-of-business applications with ease.",
+      "pos": [
+        2907,
+        3025
+      ]
+    },
+    {
+      "content": "It has the following features:",
+      "pos": [
+        3026,
+        3056
+      ]
+    },
+    {
+      "pos": [
+        3060,
+        3182
+      ],
+      "content": "Uses <bpt id=\"p1\">[</bpt>WS-Federation<ept id=\"p1\">](http://msdn.microsoft.com/library/bb498017.aspx)</ept> to authenticate with an on-premises AD FS deployment"
+    },
+    {
+      "content": "Sign-in and sign-out functionality",
+      "pos": [
+        3185,
+        3219
+      ]
+    },
+    {
+      "pos": [
+        3222,
+        3481
+      ],
+      "content": "Uses <bpt id=\"p1\">[</bpt>Microsoft.Owin<ept id=\"p1\">](http://www.asp.net/aspnet/overview/owin-and-katana/an-overview-of-project-katana)</ept> (instead of Windows Identity Foundation, i.e. WIF), which is the future of ASP.NET and much simpler to set up for authentication and authorization than WIF"
+    },
+    {
+      "content": "Set up the sample application",
+      "pos": [
+        3512,
+        3541
+      ]
+    },
+    {
+      "pos": [
+        3550,
+        3706
+      ],
+      "content": "Clone or download the sample solution at <bpt id=\"p1\">[</bpt>WebApp-WSFederation-DotNet<ept id=\"p1\">](https://github.com/AzureADSamples/WebApp-WSFederation-DotNet)</ept> to your local directory."
+    },
+    {
+      "pos": [
+        3714,
+        3997
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> The instructions at <bpt id=\"p1\">[</bpt>README.md<ept id=\"p1\">](https://github.com/AzureADSamples/WebApp-WSFederation-DotNet/blob/master/README.md)</ept> shows you how to set up the application with Azure Active Directory, but in this tutorial you will set it up with AD FS, so follow the steps here instead."
+    },
+    {
+      "pos": [
+        4003,
+        4098
+      ],
+      "content": "Open the solution, and then open Controllers\\AccountController.cs in the <bpt id=\"p1\">**</bpt>Solution Explorer<ept id=\"p1\">**</ept>."
+    },
+    {
+      "content": "You will see that the code simply issues an authentication challenge to authenticate the user using WS-Federation.",
+      "pos": [
+        4104,
+        4218
+      ]
+    },
+    {
+      "content": "All authentication is configured in App_Start\\Startup.Auth.cs.",
+      "pos": [
+        4219,
+        4281
+      ]
+    },
+    {
+      "content": "Open App_Start\\Startup.Auth.cs.",
+      "pos": [
+        4287,
+        4318
+      ]
+    },
+    {
+      "content": "In the <ph id=\"ph1\">`ConfigureAuth`</ph> method, note the line:",
+      "pos": [
+        4319,
+        4364
+      ]
+    },
+    {
+      "content": "In the OWIN world, this is really the bare minimum you need to configure WS-Federation authentication.",
+      "pos": [
+        4608,
+        4710
+      ]
+    },
+    {
+      "content": "This is must simpler and more elegant than WIF, where Web.config is injected with XML all over the place.",
+      "pos": [
+        4711,
+        4816
+      ]
+    },
+    {
+      "content": "The only information you need is the relying party's (RP) identifier and the URL of your AD FS service's metadata file.",
+      "pos": [
+        4817,
+        4936
+      ]
+    },
+    {
+      "content": "Here's an example:",
+      "pos": [
+        4937,
+        4955
+      ]
+    },
+    {
+      "pos": [
+        4965,
+        5010
+      ],
+      "content": "RP identifier: <ph id=\"ph1\">`https://contoso.com/MyLOBApp`</ph>"
+    },
+    {
+      "pos": [
+        5019,
+        5112
+      ],
+      "content": "Metadata address: <ph id=\"ph1\">`http://adfs.contoso.com/FederationMetadata/2007-06/FederationMetadata.xml`</ph>"
+    },
+    {
+      "pos": [
+        5118,
+        5897
+      ],
+      "content": "In App_Start\\Startup.Auth.cs, change the static string definitions as highlighted below:  \n<pre class=\"prettyprint\">\nprivate static string realm = ConfigurationManager.AppSettings[\"ida:<mark>RPIdentifier</mark>\"];\n<mark><del>private static string aadInstance = ConfigurationManager.AppSettings[\"ida:AADInstance\"];</del></mark>\n<mark><del>private static string tenant = ConfigurationManager.AppSettings[\"ida:Tenant\"];</del></mark>\n<mark><del>private static string metadata = string.Format(\"{0}/{1}/federationmetadata/2007-06/federationmetadata.xml\", aadInstance, tenant);</del></mark>\n<mark>private static string metadata = string.Format(\"https://{0}/federationmetadata/2007-06/federationmetadata.xml\", ConfigurationManager.AppSettings[\"ida:ADFS\"]);</mark>",
+      "leadings": [
+        "",
+        "    ",
+        "    ",
+        "    ",
+        "    ",
+        "    ",
+        "    "
+      ],
+      "nodes": [
+        {
+          "content": "In App_Start\\Startup.Auth.cs, change the static string definitions as highlighted below:",
+          "pos": [
+            0,
+            88
+          ]
+        },
+        {
+          "content": "private static string realm = ConfigurationManager.AppSettings[\"ida:",
+          "pos": [
+            117,
+            185
+          ]
+        },
+        {
+          "content": "RPIdentifier",
+          "pos": [
+            191,
+            203
+          ]
+        },
+        {
+          "content": "\"];",
+          "pos": [
+            210,
+            213
+          ]
+        },
+        {
+          "content": "private static string aadInstance = ConfigurationManager.AppSettings[\"ida:AADInstance\"];",
+          "pos": [
+            225,
+            313
+          ]
+        },
+        {
+          "content": "private static string tenant = ConfigurationManager.AppSettings[\"ida:Tenant\"];",
+          "pos": [
+            338,
+            416
+          ]
+        },
+        {
+          "content": "private static string metadata = string.Format(\"{0}/{1}/federationmetadata/2007-06/federationmetadata.xml\", aadInstance, tenant);",
+          "pos": [
+            441,
+            570
+          ]
+        },
+        {
+          "content": "private static string metadata = string.Format(\"https://{0}/federationmetadata/2007-06/federationmetadata.xml\", ConfigurationManager.AppSettings[\"ida:ADFS\"]);",
+          "pos": [
+            590,
+            748
+          ]
+        }
+      ]
+    },
+    {
+      "pos": [
+        5903,
+        6022
+      ],
+      "content": "<mark><del>string authority = String.Format(CultureInfo.InvariantCulture, aadInstance, tenant);</del></mark>\n</pre>",
+      "leadings": [
+        "",
+        "    "
+      ],
+      "nodes": [
+        {
+          "content": "string authority = String.Format(CultureInfo.InvariantCulture, aadInstance, tenant);",
+          "pos": [
+            11,
+            95
+          ]
+        }
+      ]
+    },
+    {
+      "pos": [
+        6028,
+        7128
+      ],
+      "content": "You will now make the corresponding changes in Web.config. Open the Web.config and modify the app settings as highlighted below:  \n<pre class=\"prettyprint\">\n&lt;appSettings&gt;\n  &lt;add key=\"webpages:Version\" value=\"3.0.0.0\" /&gt;\n  &lt;add key=\"webpages:Enabled\" value=\"false\" /&gt;\n  &lt;add key=\"ClientValidationEnabled\" value=\"true\" /&gt;\n  &lt;add key=\"UnobtrusiveJavaScriptEnabled\" value=\"true\" /&gt;\n  <mark><del>&lt;add key=\"ida:Wtrealm\" value=\"[Enter the App ID URI of WebApp-WSFederation-DotNet https://contoso.onmicrosoft.com/WebApp-WSFederation-DotNet]\" /&gt;</del></mark>\n  <mark><del>&lt;add key=\"ida:AADInstance\" value=\"https://login.windows.net\" /&gt;</del></mark>\n  <mark><del>&lt;add key=\"ida:Tenant\" value=\"[Enter tenant name, e.g. contoso.onmicrosoft.com]\" /&gt;</del></mark>\n  <mark>&lt;add key=\"ida:RPIdentifier\" value=\"[Enter the relying party identifier as configured in AD FS, e.g. https://localhost:44320/]\" /&gt;</mark>\n  <mark>&lt;add key=\"ida:ADFS\" value=\"[Enter the FQDN of AD FS service, e.g. adfs.contoso.com]\" /&gt;</mark>",
+      "leadings": [
+        "",
+        "    ",
+        "    ",
+        "    ",
+        "    ",
+        "    ",
+        "    ",
+        "    ",
+        "    ",
+        "    ",
+        "    ",
+        "    "
+      ],
+      "nodes": [
+        {
+          "content": "You will now make the corresponding changes in Web.config. Open the Web.config and modify the app settings as highlighted below:",
+          "pos": [
+            0,
+            128
+          ],
+          "nodes": [
+            {
+              "content": "You will now make the corresponding changes in Web.config.",
+              "pos": [
+                0,
+                58
+              ]
+            },
+            {
+              "content": "Open the Web.config and modify the app settings as highlighted below:",
+              "pos": [
+                59,
+                128
+              ]
+            }
+          ]
+        },
+        {
+          "content": "&amp;lt;appSettings&amp;gt;",
+          "pos": [
+            157,
+            176
+          ]
+        },
+        {
+          "content": "&amp;lt;add key=\"webpages:Version\" value=\"3.0.0.0\" /&amp;gt;",
+          "pos": [
+            179,
+            231
+          ]
+        },
+        {
+          "content": "&amp;lt;add key=\"webpages:Enabled\" value=\"false\" /&amp;gt;",
+          "pos": [
+            234,
+            284
+          ]
+        },
+        {
+          "content": "&amp;lt;add key=\"ClientValidationEnabled\" value=\"true\" /&amp;gt;",
+          "pos": [
+            287,
+            343
+          ]
+        },
+        {
+          "content": "&amp;lt;add key=\"UnobtrusiveJavaScriptEnabled\" value=\"true\" /&amp;gt;",
+          "pos": [
+            346,
+            407
+          ]
+        },
+        {
+          "content": "&amp;lt;add key=\"ida:Wtrealm\" value=\"[Enter the App ID URI of WebApp-WSFederation-DotNet https://contoso.onmicrosoft.com/WebApp-WSFederation-DotNet]\" /&amp;gt;",
+          "pos": [
+            421,
+            572
+          ]
+        },
+        {
+          "content": "&amp;lt;add key=\"ida:AADInstance\" value=\"https://login.windows.net\" /&amp;gt;",
+          "pos": [
+            599,
+            668
+          ]
+        },
+        {
+          "content": "&amp;lt;add key=\"ida:Tenant\" value=\"[Enter tenant name, e.g. contoso.onmicrosoft.com]\" /&amp;gt;",
+          "pos": [
+            695,
+            783
+          ]
+        },
+        {
+          "content": "&amp;lt;add key=\"ida:RPIdentifier\" value=\"[Enter the relying party identifier as configured in AD FS, e.g. https://localhost:44320/]\" /&amp;gt;",
+          "pos": [
+            805,
+            940
+          ]
+        },
+        {
+          "content": "&amp;lt;add key=\"ida:ADFS\" value=\"[Enter the FQDN of AD FS service, e.g. adfs.contoso.com]\" /&amp;gt;",
+          "pos": [
+            956,
+            1049
+          ]
+        }
+      ]
+    },
+    {
+      "pos": [
+        7134,
+        7165
+      ],
+      "content": "&lt;/appSettings&gt;\n</pre>",
+      "leadings": [
+        "",
+        "    "
+      ],
+      "nodes": [
+        {
+          "content": "&amp;lt;/appSettings&amp;gt;",
+          "pos": [
+            0,
+            20
+          ]
+        }
+      ]
+    },
+    {
+      "content": "Fill in the key values based on your respective environment.",
+      "pos": [
+        7171,
+        7231
+      ]
+    },
+    {
+      "content": "Build the application to make sure there are no errors.",
+      "pos": [
+        7237,
+        7292
+      ]
+    },
+    {
+      "content": "That's it.",
+      "pos": [
+        7294,
+        7304
+      ]
+    },
+    {
+      "content": "Now the sample application is ready to work with AD FS.",
+      "pos": [
+        7305,
+        7360
+      ]
+    },
+    {
+      "content": "You will still need to configure an RP trust with this application in AD FS later.",
+      "pos": [
+        7361,
+        7443
+      ]
+    },
+    {
+      "content": "Deploy the sample application to Azure App Service Web Apps",
+      "pos": [
+        7475,
+        7534
+      ]
+    },
+    {
+      "content": "Here, you will publish the application to a web app in App Service Web Apps while preserving the debug environment.",
+      "pos": [
+        7536,
+        7651
+      ]
+    },
+    {
+      "content": "Note that you're going to publish the application before it has an RP trust with AD FS, so authentication still doesn't work yet.",
+      "pos": [
+        7652,
+        7781
+      ]
+    },
+    {
+      "content": "However, if you do it now you can have the web app URL that you will also use to configure the RP trust later.",
+      "pos": [
+        7782,
+        7892
+      ]
+    },
+    {
+      "pos": [
+        7897,
+        7945
+      ],
+      "content": "Right-click your project and select <bpt id=\"p1\">**</bpt>Publish<ept id=\"p1\">**</ept>."
+    },
+    {
+      "pos": [
+        8029,
+        8065
+      ],
+      "content": "Select <bpt id=\"p1\">**</bpt>Microsoft Azure Web Apps<ept id=\"p1\">**</ept>."
+    },
+    {
+      "pos": [
+        8069,
+        8191
+      ],
+      "content": "If you haven't signed in to Azure, click <bpt id=\"p1\">**</bpt>Sign In<ept id=\"p1\">**</ept> and use the Microsoft account for your Azure subscription to sign in."
+    },
+    {
+      "pos": [
+        8195,
+        8249
+      ],
+      "content": "Once signed in, click <bpt id=\"p1\">**</bpt>New<ept id=\"p1\">**</ept> to create a new web app."
+    },
+    {
+      "content": "Fill in all required fields.",
+      "pos": [
+        8253,
+        8281
+      ]
+    },
+    {
+      "content": "You are going to connect to on-premise data later, so you won't create a database for this web app.",
+      "pos": [
+        8282,
+        8381
+      ]
+    },
+    {
+      "content": "Click <bpt id=\"p1\">**</bpt>Create<ept id=\"p1\">**</ept>.",
+      "pos": [
+        8464,
+        8481
+      ]
+    },
+    {
+      "content": "Once the web app is created, the Publish Web dialog is opened.",
+      "pos": [
+        8482,
+        8544
+      ]
+    },
+    {
+      "content": "In <bpt id=\"p1\">**</bpt>Destination URL<ept id=\"p1\">**</ept>, change <bpt id=\"p2\">**</bpt>http<ept id=\"p2\">**</ept> to <bpt id=\"p3\">**</bpt>https<ept id=\"p3\">**</ept>.",
+      "pos": [
+        8548,
+        8601
+      ]
+    },
+    {
+      "content": "Copy the entire URL to a text editor.",
+      "pos": [
+        8602,
+        8639
+      ]
+    },
+    {
+      "content": "You will use it later.",
+      "pos": [
+        8640,
+        8662
+      ]
+    },
+    {
+      "content": "Then, click <bpt id=\"p1\">**</bpt>Publish<ept id=\"p1\">**</ept>.",
+      "pos": [
+        8663,
+        8687
+      ]
+    },
+    {
+      "pos": [
+        8772,
+        9188
+      ],
+      "content": "In Visual Studio, open **Web.Release.config** in your project. Insert the following XML into the `<configuration>` tag, and replace the key value with your publish web app's URL.  \n<pre class=\"prettyprint\">\n&lt;appSettings&gt;\n&lt;add key=\"ida:RPIdentifier\" value=\"<mark>[e.g. https://mylobapp.azurewebsites.net/]</mark>\" xdt:Transform=\"SetAttributes\" xdt:Locator=\"Match(key)\" /&gt;\n&lt;/appSettings&gt;</pre>",
+      "leadings": [
+        "",
+        "    ",
+        "",
+        "   ",
+        ""
+      ],
+      "nodes": [
+        {
+          "content": "In Visual Studio, open **Web.Release.config** in your project. Insert the following XML into the `<configuration>` tag, and replace the key value with your publish web app's URL.",
+          "pos": [
+            0,
+            178
+          ],
+          "nodes": [
+            {
+              "content": "In Visual Studio, open <bpt id=\"p1\">**</bpt>Web.Release.config<ept id=\"p1\">**</ept> in your project.",
+              "pos": [
+                0,
+                62
+              ]
+            },
+            {
+              "content": "Insert the following XML into the <ph id=\"ph1\">`&lt;configuration&gt;`</ph> tag, and replace the key value with your publish web app's URL.",
+              "pos": [
+                63,
+                178
+              ]
+            }
+          ]
+        },
+        {
+          "content": "&amp;lt;appSettings&amp;gt;",
+          "pos": [
+            207,
+            226
+          ]
+        },
+        {
+          "content": "&amp;lt;add key=\"ida:RPIdentifier\" value=\"",
+          "pos": [
+            227,
+            265
+          ]
+        },
+        {
+          "content": "[e.g. https://mylobapp.azurewebsites.net/]",
+          "pos": [
+            271,
+            313
+          ]
+        },
+        {
+          "content": "\" xdt:Transform=\"SetAttributes\" xdt:Locator=\"Match(key)\" /&amp;gt;",
+          "pos": [
+            320,
+            382
+          ]
+        },
+        {
+          "content": "&amp;lt;/appSettings&amp;gt;",
+          "pos": [
+            383,
+            403
+          ]
+        }
+      ]
+    },
+    {
+      "content": "When you're done, you have two RP identifiers configured in your project, one for your debug environment in Visual Studio, and one for the published web app in Azure.",
+      "pos": [
+        9190,
+        9356
+      ]
+    },
+    {
+      "content": "You will set up an RP trust for each of the two environments in AD FS.",
+      "pos": [
+        9357,
+        9427
+      ]
+    },
+    {
+      "content": "During debugging, the app settings in Web.config is used to make your <bpt id=\"p1\">**</bpt>Debug<ept id=\"p1\">**</ept> configuration work with AD FS, and when it's published (by default, the <bpt id=\"p2\">**</bpt>Release<ept id=\"p2\">**</ept> configuration is published), a transformed Web.config is uploaded that incorporates the app setting changes in Web.Release.config.",
+      "pos": [
+        9428,
+        9722
+      ]
+    },
+    {
+      "content": "If you want to attach the published web app in Azure to the debugger (i.e. you must upload debug symbols of your code in the published web app), you can create a clone of the Debug configuration for Azure debugging, but with its own custom Web.config transform (e.g. Web.AzureDebug.config) that uses the app settings from Web.Release.config.",
+      "pos": [
+        9724,
+        10065
+      ]
+    },
+    {
+      "content": "This allows you to maintain a static configuration across the different environments.",
+      "pos": [
+        10066,
+        10151
+      ]
+    },
+    {
+      "content": "Configure relying party trusts in AD FS Management",
+      "pos": [
+        10185,
+        10235
+      ]
+    },
+    {
+      "content": "Now you need to configure a RP trust in AD FS Mangement before you can your sample application can actually authenticate with AD FS.",
+      "pos": [
+        10240,
+        10372
+      ]
+    },
+    {
+      "content": "You will need to set up two separate RP trusts, one for your debug environment and one for your published web app.",
+      "pos": [
+        10373,
+        10487
+      ]
+    },
+    {
+      "pos": [
+        10491,
+        10576
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> Make sure that you repeat the steps below for both of your environments."
+    },
+    {
+      "content": "On your AD FS server, log in with credentials that have management rights to AD FS.",
+      "pos": [
+        10582,
+        10665
+      ]
+    },
+    {
+      "content": "Open AD FS Management.",
+      "pos": [
+        10670,
+        10692
+      ]
+    },
+    {
+      "content": "Right-click <bpt id=\"p1\">**</bpt>AD FS\\Trusted Relationships\\Relying Party Trusts<ept id=\"p1\">**</ept> and select <bpt id=\"p2\">**</bpt>Add Relying Party Trust<ept id=\"p2\">**</ept>.",
+      "pos": [
+        10693,
+        10797
+      ]
+    },
+    {
+      "pos": [
+        10877,
+        10968
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Select Data Source<ept id=\"p1\">**</ept> page, select <bpt id=\"p2\">**</bpt>Enter data about the relying party manually<ept id=\"p2\">**</ept>."
+    },
+    {
+      "pos": [
+        11055,
+        11152
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Specify Display Name<ept id=\"p1\">**</ept> page, type a display name for the application and click <bpt id=\"p2\">**</bpt>Next<ept id=\"p2\">**</ept>."
+    },
+    {
+      "pos": [
+        11157,
+        11205
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Choose Protocol<ept id=\"p1\">**</ept> page, click <bpt id=\"p2\">**</bpt>Next<ept id=\"p2\">**</ept>."
+    },
+    {
+      "pos": [
+        11210,
+        11264
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Configure Certificate<ept id=\"p1\">**</ept> page, click <bpt id=\"p2\">**</bpt>Next<ept id=\"p2\">**</ept>."
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> Since you should be using HTTPS already, encrypted tokens are optional.",
+      "pos": [
+        11272,
+        11356
+      ]
+    },
+    {
+      "content": "If you really want to encrypt tokens from AD FS on this page, you must also add token-decrypting logic in your code.",
+      "pos": [
+        11357,
+        11473
+      ]
+    },
+    {
+      "content": "For more information, see <bpt id=\"p1\">[</bpt>Manually configuring OWIN WS-Federation middleware and accepting encrypted tokens<ept id=\"p1\">](http://chris.59north.com/post/2014/08/21/Manually-configuring-OWIN-WS-Federation-middleware-and-accepting-encrypted-tokens.aspx)</ept>.",
+      "pos": [
+        11474,
+        11713
+      ]
+    },
+    {
+      "content": "Before you move onto the next step, you need one piece of information from your Visual Studio project.",
+      "pos": [
+        11721,
+        11823
+      ]
+    },
+    {
+      "content": "In the project properties, note the <bpt id=\"p1\">**</bpt>SSL URL<ept id=\"p1\">**</ept> of the application.",
+      "pos": [
+        11824,
+        11891
+      ]
+    },
+    {
+      "content": "Back in AD FS Management, in the <bpt id=\"p1\">**</bpt>Configure URL<ept id=\"p1\">**</ept> page of the <bpt id=\"p2\">**</bpt>Add Relying Party Trust Wizard<ept id=\"p2\">**</ept>, select <bpt id=\"p3\">**</bpt>Enable support for the WS-Federation Passive protocol<ept id=\"p3\">**</ept> and type in the SSL URL of your Visual Studio project that you noted in the previous step.",
+      "pos": [
+        11968,
+        12222
+      ]
+    },
+    {
+      "content": "Then, click <bpt id=\"p1\">**</bpt>Next<ept id=\"p1\">**</ept>.",
+      "pos": [
+        12223,
+        12244
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> URL specifies where to send the client after authentication succeeds.",
+      "pos": [
+        12328,
+        12410
+      ]
+    },
+    {
+      "content": "For the debug environment, it should be <ph id=\"ph1\">&lt;code&gt;</ph><ph id=\"ph2\">https://localhost:&amp;lt;port&amp;gt;/</ph><ph id=\"ph3\">&lt;/code&gt;</ph>.",
+      "pos": [
+        12411,
+        12496
+      ]
+    },
+    {
+      "content": "For the published web app, it should be the web app URL.",
+      "pos": [
+        12497,
+        12553
+      ]
+    },
+    {
+      "content": "In the <bpt id=\"p1\">**</bpt>Configure Identifiers<ept id=\"p1\">**</ept> page, verify that your project SSL URL is already listed and click <bpt id=\"p2\">**</bpt>Next<ept id=\"p2\">**</ept>.",
+      "pos": [
+        12559,
+        12668
+      ]
+    },
+    {
+      "content": "Click <bpt id=\"p1\">**</bpt>Next<ept id=\"p1\">**</ept> all the way to the end of the wizard with default selections.",
+      "pos": [
+        12669,
+        12745
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> In App_Start\\Startup.Auth.cs of your Visual Studio project, this identifier is matched against the value of <ph id=\"ph2\">&lt;code&gt;</ph><ph id=\"ph3\">WsFederationAuthenticationOptions.Wtrealm</ph><ph id=\"ph4\">&lt;/code&gt;</ph> during federated authentication.",
+      "pos": [
+        12753,
+        12961
+      ]
+    },
+    {
+      "content": "By default, the application's URL from the previous step is added as an RP identifier.",
+      "pos": [
+        12962,
+        13048
+      ]
+    },
+    {
+      "content": "You have now finished configuring the RP application for your project in AD FS.",
+      "pos": [
+        13054,
+        13133
+      ]
+    },
+    {
+      "content": "Next, you will configure this application to send the claims needed by your application.",
+      "pos": [
+        13134,
+        13222
+      ]
+    },
+    {
+      "content": "The <bpt id=\"p1\">**</bpt>Edit Claim Rules<ept id=\"p1\">**</ept> dialog is opened by default for you at the end of the wizard so you can start immediately.",
+      "pos": [
+        13223,
+        13338
+      ]
+    },
+    {
+      "content": "Let's configure at least the following claims (with schemas in parentheses):",
+      "pos": [
+        13339,
+        13415
+      ]
+    },
+    {
+      "pos": [
+        13425,
+        13541
+      ],
+      "content": "Name (http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name) - used by ASP.NET to hydrate <ph id=\"ph1\">`User.Identity.Name`</ph>."
+    },
+    {
+      "content": "User principal name (http://schemas.xmlsoap.org/ws/2005/05/identity/claims/upn) - used to uniquely identify users in the organization.",
+      "pos": [
+        13550,
+        13684
+      ]
+    },
+    {
+      "content": "Group memberships as roles (http://schemas.microsoft.com/ws/2008/06/identity/claims/role) - can be used with <ph id=\"ph1\">`[Authorize(Roles=\"role1, role2,...\")]`</ph> decoration to authorize controllers/actions.",
+      "pos": [
+        13693,
+        13886
+      ]
+    },
+    {
+      "content": "In reality, this may not be the most performant approach for role authorization, especially if your AD users regularly belong to hundreds of security groups, which translates to hundreds of role claims in the SAML token.",
+      "pos": [
+        13887,
+        14107
+      ]
+    },
+    {
+      "content": "An alternative approach is to send a single role claim conditionally depending on the user's membership in a particular group.",
+      "pos": [
+        14108,
+        14234
+      ]
+    },
+    {
+      "content": "However, we'll keep it simple for this tutorial.",
+      "pos": [
+        14235,
+        14283
+      ]
+    },
+    {
+      "content": "Name ID (http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier) - can be used for anti-forgery validation.",
+      "pos": [
+        14292,
+        14413
+      ]
+    },
+    {
+      "content": "For more information on how to make it work with anti-forgery validation, see the <bpt id=\"p1\">**</bpt>Add line-of-business functionality to the sample application<ept id=\"p1\">**</ept> section of <bpt id=\"p2\">[</bpt>Create a .NET MVC web app in Azure App Service with Azure Active Directory authentication<ept id=\"p2\">](web-sites-dotnet-lob-application-azure-ad.md#bkmk_crud)</ept>.",
+      "pos": [
+        14414,
+        14720
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> The claim types you need to configure for your application is determined by your application's needs.",
+      "pos": [
+        14728,
+        14842
+      ]
+    },
+    {
+      "content": "For the list of claims supported by Azure Active Directory applications (i.e. RP trusts), for example, see <bpt id=\"p1\">[</bpt>Supported Token and Claim Types<ept id=\"p1\">](http://msdn.microsoft.com/library/azure/dn195587.aspx)</ept>.",
+      "pos": [
+        14843,
+        15039
+      ]
+    },
+    {
+      "pos": [
+        15045,
+        15096
+      ],
+      "content": "In the Edit Claim Rules dialog, click <bpt id=\"p1\">**</bpt>Add Rule<ept id=\"p1\">**</ept>."
+    },
+    {
+      "pos": [
+        15101,
+        15178
+      ],
+      "content": "Configure the name, UPN, and role claims as shown below and click <bpt id=\"p1\">**</bpt>Finish<ept id=\"p1\">**</ept>."
+    },
+    {
+      "pos": [
+        15258,
+        15466
+      ],
+      "content": "Next, you will create a transient name ID claim using the steps demonstrated in <bpt id=\"p1\">[</bpt>Name Identifiers in SAML assertions<ept id=\"p1\">](http://blogs.msdn.com/b/card/archive/2010/02/17/name-identifiers-in-saml-assertions.aspx)</ept>."
+    },
+    {
+      "pos": [
+        15472,
+        15497
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>Add Rule<ept id=\"p1\">**</ept> again."
+    },
+    {
+      "pos": [
+        15502,
+        15564
+      ],
+      "content": "Select <bpt id=\"p1\">**</bpt>Send Claims Using a Custom Rule<ept id=\"p1\">**</ept> and click <bpt id=\"p2\">**</bpt>Next<ept id=\"p2\">**</ept>."
+    },
+    {
+      "pos": [
+        15569,
+        16271
+      ],
+      "content": "Paste the following rule language into the **Custom rule** box, name the rule **Per Session Identifier** and click **Finish**.  \n<pre class=\"prettyprint\">\nc1:[Type == \"http://schemas.microsoft.com/ws/2008/06/identity/claims/windowsaccountname\"] &amp;&amp;\nc2:[Type == \"http://schemas.microsoft.com/ws/2008/06/identity/claims/authenticationinstant\"]\n    => add(\n        store = \"_OpaqueIdStore\",\n        types = (\"<mark>http://contoso.com/internal/sessionid</mark>\"),\n        query = \"{0};{1};{2};{3};{4}\",\n        param = \"useEntropy\",\n        param = c1.Value,\n        param = c1.OriginalIssuer,\n        param = \"\",\n        param = c2.Value);\n</pre>",
+      "leadings": [
+        "",
+        "    ",
+        "    ",
+        "    ",
+        "    ",
+        "    ",
+        "    ",
+        "    ",
+        "    ",
+        "    ",
+        "    ",
+        "    ",
+        "    ",
+        "    "
+      ],
+      "nodes": [
+        {
+          "content": "Paste the following rule language into the <bpt id=\"p1\">**</bpt>Custom rule<ept id=\"p1\">**</ept> box, name the rule <bpt id=\"p2\">**</bpt>Per Session Identifier<ept id=\"p2\">**</ept> and click <bpt id=\"p3\">**</bpt>Finish<ept id=\"p3\">**</ept>.",
+          "pos": [
+            0,
+            126
+          ]
+        },
+        {
+          "content": "c1:[Type == \"http://schemas.microsoft.com/ws/2008/06/identity/claims/windowsaccountname\"] &amp;amp;&amp;amp;",
+          "pos": [
+            155,
+            255
+          ]
+        },
+        {
+          "content": "c2:[Type == \"http://schemas.microsoft.com/ws/2008/06/identity/claims/authenticationinstant\"]",
+          "pos": [
+            256,
+            348
+          ]
+        },
+        {
+          "content": "=&gt; add(",
+          "pos": [
+            353,
+            360
+          ]
+        },
+        {
+          "content": "store = \"_OpaqueIdStore\",",
+          "pos": [
+            369,
+            394
+          ]
+        },
+        {
+          "content": "types = (\"",
+          "pos": [
+            403,
+            413
+          ]
+        },
+        {
+          "content": "http://contoso.com/internal/sessionid",
+          "pos": [
+            419,
+            456
+          ]
+        },
+        {
+          "content": "\"),",
+          "pos": [
+            463,
+            466
+          ]
+        },
+        {
+          "content": "query = \"{0};{1};{2};{3};{4}\",",
+          "pos": [
+            475,
+            505
+          ]
+        },
+        {
+          "content": "param = \"useEntropy\",",
+          "pos": [
+            514,
+            535
+          ]
+        },
+        {
+          "content": "param = c1.Value,",
+          "pos": [
+            544,
+            561
+          ]
+        },
+        {
+          "content": "param = c1.OriginalIssuer,",
+          "pos": [
+            570,
+            596
+          ]
+        },
+        {
+          "content": "param = \"\",",
+          "pos": [
+            605,
+            616
+          ]
+        },
+        {
+          "content": "param = c2.Value);",
+          "pos": [
+            625,
+            643
+          ]
+        }
+      ]
+    },
+    {
+      "content": "Your custom rule should look like this:",
+      "pos": [
+        16277,
+        16316
+      ]
+    },
+    {
+      "pos": [
+        16407,
+        16432
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>Add Rule<ept id=\"p1\">**</ept> again."
+    },
+    {
+      "pos": [
+        16437,
+        16495
+      ],
+      "content": "Select <bpt id=\"p1\">**</bpt>Transform an Incoming Claim<ept id=\"p1\">**</ept> and click <bpt id=\"p2\">**</bpt>Next<ept id=\"p2\">**</ept>."
+    },
+    {
+      "pos": [
+        16500,
+        16609
+      ],
+      "content": "Configure the rule as shown below (using the claim type you created in the custom rule) and click <bpt id=\"p1\">**</bpt>Finish<ept id=\"p1\">**</ept>."
+    },
+    {
+      "pos": [
+        16695,
+        16904
+      ],
+      "content": "For detailed information on the steps for the transient Name ID claim above, see <bpt id=\"p1\">[</bpt>Name Identifiers in SAML assertions<ept id=\"p1\">](http://blogs.msdn.com/b/card/archive/2010/02/17/name-identifiers-in-saml-assertions.aspx)</ept>."
+    },
+    {
+      "content": "Click <bpt id=\"p1\">**</bpt>Apply<ept id=\"p1\">**</ept> in the <bpt id=\"p2\">**</bpt>Edit Claim Rules<ept id=\"p2\">**</ept> dialog.",
+      "pos": [
+        16910,
+        16961
+      ]
+    },
+    {
+      "content": "It should now look like the screenshot below:",
+      "pos": [
+        16962,
+        17007
+      ]
+    },
+    {
+      "pos": [
+        17093,
+        17205
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> Again, make sure that you repeat these steps for both your debug environment and published web app."
+    },
+    {
+      "content": "Test federated authentication for your application",
+      "pos": [
+        17235,
+        17285
+      ]
+    },
+    {
+      "content": "You are ready to test your application's authentication logic against AD FS.",
+      "pos": [
+        17287,
+        17363
+      ]
+    },
+    {
+      "content": "In my AD FS lab environment, I have a test user that belongs to a test group in Active Directory (AD).",
+      "pos": [
+        17364,
+        17466
+      ]
+    },
+    {
+      "content": "To test authentication in the debugger, all you need to do now is type <ph id=\"ph1\">`F5`</ph>.",
+      "pos": [
+        17547,
+        17623
+      ]
+    },
+    {
+      "content": "If you want to test authentication in the published web app, navigate to the URL.",
+      "pos": [
+        17624,
+        17705
+      ]
+    },
+    {
+      "content": "After the web application loads, click <bpt id=\"p1\">**</bpt>Sign In<ept id=\"p1\">**</ept>.",
+      "pos": [
+        17707,
+        17758
+      ]
+    },
+    {
+      "content": "You should now get either a login dialog or the login page served by AD FS, depending on the authentication method chosen by AD FS.",
+      "pos": [
+        17759,
+        17890
+      ]
+    },
+    {
+      "content": "Here's what I get in Internet Explorer 11.",
+      "pos": [
+        17891,
+        17933
+      ]
+    },
+    {
+      "content": "Once you log in with a user in the AD domain of the AD FS deployment, you should now see the homepage again with <bpt id=\"p1\">**</bpt>Hello, <ph id=\"ph1\">&lt;User Name&gt;</ph>!<ept id=\"p1\">**</ept> in the corner.",
+      "pos": [
+        18008,
+        18159
+      ]
+    },
+    {
+      "content": "Here's what I get.",
+      "pos": [
+        18160,
+        18178
+      ]
+    },
+    {
+      "content": "So far, you've succeeded in the following ways:",
+      "pos": [
+        18262,
+        18309
+      ]
+    },
+    {
+      "content": "Your application has successfully reached AD FS and a matching RP identifier is found in the AD FS database",
+      "pos": [
+        18313,
+        18420
+      ]
+    },
+    {
+      "content": "AD FS has successfully authenticated an AD user and redirect you back to the application's homepage",
+      "pos": [
+        18423,
+        18522
+      ]
+    },
+    {
+      "content": "AD FS as successfully sent the name claim (http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name) to your application, as indicated by the fact that the user name is displayed in the corner.",
+      "pos": [
+        18525,
+        18720
+      ]
+    },
+    {
+      "content": "If the name claim is missing, you would have seen <bpt id=\"p1\">**</bpt>Hello, !<ept id=\"p1\">**</ept>.",
+      "pos": [
+        18723,
+        18786
+      ]
+    },
+    {
+      "content": "If you take a look at Views\\Shared\\_LoginPartial.cshtml, you will find that it uses <ph id=\"ph1\">`User.Identity.Name`</ph> to display the user name.",
+      "pos": [
+        18787,
+        18917
+      ]
+    },
+    {
+      "content": "As mentioned previously, ASP.NET hydrates this property with the name claim of the authenticated user, if it is available in the SAML token.",
+      "pos": [
+        18918,
+        19058
+      ]
+    },
+    {
+      "content": "To see all the claims that are sent by AD FS, put a breakpoint in Controllers\\HomeController.cs, in the Index action method.",
+      "pos": [
+        19059,
+        19183
+      ]
+    },
+    {
+      "content": "After the user is authenticated, inspect the <ph id=\"ph1\">`System.Security.Claims.Current.Claims`</ph> collection.",
+      "pos": [
+        19184,
+        19280
+      ]
+    },
+    {
+      "content": "Authorize users for specific controllers or actions",
+      "pos": [
+        19401,
+        19452
+      ]
+    },
+    {
+      "content": "Since you have included group memberships as role claims in your RP trust configuration, you can now use these directly in the <ph id=\"ph1\">`[Authorize(Roles=\"...\")]`</ph> decoration for controllers and actions.",
+      "pos": [
+        19454,
+        19647
+      ]
+    },
+    {
+      "content": "In a line-of-business application with the Create-Read-Update-Delete (CRUD) pattern, you can authorize specific roles to access each action.",
+      "pos": [
+        19648,
+        19788
+      ]
+    },
+    {
+      "content": "For now, you will just try out this feature on the existing Home controller.",
+      "pos": [
+        19789,
+        19865
+      ]
+    },
+    {
+      "content": "Open Controllers\\HomeController.cs.",
+      "pos": [
+        19870,
+        19905
+      ]
+    },
+    {
+      "pos": [
+        19909,
+        20226
+      ],
+      "content": "Decorate the `About` and `Contact` action methods similar to below, using security group memberships that your authenticated user has.  \n <pre class=\"prettyprint\">\n <mark>[Authorize(Roles=\"Test Group\")]</mark>\n public ActionResult About()\n {\n     ViewBag.Message = \"Your application description page.\";",
+      "leadings": [
+        "",
+        "   ",
+        "   ",
+        "   ",
+        "   ",
+        "   "
+      ],
+      "nodes": [
+        {
+          "content": "Decorate the <ph id=\"ph1\">`About`</ph> and <ph id=\"ph2\">`Contact`</ph> action methods similar to below, using security group memberships that your authenticated user has.",
+          "pos": [
+            0,
+            134
+          ]
+        },
+        {
+          "content": "[Authorize(Roles=\"Test Group\")]",
+          "pos": [
+            171,
+            202
+          ]
+        },
+        {
+          "content": "public ActionResult About()",
+          "pos": [
+            211,
+            238
+          ]
+        },
+        {
+          "content": "{",
+          "pos": [
+            240,
+            241
+          ]
+        },
+        {
+          "content": "ViewBag.Message = \"Your application description page.\";",
+          "pos": [
+            247,
+            302
+          ]
+        }
+      ]
+    },
+    {
+      "content": "}",
+      "pos": [
+        20255,
+        20256
+      ]
+    },
+    {
+      "pos": [
+        20262,
+        20397
+      ],
+      "content": "<mark>[Authorize(Roles=\"Domain Admins\")]</mark>\n public ActionResult Contact()\n {\n     ViewBag.Message = \"Your contact page.\";",
+      "leadings": [
+        "",
+        "   ",
+        "   ",
+        "   "
+      ],
+      "nodes": [
+        {
+          "content": "[Authorize(Roles=\"Domain Admins\")]",
+          "pos": [
+            6,
+            40
+          ]
+        },
+        {
+          "content": "public ActionResult Contact()",
+          "pos": [
+            49,
+            78
+          ]
+        },
+        {
+          "content": "{",
+          "pos": [
+            80,
+            81
+          ]
+        },
+        {
+          "content": "ViewBag.Message = \"Your contact page.\";",
+          "pos": [
+            87,
+            126
+          ]
+        }
+      ]
+    },
+    {
+      "pos": [
+        20426,
+        20438
+      ],
+      "content": "}\n </pre>",
+      "leadings": [
+        "",
+        "   "
+      ],
+      "nodes": [
+        {
+          "content": "}",
+          "pos": [
+            0,
+            1
+          ]
+        }
+      ]
+    },
+    {
+      "content": "Since I added <bpt id=\"p1\">**</bpt>Test User<ept id=\"p1\">**</ept> to <bpt id=\"p2\">**</bpt>Test Group<ept id=\"p2\">**</ept> in my AD FS lab environment, I'll use Test Group to test authorization on <ph id=\"ph1\">`About`</ph>.",
+      "pos": [
+        20444,
+        20572
+      ]
+    },
+    {
+      "content": "For <ph id=\"ph1\">`Contact`</ph>, I'll test the negative case of <bpt id=\"p1\">**</bpt>Domain Admins<ept id=\"p1\">**</ept>, to which <bpt id=\"p2\">**</bpt>Test User<ept id=\"p2\">**</ept> doesn't belong.",
+      "pos": [
+        20573,
+        20676
+      ]
+    },
+    {
+      "content": "Start the debugger by typing <ph id=\"ph1\">`F5`</ph> and sign in, then click <bpt id=\"p1\">**</bpt>About<ept id=\"p1\">**</ept>.",
+      "pos": [
+        20681,
+        20749
+      ]
+    },
+    {
+      "content": "You should now be viewing the <ph id=\"ph1\">`~/About/Index`</ph> page successfully, if your authenticated user is authorized for that action.",
+      "pos": [
+        20750,
+        20872
+      ]
+    },
+    {
+      "content": "Now click <bpt id=\"p1\">**</bpt>Contact<ept id=\"p1\">**</ept>, which in my case should not authorize <bpt id=\"p2\">**</bpt>Test User<ept id=\"p2\">**</ept> for the action.",
+      "pos": [
+        20876,
+        20966
+      ]
+    },
+    {
+      "content": "However, the browser is redirected to AD FS, which eventually shows this message:",
+      "pos": [
+        20967,
+        21048
+      ]
+    },
+    {
+      "pos": [
+        21138,
+        22057
+      ],
+      "content": "If you investigate this error in Event Viewer on the AD FS server, you will see this exception message:  \n <pre class=\"prettyprint\">\n Microsoft.IdentityServer.Web.InvalidRequestException: MSIS7042: <mark>The same client browser session has made '6' requests in the last '11' seconds.</mark> Contact your administrator for details.\n    at Microsoft.IdentityServer.Web.Protocols.PassiveProtocolHandler.UpdateLoopDetectionCookie(WrappedHttpListenerContext context)\n    at Microsoft.IdentityServer.Web.Protocols.WSFederation.WSFederationProtocolHandler.SendSignInResponse(WSFederationContext context, MSISSignInResponse response)\n    at Microsoft.IdentityServer.Web.PassiveProtocolListener.ProcessProtocolRequest(ProtocolContext protocolContext, PassiveProtocolHandler protocolHandler)\n    at Microsoft.IdentityServer.Web.PassiveProtocolListener.OnGetContext(WrappedHttpListenerContext context)\n </pre>",
+      "leadings": [
+        "",
+        "   ",
+        "   ",
+        "   ",
+        "   ",
+        "   ",
+        "   ",
+        "   "
+      ],
+      "nodes": [
+        {
+          "content": "If you investigate this error in Event Viewer on the AD FS server, you will see this exception message:",
+          "pos": [
+            0,
+            103
+          ]
+        },
+        {
+          "content": "Microsoft.IdentityServer.Web.InvalidRequestException: MSIS7042:",
+          "pos": [
+            134,
+            197
+          ]
+        },
+        {
+          "content": "The same client browser session has made '6' requests in the last '11' seconds.",
+          "pos": [
+            204,
+            283
+          ]
+        },
+        {
+          "content": "Contact your administrator for details.",
+          "pos": [
+            291,
+            330
+          ]
+        },
+        {
+          "content": "at Microsoft.IdentityServer.Web.Protocols.PassiveProtocolHandler.UpdateLoopDetectionCookie(WrappedHttpListenerContext context)",
+          "pos": [
+            335,
+            461
+          ]
+        },
+        {
+          "content": "at Microsoft.IdentityServer.Web.Protocols.WSFederation.WSFederationProtocolHandler.SendSignInResponse(WSFederationContext context, MSISSignInResponse response)",
+          "pos": [
+            466,
+            625
+          ]
+        },
+        {
+          "content": "at Microsoft.IdentityServer.Web.PassiveProtocolListener.ProcessProtocolRequest(ProtocolContext protocolContext, PassiveProtocolHandler protocolHandler)",
+          "pos": [
+            630,
+            781
+          ]
+        },
+        {
+          "content": "at Microsoft.IdentityServer.Web.PassiveProtocolListener.OnGetContext(WrappedHttpListenerContext context)",
+          "pos": [
+            786,
+            890
+          ]
+        }
+      ]
+    },
+    {
+      "content": "The reason this happens is that by default, MVC returns a 401 Unauthorized when a user's roles are not authorized.",
+      "pos": [
+        22063,
+        22177
+      ]
+    },
+    {
+      "content": "This triggers a reauthentication request to your identity provider (AD FS).",
+      "pos": [
+        22178,
+        22253
+      ]
+    },
+    {
+      "content": "Since the user is already authenticated, AD FS returns to the same page, which then issues another 401, creating a redirect loop.",
+      "pos": [
+        22254,
+        22383
+      ]
+    },
+    {
+      "content": "You will override AuthorizeAttribute's <ph id=\"ph1\">`HandleUnauthorizedRequest`</ph> method with simple logic to show something that makes sense instead of continuing the redirect loop.",
+      "pos": [
+        22384,
+        22551
+      ]
+    },
+    {
+      "content": "Create a file in the project called AuthorizeAttribute.cs, and paste the code below into it.",
+      "pos": [
+        22556,
+        22648
+      ]
+    },
+    {
+      "content": "The override code sends an HTTP 403 (Forbidden) instead of HTTP 401 (Unauthorized) in  authenticated-but-unauthorized cases.",
+      "pos": [
+        23569,
+        23693
+      ]
+    },
+    {
+      "content": "Run the debugger again with <ph id=\"ph1\">`F5`</ph>.",
+      "pos": [
+        23698,
+        23731
+      ]
+    },
+    {
+      "content": "Clicking <bpt id=\"p1\">**</bpt>Contact<ept id=\"p1\">**</ept> now shows a more informative (albeit unattractive) error message:",
+      "pos": [
+        23732,
+        23818
+      ]
+    },
+    {
+      "content": "Publish the application to Azure App Service Web Apps again, and test the behavior of the live application.",
+      "pos": [
+        23909,
+        24016
+      ]
+    },
+    {
+      "content": "Connect to on-premises data",
+      "pos": [
+        24046,
+        24073
+      ]
+    },
+    {
+      "content": "A reason that you would want to implement your line-of-business application with AD FS instead of Azure Active Directory is compliance issues with keeping organization data off-premise.",
+      "pos": [
+        24075,
+        24260
+      ]
+    },
+    {
+      "content": "This may also mean that your web app in Azure must access on-premise databases, since you are not allowed to use <bpt id=\"p1\">[</bpt>SQL Database<ept id=\"p1\">](/services/sql-database/)</ept> as the data tier for your web apps.",
+      "pos": [
+        24261,
+        24449
+      ]
+    },
+    {
+      "content": "Azure App Service Web Apps supports accessing on-premise databases with two approaches: <bpt id=\"p1\">[</bpt>Hybrid Connections<ept id=\"p1\">](../integration-hybrid-connection-overview.md)</ept> and <bpt id=\"p2\">[</bpt>Virtual Networks<ept id=\"p2\">](web-sites-integrate-with-vnet.md)</ept>.",
+      "pos": [
+        24451,
+        24663
+      ]
+    },
+    {
+      "content": "For more information, see <bpt id=\"p1\">[</bpt>Using VNET integration and Hybrid connections with Azure App Service Web Apps<ept id=\"p1\">](http://azure.microsoft.com/blog/2014/10/30/using-vnet-or-hybrid-conn-with-websites/)</ept>.",
+      "pos": [
+        24664,
+        24855
+      ]
+    },
+    {
+      "content": "Further resources",
+      "pos": [
+        24890,
+        24907
+      ]
+    },
+    {
+      "content": "Protect the Application with SSL and the Authorize Attribute",
+      "pos": [
+        24912,
+        24972
+      ]
+    },
+    {
+      "content": "Use Active Directory for authentication in Azure App Service",
+      "pos": [
+        25111,
+        25171
+      ]
+    },
+    {
+      "content": "Create a .NET MVC web app in Azure App Service with Azure Active Directory authentication",
+      "pos": [
+        25219,
+        25308
+      ]
+    },
+    {
+      "content": "Use the On-Premises Organizational Authentication Option (ADFS) With ASP.NET in Visual Studio 2013",
+      "pos": [
+        25359,
+        25457
+      ]
+    },
+    {
+      "content": "Vittorio Bertocci's blog",
+      "pos": [
+        25606,
+        25630
+      ]
+    },
+    {
+      "content": "Migrate a VS2013 Web Project From WIF to Katana",
+      "pos": [
+        25671,
+        25718
+      ]
+    },
+    {
+      "content": "Active Directory Federation Services Overview",
+      "pos": [
+        25818,
+        25863
+      ]
+    },
+    {
+      "content": "WS-Federation 1.1 specification",
+      "pos": [
+        25920,
+        25951
+      ]
+    },
+    {
+      "content": "test",
+      "pos": [
+        26172,
+        26176
+      ]
+    }
+  ],
+  "content": "<properties \n    pageTitle=\"Create a .NET MVC web app in Azure App Service with AD FS authentication\" \n    description=\"Learn how to create an ASP.NET MVC line-of-business application in Azure App Service Web Apps that authenticates with on-premise STS. This tutorial targets AD FS as the on-premise STS.\" \n    services=\"app-service\\web\" \n    documentationCenter=\".net\" \n    authors=\"cephalin\" \n    manager=\"wpickett\" \n    editor=\"\"/>\n\n<tags \n    ms.service=\"app-service-web\" \n    ms.devlang=\"dotnet\" \n    ms.topic=\"article\" \n    ms.tgt_pltfrm=\"na\" \n    ms.workload=\"web\" \n    ms.date=\"07/07/2015\" \n    ms.author=\"cephalin\"/>\n\n# Create a .NET MVC web app in Azure App Service with AD FS authentication\n\nIn this article, you will learn how to create an ASP.NET MVC line-of-business application in [Azure App Service Web Apps](http://go.microsoft.com/fwlink/?LinkId=529714) using an on-premises [Active Directory Federation Services](http://technet.microsoft.com/library/hh831502.aspx) as the identity provider. This scenario can work when you want to create line-of-business applications in Azure App Service Web Apps but your organization requires all data to be stored on-site.\n\n>[AZURE.NOTE] For an overview of the different enterprise authentication and authorization options for Azure App Service Web Apps, see [Use Active Directory for authentication in Azure App Service](web-sites-authentication-authorization.md).\n\n<a name=\"bkmk_build\"></a>\n## What you will build ##\n\nYou will build a basic ASP.NET application in Azure App Service Web Apps with the following features:\n\n- Authenticates users against AD FS\n- Uses `[Authorize]` to authorize users for different actions\n- Static configuration for both debugging in Visual Studio and publishing to App Service Web Apps (configure once, debug and publish anytime)  \n\n<a name=\"bkmk_need\"></a>\n## What you will need ##\n\n[AZURE.INCLUDE [free-trial-note](../../includes/free-trial-note.md)]\n\n>[AZURE.NOTE] If you want to get started with Azure App Service before signing up for an Azure account, go to [Try App Service](http://go.microsoft.com/fwlink/?LinkId=523751), where you can immediately create a short-lived starter web app in App Service. No credit cards required; no commitments.\n\nYou need the following to complete this tutorial:\n\n- An on-premises AD FS deployment (for an end-to-end walkthrough of the test lab that I use, see [Test Lab: Standalone STS with AD FS in Azure VM (for test only)](TODO))\n- Permissions to create relying party trusts in AD FS Management\n- Visual Studio 2013\n- [Azure SDK 2.5.1](http://go.microsoft.com/fwlink/p/?linkid=323510&clcid=0x409) or later\n\n<a name=\"bkmk_sample\"></a>\n## Use sample application for line-of-business template ##\n\nThe sample application in this tutorial, [WebApp-WSFederation-DotNet)](https://github.com/AzureADSamples/WebApp-WSFederation-DotNet), is created by the Azure Active Directory team. Since AD FS supports WS-Federation, you can is it as a template to create new line-of-business applications with ease. It has the following features:\n\n- Uses [WS-Federation](http://msdn.microsoft.com/library/bb498017.aspx) to authenticate with an on-premises AD FS deployment\n- Sign-in and sign-out functionality\n- Uses [Microsoft.Owin](http://www.asp.net/aspnet/overview/owin-and-katana/an-overview-of-project-katana) (instead of Windows Identity Foundation, i.e. WIF), which is the future of ASP.NET and much simpler to set up for authentication and authorization than WIF\n\n<a name=\"bkmk_setup\"></a>\n## Set up the sample application ##\n\n2.  Clone or download the sample solution at [WebApp-WSFederation-DotNet](https://github.com/AzureADSamples/WebApp-WSFederation-DotNet) to your local directory.\n\n    > [AZURE.NOTE] The instructions at [README.md](https://github.com/AzureADSamples/WebApp-WSFederation-DotNet/blob/master/README.md) shows you how to set up the application with Azure Active Directory, but in this tutorial you will set it up with AD FS, so follow the steps here instead.\n\n3.  Open the solution, and then open Controllers\\AccountController.cs in the **Solution Explorer**.\n\n    You will see that the code simply issues an authentication challenge to authenticate the user using WS-Federation. All authentication is configured in App_Start\\Startup.Auth.cs.\n\n4.  Open App_Start\\Startup.Auth.cs. In the `ConfigureAuth` method, note the line:\n\n        app.UseWsFederationAuthentication(\n            new WsFederationAuthenticationOptions\n            {\n                Wtrealm = realm,\n                MetadataAddress = metadata                                      \n            });\n\n    In the OWIN world, this is really the bare minimum you need to configure WS-Federation authentication. This is must simpler and more elegant than WIF, where Web.config is injected with XML all over the place. The only information you need is the relying party's (RP) identifier and the URL of your AD FS service's metadata file. Here's an example:\n\n    -   RP identifier: `https://contoso.com/MyLOBApp`\n    -   Metadata address: `http://adfs.contoso.com/FederationMetadata/2007-06/FederationMetadata.xml`\n\n5.  In App_Start\\Startup.Auth.cs, change the static string definitions as highlighted below:  \n    <pre class=\"prettyprint\">\n    private static string realm = ConfigurationManager.AppSettings[\"ida:<mark>RPIdentifier</mark>\"];\n    <mark><del>private static string aadInstance = ConfigurationManager.AppSettings[\"ida:AADInstance\"];</del></mark>\n    <mark><del>private static string tenant = ConfigurationManager.AppSettings[\"ida:Tenant\"];</del></mark>\n    <mark><del>private static string metadata = string.Format(\"{0}/{1}/federationmetadata/2007-06/federationmetadata.xml\", aadInstance, tenant);</del></mark>\n    <mark>private static string metadata = string.Format(\"https://{0}/federationmetadata/2007-06/federationmetadata.xml\", ConfigurationManager.AppSettings[\"ida:ADFS\"]);</mark>\n\n    <mark><del>string authority = String.Format(CultureInfo.InvariantCulture, aadInstance, tenant);</del></mark>\n    </pre>\n\n6.  You will now make the corresponding changes in Web.config. Open the Web.config and modify the app settings as highlighted below:  \n    <pre class=\"prettyprint\">\n    &lt;appSettings&gt;\n      &lt;add key=\"webpages:Version\" value=\"3.0.0.0\" /&gt;\n      &lt;add key=\"webpages:Enabled\" value=\"false\" /&gt;\n      &lt;add key=\"ClientValidationEnabled\" value=\"true\" /&gt;\n      &lt;add key=\"UnobtrusiveJavaScriptEnabled\" value=\"true\" /&gt;\n      <mark><del>&lt;add key=\"ida:Wtrealm\" value=\"[Enter the App ID URI of WebApp-WSFederation-DotNet https://contoso.onmicrosoft.com/WebApp-WSFederation-DotNet]\" /&gt;</del></mark>\n      <mark><del>&lt;add key=\"ida:AADInstance\" value=\"https://login.windows.net\" /&gt;</del></mark>\n      <mark><del>&lt;add key=\"ida:Tenant\" value=\"[Enter tenant name, e.g. contoso.onmicrosoft.com]\" /&gt;</del></mark>\n      <mark>&lt;add key=\"ida:RPIdentifier\" value=\"[Enter the relying party identifier as configured in AD FS, e.g. https://localhost:44320/]\" /&gt;</mark>\n      <mark>&lt;add key=\"ida:ADFS\" value=\"[Enter the FQDN of AD FS service, e.g. adfs.contoso.com]\" /&gt;</mark>\n\n    &lt;/appSettings&gt;\n    </pre>\n\n    Fill in the key values based on your respective environment.\n\n7.  Build the application to make sure there are no errors.\n\nThat's it. Now the sample application is ready to work with AD FS. You will still need to configure an RP trust with this application in AD FS later.\n\n<a name=\"bkmk_deploy\"></a>\n## Deploy the sample application to Azure App Service Web Apps\n\nHere, you will publish the application to a web app in App Service Web Apps while preserving the debug environment. Note that you're going to publish the application before it has an RP trust with AD FS, so authentication still doesn't work yet. However, if you do it now you can have the web app URL that you will also use to configure the RP trust later.\n\n1. Right-click your project and select **Publish**.\n\n    ![](./media/web-sites-dotnet-lob-application-adfs/01-publish-website.png)\n\n2. Select **Microsoft Azure Web Apps**.\n3. If you haven't signed in to Azure, click **Sign In** and use the Microsoft account for your Azure subscription to sign in.\n4. Once signed in, click **New** to create a new web app.\n5. Fill in all required fields. You are going to connect to on-premise data later, so you won't create a database for this web app.\n\n    ![](./media/web-sites-dotnet-lob-application-adfs/02-create-website.png)\n\n6. Click **Create**. Once the web app is created, the Publish Web dialog is opened.\n7. In **Destination URL**, change **http** to **https**. Copy the entire URL to a text editor. You will use it later. Then, click **Publish**.\n\n    ![](./media/web-sites-dotnet-lob-application-adfs/03-destination-url.png)\n\n11. In Visual Studio, open **Web.Release.config** in your project. Insert the following XML into the `<configuration>` tag, and replace the key value with your publish web app's URL.  \n    <pre class=\"prettyprint\">\n&lt;appSettings&gt;\n   &lt;add key=\"ida:RPIdentifier\" value=\"<mark>[e.g. https://mylobapp.azurewebsites.net/]</mark>\" xdt:Transform=\"SetAttributes\" xdt:Locator=\"Match(key)\" /&gt;\n&lt;/appSettings&gt;</pre>\n\nWhen you're done, you have two RP identifiers configured in your project, one for your debug environment in Visual Studio, and one for the published web app in Azure. You will set up an RP trust for each of the two environments in AD FS. During debugging, the app settings in Web.config is used to make your **Debug** configuration work with AD FS, and when it's published (by default, the **Release** configuration is published), a transformed Web.config is uploaded that incorporates the app setting changes in Web.Release.config.\n\nIf you want to attach the published web app in Azure to the debugger (i.e. you must upload debug symbols of your code in the published web app), you can create a clone of the Debug configuration for Azure debugging, but with its own custom Web.config transform (e.g. Web.AzureDebug.config) that uses the app settings from Web.Release.config. This allows you to maintain a static configuration across the different environments.\n\n<a name=\"bkmk_rptrusts\"></a>\n## Configure relying party trusts in AD FS Management ##\n\nNow you need to configure a RP trust in AD FS Mangement before you can your sample application can actually authenticate with AD FS. You will need to set up two separate RP trusts, one for your debug environment and one for your published web app.\n\n> [AZURE.NOTE] Make sure that you repeat the steps below for both of your environments.\n\n4.  On your AD FS server, log in with credentials that have management rights to AD FS.\n5.  Open AD FS Management. Right-click **AD FS\\Trusted Relationships\\Relying Party Trusts** and select **Add Relying Party Trust**.\n\n    ![](./media/web-sites-dotnet-lob-application-adfs/1-add-rptrust.png)\n\n5.  In the **Select Data Source** page, select **Enter data about the relying party manually**. \n\n    ![](./media/web-sites-dotnet-lob-application-adfs/2-enter-rp-manually.png)\n\n6.  In the **Specify Display Name** page, type a display name for the application and click **Next**.\n7.  In the **Choose Protocol** page, click **Next**.\n8.  In the **Configure Certificate** page, click **Next**.\n\n    > [AZURE.NOTE] Since you should be using HTTPS already, encrypted tokens are optional. If you really want to encrypt tokens from AD FS on this page, you must also add token-decrypting logic in your code. For more information, see [Manually configuring OWIN WS-Federation middleware and accepting encrypted tokens](http://chris.59north.com/post/2014/08/21/Manually-configuring-OWIN-WS-Federation-middleware-and-accepting-encrypted-tokens.aspx).\n  \n5.  Before you move onto the next step, you need one piece of information from your Visual Studio project. In the project properties, note the **SSL URL** of the application. \n\n    ![](./media/web-sites-dotnet-lob-application-adfs/3-ssl-url.png)\n\n6.  Back in AD FS Management, in the **Configure URL** page of the **Add Relying Party Trust Wizard**, select **Enable support for the WS-Federation Passive protocol** and type in the SSL URL of your Visual Studio project that you noted in the previous step. Then, click **Next**.\n\n    ![](./media/web-sites-dotnet-lob-application-adfs/4-configure-url.png)\n\n    > [AZURE.NOTE] URL specifies where to send the client after authentication succeeds. For the debug environment, it should be <code>https://localhost:&lt;port&gt;/</code>. For the published web app, it should be the web app URL.\n\n7.  In the **Configure Identifiers** page, verify that your project SSL URL is already listed and click **Next**. Click **Next** all the way to the end of the wizard with default selections.\n\n    > [AZURE.NOTE] In App_Start\\Startup.Auth.cs of your Visual Studio project, this identifier is matched against the value of <code>WsFederationAuthenticationOptions.Wtrealm</code> during federated authentication. By default, the application's URL from the previous step is added as an RP identifier.\n\n8.  You have now finished configuring the RP application for your project in AD FS. Next, you will configure this application to send the claims needed by your application. The **Edit Claim Rules** dialog is opened by default for you at the end of the wizard so you can start immediately. Let's configure at least the following claims (with schemas in parentheses):\n\n    -   Name (http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name) - used by ASP.NET to hydrate `User.Identity.Name`.\n    -   User principal name (http://schemas.xmlsoap.org/ws/2005/05/identity/claims/upn) - used to uniquely identify users in the organization.\n    -   Group memberships as roles (http://schemas.microsoft.com/ws/2008/06/identity/claims/role) - can be used with `[Authorize(Roles=\"role1, role2,...\")]` decoration to authorize controllers/actions. In reality, this may not be the most performant approach for role authorization, especially if your AD users regularly belong to hundreds of security groups, which translates to hundreds of role claims in the SAML token. An alternative approach is to send a single role claim conditionally depending on the user's membership in a particular group. However, we'll keep it simple for this tutorial.\n    -   Name ID (http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier) - can be used for anti-forgery validation. For more information on how to make it work with anti-forgery validation, see the **Add line-of-business functionality to the sample application** section of [Create a .NET MVC web app in Azure App Service with Azure Active Directory authentication](web-sites-dotnet-lob-application-azure-ad.md#bkmk_crud).\n\n    > [AZURE.NOTE] The claim types you need to configure for your application is determined by your application's needs. For the list of claims supported by Azure Active Directory applications (i.e. RP trusts), for example, see [Supported Token and Claim Types](http://msdn.microsoft.com/library/azure/dn195587.aspx).\n\n8.  In the Edit Claim Rules dialog, click **Add Rule**.\n9.  Configure the name, UPN, and role claims as shown below and click **Finish**.\n\n    ![](./media/web-sites-dotnet-lob-application-adfs/5-ldap-claims.png)\n\n    Next, you will create a transient name ID claim using the steps demonstrated in [Name Identifiers in SAML assertions](http://blogs.msdn.com/b/card/archive/2010/02/17/name-identifiers-in-saml-assertions.aspx).\n\n9.  Click **Add Rule** again.\n10. Select **Send Claims Using a Custom Rule** and click **Next**.\n11. Paste the following rule language into the **Custom rule** box, name the rule **Per Session Identifier** and click **Finish**.  \n    <pre class=\"prettyprint\">\n    c1:[Type == \"http://schemas.microsoft.com/ws/2008/06/identity/claims/windowsaccountname\"] &amp;&amp;\n    c2:[Type == \"http://schemas.microsoft.com/ws/2008/06/identity/claims/authenticationinstant\"]\n        => add(\n            store = \"_OpaqueIdStore\",\n            types = (\"<mark>http://contoso.com/internal/sessionid</mark>\"),\n            query = \"{0};{1};{2};{3};{4}\",\n            param = \"useEntropy\",\n            param = c1.Value,\n            param = c1.OriginalIssuer,\n            param = \"\",\n            param = c2.Value);\n    </pre>\n\n    Your custom rule should look like this:\n\n    ![](./media/web-sites-dotnet-lob-application-adfs/6-per-session-identifier.png)\n\n9.  Click **Add Rule** again.\n10. Select **Transform an Incoming Claim** and click **Next**.\n11. Configure the rule as shown below (using the claim type you created in the custom rule) and click **Finish**.\n\n    ![](./media/web-sites-dotnet-lob-application-adfs/7-transient-name-id.png)\n\n    For detailed information on the steps for the transient Name ID claim above, see [Name Identifiers in SAML assertions](http://blogs.msdn.com/b/card/archive/2010/02/17/name-identifiers-in-saml-assertions.aspx).\n\n12. Click **Apply** in the **Edit Claim Rules** dialog. It should now look like the screenshot below:\n\n    ![](./media/web-sites-dotnet-lob-application-adfs/8-all-claim-rules.png)\n\n    > [AZURE.NOTE] Again, make sure that you repeat these steps for both your debug environment and published web app.\n\n<a name=\"bkmk_test\"></a>\n## Test federated authentication for your application\n\nYou are ready to test your application's authentication logic against AD FS. In my AD FS lab environment, I have a test user that belongs to a test group in Active Directory (AD).\n\n![](./media/web-sites-dotnet-lob-application-adfs/10-test-user-and-group.png)\n\nTo test authentication in the debugger, all you need to do now is type `F5`. If you want to test authentication in the published web app, navigate to the URL.\n\nAfter the web application loads, click **Sign In**. You should now get either a login dialog or the login page served by AD FS, depending on the authentication method chosen by AD FS. Here's what I get in Internet Explorer 11.\n\n![](./media/web-sites-dotnet-lob-application-adfs/9-test-debugging.png)\n\nOnce you log in with a user in the AD domain of the AD FS deployment, you should now see the homepage again with **Hello, <User Name>!** in the corner. Here's what I get.\n\n![](./media/web-sites-dotnet-lob-application-adfs/11-test-debugging-success.png)\n\nSo far, you've succeeded in the following ways:\n\n- Your application has successfully reached AD FS and a matching RP identifier is found in the AD FS database\n- AD FS has successfully authenticated an AD user and redirect you back to the application's homepage\n- AD FS as successfully sent the name claim (http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name) to your application, as indicated by the fact that the user name is displayed in the corner. \n\nIf the name claim is missing, you would have seen **Hello, !**. If you take a look at Views\\Shared\\_LoginPartial.cshtml, you will find that it uses `User.Identity.Name` to display the user name. As mentioned previously, ASP.NET hydrates this property with the name claim of the authenticated user, if it is available in the SAML token. To see all the claims that are sent by AD FS, put a breakpoint in Controllers\\HomeController.cs, in the Index action method. After the user is authenticated, inspect the `System.Security.Claims.Current.Claims` collection.\n\n![](./media/web-sites-dotnet-lob-application-adfs/12-test-debugging-all-claims.png) \n\n<a name=\"bkmk_authorize\"></a>\n## Authorize users for specific controllers or actions\n\nSince you have included group memberships as role claims in your RP trust configuration, you can now use these directly in the `[Authorize(Roles=\"...\")]` decoration for controllers and actions. In a line-of-business application with the Create-Read-Update-Delete (CRUD) pattern, you can authorize specific roles to access each action. For now, you will just try out this feature on the existing Home controller.\n\n1. Open Controllers\\HomeController.cs.\n2. Decorate the `About` and `Contact` action methods similar to below, using security group memberships that your authenticated user has.  \n    <pre class=\"prettyprint\">\n    <mark>[Authorize(Roles=\"Test Group\")]</mark>\n    public ActionResult About()\n    {\n        ViewBag.Message = \"Your application description page.\";\n\n        return View();\n    }\n\n    <mark>[Authorize(Roles=\"Domain Admins\")]</mark>\n    public ActionResult Contact()\n    {\n        ViewBag.Message = \"Your contact page.\";\n\n        return View();\n    }\n    </pre>\n\n    Since I added **Test User** to **Test Group** in my AD FS lab environment, I'll use Test Group to test authorization on `About`. For `Contact`, I'll test the negative case of **Domain Admins**, to which **Test User** doesn't belong.\n\n3. Start the debugger by typing `F5` and sign in, then click **About**. You should now be viewing the `~/About/Index` page successfully, if your authenticated user is authorized for that action.\n4. Now click **Contact**, which in my case should not authorize **Test User** for the action. However, the browser is redirected to AD FS, which eventually shows this message:\n\n    ![](./media/web-sites-dotnet-lob-application-adfs/13-authorize-adfs-error.png)\n\n    If you investigate this error in Event Viewer on the AD FS server, you will see this exception message:  \n    <pre class=\"prettyprint\">\n    Microsoft.IdentityServer.Web.InvalidRequestException: MSIS7042: <mark>The same client browser session has made '6' requests in the last '11' seconds.</mark> Contact your administrator for details.\n       at Microsoft.IdentityServer.Web.Protocols.PassiveProtocolHandler.UpdateLoopDetectionCookie(WrappedHttpListenerContext context)\n       at Microsoft.IdentityServer.Web.Protocols.WSFederation.WSFederationProtocolHandler.SendSignInResponse(WSFederationContext context, MSISSignInResponse response)\n       at Microsoft.IdentityServer.Web.PassiveProtocolListener.ProcessProtocolRequest(ProtocolContext protocolContext, PassiveProtocolHandler protocolHandler)\n       at Microsoft.IdentityServer.Web.PassiveProtocolListener.OnGetContext(WrappedHttpListenerContext context)\n    </pre>\n\n    The reason this happens is that by default, MVC returns a 401 Unauthorized when a user's roles are not authorized. This triggers a reauthentication request to your identity provider (AD FS). Since the user is already authenticated, AD FS returns to the same page, which then issues another 401, creating a redirect loop. You will override AuthorizeAttribute's `HandleUnauthorizedRequest` method with simple logic to show something that makes sense instead of continuing the redirect loop.\n\n5. Create a file in the project called AuthorizeAttribute.cs, and paste the code below into it.\n\n        using System;\n        using System.Web.Mvc;\n        using System.Web.Routing;\n        \n        namespace WebApp_WSFederation_DotNet\n        {\n            [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = true, AllowMultiple = true)]\n            public class AuthorizeAttribute : System.Web.Mvc.AuthorizeAttribute\n            {\n                protected override void HandleUnauthorizedRequest(AuthorizationContext filterContext)\n                {\n                    if (filterContext.HttpContext.Request.IsAuthenticated)\n                    {\n                        filterContext.Result = new System.Web.Mvc.HttpStatusCodeResult((int)System.Net.HttpStatusCode.Forbidden);\n                    }\n                    else\n                    {\n                        base.HandleUnauthorizedRequest(filterContext);\n                    }\n                }\n            }\n        }\n\n    The override code sends an HTTP 403 (Forbidden) instead of HTTP 401 (Unauthorized) in  authenticated-but-unauthorized cases.\n\n6. Run the debugger again with `F5`. Clicking **Contact** now shows a more informative (albeit unattractive) error message:\n\n    ![](./media/web-sites-dotnet-lob-application-adfs/14-unauthorized-forbidden.png)\n\n7. Publish the application to Azure App Service Web Apps again, and test the behavior of the live application.\n\n<a name=\"bkmk_data\"></a>\n## Connect to on-premises data\n\nA reason that you would want to implement your line-of-business application with AD FS instead of Azure Active Directory is compliance issues with keeping organization data off-premise. This may also mean that your web app in Azure must access on-premise databases, since you are not allowed to use [SQL Database](/services/sql-database/) as the data tier for your web apps.\n\nAzure App Service Web Apps supports accessing on-premise databases with two approaches: [Hybrid Connections](../integration-hybrid-connection-overview.md) and [Virtual Networks](web-sites-integrate-with-vnet.md). For more information, see [Using VNET integration and Hybrid connections with Azure App Service Web Apps](http://azure.microsoft.com/blog/2014/10/30/using-vnet-or-hybrid-conn-with-websites/).\n\n<a name=\"bkmk_resources\"></a>\n## Further resources\n\n- [Protect the Application with SSL and the Authorize Attribute](web-sites-dotnet-deploy-aspnet-mvc-app-membership-oauth-sql-database.md#protect-the-application-with-ssl-and-the-authorize-attribute)\n- [Use Active Directory for authentication in Azure App Service](web-sites-authentication-authorization.md)\n- [Create a .NET MVC web app in Azure App Service with Azure Active Directory authentication](web-sites-dotnet-lob-application-azure-ad.md)\n- [Use the On-Premises Organizational Authentication Option (ADFS) With ASP.NET in Visual Studio 2013](http://www.cloudidentity.com/blog/2014/02/12/use-the-on-premises-organizational-authentication-option-adfs-with-asp-net-in-visual-studio-2013/)\n- [Vittorio Bertocci's blog](http://blogs.msdn.com/b/vbertocci/)\n- [Migrate a VS2013 Web Project From WIF to Katana](http://www.cloudidentity.com/blog/2014/09/15/MIGRATE-A-VS2013-WEB-PROJECT-FROM-WIF-TO-KATANA/)\n- [Active Directory Federation Services Overview](http://technet.microsoft.com/library/hh831502.aspx)\n- [WS-Federation 1.1 specification](http://download.boulder.ibm.com/ibmdl/pub/software/dw/specs/ws-fed/WS-Federation-V1-1B.pdf?S_TACT=105AGX04&S_CMP=LP)\n\n[AZURE.INCLUDE [app-service-web-whats-changed](../../includes/app-service-web-whats-changed.md)]\n \n \ntest\n"
+}

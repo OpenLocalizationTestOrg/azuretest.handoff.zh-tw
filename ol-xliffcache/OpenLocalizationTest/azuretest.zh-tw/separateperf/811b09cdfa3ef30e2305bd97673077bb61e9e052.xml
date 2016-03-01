@@ -1,0 +1,663 @@
+{
+  "nodes": [
+    {
+      "content": "Resource Balancer Cluster Description",
+      "pos": [
+        26,
+        63
+      ]
+    },
+    {
+      "content": "Specifying a cluster description for the Resource Balancer",
+      "pos": [
+        81,
+        139
+      ]
+    },
+    {
+      "content": "Cluster Description",
+      "pos": [
+        428,
+        447
+      ]
+    },
+    {
+      "content": "The Service Fabric Resource Balancer provides several mechanisms to describe a cluster.",
+      "pos": [
+        449,
+        536
+      ]
+    },
+    {
+      "content": "During runtime, the Resource Balancer uses these pieces of information to ensure that it places services in ways that ensure high availability of the services running in the cluster while also ensuring maximum utilization of the cluster resources.",
+      "pos": [
+        537,
+        784
+      ]
+    },
+    {
+      "content": "The Resource Balancer features that describe a cluster are fault domains, upgrade domains, node properties, and node capacities.",
+      "pos": [
+        785,
+        913
+      ]
+    },
+    {
+      "content": "Additionally, the Resource Balancer has some configuration options that can tweak its performance.",
+      "pos": [
+        914,
+        1012
+      ]
+    },
+    {
+      "content": "Key Concepts",
+      "pos": [
+        1017,
+        1029
+      ]
+    },
+    {
+      "content": "Fault Domains:",
+      "pos": [
+        1035,
+        1049
+      ]
+    },
+    {
+      "content": "Fault domains enable cluster administrators to define the physical nodes that are likely to experience failure at the same time due to shared physical dependencies such as power and networking sources.",
+      "pos": [
+        1051,
+        1252
+      ]
+    },
+    {
+      "content": "Fault domains typically represent hierarchies that are related to these shared dependencies, with more nodes likely to fail together from a higher point in the fault domain tree.",
+      "pos": [
+        1253,
+        1431
+      ]
+    },
+    {
+      "content": "The following figure shows several nodes that are organized via hierarchical fault domains in the order of data center, rack, and blade.",
+      "pos": [
+        1432,
+        1568
+      ]
+    },
+    {
+      "content": "![Fault Domains][Image1]",
+      "pos": [
+        1570,
+        1594
+      ]
+    },
+    {
+      "content": "During runtime, the Service Fabric Resource Manager considers the fault domains in the cluster and attempts to spread out the replicas for a given service so that they are all in separate fault domains.",
+      "pos": [
+        1597,
+        1799
+      ]
+    },
+    {
+      "content": "This process helps ensure, in case of failure of any one fault domain, that the availability of that service and its state is not compromised.",
+      "pos": [
+        1800,
+        1942
+      ]
+    },
+    {
+      "content": "The following figure shows the replicas of a service that is spread over several fault domains even though there is enough room to concentrate them in only one or two domains.",
+      "pos": [
+        1943,
+        2118
+      ]
+    },
+    {
+      "content": "![Fault Domains][Image2]",
+      "pos": [
+        2120,
+        2144
+      ]
+    },
+    {
+      "content": "Fault domains are configured within the cluster manifest.",
+      "pos": [
+        2146,
+        2203
+      ]
+    },
+    {
+      "content": "Each node is defined to be within a particular fault domain.",
+      "pos": [
+        2204,
+        2264
+      ]
+    },
+    {
+      "content": "During runtime, the Resource Manager combines the reports from all the nodes to develop a complete overview of all of the fault domains in the system.",
+      "pos": [
+        2265,
+        2415
+      ]
+    },
+    {
+      "content": "Upgrade Domains",
+      "pos": [
+        2421,
+        2436
+      ]
+    },
+    {
+      "content": "Upgrade domains are another piece of information that is consumed by the Resource Manager.",
+      "pos": [
+        2438,
+        2528
+      ]
+    },
+    {
+      "content": "Upgrade domains, like fault domains, describe sets of nodes that are shut down for upgrades at approximately the same time.",
+      "pos": [
+        2529,
+        2652
+      ]
+    },
+    {
+      "content": "Upgrade domains are not hierarchical and can be thought of as tags.",
+      "pos": [
+        2653,
+        2720
+      ]
+    },
+    {
+      "content": "Whereas fault domains are defined by the physical layout of the nodes in the cluster, upgrade domains are determined by cluster administrators that are based on policies.",
+      "pos": [
+        2722,
+        2892
+      ]
+    },
+    {
+      "content": "The policies are related to upgrades within the cluster.",
+      "pos": [
+        2893,
+        2949
+      ]
+    },
+    {
+      "content": "More upgrade domains make upgrades more granular by limiting impact on the running cluster and services and by preventing any failure from affecting a large number of services.",
+      "pos": [
+        2950,
+        3126
+      ]
+    },
+    {
+      "content": "Depending on other policies, such as the time that Service Fabric should wait after upgrading a domain before Service Fabric moves to the next domain, more upgrade domains can also increase the amount of time it takes to complete an upgrade in the cluster.",
+      "pos": [
+        3127,
+        3383
+      ]
+    },
+    {
+      "content": "For these reasons, the Resource Manager collects upgrade domain information and spreads replicas among the upgrade domains in a cluster just like fault domains.",
+      "pos": [
+        3385,
+        3545
+      ]
+    },
+    {
+      "content": "Upgrade domains might or might not correspond one-to-one with fault domains, but generally are not expected to correspond one-to-one.",
+      "pos": [
+        3546,
+        3679
+      ]
+    },
+    {
+      "content": "The following figure shows a layer of several upgrade domains on top of the previously defined fault domains.",
+      "pos": [
+        3680,
+        3789
+      ]
+    },
+    {
+      "content": "The Resource Manager still spreads the replicas across domains so that no fault or upgrade domain becomes concentrated with replicas to ensure high availability for the service, in spite of either upgrades or faults in the cluster.",
+      "pos": [
+        3790,
+        4021
+      ]
+    },
+    {
+      "content": "![Upgrade Domains][Image3]",
+      "pos": [
+        4023,
+        4049
+      ]
+    },
+    {
+      "content": "Upgrade domains and fault domains are both configured as a part of the node definition within the cluster manifest, as shown below:",
+      "pos": [
+        4051,
+        4182
+      ]
+    },
+    {
+      "content": "In Azure deployments, fault domains and upgrade domains are assigned by Azure; therefore, the definition of your nodes and roles within the Infrastructure option for Azure does not include fault domain or upgrade domain information.",
+      "pos": [
+        5108,
+        5340
+      ]
+    },
+    {
+      "content": "Node Properties",
+      "pos": [
+        5346,
+        5361
+      ]
+    },
+    {
+      "content": "Node properties are user-defined key/value pairs that provide extra metadata for a given node.",
+      "pos": [
+        5362,
+        5456
+      ]
+    },
+    {
+      "content": "Examples of node properties include whether the node had a hard drive or video card, the number of spindles in its hard drive, cores, and other physical properties.",
+      "pos": [
+        5457,
+        5621
+      ]
+    },
+    {
+      "content": "Node properties can also be used to specify more abstract properties to aid in placing policy decisions.",
+      "pos": [
+        5623,
+        5727
+      ]
+    },
+    {
+      "content": "For example, several nodes within a cluster can be assigned a \"color\" as a means of segmenting the cluster into different sections.",
+      "pos": [
+        5728,
+        5859
+      ]
+    },
+    {
+      "content": "The code example shows that node properties are defined for nodes via the cluster manifest as a part of node type definitions, which can then be applied to multiple nodes within the cluster.",
+      "pos": [
+        5860,
+        6050
+      ]
+    },
+    {
+      "content": "The NodeName, NodeType, FaultDomain, and UpgradeDomain placement properties have default values.",
+      "pos": [
+        6052,
+        6148
+      ]
+    },
+    {
+      "content": "Service Fabric will automatically supply default values for you so that you can use them when creating your service.",
+      "pos": [
+        6150,
+        6266
+      ]
+    },
+    {
+      "content": "Users should not specify their own placement properties with these same names.",
+      "pos": [
+        6267,
+        6345
+      ]
+    },
+    {
+      "content": "During runtime, the Resource Balancer uses node property information to ensure that services that require specific capabilities are placed on the appropriate nodes.",
+      "pos": [
+        7176,
+        7340
+      ]
+    },
+    {
+      "content": "Node Capacities",
+      "pos": [
+        7346,
+        7361
+      ]
+    },
+    {
+      "content": "Node capacities are key/value pairs that define the name and amount of a particular resource that a particular node has available for consumption.",
+      "pos": [
+        7362,
+        7508
+      ]
+    },
+    {
+      "content": "The code example shows a node that it has capacity for a metric called \"MemoryInMb\" and that it has 2048 MB in memory available by default.",
+      "pos": [
+        7509,
+        7648
+      ]
+    },
+    {
+      "content": "Capacities are defined via the cluster manifest, much like node properties.",
+      "pos": [
+        7649,
+        7724
+      ]
+    },
+    {
+      "content": "![Node Capacity][Image4]",
+      "pos": [
+        7907,
+        7931
+      ]
+    },
+    {
+      "content": "Because services that run on a node can update their capacity requirements via Reporting Load, the Resource Balancer also checks periodically whether a node is at or over capacity for any of its metrics.",
+      "pos": [
+        7933,
+        8136
+      ]
+    },
+    {
+      "content": "If it is, the Resource Balancer can move services to less loaded nodes to decrease resource contention and to improve overall performance and utilization.",
+      "pos": [
+        8137,
+        8291
+      ]
+    },
+    {
+      "content": "Note that while a given metric could also be listed in the property section of the node type, it is better to list it as a capacity if this is a property of the node that can be consumed during runtime.",
+      "pos": [
+        8293,
+        8495
+      ]
+    },
+    {
+      "content": "To list it additionally as a property enables a service that depends on \"minimum hardware requirements” to query for the node with placement constraints, which might be necessary if the resource is consumed by other services during runtime.",
+      "pos": [
+        8496,
+        8736
+      ]
+    },
+    {
+      "content": "We recommend also including it as a capacity so that the Resource Balancer can take additional actions.",
+      "pos": [
+        8737,
+        8840
+      ]
+    },
+    {
+      "content": "When new services are created, the Service Fabric Cluster Resource Balancer uses the information about the capacity of existing nodes and the consumption of existing services to determine if there is sufficient available in the capacity to place the entire new service.",
+      "pos": [
+        8842,
+        9111
+      ]
+    },
+    {
+      "content": "If there is insufficient capacity then the Create Service request is rejected with an error message indicating that there is insufficient cluster capacity remaining.",
+      "pos": [
+        9112,
+        9277
+      ]
+    },
+    {
+      "content": "Resource Balancer Configurations",
+      "pos": [
+        9284,
+        9316
+      ]
+    },
+    {
+      "content": "Within the cluster manifest, the following several different configuration values that define the overall behavior of the Resource Balancer:",
+      "pos": [
+        9318,
+        9458
+      ]
+    },
+    {
+      "content": "Balancing Thresholds govern how imbalanced the cluster can become with regard to a particular metric before the Resource Balancer reacts.",
+      "pos": [
+        9462,
+        9599
+      ]
+    },
+    {
+      "content": "A balancing threshold is the maximum ratio between the maximally used and minimally used nodes that the Resource Balancer allows to exist before it rebalances the clusters.",
+      "pos": [
+        9600,
+        9772
+      ]
+    },
+    {
+      "content": "The following figure shows two examples, where the balancing threshold for the given metric to be is 10.",
+      "pos": [
+        9774,
+        9878
+      ]
+    },
+    {
+      "content": "![Balancing Threshold][Image5]",
+      "pos": [
+        9880,
+        9910
+      ]
+    },
+    {
+      "content": "Note that at this time, the \"utilization\" on a node does not take into consideration the size of the node as determined by the capacity of the node, but only the absolute use that is currently reported on the node for the specified metric.",
+      "pos": [
+        9912,
+        10151
+      ]
+    },
+    {
+      "content": "The code example shows that balancing thresholds for metrics are configured per metric via the FabricSettings element within the cluster manifest.",
+      "pos": [
+        10153,
+        10299
+      ]
+    },
+    {
+      "content": "Activity Thresholds act as a gate on how often the Resource Balancer runs by limiting the cases that the Resource Balancer reacts to when a significant absolute amount of load is present.",
+      "pos": [
+        10455,
+        10642
+      ]
+    },
+    {
+      "content": "In this way, if the cluster is not very busy for a particular metric, the Resource Balancer does not run even if that small amount of metric is very imbalanced within the cluster.",
+      "pos": [
+        10643,
+        10822
+      ]
+    },
+    {
+      "content": "This measure prevents wasting resources by rebalancing the cluster for substantively little gain.",
+      "pos": [
+        10823,
+        10920
+      ]
+    },
+    {
+      "content": "The following figure shows that the balancing threshold for the metric is 4 and that the activity threshold is 1536.",
+      "pos": [
+        10921,
+        11037
+      ]
+    },
+    {
+      "content": "![Activity Threshold][Image6]",
+      "pos": [
+        11039,
+        11068
+      ]
+    },
+    {
+      "content": "Note also that both the activity and balancing thresholds must be exceeded for the same metric to cause the Resource Balancer to run.",
+      "pos": [
+        11069,
+        11202
+      ]
+    },
+    {
+      "content": "Triggering either for two separate metrics does not cause the Resource Balancer to run.",
+      "pos": [
+        11203,
+        11290
+      ]
+    },
+    {
+      "content": "The code example shows that just like balancing thresholds, activity thresholds are configured per metric via the FabricSettings element within the cluster manifest.",
+      "pos": [
+        11292,
+        11457
+      ]
+    },
+    {
+      "content": "PLBRefreshInterval – Governs how frequently the Resource Balancer scans the information that it must check for constraint violations.",
+      "pos": [
+        11614,
+        11747
+      ]
+    },
+    {
+      "content": "Constraint violations include placement constraints that are not met, services with fewer than their required number of instances or replicas, nodes over capacity for some metric, and overloaded fault or upgrade domains, or cluster imbalances by using the balancing and activity thresholds and its current view of load on the nodes in the cluster.",
+      "pos": [
+        11748,
+        12095
+      ]
+    },
+    {
+      "content": "The refresh interval is defined in seconds, and the default is 1.",
+      "pos": [
+        12096,
+        12161
+      ]
+    },
+    {
+      "content": "Frequency of constraint check and placement can alternatively be controlled by two new intervals (MinConstraintCheckInterval and MinPlacementInterval) and if the new parameters are defined, PLBRefreshInterval will not be used and cannot be defined.",
+      "pos": [
+        12162,
+        12410
+      ]
+    },
+    {
+      "content": "MinConstraintCheckInterval - Governs how frequently the Resource Balancer scans the information that it must check for constraint violations.",
+      "pos": [
+        12414,
+        12555
+      ]
+    },
+    {
+      "content": "Constraint violations include placement constraints that are not met, services with fewer than their required number of instances or replicas, nodes over capacity for some metric, and overloaded fault or upgrade domains, or cluster imbalances by using the balancing and activity thresholds and its current view of load on the nodes in the cluster.",
+      "pos": [
+        12556,
+        12903
+      ]
+    },
+    {
+      "content": "The constraint check interval is defined in seconds.",
+      "pos": [
+        12904,
+        12956
+      ]
+    },
+    {
+      "content": "If constraint check interval is not defined, its default value will be equal to the value of PLBRefreshInterval (both values cannot be specified at the same time).",
+      "pos": [
+        12957,
+        13120
+      ]
+    },
+    {
+      "content": "MinPlacementInterval – Governs how frequently the Resource Balancer checks if there are new instances or replicas that need to be placed and tries to place them.",
+      "pos": [
+        13124,
+        13285
+      ]
+    },
+    {
+      "content": "The placement interval is defined in seconds.",
+      "pos": [
+        13286,
+        13331
+      ]
+    },
+    {
+      "content": "If placement interval is not defined, default value is equal to the value of PLBRefreshInterval (both values cannot be specified at the same time).",
+      "pos": [
+        13332,
+        13479
+      ]
+    },
+    {
+      "content": "MinLoadBalancingInterval – Establishes the minimum amount of time between Resource Balancing rounds.",
+      "pos": [
+        13483,
+        13583
+      ]
+    },
+    {
+      "content": "If the Resource Balancer took action based on information from the scan that is performed during the last PLBRefreshInterval interval, it does not run again for at least the same amount of time.",
+      "pos": [
+        13584,
+        13778
+      ]
+    },
+    {
+      "content": "It is defined in seconds, and the default is 5.",
+      "pos": [
+        13779,
+        13826
+      ]
+    },
+    {
+      "content": "Note that these values are aggressive, but that load balancing overall only occurs in the cluster if the balancing and activity thresholds are met for a given metric.",
+      "pos": [
+        13828,
+        13994
+      ]
+    },
+    {
+      "content": "The code example shows that if accurate and active load balancing is not required for a particular cluster, these values can be made less aggressive through the following configuration within the FabricSettings element.",
+      "pos": [
+        13995,
+        14214
+      ]
+    },
+    {
+      "content": "In this example configuration, minimal time distance between two constraint checks is 10 seconds, for placement 5 seconds while load balancing will occur every 5 minutes.",
+      "pos": [
+        14215,
+        14385
+      ]
+    },
+    {
+      "content": "Note that PLBRefreshInterval is not defined in this case.",
+      "pos": [
+        14386,
+        14443
+      ]
+    },
+    {
+      "content": "In the second example configuration below we have PLBRefreshInterval and MinLoadBalancingInterval defined.",
+      "pos": [
+        14686,
+        14792
+      ]
+    },
+    {
+      "content": "Since PLBRefreshInterval is set to 2 seconds, both MinPlacementInterval and MinConstraintCheckInterval will have their value set to 2 seconds as well.",
+      "pos": [
+        14793,
+        14943
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">\n##</ph> Next steps\n\nFor more information: <bpt id=\"p1\">[</bpt><ept id=\"p1\">Resource Balancer Architecture](service-fabric-resource-balancer-architecture.md)</ept><ph id=\"ph2\">\n\n\n[Image1]: media/service-fabric-resource-balancer-cluster-description/FD1.png\n[Image2]: media/service-fabric-resource-balancer-cluster-description/FD2.png\n[Image3]: media/service-fabric-resource-balancer-cluster-description/UD.png\n[Image4]: media/service-fabric-resource-balancer-cluster-description/NC.png\n[Image5]: media/service-fabric-resource-balancer-cluster-description/Config.png\n[Image6]: media/service-fabric-resource-balancer-cluster-description/Thresholds.png</ph>",
+      "pos": [
+        15239,
+        15831
+      ]
+    }
+  ],
+  "content": "<properties\n   pageTitle=\"Resource Balancer Cluster Description\"\n   description=\"Specifying a cluster description for the Resource Balancer\"\n   services=\"service-fabric\"\n   documentationCenter=\".net\"\n   authors=\"abhic\"\n   manager=\"timlt\"\n   editor=\"\"/>\n\n<tags\n   ms.service=\"Service-Fabric\"\n   ms.devlang=\"dotnet\"\n   ms.topic=\"article\"\n   ms.tgt_pltfrm=\"NA\"\n   ms.workload=\"NA\"\n   ms.date=\"04/27/2015\"\n   ms.author=\"abhic\"/>\n\n# Cluster Description\n\nThe Service Fabric Resource Balancer provides several mechanisms to describe a cluster. During runtime, the Resource Balancer uses these pieces of information to ensure that it places services in ways that ensure high availability of the services running in the cluster while also ensuring maximum utilization of the cluster resources. The Resource Balancer features that describe a cluster are fault domains, upgrade domains, node properties, and node capacities. Additionally, the Resource Balancer has some configuration options that can tweak its performance.\n\n## Key Concepts\n\n### Fault Domains:\n\nFault domains enable cluster administrators to define the physical nodes that are likely to experience failure at the same time due to shared physical dependencies such as power and networking sources. Fault domains typically represent hierarchies that are related to these shared dependencies, with more nodes likely to fail together from a higher point in the fault domain tree. The following figure shows several nodes that are organized via hierarchical fault domains in the order of data center, rack, and blade.\n\n![Fault Domains][Image1]\n\n During runtime, the Service Fabric Resource Manager considers the fault domains in the cluster and attempts to spread out the replicas for a given service so that they are all in separate fault domains. This process helps ensure, in case of failure of any one fault domain, that the availability of that service and its state is not compromised. The following figure shows the replicas of a service that is spread over several fault domains even though there is enough room to concentrate them in only one or two domains.\n\n![Fault Domains][Image2]\n\nFault domains are configured within the cluster manifest. Each node is defined to be within a particular fault domain. During runtime, the Resource Manager combines the reports from all the nodes to develop a complete overview of all of the fault domains in the system.\n\n### Upgrade Domains\n\nUpgrade domains are another piece of information that is consumed by the Resource Manager. Upgrade domains, like fault domains, describe sets of nodes that are shut down for upgrades at approximately the same time. Upgrade domains are not hierarchical and can be thought of as tags.\n\nWhereas fault domains are defined by the physical layout of the nodes in the cluster, upgrade domains are determined by cluster administrators that are based on policies. The policies are related to upgrades within the cluster. More upgrade domains make upgrades more granular by limiting impact on the running cluster and services and by preventing any failure from affecting a large number of services. Depending on other policies, such as the time that Service Fabric should wait after upgrading a domain before Service Fabric moves to the next domain, more upgrade domains can also increase the amount of time it takes to complete an upgrade in the cluster.\n\nFor these reasons, the Resource Manager collects upgrade domain information and spreads replicas among the upgrade domains in a cluster just like fault domains. Upgrade domains might or might not correspond one-to-one with fault domains, but generally are not expected to correspond one-to-one. The following figure shows a layer of several upgrade domains on top of the previously defined fault domains. The Resource Manager still spreads the replicas across domains so that no fault or upgrade domain becomes concentrated with replicas to ensure high availability for the service, in spite of either upgrades or faults in the cluster.\n\n![Upgrade Domains][Image3]\n\nUpgrade domains and fault domains are both configured as a part of the node definition within the cluster manifest, as shown below:\n\n``` xml\n<Infrastructure>\n    <WindowsServer>\n      <NodeList>\n        <Node NodeTypeRef=\"NodeType01\" IsSeedNode=\"true\" IPAddressOrFQDN=\"localhost\" NodeName=\"Node1\" FaultDomain=\"fd:/RACK1/BLADE1\" UpgradeDomain=\"ud:/UD1\"/>\n        <Node NodeTypeRef=\"NodeType01\" IsSeedNode=\"false\" IPAddressOrFQDN=\"localhost\" NodeName=\"Node2\" FaultDomain=\"fd:/RACK2/BLADE1\" UpgradeDomain=\"ud:/UD2\"/>\n        <Node NodeTypeRef=\"NodeType01\" IsSeedNode=\"true\" IPAddressOrFQDN=\"localhost\" NodeName=\"Node3\" FaultDomain=\"fd:/RACK3/BLADE2\" UpgradeDomain=\"ud:/UD3\"/>\n        <Node NodeTypeRef=\"NodeType01\" IsSeedNode=\"false\" IPAddressOrFQDN=\"localhost\" NodeName=\"Node4\" FaultDomain=\"fd:/RACK2/BLADE2\" UpgradeDomain=\"ud:/UD1\"/>\n        <Node NodeTypeRef=\"NodeType01\" IsSeedNode=\"true\" IPAddressOrFQDN=\"localhost\" NodeName=\"Node5\" FaultDomain=\"fd:/RACK1/BLADE2\" UpgradeDomain=\"ud:/UD2\"/>\n        </NodeList>\n    </WindowsServer>\n</Infrastructure>\n```\n- In Azure deployments, fault domains and upgrade domains are assigned by Azure; therefore, the definition of your nodes and roles within the Infrastructure option for Azure does not include fault domain or upgrade domain information.\n\n### Node Properties\nNode properties are user-defined key/value pairs that provide extra metadata for a given node. Examples of node properties include whether the node had a hard drive or video card, the number of spindles in its hard drive, cores, and other physical properties.\n\nNode properties can also be used to specify more abstract properties to aid in placing policy decisions. For example, several nodes within a cluster can be assigned a \"color\" as a means of segmenting the cluster into different sections. The code example shows that node properties are defined for nodes via the cluster manifest as a part of node type definitions, which can then be applied to multiple nodes within the cluster.\n\nThe NodeName, NodeType, FaultDomain, and UpgradeDomain placement properties have default values.  Service Fabric will automatically supply default values for you so that you can use them when creating your service. Users should not specify their own placement properties with these same names.\n\n``` xml\n<NodeTypes>\n  <NodeType Name=\"NodeType1\">\n    <PlacementProperties>\n      <Property Name=\"HasDisk\" Value=\"true\"/>\n      <Property Name=\"SpindleCount\" Value=\"4\"/>\n      <Property Name=\"HasGPU\" Value=\"true\"/>\n      <Property Name=\"NodeColor\" Value=\"blue\"/>\n      <Property Name=\"NodeName\" Value=\"Node1\"/>\n      <Property Name=\"NodeType\" Value=\"NodeType1\"/>\n      <Property Name=\"FaultDomain\" Value=\"fd:/RACK1/BLADE1\"/>\n      <Property Name=\"UpgradeDomain\" Value=\"ud:/UD1\"/>\n    </PlacementProperties>\n  </NodeType>\n    <NodeType Name=\"NodeType2\">\n    <PlacementProperties>\n      <Property Name=\"HasDisk\" Value=\"false\"/>\n      <Property Name=\"SpindleCount\" Value=\"-1\"/>\n      <Property Name=\"HasGPU\" Value=\"false\"/>\n      <Property Name=\"NodeColor\" Value=\"green\"/>\n    </PlacementProperties>\n  </NodeType>\n</NodeTypes>\n```\n\nDuring runtime, the Resource Balancer uses node property information to ensure that services that require specific capabilities are placed on the appropriate nodes.\n\n### Node Capacities\nNode capacities are key/value pairs that define the name and amount of a particular resource that a particular node has available for consumption. The code example shows a node that it has capacity for a metric called \"MemoryInMb\" and that it has 2048 MB in memory available by default. Capacities are defined via the cluster manifest, much like node properties.\n\n``` xml\n<NodeType Name=\"NodeType03\">\n  <Capacities>\n    <Capacity Name=\"MemoryInMB\" Value=\"2048\"/>\n    <Capacity Name=\"DiskSpaceInGB\" Value=\"1024\"/>\n  </Capacities>\n</NodeType>\n```\n![Node Capacity][Image4]\n\nBecause services that run on a node can update their capacity requirements via Reporting Load, the Resource Balancer also checks periodically whether a node is at or over capacity for any of its metrics. If it is, the Resource Balancer can move services to less loaded nodes to decrease resource contention and to improve overall performance and utilization.\n\nNote that while a given metric could also be listed in the property section of the node type, it is better to list it as a capacity if this is a property of the node that can be consumed during runtime. To list it additionally as a property enables a service that depends on \"minimum hardware requirements” to query for the node with placement constraints, which might be necessary if the resource is consumed by other services during runtime. We recommend also including it as a capacity so that the Resource Balancer can take additional actions.\n\nWhen new services are created, the Service Fabric Cluster Resource Balancer uses the information about the capacity of existing nodes and the consumption of existing services to determine if there is sufficient available in the capacity to place the entire new service. If there is insufficient capacity then the Create Service request is rejected with an error message indicating that there is insufficient cluster capacity remaining.\n\n\n### Resource Balancer Configurations\n\nWithin the cluster manifest, the following several different configuration values that define the overall behavior of the Resource Balancer:\n\n- Balancing Thresholds govern how imbalanced the cluster can become with regard to a particular metric before the Resource Balancer reacts. A balancing threshold is the maximum ratio between the maximally used and minimally used nodes that the Resource Balancer allows to exist before it rebalances the clusters.\n\nThe following figure shows two examples, where the balancing threshold for the given metric to be is 10.\n\n![Balancing Threshold][Image5]\n\nNote that at this time, the \"utilization\" on a node does not take into consideration the size of the node as determined by the capacity of the node, but only the absolute use that is currently reported on the node for the specified metric.\n\nThe code example shows that balancing thresholds for metrics are configured per metric via the FabricSettings element within the cluster manifest.\n\n``` xml\n<FabricSettings>\n  <Section Name=\"MetricBalancingThresholds\">\n    <Parameter Name=\"MetricName\" Value=\"10\"/>\n  </Section>\n</FabricSettings>\n```\n\n- Activity Thresholds act as a gate on how often the Resource Balancer runs by limiting the cases that the Resource Balancer reacts to when a significant absolute amount of load is present. In this way, if the cluster is not very busy for a particular metric, the Resource Balancer does not run even if that small amount of metric is very imbalanced within the cluster. This measure prevents wasting resources by rebalancing the cluster for substantively little gain. The following figure shows that the balancing threshold for the metric is 4 and that the activity threshold is 1536.\n\n![Activity Threshold][Image6]\nNote also that both the activity and balancing thresholds must be exceeded for the same metric to cause the Resource Balancer to run. Triggering either for two separate metrics does not cause the Resource Balancer to run.\n\nThe code example shows that just like balancing thresholds, activity thresholds are configured per metric via the FabricSettings element within the cluster manifest.\n\n``` xml\n<FabricSettings>\n  <Section Name=\"MetricActivityThresholds\">\n    <Parameter Name=\"MetricName\" Value=\"1536\"/>\n  </Section>\n</FabricSettings>\n```\n\n- PLBRefreshInterval – Governs how frequently the Resource Balancer scans the information that it must check for constraint violations. Constraint violations include placement constraints that are not met, services with fewer than their required number of instances or replicas, nodes over capacity for some metric, and overloaded fault or upgrade domains, or cluster imbalances by using the balancing and activity thresholds and its current view of load on the nodes in the cluster. The refresh interval is defined in seconds, and the default is 1. Frequency of constraint check and placement can alternatively be controlled by two new intervals (MinConstraintCheckInterval and MinPlacementInterval) and if the new parameters are defined, PLBRefreshInterval will not be used and cannot be defined.\n\n- MinConstraintCheckInterval - Governs how frequently the Resource Balancer scans the information that it must check for constraint violations. Constraint violations include placement constraints that are not met, services with fewer than their required number of instances or replicas, nodes over capacity for some metric, and overloaded fault or upgrade domains, or cluster imbalances by using the balancing and activity thresholds and its current view of load on the nodes in the cluster. The constraint check interval is defined in seconds. If constraint check interval is not defined, its default value will be equal to the value of PLBRefreshInterval (both values cannot be specified at the same time).\n\n- MinPlacementInterval – Governs how frequently the Resource Balancer checks if there are new instances or replicas that need to be placed and tries to place them. The placement interval is defined in seconds. If placement interval is not defined, default value is equal to the value of PLBRefreshInterval (both values cannot be specified at the same time).\n\n- MinLoadBalancingInterval – Establishes the minimum amount of time between Resource Balancing rounds. If the Resource Balancer took action based on information from the scan that is performed during the last PLBRefreshInterval interval, it does not run again for at least the same amount of time. It is defined in seconds, and the default is 5.\n\nNote that these values are aggressive, but that load balancing overall only occurs in the cluster if the balancing and activity thresholds are met for a given metric. The code example shows that if accurate and active load balancing is not required for a particular cluster, these values can be made less aggressive through the following configuration within the FabricSettings element. In this example configuration, minimal time distance between two constraint checks is 10 seconds, for placement 5 seconds while load balancing will occur every 5 minutes. Note that PLBRefreshInterval is not defined in this case.\n\n``` xml\n<Section Name=\"PlacementAndLoadBalancing\">\n  <Parameter Name=\"MinPlacementInterval\" Value=\"5\" />\n  <Parameter Name=\"MinConstraintChecknterval\" Value=\"10\" />\n  <Parameter Name=\"MinLoadBalancingInterval\" Value=\"600\" />\n</Section>\n```\n\nIn the second example configuration below we have PLBRefreshInterval and MinLoadBalancingInterval defined. Since PLBRefreshInterval is set to 2 seconds, both MinPlacementInterval and MinConstraintCheckInterval will have their value set to 2 seconds as well.\n\n``` xml\n<Section Name=\"PlacementAndLoadBalancing\">\n  <Parameter Name=\"PLBRefreshInterval\" Value=\"2\" />\n  <Parameter Name=\"MinLoadBalancingInterval\" Value=\"600\" />\n</Section>\n```\n\n<!--Every topic should have next steps and links to the next logical set of content to keep the customer engaged-->\n## Next steps\n\nFor more information: [Resource Balancer Architecture](service-fabric-resource-balancer-architecture.md)\n\n\n[Image1]: media/service-fabric-resource-balancer-cluster-description/FD1.png\n[Image2]: media/service-fabric-resource-balancer-cluster-description/FD2.png\n[Image3]: media/service-fabric-resource-balancer-cluster-description/UD.png\n[Image4]: media/service-fabric-resource-balancer-cluster-description/NC.png\n[Image5]: media/service-fabric-resource-balancer-cluster-description/Config.png\n[Image6]: media/service-fabric-resource-balancer-cluster-description/Thresholds.png\n "
+}

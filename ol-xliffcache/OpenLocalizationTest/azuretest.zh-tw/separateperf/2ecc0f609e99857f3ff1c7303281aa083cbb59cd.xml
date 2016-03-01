@@ -1,0 +1,831 @@
+{
+  "nodes": [
+    {
+      "content": "Protect an Azure API app",
+      "pos": [
+        28,
+        52
+      ]
+    },
+    {
+      "content": "Learn how to protect an Azure API app using Visual Studio.",
+      "pos": [
+        72,
+        130
+      ]
+    },
+    {
+      "content": "Protect an API app: Add Azure Active Directory or social provider authentication",
+      "pos": [
+        460,
+        540
+      ]
+    },
+    {
+      "content": "Overview",
+      "pos": [
+        545,
+        553
+      ]
+    },
+    {
+      "content": "This tutorial shows how to protect an API app so that only authenticated users can access it.",
+      "pos": [
+        555,
+        648
+      ]
+    },
+    {
+      "content": "The tutorial also shows code that you can use in an ASP.NET API app to retrieve information about the logged-on user.",
+      "pos": [
+        649,
+        766
+      ]
+    },
+    {
+      "content": "You'll perform the following steps:",
+      "pos": [
+        768,
+        803
+      ]
+    },
+    {
+      "content": "Call the API app to verify that it's working.",
+      "pos": [
+        807,
+        852
+      ]
+    },
+    {
+      "content": "Apply authentication rules to the API app.",
+      "pos": [
+        855,
+        897
+      ]
+    },
+    {
+      "content": "Call the API app again to verify that it rejects unauthenticated requests.",
+      "pos": [
+        900,
+        974
+      ]
+    },
+    {
+      "content": "Log in to the configured provider.",
+      "pos": [
+        977,
+        1011
+      ]
+    },
+    {
+      "content": "Call the API app again to verify that authenticated access works.",
+      "pos": [
+        1014,
+        1079
+      ]
+    },
+    {
+      "content": "Write and test code that retrieves claims for the logged-on user.",
+      "pos": [
+        1082,
+        1147
+      ]
+    },
+    {
+      "pos": [
+        1149,
+        1318
+      ],
+      "content": "For more information about authentication in Azure App Service, see <bpt id=\"p1\">[</bpt>Authentication for API apps and mobile apps<ept id=\"p1\">](../app-service/app-service-authentication-overview.md)</ept>."
+    },
+    {
+      "content": "Prerequisites",
+      "pos": [
+        1323,
+        1336
+      ]
+    },
+    {
+      "pos": [
+        1338,
+        1527
+      ],
+      "content": "This tutorial works with the API app that you created in <bpt id=\"p1\">[</bpt>Create an API app<ept id=\"p1\">](app-service-dotnet-create-api-app.md)</ept> and deployed in <bpt id=\"p2\">[</bpt>Deploy an API app<ept id=\"p2\">](app-service-dotnet-deploy-api-app.md)</ept>."
+    },
+    {
+      "content": "Use the browser to call the API app",
+      "pos": [
+        1532,
+        1567
+      ]
+    },
+    {
+      "content": "The simplest way to verify that your API app is publicly accessible is to call it from a browser.",
+      "pos": [
+        1570,
+        1667
+      ]
+    },
+    {
+      "content": "In your browser, go to the [Azure preview portal].",
+      "pos": [
+        1672,
+        1722
+      ]
+    },
+    {
+      "pos": [
+        1727,
+        1833
+      ],
+      "content": "From the home page click <bpt id=\"p1\">**</bpt>Browse &gt; API Apps<ept id=\"p1\">**</ept> and then click the name of the API app you want to protect."
+    },
+    {
+      "content": "Browse",
+      "pos": [
+        1841,
+        1847
+      ]
+    },
+    {
+      "content": "Select API app",
+      "pos": [
+        1918,
+        1932
+      ]
+    },
+    {
+      "pos": [
+        2000,
+        2093
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>API App<ept id=\"p1\">**</ept> blade, click the <bpt id=\"p2\">**</bpt>URL<ept id=\"p2\">**</ept> to open a browser window that calls your API App."
+    },
+    {
+      "content": "API App blade",
+      "pos": [
+        2101,
+        2114
+      ]
+    },
+    {
+      "pos": [
+        2191,
+        2254
+      ],
+      "content": "Add <ph id=\"ph1\">`/api/contacts/get/`</ph> to the URL in the browser address bar."
+    },
+    {
+      "content": "For example, if your API app's URL is this:",
+      "pos": [
+        2260,
+        2303
+      ]
+    },
+    {
+      "content": "The complete URL would be this:",
+      "pos": [
+        2394,
+        2425
+      ]
+    },
+    {
+      "content": "Different browsers handle API calls differently.",
+      "pos": [
+        2533,
+        2581
+      ]
+    },
+    {
+      "content": "The image shows a successful call from a Chrome browser.",
+      "pos": [
+        2582,
+        2638
+      ]
+    },
+    {
+      "content": "Chrome Get response",
+      "pos": [
+        2646,
+        2665
+      ]
+    },
+    {
+      "content": "Save the URL you used; you'll use it again later in the tutorial.",
+      "pos": [
+        2736,
+        2801
+      ]
+    },
+    {
+      "content": "Protect the API app",
+      "pos": [
+        2806,
+        2825
+      ]
+    },
+    {
+      "content": "When you deployed your API app, you deployed it to a resource group.",
+      "pos": [
+        2827,
+        2895
+      ]
+    },
+    {
+      "content": "You can add web apps and other API apps to the same resource group, and each API app within the resource group can have one of three accessibility settings:",
+      "pos": [
+        2896,
+        3052
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">\n\n- **</bpt>Public (anonymous)<ept id=\"p1\">**</ept> - Anyone can call the API app from outside the resource group without being logged in.",
+      "pos": [
+        3114,
+        3227
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">- **</bpt>Public (authenticated)<ept id=\"p1\">**</ept> - Only authenticated users are allowed to call the API app from outside the resource group.",
+      "pos": [
+        3228,
+        3348
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">- **</bpt>Internal<ept id=\"p1\">**</ept> - Only other API apps in the same resource group are allowed to call the API app.",
+      "pos": [
+        3349,
+        3445
+      ]
+    },
+    {
+      "content": "(Calls from web apps are considered external even if the web apps are in the same resource group.)\n\nWhen Visual Studio created the resource group for you, it also created a <bpt id=\"p1\">*</bpt>gateway<ept id=\"p1\">*</ept>.",
+      "pos": [
+        3446,
+        3629
+      ]
+    },
+    {
+      "content": "A gateway is a special web app that handles all requests destined for API apps in the resource group.",
+      "pos": [
+        3631,
+        3732
+      ]
+    },
+    {
+      "content": "When you go to the resource group's blade in the [Azure preview portal], you can see your API app and the gateway in the diagram.",
+      "pos": [
+        3734,
+        3863
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">![Resource group diagram](./media/app-service-api-dotnet-add-authentication/rgdiagram.png)</ph><ph id=\"ph2\">\n\n### &lt;a id=\"apiapp\"&gt;&lt;/a&gt;</ph>Configure the API app to require authentication\n\nTo configure your API app to accept only authenticated requests, you'll set its accessibility to <bpt id=\"p1\">**</bpt>Public (authenticated)<ept id=\"p1\">**</ept> and you'll configure the gateway to require authentication from a provider such as Azure Active Directory, Google, or Facebook.",
+      "pos": [
+        3865,
+        4280
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.INCLUDE [app-service-api-config-auth](../../includes/app-service-api-config-auth.md)]</ph>\n\nYou have now protected the API app from unauthenticated access.",
+      "pos": [
+        4282,
+        4439
+      ]
+    },
+    {
+      "content": "Next you have to configure the gateway to specify which authentication provider to use.",
+      "pos": [
+        4440,
+        4527
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">### &lt;a id=\"gateway\"&gt;&lt;/a&gt;</ph>Configure the gateway to use an authentication provider\n\n<ph id=\"ph2\">[AZURE.INCLUDE [app-service-api-gateway-config-auth](../../includes/app-service-api-gateway-config-auth.md)]</ph><ph id=\"ph3\">\n\n##</ph> Verify that authentication works\n\n<bpt id=\"p1\">**</bpt>Note:<ept id=\"p1\">**</ept> If you have a problem logging in when you do the following steps, try opening a private or incognito window.",
+      "pos": [
+        4529,
+        4875
+      ]
+    },
+    {
+      "content": "1.",
+      "pos": [
+        4878,
+        4880
+      ]
+    },
+    {
+      "content": "Open a browser window, and in the address bar enter the URL that calls your API app's <ph id=\"ph1\">`Get`</ph> method, as you did earlier.",
+      "pos": [
+        4881,
+        5000
+      ]
+    },
+    {
+      "content": "This time the attempt to access the API app results in an error message.",
+      "pos": [
+        5006,
+        5078
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">![Chrome Get response fail](./media/app-service-api-dotnet-add-authentication/chromegetfail.png)</ph><ph id=\"ph2\">\n\n2.</ph> In the browser, go to the login URL.",
+      "pos": [
+        5084,
+        5221
+      ]
+    },
+    {
+      "content": "The URL follows this pattern: \n\n        http://[gatewayurl]/login/[providername]\n\n    You can get the gateway URL from the <bpt id=\"p1\">**</bpt>Gateway<ept id=\"p1\">**</ept> blade in the <bpt id=\"p2\">[</bpt><ept id=\"p2\">Azure preview portal]</ept>.",
+      "pos": [
+        5222,
+        5393
+      ]
+    },
+    {
+      "content": "(To get to the <bpt id=\"p1\">**</bpt>Gateway<ept id=\"p1\">**</ept> blade, click the gateway in the diagram shown on the <bpt id=\"p2\">**</bpt>Resource group<ept id=\"p2\">**</ept> blade.)\n\n    <ph id=\"ph1\">![Gateway URL](./media/app-service-api-dotnet-add-authentication/gatewayurl.png)</ph>\n\n    The [providername] must be one of the following values:\n    \n    * \"microsoftaccount\"\n    * \"facebook\"\n    * \"twitter\"\n    * \"google\"\n    * \"aad\"\n\n    Here is a sample login URL for Azure Active Directory:\n\n        https://dropboxrgaeb4ae60b7cb4f3d966dfa43.azurewebsites.net/login/aad/\n\n    Notice that unlike the earlier URL, this one does not include your API app name:  the gateway is authenticating you, not the API app.",
+      "pos": [
+        5394,
+        6016
+      ]
+    },
+    {
+      "content": "The gateway handles authentication for all API apps in the resource group.",
+      "pos": [
+        6018,
+        6092
+      ]
+    },
+    {
+      "content": "3.",
+      "pos": [
+        6094,
+        6096
+      ]
+    },
+    {
+      "content": "Enter your credentials when the browser displays a login page.",
+      "pos": [
+        6097,
+        6159
+      ]
+    },
+    {
+      "content": "If you configured Azure Active Directory login, use one of the users listed in the <bpt id=\"p1\">**</bpt>Users<ept id=\"p1\">**</ept> tab for the application you created in the Azure Active Directory tab of the <bpt id=\"p2\">[</bpt><ept id=\"p2\">Azure portal]</ept>, such as admin@contoso.onmicrosoft.com.",
+      "pos": [
+        6167,
+        6391
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">![AAD users](./media/app-service-api-dotnet-add-authentication/aadusers.png)</ph><ph id=\"ph2\">\n\n    ![Login page](./media/app-service-api-dotnet-add-authentication/ffsignin.png)</ph><ph id=\"ph3\">\n\n4.</ph> When the \"login complete\" message appears, enter the URL to your API app's Get method again.",
+      "pos": [
+        6397,
+        6653
+      ]
+    },
+    {
+      "content": "This time because you've authenticated, the call is successful.",
+      "pos": [
+        6659,
+        6722
+      ]
+    },
+    {
+      "content": "The gateway recognizes that you are an authenticated user and passes your request on to your API app.",
+      "pos": [
+        6723,
+        6824
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">![Login completed](./media/app-service-api-dotnet-add-authentication/logincomplete.png)</ph><ph id=\"ph2\">\n\n    ![Chrome Get response](./media/app-service-api-dotnet-add-authentication/chromeget.png)</ph>\n\n    If you have enabled the Swagger UI, you can also go to the Swagger UI page now.",
+      "pos": [
+        6830,
+        7095
+      ]
+    },
+    {
+      "content": "However, you'll see a red <bpt id=\"p1\">**</bpt>ERROR<ept id=\"p1\">**</ept> icon at the bottom right corner of the page, and if you click the icon you'll see a message saying that the Swagger JSON file is inaccessible.",
+      "pos": [
+        7096,
+        7274
+      ]
+    },
+    {
+      "content": "This is because Swagger makes an AJAX call without including the Zumo token to try to retrieve the JSON file.",
+      "pos": [
+        7275,
+        7384
+      ]
+    },
+    {
+      "content": "This does not prevent the Swagger UI page from working.",
+      "pos": [
+        7385,
+        7440
+      ]
+    },
+    {
+      "content": "Use Postman to send a Post request\n\nWhen you log in to the gateway, the gateway sends back an authentication token.",
+      "pos": [
+        7445,
+        7560
+      ]
+    },
+    {
+      "content": "This token must be included with all requests from external sources that go through the gateway.",
+      "pos": [
+        7562,
+        7658
+      ]
+    },
+    {
+      "content": "When you access an API with a browser, the browser typically stores the token in a cookie and sends it along with all subsequent calls to the API.",
+      "pos": [
+        7659,
+        7805
+      ]
+    },
+    {
+      "content": "So you can see what is happening in the background, in this section of the tutorial you use a browser tool to create and submit a Post request, and you get the authorization token from the cookie and include it in an HTTP header.",
+      "pos": [
+        7807,
+        8036
+      ]
+    },
+    {
+      "content": "This section is optional: in the previous section you already verified that the API app accepts only authenticated access.",
+      "pos": [
+        8037,
+        8159
+      ]
+    },
+    {
+      "content": "These instructions show how to use the Postman tool in the Chrome browser, but you could do the same thing with any REST client tool and browser developer tools.",
+      "pos": [
+        8161,
+        8322
+      ]
+    },
+    {
+      "content": "1.",
+      "pos": [
+        8324,
+        8326
+      ]
+    },
+    {
+      "content": "In a Chrome browser window, go through the steps shown in the previous section to authenticate, and then open developer tools (F12).",
+      "pos": [
+        8327,
+        8459
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">![Go to Resources tab](./media/app-service-api-dotnet-add-authentication/resources.png)</ph><ph id=\"ph2\">\n\n3.</ph> In the <bpt id=\"p1\">**</bpt>Resources<ept id=\"p1\">**</ept> tab of Chrome developer tools, find the cookies for your gateway, and triple-click the Value of the <bpt id=\"p2\">**</bpt>x-zumo-auth<ept id=\"p2\">**</ept> cookie to select all of it.",
+      "pos": [
+        8465,
+        8721
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Note:<ept id=\"p1\">**</ept>  Make sure you get all of the cookie's value.",
+      "pos": [
+        8727,
+        8782
+      ]
+    },
+    {
+      "content": "If you double-click, you'll get only the first part of it.",
+      "pos": [
+        8783,
+        8841
+      ]
+    },
+    {
+      "content": "5.",
+      "pos": [
+        8843,
+        8845
+      ]
+    },
+    {
+      "content": "Right-click the <bpt id=\"p1\">**</bpt>Value<ept id=\"p1\">**</ept> of the <bpt id=\"p2\">**</bpt>x-zumo-auth<ept id=\"p2\">**</ept> cookie, and then click <bpt id=\"p3\">**</bpt>Copy<ept id=\"p3\">**</ept>.",
+      "pos": [
+        8846,
+        8927
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">![Copy auth token](./media/app-service-api-dotnet-add-authentication/copyzumotoken.png)</ph><ph id=\"ph2\">\n\n4.</ph> Install the Postman extension in your Chrome browser if you haven't done so yet.",
+      "pos": [
+        8933,
+        9105
+      ]
+    },
+    {
+      "content": "6.",
+      "pos": [
+        9107,
+        9109
+      ]
+    },
+    {
+      "content": "Open the Postman extension.",
+      "pos": [
+        9110,
+        9137
+      ]
+    },
+    {
+      "content": "7.",
+      "pos": [
+        9139,
+        9141
+      ]
+    },
+    {
+      "content": "In the Request URL field, enter the URL to your API app's Get method that you used previously, but omit <ph id=\"ph1\">`get/`</ph> from the end.",
+      "pos": [
+        9142,
+        9266
+      ]
+    },
+    {
+      "content": "http://[apiappurl]/api/contacts\n    \n8.",
+      "pos": [
+        9277,
+        9316
+      ]
+    },
+    {
+      "content": "Click <bpt id=\"p1\">**</bpt>Headers<ept id=\"p1\">**</ept>, and then add an <bpt id=\"p2\">*</bpt>x-zumo-auth<ept id=\"p2\">*</ept> header.",
+      "pos": [
+        9317,
+        9373
+      ]
+    },
+    {
+      "content": "Paste the token value from the clipboard into the <bpt id=\"p1\">**</bpt>Value<ept id=\"p1\">**</ept> field.",
+      "pos": [
+        9374,
+        9440
+      ]
+    },
+    {
+      "content": "9.",
+      "pos": [
+        9442,
+        9444
+      ]
+    },
+    {
+      "content": "Add a <bpt id=\"p1\">*</bpt>Content-Type<ept id=\"p1\">*</ept> header with value <bpt id=\"p2\">*</bpt>application/json<ept id=\"p2\">*</ept>.",
+      "pos": [
+        9445,
+        9503
+      ]
+    },
+    {
+      "content": "10.",
+      "pos": [
+        9505,
+        9508
+      ]
+    },
+    {
+      "content": "Click <bpt id=\"p1\">**</bpt>form-data<ept id=\"p1\">**</ept>, and then add a <bpt id=\"p2\">*</bpt>contact<ept id=\"p2\">*</ept> key with the following value:\n\n        {   \"Id\": 0,   \"Name\": \"Li Yan\",   \"EmailAddress\": \"yan@contoso.com\" }\n\n11.",
+      "pos": [
+        9509,
+        9669
+      ]
+    },
+    {
+      "content": "Click Send.",
+      "pos": [
+        9670,
+        9681
+      ]
+    },
+    {
+      "content": "The API app returns a <bpt id=\"p1\">*</bpt>201 Created<ept id=\"p1\">*</ept> response.",
+      "pos": [
+        9687,
+        9732
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">![Add headers and body](./media/app-service-api-dotnet-add-authentication/addcontact.png)</ph><ph id=\"ph2\">\n\n12.</ph> To verify that this request would not work without the authentication token, delete the authentication header and click Send again.",
+      "pos": [
+        9738,
+        9964
+      ]
+    },
+    {
+      "content": "You get a <bpt id=\"p1\">*</bpt>403 Forbidden<ept id=\"p1\">*</ept> response.",
+      "pos": [
+        9970,
+        10005
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">![403 Forbidden response](./media/app-service-api-dotnet-add-authentication/403forbidden.png)</ph><ph id=\"ph2\">\n\n##</ph> Get information about the logged-on user\n\nIn this section you change the code in the ContactsList API app so that it retrieves and returns the name and email address of the logged-on user.",
+      "pos": [
+        10011,
+        10297
+      ]
+    },
+    {
+      "content": "1.",
+      "pos": [
+        10301,
+        10303
+      ]
+    },
+    {
+      "content": "In Visual Studio, open the API app project that you deployed in <bpt id=\"p1\">[</bpt><ept id=\"p1\">Deploy an API app](app-service-dotnet-deploy-api-app.md)</ept> and have been calling for this tutorial.",
+      "pos": [
+        10304,
+        10466
+      ]
+    },
+    {
+      "content": "3.",
+      "pos": [
+        10468,
+        10470
+      ]
+    },
+    {
+      "content": "Open the apiapp.json file, and add a line that indicates the API app uses Azure Active Directory authentication.",
+      "pos": [
+        10471,
+        10583
+      ]
+    },
+    {
+      "content": "\"authentication\": [{\"type\": \"aad\"}]\n\n    The final apiapp.json file will resemble the following example:\n\n        {\n            \"$schema\": \"http://json-schema.org/schemas/2014-11-01/apiapp.json#\",\n            \"id\": \"ContactsList\",\n            \"namespace\": \"microsoft.com\",\n            \"gateway\": \"2015-01-14\",\n            \"version\": \"1.0.0\",\n            \"title\": \"ContactsList\",\n            \"summary\": \"\",\n            \"author\": \"\",\n            \"endpoints\": {\n                \"apiDefinition\": \"/swagger/docs/v1\",\n                \"status\": null\n            },\n            \"authentication\": [{\"type\": \"aad\"}]\n        }\n\n    This tutorial uses Azure Active Directory as an example.",
+      "pos": [
+        10593,
+        11270
+      ]
+    },
+    {
+      "content": "For other providers you would use the appropriate identifier.",
+      "pos": [
+        11271,
+        11332
+      ]
+    },
+    {
+      "content": "Here are the valid provider values:\n\n    * \"aad\"\n    * \"microsoftaccount\"\n    * \"google\"\n    * \"twitter\"\n    * \"facebook\".",
+      "pos": [
+        11333,
+        11455
+      ]
+    },
+    {
+      "content": "3.",
+      "pos": [
+        11458,
+        11460
+      ]
+    },
+    {
+      "content": "In the <bpt id=\"p1\">*</bpt>ContactsController.cs<ept id=\"p1\">*</ept> file, add a <ph id=\"ph1\">`using`</ph> statement at the top of the file.",
+      "pos": [
+        11461,
+        11545
+      ]
+    },
+    {
+      "content": "using Microsoft.Azure.AppService.ApiApps.Service;\n\n2.",
+      "pos": [
+        11555,
+        11608
+      ]
+    },
+    {
+      "content": "Replace the code  in the <ph id=\"ph1\">`Get`</ph> method with the following code.",
+      "pos": [
+        11609,
+        11671
+      ]
+    },
+    {
+      "content": "var runtime = Runtime.FromAppSettings(Request);\n        var user = runtime.CurrentUser;\n        TokenResult token = await user.GetRawTokenAsync(\"aad\");\n        var name = (string)token.Claims[\"name\"];\n        var email = (string)token.Claims[\"http://schemas.xmlsoap.org/ws/2005/05/identity/claims/upn\"];\n        return new Contact[]\n        {\n            new Contact { Id = 1, EmailAddress = email, Name = name }\n        };\n\n    Instead of the three sample contacts, the code returns contact information for the logged-on user.",
+      "pos": [
+        11681,
+        12208
+      ]
+    },
+    {
+      "content": "The sample code uses Azure Active Directory.",
+      "pos": [
+        12215,
+        12259
+      ]
+    },
+    {
+      "content": "For other providers you would use the appropriate token name and claims identifier as shown in the previous step.",
+      "pos": [
+        12260,
+        12373
+      ]
+    },
+    {
+      "content": "For information about Azure Active Directory claims that are available, see <bpt id=\"p1\">[</bpt><ept id=\"p1\">Supported Token and Claim Types](https://msdn.microsoft.com/library/dn195587.aspx)</ept>.",
+      "pos": [
+        12379,
+        12539
+      ]
+    },
+    {
+      "content": "3.",
+      "pos": [
+        12541,
+        12543
+      ]
+    },
+    {
+      "content": "Add a using statement for <ph id=\"ph1\">`Microsoft.Azure.AppService.ApiApps.Service`</ph>.",
+      "pos": [
+        12544,
+        12615
+      ]
+    },
+    {
+      "content": "using Microsoft.Azure.AppService.ApiApps.Service;\n\n3.",
+      "pos": [
+        12625,
+        12678
+      ]
+    },
+    {
+      "content": "Redeploy the project.",
+      "pos": [
+        12679,
+        12700
+      ]
+    },
+    {
+      "content": "Visual Studio will remember the settings from when you deployed the project while following the <bpt id=\"p1\">[</bpt><ept id=\"p1\">Deploy](app-service-dotnet-deploy-api-app.md)</ept> tutorial.",
+      "pos": [
+        12708,
+        12860
+      ]
+    },
+    {
+      "content": "Right-click the project, click <bpt id=\"p1\">**</bpt>Publish<ept id=\"p1\">**</ept>, and then click <bpt id=\"p2\">**</bpt>Publish<ept id=\"p2\">**</ept> in the <bpt id=\"p3\">**</bpt>Publish Web<ept id=\"p3\">**</ept> dialog.",
+      "pos": [
+        12862,
+        12963
+      ]
+    },
+    {
+      "content": "6.",
+      "pos": [
+        12965,
+        12967
+      ]
+    },
+    {
+      "content": "Follow the procedure you did earlier to send a Get request to the protected API app.",
+      "pos": [
+        12968,
+        13052
+      ]
+    },
+    {
+      "content": "The response message shows the name and ID of the identity you used to log in.",
+      "pos": [
+        13059,
+        13137
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">![Response message with logged on user](./media/app-service-api-dotnet-add-authentication/chromegetuserinfo.png)</ph><ph id=\"ph2\">\n\n##</ph> Next steps\n\nYou've seen how to protect an Azure API app by requiring Azure Active Directory or social provider authentication.",
+      "pos": [
+        13143,
+        13386
+      ]
+    },
+    {
+      "content": "For more information, see <bpt id=\"p1\">[</bpt><ept id=\"p1\">Authentication for API apps and mobile apps](../app-service/app-service-authentication-overview.md)</ept>.",
+      "pos": [
+        13387,
+        13514
+      ]
+    },
+    {
+      "content": "[Azure portal]: https://manage.windowsazure.com/\n[Azure preview portal]: https://portal.azure.com/\n\ntest",
+      "pos": [
+        13517,
+        13621
+      ]
+    }
+  ],
+  "content": "<properties \n    pageTitle=\"Protect an Azure API app\" \n    description=\"Learn how to protect an Azure API app using Visual Studio.\" \n    services=\"app-service\\api\" \n    documentationCenter=\".net\" \n    authors=\"tdykstra\" \n    manager=\"wpickett\" \n    editor=\"jimbe\"/>\n\n<tags \n    ms.service=\"app-service-api\" \n    ms.workload=\"web\" \n    ms.tgt_pltfrm=\"dotnet\" \n    ms.devlang=\"na\" \n    ms.topic=\"article\" \n    ms.date=\"08/05/2015\" \n    ms.author=\"tdykstra\"/>\n\n# Protect an API app: Add Azure Active Directory or social provider authentication\n\n## Overview\n\nThis tutorial shows how to protect an API app so that only authenticated users can access it. The tutorial also shows code that you can use in an ASP.NET API app to retrieve information about the logged-on user.\n\nYou'll perform the following steps:\n\n- Call the API app to verify that it's working.\n- Apply authentication rules to the API app.\n- Call the API app again to verify that it rejects unauthenticated requests.\n- Log in to the configured provider.\n- Call the API app again to verify that authenticated access works.\n- Write and test code that retrieves claims for the logged-on user.\n\nFor more information about authentication in Azure App Service, see [Authentication for API apps and mobile apps](../app-service/app-service-authentication-overview.md).\n\n## Prerequisites\n\nThis tutorial works with the API app that you created in [Create an API app](app-service-dotnet-create-api-app.md) and deployed in [Deploy an API app](app-service-dotnet-deploy-api-app.md).\n\n## Use the browser to call the API app \n\nThe simplest way to verify that your API app is publicly accessible is to call it from a browser.\n\n1. In your browser, go to the [Azure preview portal].\n\n3. From the home page click **Browse > API Apps** and then click the name of the API app you want to protect.\n\n    ![Browse](./media/app-service-api-dotnet-add-authentication/browse.png)\n\n    ![Select API app](./media/app-service-api-dotnet-add-authentication/select.png)\n\n3. In the **API App** blade, click the **URL** to open a browser window that calls your API App.\n\n    ![API App blade](./media/app-service-api-dotnet-add-authentication/chooseapiappurl.png)\n\n2. Add `/api/contacts/get/` to the URL in the browser address bar.\n\n    For example, if your API app's URL is this:\n\n        https://microsoft-apiappeeb5bdsasd744e188be7fa26f239bd4b.azurewebsites.net/\n\n    The complete URL would be this:\n\n        https://microsoft-apiappeeb5bdsasd744e188be7fa26f239bd4b.azurewebsites.net/api/contacts/get/\n\n    Different browsers handle API calls differently. The image shows a successful call from a Chrome browser.\n\n    ![Chrome Get response](./media/app-service-api-dotnet-add-authentication/chromeget.png)\n\n2. Save the URL you used; you'll use it again later in the tutorial.\n\n## Protect the API app\n\nWhen you deployed your API app, you deployed it to a resource group. You can add web apps and other API apps to the same resource group, and each API app within the resource group can have one of three accessibility settings:\n<!--todo: diagram showing different accessibility settings-->\n\n- **Public (anonymous)** - Anyone can call the API app from outside the resource group without being logged in.\n- **Public (authenticated)** - Only authenticated users are allowed to call the API app from outside the resource group.\n- **Internal** - Only other API apps in the same resource group are allowed to call the API app. (Calls from web apps are considered external even if the web apps are in the same resource group.)\n\nWhen Visual Studio created the resource group for you, it also created a *gateway*.  A gateway is a special web app that handles all requests destined for API apps in the resource group.\n\nWhen you go to the resource group's blade in the [Azure preview portal], you can see your API app and the gateway in the diagram.\n\n![Resource group diagram](./media/app-service-api-dotnet-add-authentication/rgdiagram.png)\n\n### <a id=\"apiapp\"></a>Configure the API app to require authentication\n\nTo configure your API app to accept only authenticated requests, you'll set its accessibility to **Public (authenticated)** and you'll configure the gateway to require authentication from a provider such as Azure Active Directory, Google, or Facebook.\n\n[AZURE.INCLUDE [app-service-api-config-auth](../../includes/app-service-api-config-auth.md)]\n\nYou have now protected the API app from unauthenticated access. Next you have to configure the gateway to specify which authentication provider to use.\n\n### <a id=\"gateway\"></a>Configure the gateway to use an authentication provider\n\n[AZURE.INCLUDE [app-service-api-gateway-config-auth](../../includes/app-service-api-gateway-config-auth.md)]\n\n## Verify that authentication works\n\n**Note:** If you have a problem logging in when you do the following steps, try opening a private or incognito window.\n \n1. Open a browser window, and in the address bar enter the URL that calls your API app's `Get` method, as you did earlier.\n\n    This time the attempt to access the API app results in an error message.\n\n    ![Chrome Get response fail](./media/app-service-api-dotnet-add-authentication/chromegetfail.png)\n\n2. In the browser, go to the login URL. The URL follows this pattern: \n\n        http://[gatewayurl]/login/[providername]\n\n    You can get the gateway URL from the **Gateway** blade in the [Azure preview portal]. (To get to the **Gateway** blade, click the gateway in the diagram shown on the **Resource group** blade.)\n\n    ![Gateway URL](./media/app-service-api-dotnet-add-authentication/gatewayurl.png)\n\n    The [providername] must be one of the following values:\n    \n    * \"microsoftaccount\"\n    * \"facebook\"\n    * \"twitter\"\n    * \"google\"\n    * \"aad\"\n\n    Here is a sample login URL for Azure Active Directory:\n\n        https://dropboxrgaeb4ae60b7cb4f3d966dfa43.azurewebsites.net/login/aad/\n\n    Notice that unlike the earlier URL, this one does not include your API app name:  the gateway is authenticating you, not the API app.  The gateway handles authentication for all API apps in the resource group.\n\n3. Enter your credentials when the browser displays a login page. \n \n    If you configured Azure Active Directory login, use one of the users listed in the **Users** tab for the application you created in the Azure Active Directory tab of the [Azure portal], such as admin@contoso.onmicrosoft.com.\n\n    ![AAD users](./media/app-service-api-dotnet-add-authentication/aadusers.png)\n\n    ![Login page](./media/app-service-api-dotnet-add-authentication/ffsignin.png)\n\n4. When the \"login complete\" message appears, enter the URL to your API app's Get method again.\n\n    This time because you've authenticated, the call is successful. The gateway recognizes that you are an authenticated user and passes your request on to your API app.\n\n    ![Login completed](./media/app-service-api-dotnet-add-authentication/logincomplete.png)\n\n    ![Chrome Get response](./media/app-service-api-dotnet-add-authentication/chromeget.png)\n\n    If you have enabled the Swagger UI, you can also go to the Swagger UI page now. However, you'll see a red **ERROR** icon at the bottom right corner of the page, and if you click the icon you'll see a message saying that the Swagger JSON file is inaccessible. This is because Swagger makes an AJAX call without including the Zumo token to try to retrieve the JSON file. This does not prevent the Swagger UI page from working.\n\n## Use Postman to send a Post request\n\nWhen you log in to the gateway, the gateway sends back an authentication token.  This token must be included with all requests from external sources that go through the gateway. When you access an API with a browser, the browser typically stores the token in a cookie and sends it along with all subsequent calls to the API.\n\nSo you can see what is happening in the background, in this section of the tutorial you use a browser tool to create and submit a Post request, and you get the authorization token from the cookie and include it in an HTTP header. This section is optional: in the previous section you already verified that the API app accepts only authenticated access.\n\nThese instructions show how to use the Postman tool in the Chrome browser, but you could do the same thing with any REST client tool and browser developer tools.\n\n1. In a Chrome browser window, go through the steps shown in the previous section to authenticate, and then open developer tools (F12).\n\n    ![Go to Resources tab](./media/app-service-api-dotnet-add-authentication/resources.png)\n\n3. In the **Resources** tab of Chrome developer tools, find the cookies for your gateway, and triple-click the Value of the **x-zumo-auth** cookie to select all of it.\n\n    **Note:**  Make sure you get all of the cookie's value. If you double-click, you'll get only the first part of it.\n\n5. Right-click the **Value** of the **x-zumo-auth** cookie, and then click **Copy**.\n\n    ![Copy auth token](./media/app-service-api-dotnet-add-authentication/copyzumotoken.png)\n\n4. Install the Postman extension in your Chrome browser if you haven't done so yet.\n\n6. Open the Postman extension.\n\n7. In the Request URL field, enter the URL to your API app's Get method that you used previously, but omit `get/` from the end.\n \n        http://[apiappurl]/api/contacts\n    \n8. Click **Headers**, and then add an *x-zumo-auth* header. Paste the token value from the clipboard into the **Value** field.\n\n9. Add a *Content-Type* header with value *application/json*.\n\n10. Click **form-data**, and then add a *contact* key with the following value:\n\n        {   \"Id\": 0,   \"Name\": \"Li Yan\",   \"EmailAddress\": \"yan@contoso.com\" }\n\n11. Click Send.\n\n    The API app returns a *201 Created* response.\n\n    ![Add headers and body](./media/app-service-api-dotnet-add-authentication/addcontact.png)\n\n12. To verify that this request would not work without the authentication token, delete the authentication header and click Send again.\n\n    You get a *403 Forbidden* response.\n\n    ![403 Forbidden response](./media/app-service-api-dotnet-add-authentication/403forbidden.png)\n\n## Get information about the logged-on user\n\nIn this section you change the code in the ContactsList API app so that it retrieves and returns the name and email address of the logged-on user.  \n\n1. In Visual Studio, open the API app project that you deployed in [Deploy an API app](app-service-dotnet-deploy-api-app.md) and have been calling for this tutorial.\n\n3. Open the apiapp.json file, and add a line that indicates the API app uses Azure Active Directory authentication.\n\n        \"authentication\": [{\"type\": \"aad\"}]\n\n    The final apiapp.json file will resemble the following example:\n\n        {\n            \"$schema\": \"http://json-schema.org/schemas/2014-11-01/apiapp.json#\",\n            \"id\": \"ContactsList\",\n            \"namespace\": \"microsoft.com\",\n            \"gateway\": \"2015-01-14\",\n            \"version\": \"1.0.0\",\n            \"title\": \"ContactsList\",\n            \"summary\": \"\",\n            \"author\": \"\",\n            \"endpoints\": {\n                \"apiDefinition\": \"/swagger/docs/v1\",\n                \"status\": null\n            },\n            \"authentication\": [{\"type\": \"aad\"}]\n        }\n\n    This tutorial uses Azure Active Directory as an example. For other providers you would use the appropriate identifier. Here are the valid provider values:\n\n    * \"aad\"\n    * \"microsoftaccount\"\n    * \"google\"\n    * \"twitter\"\n    * \"facebook\". \n\n3. In the *ContactsController.cs* file, add a `using` statement at the top of the file.\n\n        using Microsoft.Azure.AppService.ApiApps.Service;\n\n2. Replace the code  in the `Get` method with the following code.\n\n        var runtime = Runtime.FromAppSettings(Request);\n        var user = runtime.CurrentUser;\n        TokenResult token = await user.GetRawTokenAsync(\"aad\");\n        var name = (string)token.Claims[\"name\"];\n        var email = (string)token.Claims[\"http://schemas.xmlsoap.org/ws/2005/05/identity/claims/upn\"];\n        return new Contact[]\n        {\n            new Contact { Id = 1, EmailAddress = email, Name = name }\n        };\n\n    Instead of the three sample contacts, the code returns contact information for the logged-on user. \n\n    The sample code uses Azure Active Directory. For other providers you would use the appropriate token name and claims identifier as shown in the previous step.\n\n    For information about Azure Active Directory claims that are available, see [Supported Token and Claim Types](https://msdn.microsoft.com/library/dn195587.aspx).\n\n3. Add a using statement for `Microsoft.Azure.AppService.ApiApps.Service`.\n\n        using Microsoft.Azure.AppService.ApiApps.Service;\n\n3. Redeploy the project.  \n\n    Visual Studio will remember the settings from when you deployed the project while following the [Deploy](app-service-dotnet-deploy-api-app.md) tutorial.  Right-click the project, click **Publish**, and then click **Publish** in the **Publish Web** dialog.\n\n6. Follow the procedure you did earlier to send a Get request to the protected API app. \n\n    The response message shows the name and ID of the identity you used to log in.\n\n    ![Response message with logged on user](./media/app-service-api-dotnet-add-authentication/chromegetuserinfo.png)\n\n## Next steps\n\nYou've seen how to protect an Azure API app by requiring Azure Active Directory or social provider authentication. For more information, see [Authentication for API apps and mobile apps](../app-service/app-service-authentication-overview.md). \n\n[Azure portal]: https://manage.windowsazure.com/\n[Azure preview portal]: https://portal.azure.com/\n\ntest\n"
+}

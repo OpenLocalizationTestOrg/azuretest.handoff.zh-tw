@@ -1,0 +1,936 @@
+{
+  "nodes": [
+    {
+      "content": "Scale Stream Analytics jobs to increase throughput | Microsoft Azure",
+      "pos": [
+        27,
+        95
+      ]
+    },
+    {
+      "content": "Learn how to scale Stream Analytics jobs by configuring input partitions, tuning the query definition, and setting job streaming units.",
+      "pos": [
+        114,
+        249
+      ]
+    },
+    {
+      "content": "Scale Azure Stream Analytics jobs to increase throughput",
+      "pos": [
+        635,
+        691
+      ]
+    },
+    {
+      "pos": [
+        695,
+        896
+      ],
+      "content": "Learn how to calculate <bpt id=\"p1\">*</bpt>streaming units<ept id=\"p1\">*</ept> for Stream Analytics jobs, and how to scale Stream Analytics jobs by configuring input partitions, tuning the query definition, and setting job streaming units."
+    },
+    {
+      "content": "What are the parts of a Stream Analytics job?",
+      "pos": [
+        902,
+        947
+      ]
+    },
+    {
+      "content": "An Azure Stream Analytics job definition includes inputs, a query, and output.",
+      "pos": [
+        951,
+        1029
+      ]
+    },
+    {
+      "content": "Inputs are from where the job reads the data stream, the query is used to transform the data input stream, and the output is where the job sends the job results to.",
+      "pos": [
+        1030,
+        1194
+      ]
+    },
+    {
+      "content": "A job requires at least one input source for data streaming.",
+      "pos": [
+        1198,
+        1258
+      ]
+    },
+    {
+      "content": "The data stream input source can be stored in an Azure Service Bus Event Hub or in Azure Blob storage.",
+      "pos": [
+        1259,
+        1361
+      ]
+    },
+    {
+      "content": "For more information, see <bpt id=\"p1\">[</bpt>Introduction to Azure Stream Analytics<ept id=\"p1\">](stream-analytics-introduction.md)</ept>, <bpt id=\"p2\">[</bpt>Get started using Azure Stream Analytics<ept id=\"p2\">](stream-analytics-get-started.md)</ept>, and <bpt id=\"p3\">[</bpt>Azure Stream Analytics developer guide<ept id=\"p3\">](../stream-analytics-developer-guide.md)</ept>.",
+      "pos": [
+        1362,
+        1626
+      ]
+    },
+    {
+      "content": "Configuring Streaming Units",
+      "pos": [
+        1631,
+        1658
+      ]
+    },
+    {
+      "content": "Streaming Units (SUs) represent the resources and power to execute an Azure Stream Analytics job.",
+      "pos": [
+        1662,
+        1759
+      ]
+    },
+    {
+      "content": "SUs provide a way to describe the relative event processing capacity based on a blended measure of CPU, memory, and read and write rates.",
+      "pos": [
+        1760,
+        1897
+      ]
+    },
+    {
+      "content": "Each streaming unit corresponds to roughly 1MB/second of throughput.",
+      "pos": [
+        1898,
+        1966
+      ]
+    },
+    {
+      "content": "Choosing how many SUs are required for a particular job is depends on the on the partition configuration for the inputs and the query defined for the job.",
+      "pos": [
+        1969,
+        2123
+      ]
+    },
+    {
+      "content": "You can select up to your quota in streaming units for a job by using the Azure portal.",
+      "pos": [
+        2125,
+        2212
+      ]
+    },
+    {
+      "content": "Each Azure subscription by default has a quota of up to 50 streaming units for all the analytics jobs in a specific region.",
+      "pos": [
+        2213,
+        2336
+      ]
+    },
+    {
+      "content": "To increase streaming units for your subscriptions, contact <bpt id=\"p1\">[</bpt>Microsoft Support<ept id=\"p1\">](http://support.microsoft.com)</ept>.",
+      "pos": [
+        2338,
+        2448
+      ]
+    },
+    {
+      "content": "The number of streaming units that a job can utilize depends on the partition configuration for the inputs and the query defined for the job.",
+      "pos": [
+        2450,
+        2591
+      ]
+    },
+    {
+      "content": "Note also that a valid value for the stream units must be used.",
+      "pos": [
+        2592,
+        2655
+      ]
+    },
+    {
+      "content": "The valid values start at 1, 3, 6 and then upwards in increments of 6, as shown below.",
+      "pos": [
+        2656,
+        2742
+      ]
+    },
+    {
+      "content": "![Azure Stream Analytics Stream Units Scale][img.stream.analytics.streaming.units.scale]",
+      "pos": [
+        2744,
+        2832
+      ]
+    },
+    {
+      "content": "This article will show you how to calculate and tune the query to increase throughput for analytics jobs.",
+      "pos": [
+        2834,
+        2939
+      ]
+    },
+    {
+      "content": "Calculate the maximum streaming units of a job",
+      "pos": [
+        2944,
+        2990
+      ]
+    },
+    {
+      "content": "The total number of streaming units that can be used by a Stream Analytics job depends on the number of steps in the query defined for the job and the number of partitions for each step.",
+      "pos": [
+        2994,
+        3180
+      ]
+    },
+    {
+      "content": "Steps in a query",
+      "pos": [
+        3186,
+        3202
+      ]
+    },
+    {
+      "content": "A query can have one or many steps.",
+      "pos": [
+        3207,
+        3242
+      ]
+    },
+    {
+      "content": "Each step is a sub-query defined by using the WITH keyword.",
+      "pos": [
+        3243,
+        3302
+      ]
+    },
+    {
+      "content": "The only query that is outside of the WITH keyword is also counted as a step, for example, the SELECT statement in the following query:",
+      "pos": [
+        3303,
+        3438
+      ]
+    },
+    {
+      "content": "The previous query has two steps.",
+      "pos": [
+        3738,
+        3771
+      ]
+    },
+    {
+      "pos": [
+        3775,
+        3845
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> This sample query will be explained later in the article."
+    },
+    {
+      "content": "Partition a step",
+      "pos": [
+        3851,
+        3867
+      ]
+    },
+    {
+      "content": "Partitioning a step requires the following conditions:",
+      "pos": [
+        3873,
+        3927
+      ]
+    },
+    {
+      "content": "The input source must be partitioned.",
+      "pos": [
+        3931,
+        3968
+      ]
+    },
+    {
+      "content": "For more information, see <bpt id=\"p1\">[</bpt>Azure Stream Analytics developer guide<ept id=\"p1\">](../stream-analytics-developer-guide.md)</ept> and <bpt id=\"p2\">[</bpt>Event Hubs Programming Guide<ept id=\"p2\">](../azure-event-hubs-developer-guide.md)</ept>.",
+      "pos": [
+        3969,
+        4151
+      ]
+    },
+    {
+      "content": "The SELECT statement of the query must read from a partitioned input source.",
+      "pos": [
+        4154,
+        4230
+      ]
+    },
+    {
+      "pos": [
+        4233,
+        4297
+      ],
+      "content": "The query within the step must have the <bpt id=\"p1\">**</bpt>Partition By<ept id=\"p1\">**</ept> keyword"
+    },
+    {
+      "content": "When a query is partitioned, the input events will be processed and aggregated in separate partition groups, and outputs events are generated for each of the groups.",
+      "pos": [
+        4299,
+        4464
+      ]
+    },
+    {
+      "content": "If a combined aggregate is desirable, you must create a second non-partitioned step to aggregate.",
+      "pos": [
+        4465,
+        4562
+      ]
+    },
+    {
+      "content": "Calculate the max streaming units for a job",
+      "pos": [
+        4568,
+        4611
+      ]
+    },
+    {
+      "content": "All non-partitioned steps together can scale up to six streaming units for a Stream Analytics job.",
+      "pos": [
+        4617,
+        4715
+      ]
+    },
+    {
+      "content": "To add additional streaming units, a step must be partitioned.",
+      "pos": [
+        4716,
+        4778
+      ]
+    },
+    {
+      "content": "Each partition can have six streaming units.",
+      "pos": [
+        4779,
+        4823
+      ]
+    },
+    {
+      "content": "Query of a job",
+      "pos": [
+        4852,
+        4866
+      ]
+    },
+    {
+      "content": "Max streaming units for the job",
+      "pos": [
+        4875,
+        4906
+      ]
+    },
+    {
+      "content": "The query contains one step.",
+      "pos": [
+        4936,
+        4964
+      ]
+    },
+    {
+      "content": "The step is not partitioned.",
+      "pos": [
+        4974,
+        5002
+      ]
+    },
+    {
+      "content": "6",
+      "pos": [
+        5024,
+        5025
+      ]
+    },
+    {
+      "content": "The input data stream is partitioned by 3.",
+      "pos": [
+        5055,
+        5097
+      ]
+    },
+    {
+      "content": "The query contains one step.",
+      "pos": [
+        5107,
+        5135
+      ]
+    },
+    {
+      "content": "The step is partitioned.",
+      "pos": [
+        5145,
+        5169
+      ]
+    },
+    {
+      "content": "18",
+      "pos": [
+        5191,
+        5193
+      ]
+    },
+    {
+      "content": "The query contains two steps.",
+      "pos": [
+        5223,
+        5252
+      ]
+    },
+    {
+      "content": "Neither of the steps is partitioned.",
+      "pos": [
+        5262,
+        5298
+      ]
+    },
+    {
+      "content": "6",
+      "pos": [
+        5320,
+        5321
+      ]
+    },
+    {
+      "content": "The data stream input is partitioned by 3.",
+      "pos": [
+        5353,
+        5395
+      ]
+    },
+    {
+      "content": "The query contains two steps.",
+      "pos": [
+        5405,
+        5434
+      ]
+    },
+    {
+      "content": "The input step is partitioned and the second step is not.",
+      "pos": [
+        5435,
+        5492
+      ]
+    },
+    {
+      "content": "The SELECT statement reads from the partitioned input.",
+      "pos": [
+        5502,
+        5556
+      ]
+    },
+    {
+      "content": "24 (18 for partitioned steps + 6 for non-partitioned steps)",
+      "pos": [
+        5578,
+        5637
+      ]
+    },
+    {
+      "content": "Example of scale",
+      "pos": [
+        5662,
+        5678
+      ]
+    },
+    {
+      "content": "The following query calculates the number of cars going through a toll station with three tollbooths within a three-minute window.",
+      "pos": [
+        5683,
+        5813
+      ]
+    },
+    {
+      "content": "This query can be scaled up to six streaming units.",
+      "pos": [
+        5814,
+        5865
+      ]
+    },
+    {
+      "content": "To use more streaming units for the query, both the data stream input and the query must be partitioned.",
+      "pos": [
+        5991,
+        6095
+      ]
+    },
+    {
+      "content": "Given that the data stream partition is set to 3, the following modified query can be scaled up to 18 streaming units:",
+      "pos": [
+        6096,
+        6214
+      ]
+    },
+    {
+      "content": "When a query is partitioned, the input events are processed and aggregated in separate partition groups.",
+      "pos": [
+        6365,
+        6469
+      ]
+    },
+    {
+      "content": "Output events are also generated for each of the groups.",
+      "pos": [
+        6470,
+        6526
+      ]
+    },
+    {
+      "content": "Partitioning can cause some unexpected results when the <bpt id=\"p1\">**</bpt>Group-by<ept id=\"p1\">**</ept> field is not the Partition Key in the data stream input.",
+      "pos": [
+        6527,
+        6652
+      ]
+    },
+    {
+      "content": "For example, the TollBoothId field in the previous sample query is not the Partition Key of Input1.",
+      "pos": [
+        6653,
+        6752
+      ]
+    },
+    {
+      "content": "The data from the TollBooth #1 can be spread in multiple partitions.",
+      "pos": [
+        6753,
+        6821
+      ]
+    },
+    {
+      "content": "Each of the Input1 partitions will be processed separately by Stream Analytics, and multiple records of the car-pass-through count for the same tollbooth in the same tumbling window will be created.",
+      "pos": [
+        6823,
+        7021
+      ]
+    },
+    {
+      "content": "If the input partition key can't be changed, this problem can be fixed by adding an additional non-partition step, for example:",
+      "pos": [
+        7022,
+        7149
+      ]
+    },
+    {
+      "content": "This query can be scaled to 24 streaming units.",
+      "pos": [
+        7450,
+        7497
+      ]
+    },
+    {
+      "pos": [
+        7500,
+        7702
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> If you are joining two streams, ensure that the streams are partitioned by the partition key of the column that you do the joins, and you have the same number of partitions in both streams."
+    },
+    {
+      "content": "Configure Stream Analytics job partition",
+      "pos": [
+        7708,
+        7748
+      ]
+    },
+    {
+      "content": "To adjust a streaming unit for a job",
+      "pos": [
+        7755,
+        7791
+      ]
+    },
+    {
+      "pos": [
+        7798,
+        7866
+      ],
+      "content": "Sign in to the <bpt id=\"p1\">[</bpt>Management portal<ept id=\"p1\">](https://manage.windowsazure.com)</ept>."
+    },
+    {
+      "pos": [
+        7870,
+        7914
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>Stream Analytics<ept id=\"p1\">**</ept> in the left pane."
+    },
+    {
+      "content": "Click the Stream Analytics job that you want to scale.",
+      "pos": [
+        7918,
+        7972
+      ]
+    },
+    {
+      "pos": [
+        7976,
+        8015
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>SCALE<ept id=\"p1\">**</ept> at the top of the page."
+    },
+    {
+      "content": "![Azure Stream Analytics Stream Units Scale][img.stream.analytics.streaming.units.scale]",
+      "pos": [
+        8017,
+        8105
+      ]
+    },
+    {
+      "content": "Monitor job performance",
+      "pos": [
+        8111,
+        8134
+      ]
+    },
+    {
+      "content": "Using the management portal, you can track the throughput of a job in Events/second:",
+      "pos": [
+        8139,
+        8223
+      ]
+    },
+    {
+      "content": "![Azure Stream Analytics monitor jobs][img.stream.analytics.monitor.job]",
+      "pos": [
+        8225,
+        8297
+      ]
+    },
+    {
+      "content": "Calculate the expected throughput of the workload in Events/second.",
+      "pos": [
+        8299,
+        8366
+      ]
+    },
+    {
+      "content": "If the throughput is less than expected, tune the input partition, tune the query, and add additional streaming units to your job.",
+      "pos": [
+        8367,
+        8497
+      ]
+    },
+    {
+      "content": "ASA Throughput at Scale - Raspberry Pi scenario",
+      "pos": [
+        8502,
+        8549
+      ]
+    },
+    {
+      "content": "To understand how ASA scales in a typical scenario in terms of processing throughput across multiple Streaming Units, here is an experiment that sends sensor data (clients) into Event Hub, ASA processes it and sends alert or statistics as an output to another Event Hub.",
+      "pos": [
+        8555,
+        8825
+      ]
+    },
+    {
+      "content": "The client is sending synthesized sensor data to Event Hubs in JSON format to ASA and data output is also in JSON format.",
+      "pos": [
+        8827,
+        8948
+      ]
+    },
+    {
+      "content": "Here is how the sample data would look like–",
+      "pos": [
+        8950,
+        8994
+      ]
+    },
+    {
+      "content": "Query: “Send an alert when the light is switched off”",
+      "pos": [
+        9132,
+        9185
+      ]
+    },
+    {
+      "content": "Measuring Throughput: Throughput in this context is the amount of input data processed by ASA in a fixed amount of time (10minutes).",
+      "pos": [
+        9349,
+        9481
+      ]
+    },
+    {
+      "content": "To achieve best processing throughput for the input data, both the data stream input and the query must be partitioned.",
+      "pos": [
+        9482,
+        9601
+      ]
+    },
+    {
+      "content": "Also COUNT()is included in the query to measure how many input events were processed.",
+      "pos": [
+        9602,
+        9687
+      ]
+    },
+    {
+      "content": "To ensure ASA is not simply waiting for input events to come, each partition of the Input Event Hub was preloaded with sufficient input data (about 300MB).",
+      "pos": [
+        9688,
+        9843
+      ]
+    },
+    {
+      "content": "Below are the results with increasing number of Streaming units and corresponding Partition counts in Event Hubs.",
+      "pos": [
+        9847,
+        9960
+      ]
+    },
+    {
+      "content": "Input Partitions",
+      "pos": [
+        9991,
+        10007
+      ]
+    },
+    {
+      "content": "Output Partitions",
+      "pos": [
+        10016,
+        10033
+      ]
+    },
+    {
+      "content": "Streaming Units",
+      "pos": [
+        10042,
+        10057
+      ]
+    },
+    {
+      "content": "Sustained Throughput",
+      "pos": [
+        10066,
+        10086
+      ]
+    },
+    {
+      "content": "12",
+      "pos": [
+        10107,
+        10109
+      ]
+    },
+    {
+      "content": "12",
+      "pos": [
+        10119,
+        10121
+      ]
+    },
+    {
+      "content": "6",
+      "pos": [
+        10131,
+        10132
+      ]
+    },
+    {
+      "content": "4.06 MB/s",
+      "pos": [
+        10142,
+        10151
+      ]
+    },
+    {
+      "content": "12",
+      "pos": [
+        10172,
+        10174
+      ]
+    },
+    {
+      "content": "12",
+      "pos": [
+        10184,
+        10186
+      ]
+    },
+    {
+      "content": "12",
+      "pos": [
+        10196,
+        10198
+      ]
+    },
+    {
+      "content": "8.06 MB/s",
+      "pos": [
+        10208,
+        10217
+      ]
+    },
+    {
+      "content": "48",
+      "pos": [
+        10238,
+        10240
+      ]
+    },
+    {
+      "content": "48",
+      "pos": [
+        10250,
+        10252
+      ]
+    },
+    {
+      "content": "48",
+      "pos": [
+        10262,
+        10264
+      ]
+    },
+    {
+      "content": "38.32 MB/s",
+      "pos": [
+        10274,
+        10284
+      ]
+    },
+    {
+      "content": "192",
+      "pos": [
+        10305,
+        10308
+      ]
+    },
+    {
+      "content": "192",
+      "pos": [
+        10318,
+        10321
+      ]
+    },
+    {
+      "content": "192",
+      "pos": [
+        10331,
+        10334
+      ]
+    },
+    {
+      "content": "172.67 MB/s",
+      "pos": [
+        10344,
+        10355
+      ]
+    },
+    {
+      "content": "480",
+      "pos": [
+        10376,
+        10379
+      ]
+    },
+    {
+      "content": "480",
+      "pos": [
+        10389,
+        10392
+      ]
+    },
+    {
+      "content": "480",
+      "pos": [
+        10402,
+        10405
+      ]
+    },
+    {
+      "content": "454.27 MB/s",
+      "pos": [
+        10415,
+        10426
+      ]
+    },
+    {
+      "content": "720",
+      "pos": [
+        10447,
+        10450
+      ]
+    },
+    {
+      "content": "720",
+      "pos": [
+        10460,
+        10463
+      ]
+    },
+    {
+      "content": "720",
+      "pos": [
+        10473,
+        10476
+      ]
+    },
+    {
+      "content": "609.69 MB/s",
+      "pos": [
+        10486,
+        10497
+      ]
+    },
+    {
+      "content": "![img.stream.analytics.perfgraph][img.stream.analytics.perfgraph]",
+      "pos": [
+        10519,
+        10584
+      ]
+    },
+    {
+      "content": "Get help",
+      "pos": [
+        10589,
+        10597
+      ]
+    },
+    {
+      "pos": [
+        10601,
+        10744
+      ],
+      "content": "For further assistance, try our <bpt id=\"p1\">[</bpt>Azure Stream Analytics forum<ept id=\"p1\">](https://social.msdn.microsoft.com/Forums/en-US/home?forum=AzureStreamAnalytics)</ept>."
+    },
+    {
+      "content": "Next steps",
+      "pos": [
+        10750,
+        10760
+      ]
+    },
+    {
+      "content": "Introduction to Azure Stream Analytics",
+      "pos": [
+        10768,
+        10806
+      ]
+    },
+    {
+      "content": "Get started using Azure Stream Analytics",
+      "pos": [
+        10845,
+        10885
+      ]
+    },
+    {
+      "content": "Scale Azure Stream Analytics jobs",
+      "pos": [
+        10923,
+        10956
+      ]
+    },
+    {
+      "content": "Azure Stream Analytics Query Language Reference",
+      "pos": [
+        10993,
+        11040
+      ]
+    },
+    {
+      "content": "Azure Stream Analytics Management REST API Reference",
+      "pos": [
+        11101,
+        11153
+      ]
+    }
+  ],
+  "content": "<properties\n    pageTitle=\"Scale Stream Analytics jobs to increase throughput | Microsoft Azure\"\n    description=\"Learn how to scale Stream Analytics jobs by configuring input partitions, tuning the query definition, and setting job streaming units.\"\n    keywords=\"analytics jobs,data stream,data streaming\"\n    services=\"stream-analytics\"\n    documentationCenter=\"\"\n    authors=\"jeffstokes72\"\n    manager=\"paulettm\"\n    editor=\"cgronlun\"/>\n\n<tags\n    ms.service=\"stream-analytics\"\n    ms.devlang=\"na\"\n    ms.topic=\"article\"\n    ms.tgt_pltfrm=\"na\"\n    ms.workload=\"data-services\"\n    ms.date=\"08/19/2015\"\n    ms.author=\"jeffstok\"/>\n\n# Scale Azure Stream Analytics jobs to increase throughput #\n\nLearn how to calculate *streaming units* for Stream Analytics jobs, and how to scale Stream Analytics jobs by configuring input partitions, tuning the query definition, and setting job streaming units. \n\n## What are the parts of a Stream Analytics job? ##\nAn Azure Stream Analytics job definition includes inputs, a query, and output. Inputs are from where the job reads the data stream, the query is used to transform the data input stream, and the output is where the job sends the job results to.  \n\nA job requires at least one input source for data streaming. The data stream input source can be stored in an Azure Service Bus Event Hub or in Azure Blob storage. For more information, see [Introduction to Azure Stream Analytics](stream-analytics-introduction.md), [Get started using Azure Stream Analytics](stream-analytics-get-started.md), and [Azure Stream Analytics developer guide](../stream-analytics-developer-guide.md).\n\n## Configuring Streaming Units ##\nStreaming Units (SUs) represent the resources and power to execute an Azure Stream Analytics job. SUs provide a way to describe the relative event processing capacity based on a blended measure of CPU, memory, and read and write rates. Each streaming unit corresponds to roughly 1MB/second of throughput. \n\nChoosing how many SUs are required for a particular job is depends on the on the partition configuration for the inputs and the query defined for the job.  You can select up to your quota in streaming units for a job by using the Azure portal. Each Azure subscription by default has a quota of up to 50 streaming units for all the analytics jobs in a specific region.  To increase streaming units for your subscriptions, contact [Microsoft Support](http://support.microsoft.com).\n\nThe number of streaming units that a job can utilize depends on the partition configuration for the inputs and the query defined for the job. Note also that a valid value for the stream units must be used. The valid values start at 1, 3, 6 and then upwards in increments of 6, as shown below.\n\n![Azure Stream Analytics Stream Units Scale][img.stream.analytics.streaming.units.scale]\n\nThis article will show you how to calculate and tune the query to increase throughput for analytics jobs.\n\n## Calculate the maximum streaming units of a job ##\nThe total number of streaming units that can be used by a Stream Analytics job depends on the number of steps in the query defined for the job and the number of partitions for each step.\n\n### Steps in a query ###\nA query can have one or many steps. Each step is a sub-query defined by using the WITH keyword. The only query that is outside of the WITH keyword is also counted as a step, for example, the SELECT statement in the following query:\n\n    WITH Step1 AS (\n        SELECT COUNT(*) AS Count, TollBoothId\n        FROM Input1 Partition By PartitionId\n        GROUP BY TumblingWindow(minute, 3), TollBoothId, PartitionId\n    )\n\n    SELECT SUM(Count) AS Count, TollBoothId\n    FROM Step1\n    GROUP BY TumblingWindow(minute,3), TollBoothId\n\nThe previous query has two steps.\n\n> [AZURE.NOTE] This sample query will be explained later in the article.\n\n### Partition a step ###\n\nPartitioning a step requires the following conditions:\n\n- The input source must be partitioned. For more information, see [Azure Stream Analytics developer guide](../stream-analytics-developer-guide.md) and [Event Hubs Programming Guide](../azure-event-hubs-developer-guide.md).\n- The SELECT statement of the query must read from a partitioned input source.\n- The query within the step must have the **Partition By** keyword\n\nWhen a query is partitioned, the input events will be processed and aggregated in separate partition groups, and outputs events are generated for each of the groups. If a combined aggregate is desirable, you must create a second non-partitioned step to aggregate.\n\n### Calculate the max streaming units for a job ###\n\nAll non-partitioned steps together can scale up to six streaming units for a Stream Analytics job. To add additional streaming units, a step must be partitioned. Each partition can have six streaming units.\n\n<table border=\"1\">\n<tr><th>Query of a job</th><th>Max streaming units for the job</th></td>\n\n<tr><td>\n<ul>\n<li>The query contains one step.</li>\n<li>The step is not partitioned.</li>\n</ul>\n</td>\n<td>6</td></tr>\n\n<tr><td>\n<ul>\n<li>The input data stream is partitioned by 3.</li>\n<li>The query contains one step.</li>\n<li>The step is partitioned.</li>\n</ul>\n</td>\n<td>18</td></tr>\n\n<tr><td>\n<ul>\n<li>The query contains two steps.</li>\n<li>Neither of the steps is partitioned.</li>\n</ul>\n</td>\n<td>6</td></tr>\n\n\n\n<tr><td>\n<ul>\n<li>The data stream input is partitioned by 3.</li>\n<li>The query contains two steps. The input step is partitioned and the second step is not.</li>\n<li>The SELECT statement reads from the partitioned input.</li>\n</ul>\n</td>\n<td>24 (18 for partitioned steps + 6 for non-partitioned steps)</td></tr>\n</table>\n\n### Example of scale ###\nThe following query calculates the number of cars going through a toll station with three tollbooths within a three-minute window. This query can be scaled up to six streaming units.\n\n    SELECT COUNT(*) AS Count, TollBoothId\n    FROM Input1\n    GROUP BY TumblingWindow(minute, 3), TollBoothId, PartitionId\n\nTo use more streaming units for the query, both the data stream input and the query must be partitioned. Given that the data stream partition is set to 3, the following modified query can be scaled up to 18 streaming units:\n\n    SELECT COUNT(*) AS Count, TollBoothId\n    FROM Input1 Partition By PartitionId\n    GROUP BY TumblingWindow(minute, 3), TollBoothId, PartitionId\n\nWhen a query is partitioned, the input events are processed and aggregated in separate partition groups. Output events are also generated for each of the groups. Partitioning can cause some unexpected results when the **Group-by** field is not the Partition Key in the data stream input. For example, the TollBoothId field in the previous sample query is not the Partition Key of Input1. The data from the TollBooth #1 can be spread in multiple partitions.\n\nEach of the Input1 partitions will be processed separately by Stream Analytics, and multiple records of the car-pass-through count for the same tollbooth in the same tumbling window will be created. If the input partition key can't be changed, this problem can be fixed by adding an additional non-partition step, for example:\n\n    WITH Step1 AS (\n        SELECT COUNT(*) AS Count, TollBoothId\n        FROM Input1 Partition By PartitionId\n        GROUP BY TumblingWindow(minute, 3), TollBoothId, PartitionId\n    )\n\n    SELECT SUM(Count) AS Count, TollBoothId\n    FROM Step1\n    GROUP BY TumblingWindow(minute, 3), TollBoothId\n\nThis query can be scaled to 24 streaming units.\n\n>[AZURE.NOTE] If you are joining two streams, ensure that the streams are partitioned by the partition key of the column that you do the joins, and you have the same number of partitions in both streams.\n\n\n## Configure Stream Analytics job partition ##\n\n**To adjust a streaming unit for a job**\n\n1. Sign in to the [Management portal](https://manage.windowsazure.com).\n2. Click **Stream Analytics** in the left pane.\n3. Click the Stream Analytics job that you want to scale.\n4. Click **SCALE** at the top of the page.\n\n![Azure Stream Analytics Stream Units Scale][img.stream.analytics.streaming.units.scale]\n\n\n## Monitor job performance ##\n\nUsing the management portal, you can track the throughput of a job in Events/second:\n\n![Azure Stream Analytics monitor jobs][img.stream.analytics.monitor.job]\n\nCalculate the expected throughput of the workload in Events/second. If the throughput is less than expected, tune the input partition, tune the query, and add additional streaming units to your job.\n\n## ASA Throughput at Scale - Raspberry Pi scenario ##\n\n\nTo understand how ASA scales in a typical scenario in terms of processing throughput across multiple Streaming Units, here is an experiment that sends sensor data (clients) into Event Hub, ASA processes it and sends alert or statistics as an output to another Event Hub.\n\nThe client is sending synthesized sensor data to Event Hubs in JSON format to ASA and data output is also in JSON format.  Here is how the sample data would look like–  \n\n    {\"devicetime\":\"2014-12-11T02:24:56.8850110Z\",\"hmdt\":42.7,\"temp\":72.6,\"prss\":98187.75,\"lght\":0.38,\"dspl\":\"R-PI Olivier's Office\"}\n\nQuery: “Send an alert when the light is switched off”  \n\n    SELECT AVG(lght),\n     “LightOff” as AlertText\n    FROM input TIMESTAMP\n    BY devicetime\n     WHERE\n        lght< 0.05 GROUP BY TumblingWindow(second, 1)\n\nMeasuring Throughput: Throughput in this context is the amount of input data processed by ASA in a fixed amount of time (10minutes). To achieve best processing throughput for the input data, both the data stream input and the query must be partitioned. Also COUNT()is included in the query to measure how many input events were processed. To ensure ASA is not simply waiting for input events to come, each partition of the Input Event Hub was preloaded with sufficient input data (about 300MB).  \n\nBelow are the results with increasing number of Streaming units and corresponding Partition counts in Event Hubs.  \n\n<table border=\"1\">\n<tr><th>Input Partitions</th><th>Output Partitions</th><th>Streaming Units</th><th>Sustained Throughput\n</th></td>\n\n<tr><td>12</td>\n<td>12</td>\n<td>6</td>\n<td>4.06 MB/s</td>\n</tr>\n\n<tr><td>12</td>\n<td>12</td>\n<td>12</td>\n<td>8.06 MB/s</td>\n</tr>\n\n<tr><td>48</td>\n<td>48</td>\n<td>48</td>\n<td>38.32 MB/s</td>\n</tr>\n\n<tr><td>192</td>\n<td>192</td>\n<td>192</td>\n<td>172.67 MB/s</td>\n</tr>\n\n<tr><td>480</td>\n<td>480</td>\n<td>480</td>\n<td>454.27 MB/s</td>\n</tr>\n\n<tr><td>720</td>\n<td>720</td>\n<td>720</td>\n<td>609.69 MB/s</td>\n</tr>\n</table>\n\n![img.stream.analytics.perfgraph][img.stream.analytics.perfgraph]\n\n## Get help ##\nFor further assistance, try our [Azure Stream Analytics forum](https://social.msdn.microsoft.com/Forums/en-US/home?forum=AzureStreamAnalytics).\n\n\n## Next steps ##\n\n- [Introduction to Azure Stream Analytics](stream-analytics-introduction.md)\n- [Get started using Azure Stream Analytics](stream-analytics-get-started.md)\n- [Scale Azure Stream Analytics jobs](stream-analytics-scale-jobs.md)\n- [Azure Stream Analytics Query Language Reference](https://msdn.microsoft.com/library/azure/dn834998.aspx)\n- [Azure Stream Analytics Management REST API Reference](https://msdn.microsoft.com/library/azure/dn835031.aspx)\n\n\n<!--Image references-->\n\n[img.stream.analytics.monitor.job]: ./media/stream-analytics-scale-jobs/StreamAnalytics.job.monitor.png\n[img.stream.analytics.configure.scale]: ./media/stream-analytics-scale-jobs/StreamAnalytics.configure.scale.png\n[img.stream.analytics.perfgraph]: ./media/stream-analytics-scale-jobs/perf.png\n[img.stream.analytics.streaming.units.scale]: ./media/stream-analytics-scale-jobs/StreamAnalyticsStreamingUnitsExample.jpg\n\n<!--Link references-->\n\n[microsoft.support]: http://support.microsoft.com\n[azure.management.portal]: http://manage.windowsazure.com\n[azure.event.hubs.developer.guide]: http://msdn.microsoft.com/library/azure/dn789972.aspx\n\n[stream.analytics.developer.guide]: ../stream-analytics-developer-guide.md\n[stream.analytics.introduction]: stream-analytics-introduction.md\n[stream.analytics.get.started]: stream-analytics-get-started.md\n[stream.analytics.query.language.reference]: http://go.microsoft.com/fwlink/?LinkID=513299\n[stream.analytics.rest.api.reference]: http://go.microsoft.com/fwlink/?LinkId=517301\n "
+}

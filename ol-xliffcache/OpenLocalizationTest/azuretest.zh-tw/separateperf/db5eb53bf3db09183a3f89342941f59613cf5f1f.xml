@@ -1,0 +1,803 @@
+{
+  "nodes": [
+    {
+      "content": "Handle conflicts with offline data in Mobile Services (Windows Phone) | Microsoft Azure",
+      "pos": [
+        28,
+        115
+      ]
+    },
+    {
+      "content": "Learn how to use Azure Mobile Services handle conflicts when syncing offline data in your Windows phone application",
+      "pos": [
+        135,
+        250
+      ]
+    },
+    {
+      "content": "Handling conflicts with offline data sync in Mobile Services",
+      "pos": [
+        596,
+        656
+      ]
+    },
+    {
+      "content": "Overview",
+      "pos": [
+        784,
+        792
+      ]
+    },
+    {
+      "content": "This topic shows you how to synchronize data and handle conflicts when using the offline capabilities of Azure Mobile Services.",
+      "pos": [
+        794,
+        921
+      ]
+    },
+    {
+      "content": "In this tutorial, you will download an app that supports both offline and online data, integrate the mobile service with the app, and then login to the Azure Management Portal to view and update the database when running the app.",
+      "pos": [
+        922,
+        1151
+      ]
+    },
+    {
+      "content": "This tutorial builds on the steps and the sample app from the previous tutorial <bpt id=\"p1\">[</bpt><ept id=\"p1\">Get started with offline data]</ept>.",
+      "pos": [
+        1153,
+        1265
+      ]
+    },
+    {
+      "content": "Before you begin this tutorial, you must first complete <bpt id=\"p1\">[</bpt><ept id=\"p1\">Get started with offline data]</ept>.",
+      "pos": [
+        1266,
+        1354
+      ]
+    },
+    {
+      "content": "Prerequisites",
+      "pos": [
+        1359,
+        1372
+      ]
+    },
+    {
+      "pos": [
+        1374,
+        1446
+      ],
+      "content": "This tutorial requires Visual Studio 2012 and the <bpt id=\"p1\">[</bpt><ept id=\"p1\">Windows Phone 8 SDK]</ept>."
+    },
+    {
+      "content": "Download the sample project",
+      "pos": [
+        1451,
+        1478
+      ]
+    },
+    {
+      "content": "This tutorial is built on the <bpt id=\"p1\">[</bpt><ept id=\"p1\">Handling conflicts code sample]</ept>, which is a Windows Phone 8 project for Visual Studio 2012.",
+      "pos": [
+        1482,
+        1604
+      ]
+    },
+    {
+      "content": "The UI for this app is similar to the app in the tutorial <bpt id=\"p1\">[</bpt><ept id=\"p1\">Get started with offline data]</ept>, except that there is a new date column in for each TodoItem.",
+      "pos": [
+        1607,
+        1758
+      ]
+    },
+    {
+      "content": "![][0]",
+      "pos": [
+        1760,
+        1766
+      ]
+    },
+    {
+      "pos": [
+        1772,
+        1847
+      ],
+      "content": "Download the Windows Phone version of the <bpt id=\"p1\">[</bpt><ept id=\"p1\">Handling conflicts code sample]</ept>."
+    },
+    {
+      "pos": [
+        1853,
+        1919
+      ],
+      "content": "Install <bpt id=\"p1\">[</bpt><ept id=\"p1\">SQLite for Windows Phone 8]</ept> if it has not been installed."
+    },
+    {
+      "content": "In Visual Studio 2012, open the downloaded project.",
+      "pos": [
+        1924,
+        1975
+      ]
+    },
+    {
+      "content": "Add a reference to <bpt id=\"p1\">**</bpt>SQLite for Windows Phone<ept id=\"p1\">**</ept> under <bpt id=\"p2\">**</bpt>Windows Phone<ept id=\"p2\">**</ept> &gt; <bpt id=\"p3\">**</bpt>Extensions<ept id=\"p3\">**</ept>.",
+      "pos": [
+        1976,
+        2065
+      ]
+    },
+    {
+      "pos": [
+        2070,
+        2155
+      ],
+      "content": "In Visual Studio 2012, press the <bpt id=\"p1\">**</bpt>F5<ept id=\"p1\">**</ept> key to build and run the app in the debugger."
+    },
+    {
+      "content": "In the app, type some text for some new todo items, then click <bpt id=\"p1\">**</bpt>Save<ept id=\"p1\">**</ept> to save each one.",
+      "pos": [
+        2161,
+        2250
+      ]
+    },
+    {
+      "content": "You can also modify the due date of the todo items you add.",
+      "pos": [
+        2251,
+        2310
+      ]
+    },
+    {
+      "pos": [
+        2313,
+        2434
+      ],
+      "content": "Note that the app is not yet connected to any mobile service, so the buttons <bpt id=\"p1\">**</bpt>Push<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>Pull<ept id=\"p2\">**</ept> will throw exceptions."
+    },
+    {
+      "content": "Add a column to the data model",
+      "pos": [
+        2439,
+        2469
+      ]
+    },
+    {
+      "content": "In this section you will update the database for your mobile service to include a TodoItem table with a due date column.",
+      "pos": [
+        2471,
+        2591
+      ]
+    },
+    {
+      "content": "The app allows you to change the due date for an item at runtime so that you can generate sync conflicts in a later section of this tutorial.",
+      "pos": [
+        2592,
+        2733
+      ]
+    },
+    {
+      "content": "The <ph id=\"ph1\">`TodoItem`</ph> class in the sample is defined in MainPage.xaml.cs.",
+      "pos": [
+        2736,
+        2802
+      ]
+    },
+    {
+      "content": "Notice the class has the following attribute which will target the sync operations against that table.",
+      "pos": [
+        2803,
+        2905
+      ]
+    },
+    {
+      "content": "Update your database to include this table.",
+      "pos": [
+        2944,
+        2987
+      ]
+    },
+    {
+      "pos": [
+        2992,
+        3075
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"dotnet-backend\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Updating the database for .NET backend mobile services"
+    },
+    {
+      "content": "If you are using the .NET backend for your mobile service, follow these steps to update the schema for your database.",
+      "pos": [
+        3078,
+        3195
+      ]
+    },
+    {
+      "content": "Open your .NET backend mobile service project in Visual Studio.",
+      "pos": [
+        3200,
+        3263
+      ]
+    },
+    {
+      "content": "In Solution Explorer for Visual Studio, in your service project, expand the <bpt id=\"p1\">**</bpt>Models<ept id=\"p1\">**</ept> folder and open ToDoItem.cs.",
+      "pos": [
+        3267,
+        3382
+      ]
+    },
+    {
+      "content": "Add the <ph id=\"ph1\">`DueDate`</ph> property as follows.",
+      "pos": [
+        3383,
+        3421
+      ]
+    },
+    {
+      "pos": [
+        3646,
+        3752
+      ],
+      "content": "In Solution Explorer for Visual Studio, expand the <bpt id=\"p1\">**</bpt>App_Start<ept id=\"p1\">**</ept> folder and open the WebApiConfig.cs file."
+    },
+    {
+      "content": "In the WebApiConfig.cs file, notice that your default database initializer class is derived from the <ph id=\"ph1\">`DropCreateDatabaseIfModelChanges`</ph> class.",
+      "pos": [
+        3759,
+        3901
+      ]
+    },
+    {
+      "content": "This means any change to the model will result in the table being dropped and recreated to accommodate the new model.",
+      "pos": [
+        3902,
+        4019
+      ]
+    },
+    {
+      "content": "So the data in the table will be lost and the table will be re-seeded.",
+      "pos": [
+        4020,
+        4090
+      ]
+    },
+    {
+      "content": "Modify the Seed method of the database initializer so that the <ph id=\"ph1\">`Seed()`</ph> initialization function as follows to initialize the new DueDate column.",
+      "pos": [
+        4091,
+        4235
+      ]
+    },
+    {
+      "content": "Save the WebApiConfig.cs file.",
+      "pos": [
+        4236,
+        4266
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> When using the default database initializer, Entity Framework will drop and recreate the database whenever it detects a data model change in the Code First model definition.",
+      "pos": [
+        4273,
+        4459
+      ]
+    },
+    {
+      "content": "To make this data model change and maintain existing data in the database, you must use Code First Migrations.",
+      "pos": [
+        4460,
+        4570
+      ]
+    },
+    {
+      "content": "For more information, see <bpt id=\"p1\">[</bpt>How to Use Code First Migrations to Update the Data Model<ept id=\"p1\">](mobile-services-dotnet-backend-how-to-use-code-first-migrations.md)</ept>.",
+      "pos": [
+        4571,
+        4725
+      ]
+    },
+    {
+      "content": "In Solution Explorer for Visual Studio, expand the <bpt id=\"p1\">**</bpt>Controllers<ept id=\"p1\">**</ept> folder and open ToDoItemController.cs.",
+      "pos": [
+        4945,
+        5050
+      ]
+    },
+    {
+      "content": "Rename the <ph id=\"ph1\">`TodoItemController`</ph> class to <ph id=\"ph2\">`TodoWithDateController`</ph>.",
+      "pos": [
+        5051,
+        5117
+      ]
+    },
+    {
+      "content": "This will change the REST endpoint for table operations.",
+      "pos": [
+        5118,
+        5174
+      ]
+    },
+    {
+      "pos": [
+        5258,
+        5397
+      ],
+      "content": "In Solution Explorer for Visual Studio, right click your .NET backend mobile service project and click <bpt id=\"p1\">**</bpt>Publish<ept id=\"p1\">**</ept> to publish your changes."
+    },
+    {
+      "pos": [
+        5404,
+        5497
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"javascript-backend\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Updating the database for JavaScript backend mobile services"
+    },
+    {
+      "content": "For JavaScript backend mobile services, you will add a new table named <bpt id=\"p1\">**</bpt>TodoWithDate<ept id=\"p1\">**</ept>.",
+      "pos": [
+        5499,
+        5587
+      ]
+    },
+    {
+      "content": "To add the <bpt id=\"p1\">**</bpt>TodoWithDate<ept id=\"p1\">**</ept> table for JavaScript backend mobile services, follow these steps.",
+      "pos": [
+        5588,
+        5681
+      ]
+    },
+    {
+      "pos": [
+        5688,
+        5727
+      ],
+      "content": "Log into the <bpt id=\"p1\">[</bpt><ept id=\"p1\">Azure Management Portal]</ept>."
+    },
+    {
+      "pos": [
+        5735,
+        5787
+      ],
+      "content": "Navigate to the <bpt id=\"p1\">**</bpt>Data<ept id=\"p1\">**</ept> tab of your mobile service."
+    },
+    {
+      "pos": [
+        5795,
+        5884
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>Create<ept id=\"p1\">**</ept> at the bottom of the page and create a new table named <bpt id=\"p2\">**</bpt>TodoWithDate<ept id=\"p2\">**</ept>."
+    },
+    {
+      "content": "Test the app against your  mobile service",
+      "pos": [
+        5890,
+        5931
+      ]
+    },
+    {
+      "content": "Now it's time to test the app against Mobile Services.",
+      "pos": [
+        5933,
+        5987
+      ]
+    },
+    {
+      "content": "In the Azure Management Portal, find your mobile service's application key by clicking <bpt id=\"p1\">**</bpt>Manage Keys<ept id=\"p1\">**</ept> on the command bar of the <bpt id=\"p2\">**</bpt>Dashboard<ept id=\"p2\">**</ept> tab.",
+      "pos": [
+        5992,
+        6139
+      ]
+    },
+    {
+      "content": "Copy the <bpt id=\"p1\">**</bpt>Application Key<ept id=\"p1\">**</ept>.",
+      "pos": [
+        6140,
+        6169
+      ]
+    },
+    {
+      "content": "In Solution Explorer for Visual Studio, open the App.xaml.cs file in the client sample project.",
+      "pos": [
+        6174,
+        6269
+      ]
+    },
+    {
+      "content": "Change the initialization of the <bpt id=\"p1\">**</bpt>MobileServiceClient<ept id=\"p1\">**</ept> to use your mobile service URL and application key:",
+      "pos": [
+        6270,
+        6378
+      ]
+    },
+    {
+      "pos": [
+        6566,
+        6630
+      ],
+      "content": "In Visual Studio, press the <bpt id=\"p1\">**</bpt>F5<ept id=\"p1\">**</ept> key to build and run the app."
+    },
+    {
+      "content": "As before, type text in the textbox, and then click <bpt id=\"p1\">**</bpt>Save<ept id=\"p1\">**</ept> to save some new todo items.",
+      "pos": [
+        6635,
+        6724
+      ]
+    },
+    {
+      "content": "This saves the data to the local sync table, but not to the server.",
+      "pos": [
+        6725,
+        6792
+      ]
+    },
+    {
+      "content": "![][0]",
+      "pos": [
+        6798,
+        6804
+      ]
+    },
+    {
+      "pos": [
+        6809,
+        6954
+      ],
+      "content": "To see the current state of your database, log into the <bpt id=\"p1\">[</bpt><ept id=\"p1\">Azure Management Portal]</ept>, click <bpt id=\"p2\">**</bpt>Mobile Services<ept id=\"p2\">**</ept>, and then click your mobile service."
+    },
+    {
+      "content": "If you are using the JavaScript backend for your mobile service, click the <bpt id=\"p1\">**</bpt>Data<ept id=\"p1\">**</ept> tab, then click the <bpt id=\"p2\">**</bpt>TodoWithDate<ept id=\"p2\">**</ept> table.",
+      "pos": [
+        6960,
+        7087
+      ]
+    },
+    {
+      "content": "Click <bpt id=\"p1\">**</bpt>Browse<ept id=\"p1\">**</ept> to see that the table will still be empty, since we have not pushed changes from the app to the server..",
+      "pos": [
+        7088,
+        7209
+      ]
+    },
+    {
+      "content": "If you are using the .NET backend for your mobile service, click the <bpt id=\"p1\">**</bpt>Configure<ept id=\"p1\">**</ept> tab, then click your SQL database.",
+      "pos": [
+        7232,
+        7349
+      ]
+    },
+    {
+      "content": "Click <bpt id=\"p1\">**</bpt>Manage<ept id=\"p1\">**</ept> at the bottom of the screen to log into the SQL Azure Managment Portal to view your database by running a SQL query similar to the following.",
+      "pos": [
+        7350,
+        7508
+      ]
+    },
+    {
+      "content": "![][2]",
+      "pos": [
+        7571,
+        7577
+      ]
+    },
+    {
+      "pos": [
+        7589,
+        7621
+      ],
+      "content": "Back in the app, click <bpt id=\"p1\">**</bpt>Push<ept id=\"p1\">**</ept>."
+    },
+    {
+      "content": "In the Management Portal, click <bpt id=\"p1\">**</bpt>Refresh<ept id=\"p1\">**</ept> on the <bpt id=\"p2\">**</bpt>TodoItem<ept id=\"p2\">**</ept> table.",
+      "pos": [
+        7626,
+        7696
+      ]
+    },
+    {
+      "content": "You should now see the data that you entered in your app.",
+      "pos": [
+        7697,
+        7754
+      ]
+    },
+    {
+      "content": "![][3]",
+      "pos": [
+        7760,
+        7766
+      ]
+    },
+    {
+      "pos": [
+        7771,
+        7904
+      ],
+      "content": "Leave <bpt id=\"p1\">**</bpt>Emulator WVGA 512MB<ept id=\"p1\">**</ept> up and running for the next section where you will run the app in two emulators to generate a conflict."
+    },
+    {
+      "content": "Update the data in the backend to create a conflict",
+      "pos": [
+        7908,
+        7959
+      ]
+    },
+    {
+      "content": "In a real world scenario, a sync conflict would occur when one app pushes updates to a record in the database, and then another app tries to push a change to the same record using an outdated version field in that record.",
+      "pos": [
+        7961,
+        8182
+      ]
+    },
+    {
+      "content": "If an instance of the app tries to update the same record, without pulling in the updated record, a conflict will occur and be caught as a <ph id=\"ph1\">`MobileServicePreconditionFailedException`</ph> in the app.",
+      "pos": [
+        8183,
+        8376
+      ]
+    },
+    {
+      "content": "In this section you will run two instances of the app at the same time to generate a conflict.",
+      "pos": [
+        8380,
+        8474
+      ]
+    },
+    {
+      "pos": [
+        8481,
+        8570
+      ],
+      "content": "If <bpt id=\"p1\">**</bpt>Emulator WVGA 512MB<ept id=\"p1\">**</ept> is not still up and running, press <bpt id=\"p2\">**</bpt>Ctrl+F5<ept id=\"p2\">**</ept> to relaunch it."
+    },
+    {
+      "pos": [
+        8575,
+        8715
+      ],
+      "content": "In Visual Studio, change the output device to <bpt id=\"p1\">**</bpt>Emulator WVGA<ept id=\"p1\">**</ept> and run a second instance of the app in the new emulator by pressing <bpt id=\"p2\">**</bpt>F5<ept id=\"p2\">**</ept>."
+    },
+    {
+      "content": "![][5]",
+      "pos": [
+        8722,
+        8728
+      ]
+    },
+    {
+      "content": "In the second instance of the app, click <bpt id=\"p1\">**</bpt>Pull<ept id=\"p1\">**</ept> to sync the local store with the mobile service database.",
+      "pos": [
+        8738,
+        8845
+      ]
+    },
+    {
+      "content": "Both instances of the app should have the same data.",
+      "pos": [
+        8846,
+        8898
+      ]
+    },
+    {
+      "content": "![][6]",
+      "pos": [
+        8905,
+        8911
+      ]
+    },
+    {
+      "content": "In the second instance of the app, click the check box to complete one of the items then click <bpt id=\"p1\">**</bpt>Push<ept id=\"p1\">**</ept> to push your change to the remote database.",
+      "pos": [
+        8916,
+        9063
+      ]
+    },
+    {
+      "content": "In the following screen shot, <bpt id=\"p1\">**</bpt>Pick up James<ept id=\"p1\">**</ept> has been completed indicating the James has already been picked up.",
+      "pos": [
+        9064,
+        9179
+      ]
+    },
+    {
+      "content": "The first instance of the app now has an outdated record.",
+      "pos": [
+        9180,
+        9237
+      ]
+    },
+    {
+      "content": "![][9]",
+      "pos": [
+        9243,
+        9249
+      ]
+    },
+    {
+      "content": "In the first instance of the app, try to change the date for the outdated record then click <bpt id=\"p1\">**</bpt>Push<ept id=\"p1\">**</ept> to attempt to update the remote database with the outdated record.",
+      "pos": [
+        9254,
+        9421
+      ]
+    },
+    {
+      "content": "In the screen shot below, we try to schedule James to be picked up on <bpt id=\"p1\">**</bpt>5/10/2014<ept id=\"p1\">**</ept>.",
+      "pos": [
+        9422,
+        9506
+      ]
+    },
+    {
+      "content": "![][7]",
+      "pos": [
+        9512,
+        9518
+      ]
+    },
+    {
+      "content": "When you click the <bpt id=\"p1\">**</bpt>Push<ept id=\"p1\">**</ept> button to commit the date change, you will see a dialog box indicating that the conflict has been detected.",
+      "pos": [
+        9523,
+        9658
+      ]
+    },
+    {
+      "content": "You will be asked how to resolve the conflict.",
+      "pos": [
+        9659,
+        9705
+      ]
+    },
+    {
+      "content": "Choose one of the options to resolve the conflict.",
+      "pos": [
+        9706,
+        9756
+      ]
+    },
+    {
+      "content": "In the scenario shown below, James has already been picked up.",
+      "pos": [
+        9762,
+        9824
+      ]
+    },
+    {
+      "content": "So there's no need to schedule a pick up for him on <bpt id=\"p1\">**</bpt>5/10/2014<ept id=\"p1\">**</ept>.",
+      "pos": [
+        9825,
+        9891
+      ]
+    },
+    {
+      "content": "The <bpt id=\"p1\">**</bpt>Use server version<ept id=\"p1\">**</ept> option would be selected so the first instance of the app would have that record updated with the record from the server.",
+      "pos": [
+        9892,
+        10040
+      ]
+    },
+    {
+      "content": "![][8]",
+      "pos": [
+        10047,
+        10053
+      ]
+    },
+    {
+      "content": "Review of the code for handling sync conflicts",
+      "pos": [
+        10057,
+        10103
+      ]
+    },
+    {
+      "content": "In order to set up the offline feature to detect conflicts, you must include a version column in both your local database and your data transfer object.",
+      "pos": [
+        10105,
+        10257
+      ]
+    },
+    {
+      "content": "The class <ph id=\"ph1\">`TodoItem`</ph> has the following member:",
+      "pos": [
+        10258,
+        10304
+      ]
+    },
+    {
+      "pos": [
+        10369,
+        10472
+      ],
+      "content": "The column <ph id=\"ph1\">`__version`</ph> is also specified in the local database set up in the  <ph id=\"ph2\">`OnNavigatedTo()`</ph> method."
+    },
+    {
+      "content": "To handle offline sync conflicts in your code, you create a class that implements <ph id=\"ph1\">`IMobileServiceSyncHandler`</ph>.",
+      "pos": [
+        10474,
+        10584
+      ]
+    },
+    {
+      "content": "Pass an object of this type in the call to <ph id=\"ph1\">`InitializeAsync`</ph>:",
+      "pos": [
+        10585,
+        10646
+      ]
+    },
+    {
+      "content": "The class <ph id=\"ph1\">`SyncHandler`</ph> in <bpt id=\"p1\">**</bpt>MainPage.xaml.cs<ept id=\"p1\">**</ept> implements <ph id=\"ph2\">`IMobileServiceSyncHandler`</ph>.",
+      "pos": [
+        10750,
+        10837
+      ]
+    },
+    {
+      "content": "The method <ph id=\"ph1\">`ExecuteTableOperationAsync`</ph> is called when each push operation is sent to the server.",
+      "pos": [
+        10838,
+        10935
+      ]
+    },
+    {
+      "content": "If an exception of type <ph id=\"ph1\">`MobileServicePreconditionFailedException`</ph> is thrown, this means that there is a conflict between the local and remote versions of an item.",
+      "pos": [
+        10936,
+        11099
+      ]
+    },
+    {
+      "content": "To resolve conflicts in favor of the local item, you should simply retry the operation.",
+      "pos": [
+        11101,
+        11188
+      ]
+    },
+    {
+      "content": "Once a conflict has occurred, the local item version will be updated to match the server version, so executing the operation again will overwrite the server changes with the local changes:",
+      "pos": [
+        11189,
+        11377
+      ]
+    },
+    {
+      "content": "To resolve conflicts in favor of the server item, simply return from the <ph id=\"ph1\">`ExecuteTableOperationAsync`</ph>.",
+      "pos": [
+        11417,
+        11519
+      ]
+    },
+    {
+      "content": "The local version of the object will be discarded and replaced with the value from the server.",
+      "pos": [
+        11520,
+        11614
+      ]
+    },
+    {
+      "pos": [
+        11616,
+        11705
+      ],
+      "content": "To stop the push operation (but retain the queued changes), use the method <ph id=\"ph1\">`AbortPush()`</ph>:"
+    },
+    {
+      "content": "This will stop the current push operation but will keep all pending changes, including the current operation if <ph id=\"ph1\">`AbortPush`</ph> is called from <ph id=\"ph2\">`ExecuteTableOperationAsync`</ph>.",
+      "pos": [
+        11735,
+        11903
+      ]
+    },
+    {
+      "content": "The next time that <ph id=\"ph1\">`PushAsync()`</ph> is called, these changes will be sent to the server.",
+      "pos": [
+        11904,
+        11989
+      ]
+    },
+    {
+      "pos": [
+        11992,
+        12192
+      ],
+      "content": "When a push is canceled, <ph id=\"ph1\">`PushAsync`</ph> will throw a <ph id=\"ph2\">`MobileServicePushFailedException`</ph>, and the exception property <ph id=\"ph3\">`PushResult.Status`</ph> will have the value <ph id=\"ph4\">`MobileServicePushStatus.CancelledByOperation`</ph>."
+    }
+  ],
+  "content": "<properties \n    pageTitle=\"Handle conflicts with offline data in Mobile Services (Windows Phone) | Microsoft Azure\" \n    description=\"Learn how to use Azure Mobile Services handle conflicts when syncing offline data in your Windows phone application\" \n    documentationCenter=\"windows\" \n    authors=\"wesmc7777\" \n    manager=\"dwrede\" \n    editor=\"\" \n    services=\"mobile-services\"/>\n\n<tags \n    ms.service=\"mobile-services\" \n    ms.workload=\"mobile\" \n    ms.tgt_pltfrm=\"mobile-windows-phone\" \n    ms.devlang=\"dotnet\" \n    ms.topic=\"article\" \n    ms.date=\"06/15/2015\" \n    ms.author=\"wesmc\"/>\n\n\n# Handling conflicts with offline data sync in Mobile Services\n\n[AZURE.INCLUDE [mobile-services-selector-offline-conflicts](../../includes/mobile-services-selector-offline-conflicts.md)]\n\n##Overview\n\nThis topic shows you how to synchronize data and handle conflicts when using the offline capabilities of Azure Mobile Services. In this tutorial, you will download an app that supports both offline and online data, integrate the mobile service with the app, and then login to the Azure Management Portal to view and update the database when running the app.\n\nThis tutorial builds on the steps and the sample app from the previous tutorial [Get started with offline data]. Before you begin this tutorial, you must first complete [Get started with offline data].\n\n\n##Prerequisites\n\nThis tutorial requires Visual Studio 2012 and the [Windows Phone 8 SDK].\n\n\n##Download the sample project\n\n\n\nThis tutorial is built on the [Handling conflicts code sample], which is a Windows Phone 8 project for Visual Studio 2012.  \nThe UI for this app is similar to the app in the tutorial [Get started with offline data], except that there is a new date column in for each TodoItem.\n\n![][0]\n\n\n1. Download the Windows Phone version of the [Handling conflicts code sample]. \n\n2. Install [SQLite for Windows Phone 8] if it has not been installed.\n\n3. In Visual Studio 2012, open the downloaded project. Add a reference to **SQLite for Windows Phone** under **Windows Phone** > **Extensions**.\n\n4. In Visual Studio 2012, press the **F5** key to build and run the app in the debugger.\n \n5. In the app, type some text for some new todo items, then click **Save** to save each one. You can also modify the due date of the todo items you add.\n\n\nNote that the app is not yet connected to any mobile service, so the buttons **Push** and **Pull** will throw exceptions.\n\n\n##Add a column to the data model\n\nIn this section you will update the database for your mobile service to include a TodoItem table with a due date column. The app allows you to change the due date for an item at runtime so that you can generate sync conflicts in a later section of this tutorial. \n\nThe `TodoItem` class in the sample is defined in MainPage.xaml.cs. Notice the class has the following attribute which will target the sync operations against that table.\n\n        [DataTable(\"TodoWithDate\")]\n\nUpdate your database to include this table.\n\n###<a name=\"dotnet-backend\"></a>Updating the database for .NET backend mobile services \n\nIf you are using the .NET backend for your mobile service, follow these steps to update the schema for your database.\n\n1. Open your .NET backend mobile service project in Visual Studio.\n2. In Solution Explorer for Visual Studio, in your service project, expand the **Models** folder and open ToDoItem.cs. Add the `DueDate` property as follows.\n\n          public class TodoItem : EntityData\n          {\n            public string Text { get; set; }\n            public bool Complete { get; set; }\n            public System.DateTime DueDate { get; set; }\n          }\n\n\n3. In Solution Explorer for Visual Studio, expand the **App_Start** folder and open the WebApiConfig.cs file. \n\n    In the WebApiConfig.cs file, notice that your default database initializer class is derived from the `DropCreateDatabaseIfModelChanges` class. This means any change to the model will result in the table being dropped and recreated to accommodate the new model. So the data in the table will be lost and the table will be re-seeded. Modify the Seed method of the database initializer so that the `Seed()` initialization function as follows to initialize the new DueDate column. Save the WebApiConfig.cs file.\n\n    >[AZURE.NOTE] When using the default database initializer, Entity Framework will drop and recreate the database whenever it detects a data model change in the Code First model definition. To make this data model change and maintain existing data in the database, you must use Code First Migrations. For more information, see [How to Use Code First Migrations to Update the Data Model](mobile-services-dotnet-backend-how-to-use-code-first-migrations.md).\n\n\n        new TodoItem { Id = \"1\", Text = \"First item\", Complete = false, DueDate = DateTime.Today },\n        new TodoItem { Id = \"2\", Text = \"Second item\", Complete = false, DueDate = DateTime.Today },\n\n          \n\n4. In Solution Explorer for Visual Studio, expand the **Controllers** folder and open ToDoItemController.cs. Rename the `TodoItemController` class to `TodoWithDateController`. This will change the REST endpoint for table operations. \n\n        public class TodoWithDateController : TableController<TodoItem>\n    \n\n5. In Solution Explorer for Visual Studio, right click your .NET backend mobile service project and click **Publish** to publish your changes.\n\n\n### <a name=\"javascript-backend\"></a>Updating the database for JavaScript backend mobile services\n\nFor JavaScript backend mobile services, you will add a new table named **TodoWithDate**. To add the **TodoWithDate** table for JavaScript backend mobile services, follow these steps.\n\n  1. Log into the [Azure Management Portal]. \n\n  2. Navigate to the **Data** tab of your mobile service. \n\n  3. Click **Create** at the bottom of the page and create a new table named **TodoWithDate**. \n\n\n##Test the app against your  mobile service\n\nNow it's time to test the app against Mobile Services.\n\n1. In the Azure Management Portal, find your mobile service's application key by clicking **Manage Keys** on the command bar of the **Dashboard** tab. Copy the **Application Key**.\n\n2. In Solution Explorer for Visual Studio, open the App.xaml.cs file in the client sample project. Change the initialization of the **MobileServiceClient** to use your mobile service URL and application key:\n\n         public static MobileServiceClient MobileService = new MobileServiceClient(\n            \"https://your-mobile-service.azure-mobile.net/\",\n            \"Your AppKey\"\n        );\n\n3. In Visual Studio, press the **F5** key to build and run the app.\n\n4. As before, type text in the textbox, and then click **Save** to save some new todo items. This saves the data to the local sync table, but not to the server.\n\n    ![][0]\n\n5. To see the current state of your database, log into the [Azure Management Portal], click **Mobile Services**, and then click your mobile service.\n\n  * If you are using the JavaScript backend for your mobile service, click the **Data** tab, then click the **TodoWithDate** table. Click **Browse** to see that the table will still be empty, since we have not pushed changes from the app to the server..\n\n        ![][1]\n\n  *  If you are using the .NET backend for your mobile service, click the **Configure** tab, then click your SQL database. Click **Manage** at the bottom of the screen to log into the SQL Azure Managment Portal to view your database by running a SQL query similar to the following.\n    \n            SELECT * FROM todolist.todowithdate\n\n        ![][2]\n\n     \n\n7. Back in the app, click **Push**.\n\n8. In the Management Portal, click **Refresh** on the **TodoItem** table. You should now see the data that you entered in your app.\n\n    ![][3]\n\n9. Leave **Emulator WVGA 512MB** up and running for the next section where you will run the app in two emulators to generate a conflict.\n\n##Update the data in the backend to create a conflict\n\nIn a real world scenario, a sync conflict would occur when one app pushes updates to a record in the database, and then another app tries to push a change to the same record using an outdated version field in that record. If an instance of the app tries to update the same record, without pulling in the updated record, a conflict will occur and be caught as a `MobileServicePreconditionFailedException` in the app.  \n\nIn this section you will run two instances of the app at the same time to generate a conflict. \n\n\n1. If **Emulator WVGA 512MB** is not still up and running, press **Ctrl+F5** to relaunch it.\n\n2. In Visual Studio, change the output device to **Emulator WVGA** and run a second instance of the app in the new emulator by pressing **F5**.\n \n    ![][5]\n \n   \n3. In the second instance of the app, click **Pull** to sync the local store with the mobile service database. Both instances of the app should have the same data.\n \n    ![][6]\n\n4. In the second instance of the app, click the check box to complete one of the items then click **Push** to push your change to the remote database. In the following screen shot, **Pick up James** has been completed indicating the James has already been picked up. The first instance of the app now has an outdated record.\n\n    ![][9]\n\n5. In the first instance of the app, try to change the date for the outdated record then click **Push** to attempt to update the remote database with the outdated record. In the screen shot below, we try to schedule James to be picked up on **5/10/2014**.\n\n    ![][7]\n\n6. When you click the **Push** button to commit the date change, you will see a dialog box indicating that the conflict has been detected. You will be asked how to resolve the conflict. Choose one of the options to resolve the conflict.\n\n    In the scenario shown below, James has already been picked up. So there's no need to schedule a pick up for him on **5/10/2014**. The **Use server version** option would be selected so the first instance of the app would have that record updated with the record from the server. \n\n    ![][8]\n\n##Review of the code for handling sync conflicts\n\nIn order to set up the offline feature to detect conflicts, you must include a version column in both your local database and your data transfer object. The class `TodoItem` has the following member:\n\n        [Version]\n        public string Version { get; set; }\n\nThe column `__version` is also specified in the local database set up in the  `OnNavigatedTo()` method.\n\nTo handle offline sync conflicts in your code, you create a class that implements `IMobileServiceSyncHandler`. Pass an object of this type in the call to `InitializeAsync`:\n\n     await App.MobileService.SyncContext.InitializeAsync(store, new SyncHandler(App.MobileService));\n\nThe class `SyncHandler` in **MainPage.xaml.cs** implements `IMobileServiceSyncHandler`. The method `ExecuteTableOperationAsync` is called when each push operation is sent to the server. If an exception of type `MobileServicePreconditionFailedException` is thrown, this means that there is a conflict between the local and remote versions of an item.\n\nTo resolve conflicts in favor of the local item, you should simply retry the operation. Once a conflict has occurred, the local item version will be updated to match the server version, so executing the operation again will overwrite the server changes with the local changes:\n\n    await operation.ExecuteAsync(); \n\nTo resolve conflicts in favor of the server item, simply return from the `ExecuteTableOperationAsync`. The local version of the object will be discarded and replaced with the value from the server.\n\nTo stop the push operation (but retain the queued changes), use the method `AbortPush()`:\n\n    operation.AbortPush();\n\nThis will stop the current push operation but will keep all pending changes, including the current operation if `AbortPush` is called from `ExecuteTableOperationAsync`. The next time that `PushAsync()` is called, these changes will be sent to the server. \n\nWhen a push is canceled, `PushAsync` will throw a `MobileServicePushFailedException`, and the exception property `PushResult.Status` will have the value `MobileServicePushStatus.CancelledByOperation`. \n\n\n\n\n<!-- Images -->\n[0]: ./media/mobile-services-windows-phone-handling-conflicts-offline-data/mobile-services-handling-conflicts-app-run1.png\n[1]: ./media/mobile-services-windows-phone-handling-conflicts-offline-data/mobile-services-todowithdate-empty.png\n[2]: ./media/mobile-services-windows-phone-handling-conflicts-offline-data/mobile-services-todowithdate-empty-sql.png\n[3]: ./media/mobile-services-windows-phone-handling-conflicts-offline-data/mobile-services-todowithdate-push1.png\n[5]: ./media/mobile-services-windows-phone-handling-conflicts-offline-data/vs-emulator-wvga.png\n[6]: ./media/mobile-services-windows-phone-handling-conflicts-offline-data/two-emulators-synced.png\n[7]: ./media/mobile-services-windows-phone-handling-conflicts-offline-data/two-emulators-date-change.png\n[8]: ./media/mobile-services-windows-phone-handling-conflicts-offline-data/two-emulators-conflict-detected.png\n[9]: ./media/mobile-services-windows-phone-handling-conflicts-offline-data/two-emulators-item-completed.png\n\n\n\n<!-- URLs -->\n[Handling conflicts code sample]: http://go.microsoft.com/fwlink/?LinkId=398257\n[Get started with Mobile Services]: ../mobile-services-windows-phone-get-started.md\n[Get started with offline data]: mobile-services-windows-phone-get-started-offline-data.md\n[Azure Management Portal]: https://manage.windowsazure.com/\n[Windows Phone 8 SDK]: http://go.microsoft.com/fwlink/p/?linkid=268374\n[SQLite for Windows Phone 8]: http://go.microsoft.com/fwlink/?LinkId=397953\n[Get started with data]: mobile-services-windows-phone-get-started-data.md\n "
+}

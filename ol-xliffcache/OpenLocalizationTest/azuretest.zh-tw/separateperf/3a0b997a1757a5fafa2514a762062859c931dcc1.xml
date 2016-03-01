@@ -1,0 +1,679 @@
+{
+  "nodes": [
+    {
+      "content": "Configure SSL for a cloud service | Microsoft Azure",
+      "pos": [
+        28,
+        79
+      ]
+    },
+    {
+      "content": "Learn how to specify an HTTPS endpoint for a web role and how to upload an SSL certificate to secure your application.",
+      "pos": [
+        99,
+        217
+      ]
+    },
+    {
+      "content": "Configuring SSL for an application in Azure",
+      "pos": [
+        531,
+        574
+      ]
+    },
+    {
+      "content": "[AZURE.SELECTOR]",
+      "pos": [
+        578,
+        594
+      ]
+    },
+    {
+      "content": "Azure Portal",
+      "pos": [
+        598,
+        610
+      ]
+    },
+    {
+      "content": "Azure Preview Portal",
+      "pos": [
+        660,
+        680
+      ]
+    },
+    {
+      "content": "Secure Socket Layer (SSL) encryption is the most commonly used method of securing data sent across the internet.",
+      "pos": [
+        735,
+        847
+      ]
+    },
+    {
+      "content": "This common task discusses how to specify an HTTPS endpoint for a web role and how to upload an SSL certificate to secure your application.",
+      "pos": [
+        848,
+        987
+      ]
+    },
+    {
+      "pos": [
+        991,
+        1178
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> The procedures in this task apply to Azure Cloud Services; for Websites, see <bpt id=\"p1\">[</bpt>Configuring an SSL certificate for an Azure website<ept id=\"p1\">](../web-sites-configure-ssl-certificate.md)</ept>."
+    },
+    {
+      "content": "This task will use a production deployment; information on using a staging deployment is provided at the end of this topic.",
+      "pos": [
+        1180,
+        1303
+      ]
+    },
+    {
+      "pos": [
+        1305,
+        1414
+      ],
+      "content": "Read <bpt id=\"p1\">[</bpt>this<ept id=\"p1\">](cloud-services-how-to-create-deploy-portal.md)</ept> first if you have not yet created a cloud service."
+    },
+    {
+      "content": "Step 1: Get an SSL certificate",
+      "pos": [
+        1551,
+        1581
+      ]
+    },
+    {
+      "content": "To configure SSL for an application, you first need to get an SSL certificate that has been signed by a Certificate Authority (CA), a trusted third-party who issues certificates for this purpose.",
+      "pos": [
+        1583,
+        1778
+      ]
+    },
+    {
+      "content": "If you do not already have one, you will need to obtain one from a company that sells SSL certificates.",
+      "pos": [
+        1779,
+        1882
+      ]
+    },
+    {
+      "content": "The certificate must meet the following requirements for SSL certificates in Azure:",
+      "pos": [
+        1884,
+        1967
+      ]
+    },
+    {
+      "content": "The certificate must contain a private key.",
+      "pos": [
+        1973,
+        2016
+      ]
+    },
+    {
+      "content": "The certificate must be created for key exchange, exportable to a Personal Information Exchange (.pfx) file.",
+      "pos": [
+        2021,
+        2129
+      ]
+    },
+    {
+      "content": "The certificate's subject name must match the domain used to access the cloud service.",
+      "pos": [
+        2134,
+        2220
+      ]
+    },
+    {
+      "content": "You cannot obtain an SSL certificate from a certificate authority (CA) for the cloudapp.net domain.",
+      "pos": [
+        2221,
+        2320
+      ]
+    },
+    {
+      "content": "You must acquire a custom domain name to use when access your service.",
+      "pos": [
+        2321,
+        2391
+      ]
+    },
+    {
+      "content": "When you request a certificate from a CA the certificate's subject name must match the custom domain name used to access your application.",
+      "pos": [
+        2392,
+        2530
+      ]
+    },
+    {
+      "content": "For example, if your custom domain name is <bpt id=\"p1\">**</bpt>contoso.com<ept id=\"p1\">**</ept> you would request a certificate from your CA for *<bpt id=\"p2\">**</bpt>.contoso.com<ept id=\"p2\">**</ept> or <bpt id=\"p3\">**</bpt>www.contoso.com<ept id=\"p3\">**</ept>.",
+      "pos": [
+        2531,
+        2680
+      ]
+    },
+    {
+      "content": "The certificate must use a minimum of 2048-bit encryption.",
+      "pos": [
+        2685,
+        2743
+      ]
+    },
+    {
+      "content": "For test purposes, you can <bpt id=\"p1\">[</bpt>create<ept id=\"p1\">](cloud-services-certs-create.md)</ept> and use a self-signed certificate.",
+      "pos": [
+        2745,
+        2847
+      ]
+    },
+    {
+      "content": "A self-signed certificate is not authenticated through a CA and can use the cloudapp.net domain as the website URL.",
+      "pos": [
+        2848,
+        2963
+      ]
+    },
+    {
+      "content": "For example, the task below uses a self-signed certificate in which  the common name (CN) used in the certificate is <bpt id=\"p1\">**</bpt>sslexample.cloudapp.net<ept id=\"p1\">**</ept>.",
+      "pos": [
+        2964,
+        3109
+      ]
+    },
+    {
+      "content": "Next, you must include information about the certificate in your service definition and service configuration files.",
+      "pos": [
+        3111,
+        3227
+      ]
+    },
+    {
+      "pos": [
+        3229,
+        3251
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"modify\"&gt;</ph> <ph id=\"ph2\">&lt;/a&gt;</ph>"
+    },
+    {
+      "content": "Step 2: Modify the service definition and configuration files",
+      "pos": [
+        3255,
+        3316
+      ]
+    },
+    {
+      "content": "Your application must be configured to use the certificate, and an HTTPS endpoint must be added.",
+      "pos": [
+        3318,
+        3414
+      ]
+    },
+    {
+      "content": "As a result, the service definition and service configuration files need to be updated.",
+      "pos": [
+        3415,
+        3502
+      ]
+    },
+    {
+      "pos": [
+        3508,
+        3718
+      ],
+      "content": "In your development environment, open the service definition file\n(CSDEF), add a **Certificates** section within the **WebRole**\nsection, and include the following information about the\ncertificate:",
+      "leadings": [
+        "",
+        "    ",
+        "    ",
+        "    "
+      ],
+      "nodes": [
+        {
+          "content": "In your development environment, open the service definition file",
+          "pos": [
+            0,
+            65
+          ]
+        },
+        {
+          "content": "(CSDEF), add a <bpt id=\"p1\">**</bpt>Certificates<ept id=\"p1\">**</ept> section within the <bpt id=\"p2\">**</bpt>WebRole<ept id=\"p2\">**</ept>",
+          "pos": [
+            66,
+            128
+          ]
+        },
+        {
+          "content": "section, and include the following information about the",
+          "pos": [
+            129,
+            185
+          ]
+        },
+        {
+          "content": "certificate:",
+          "pos": [
+            186,
+            198
+          ]
+        }
+      ]
+    },
+    {
+      "content": "The <bpt id=\"p1\">**</bpt>Certificates<ept id=\"p1\">**</ept> section defines the name of our certificate, its location, and the name of the store where it is located.",
+      "pos": [
+        4043,
+        4169
+      ]
+    },
+    {
+      "content": "We have chosen to store the certificate in the CA (Certificate Authority)tore, but you can choose other options as well.",
+      "pos": [
+        4170,
+        4290
+      ]
+    },
+    {
+      "content": "See [How to associate a certificate with a service][] for more information.",
+      "pos": [
+        4291,
+        4366
+      ]
+    },
+    {
+      "pos": [
+        4372,
+        4491
+      ],
+      "content": "In your service definition file, add an **InputEndpoint** element\nwithin the **Endpoints** section to enable HTTPS:",
+      "leadings": [
+        "",
+        "    "
+      ],
+      "nodes": [
+        {
+          "content": "In your service definition file, add an <bpt id=\"p1\">**</bpt>InputEndpoint<ept id=\"p1\">**</ept> element",
+          "pos": [
+            0,
+            65
+          ]
+        },
+        {
+          "content": "within the <bpt id=\"p1\">**</bpt>Endpoints<ept id=\"p1\">**</ept> section to enable HTTPS:",
+          "pos": [
+            66,
+            115
+          ]
+        }
+      ]
+    },
+    {
+      "pos": [
+        4779,
+        4936
+      ],
+      "content": "In your service definition file, add a **Binding** element within\nthe **Sites** section. This adds an HTTPS binding to map the\nendpoint to your site:",
+      "leadings": [
+        "",
+        "    ",
+        "    "
+      ],
+      "nodes": [
+        {
+          "content": "In your service definition file, add a <bpt id=\"p1\">**</bpt>Binding<ept id=\"p1\">**</ept> element within",
+          "pos": [
+            0,
+            65
+          ]
+        },
+        {
+          "content": "the **Sites** section. This adds an HTTPS binding to map the",
+          "pos": [
+            66,
+            126
+          ],
+          "nodes": [
+            {
+              "content": "the <bpt id=\"p1\">**</bpt>Sites<ept id=\"p1\">**</ept> section.",
+              "pos": [
+                0,
+                22
+              ]
+            },
+            {
+              "content": "This adds an HTTPS binding to map the",
+              "pos": [
+                23,
+                60
+              ]
+            }
+          ]
+        },
+        {
+          "content": "endpoint to your site:",
+          "pos": [
+            127,
+            149
+          ]
+        }
+      ]
+    },
+    {
+      "pos": [
+        5281,
+        5457
+      ],
+      "content": "All of the required changes to the service definition file have been\ncompleted, but you still need to add the certificate information to\nthe service configuration file.",
+      "leadings": [
+        "",
+        "    ",
+        "    "
+      ],
+      "nodes": [
+        {
+          "content": "All of the required changes to the service definition file have been",
+          "pos": [
+            0,
+            68
+          ]
+        },
+        {
+          "content": "completed, but you still need to add the certificate information to",
+          "pos": [
+            69,
+            136
+          ]
+        },
+        {
+          "content": "the service configuration file.",
+          "pos": [
+            137,
+            168
+          ]
+        }
+      ]
+    },
+    {
+      "pos": [
+        5463,
+        5689
+      ],
+      "content": "In your service configuration file (CSCFG), ServiceConfiguration.Cloud.cscfg, add a **Certificates**\nsection within the **Role** section, replacing the sample thumbprint\nvalue shown below with that of your certificate:",
+      "leadings": [
+        "",
+        "    ",
+        "    "
+      ],
+      "nodes": [
+        {
+          "content": "In your service configuration file (CSCFG), ServiceConfiguration.Cloud.cscfg, add a <bpt id=\"p1\">**</bpt>Certificates<ept id=\"p1\">**</ept>",
+          "pos": [
+            0,
+            100
+          ]
+        },
+        {
+          "content": "section within the <bpt id=\"p1\">**</bpt>Role<ept id=\"p1\">**</ept> section, replacing the sample thumbprint",
+          "pos": [
+            101,
+            169
+          ]
+        },
+        {
+          "content": "value shown below with that of your certificate:",
+          "pos": [
+            170,
+            218
+          ]
+        }
+      ]
+    },
+    {
+      "content": "(The example above uses <bpt id=\"p1\">**</bpt>sha1<ept id=\"p1\">**</ept> for the thumbprint algorithm.",
+      "pos": [
+        6000,
+        6062
+      ]
+    },
+    {
+      "content": "Specify the appropriate value for your certificate's thumbprint algorithm.)",
+      "pos": [
+        6063,
+        6138
+      ]
+    },
+    {
+      "content": "Now that the service definition and service configuration files have",
+      "pos": [
+        6140,
+        6208
+      ]
+    },
+    {
+      "content": "been updated, package your deployment for uploading to Azure.",
+      "pos": [
+        6209,
+        6270
+      ]
+    },
+    {
+      "content": "If",
+      "pos": [
+        6271,
+        6273
+      ]
+    },
+    {
+      "content": "you are using <bpt id=\"p1\">**</bpt>cspack<ept id=\"p1\">**</ept>, ensure that you don't use the",
+      "pos": [
+        6274,
+        6329
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>/generateConfigurationFile<ept id=\"p1\">**</ept> flag, as that will overwrite the",
+      "pos": [
+        6330,
+        6393
+      ]
+    },
+    {
+      "content": "certificate information you just inserted.",
+      "pos": [
+        6394,
+        6436
+      ]
+    },
+    {
+      "content": "Step 3: Upload a certificate",
+      "pos": [
+        6441,
+        6469
+      ]
+    },
+    {
+      "content": "Connect to the portal and...",
+      "pos": [
+        6471,
+        6499
+      ]
+    },
+    {
+      "content": "Select your cloud service by either:",
+      "pos": [
+        6504,
+        6540
+      ]
+    },
+    {
+      "content": "In the Portal, select your <bpt id=\"p1\">**</bpt>Cloud Service<ept id=\"p1\">**</ept>.",
+      "pos": [
+        6547,
+        6592
+      ]
+    },
+    {
+      "content": "(Which will be in the <bpt id=\"p1\">**</bpt>Browse All/Recent area<ept id=\"p1\">**</ept>.)",
+      "pos": [
+        6593,
+        6643
+      ]
+    },
+    {
+      "content": "Publish your cloud service",
+      "pos": [
+        6659,
+        6685
+      ]
+    },
+    {
+      "content": "OR",
+      "pos": [
+        6768,
+        6770
+      ]
+    },
+    {
+      "pos": [
+        6788,
+        6902
+      ],
+      "content": "Under <bpt id=\"p1\">**</bpt>Browse All<ept id=\"p1\">**</ept> select <bpt id=\"p2\">**</bpt>Cloud Services<ept id=\"p2\">**</ept> under <bpt id=\"p3\">**</bpt>Filter By<ept id=\"p3\">**</ept> and select the cloud service instance you want."
+    },
+    {
+      "pos": [
+        6908,
+        6952
+      ],
+      "content": "Open the <bpt id=\"p1\">**</bpt>settings<ept id=\"p1\">**</ept> for the cloud service."
+    },
+    {
+      "content": "Open settings",
+      "pos": [
+        6960,
+        6973
+      ]
+    },
+    {
+      "pos": [
+        7051,
+        7077
+      ],
+      "content": "Click on <bpt id=\"p1\">**</bpt>Certificates<ept id=\"p1\">**</ept>."
+    },
+    {
+      "content": "Click the certificates icon",
+      "pos": [
+        7085,
+        7112
+      ]
+    },
+    {
+      "pos": [
+        7194,
+        7252
+      ],
+      "content": "Provide the <bpt id=\"p1\">**</bpt>File<ept id=\"p1\">**</ept>, <bpt id=\"p2\">**</bpt>Password<ept id=\"p2\">**</ept>, then click <bpt id=\"p3\">**</bpt>Upload<ept id=\"p3\">**</ept>."
+    },
+    {
+      "content": "Step 4: Connect to the role instance by using HTTPS",
+      "pos": [
+        7257,
+        7308
+      ]
+    },
+    {
+      "content": "Now that your deployment is up and running in Azure, you can",
+      "pos": [
+        7310,
+        7370
+      ]
+    },
+    {
+      "content": "connect to it using HTTPS.",
+      "pos": [
+        7371,
+        7397
+      ]
+    },
+    {
+      "pos": [
+        7407,
+        7460
+      ],
+      "content": "Click on the <bpt id=\"p1\">**</bpt>Site URL<ept id=\"p1\">**</ept> to open up the web browser."
+    },
+    {
+      "content": "Click on Site URL",
+      "pos": [
+        7468,
+        7485
+      ]
+    },
+    {
+      "pos": [
+        7560,
+        7659
+      ],
+      "content": "In your web browser, modify the link to use <bpt id=\"p1\">**</bpt>https<ept id=\"p1\">**</ept> instead of <bpt id=\"p2\">**</bpt>http<ept id=\"p2\">**</ept>, and then visit the page."
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> If you are using a self-signed certificate, when you browse to an HTTPS endpoint that's associated with the self-signed certificate you will see a certificate error in the browser.",
+      "pos": [
+        7666,
+        7859
+      ]
+    },
+    {
+      "content": "Using a certificate signed by a trusted certification authority will eliminate this problem; in the meantime, you can ignore the error.",
+      "pos": [
+        7860,
+        7995
+      ]
+    },
+    {
+      "content": "(Another option is to add the self-signed certificate to the user's trusted certificate authority certificate store.)",
+      "pos": [
+        7996,
+        8113
+      ]
+    },
+    {
+      "content": "Site preview",
+      "pos": [
+        8121,
+        8133
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.TIP]</ph> If you want to use SSL for a staging deployment instead of a production deployment, you'll first need to determine the URL used for the staging deployment.",
+      "pos": [
+        8210,
+        8377
+      ]
+    },
+    {
+      "content": "Once your cloud service has been deployed, the URL to the staging envorionment is determined by the <bpt id=\"p1\">**</bpt>Deployment ID<ept id=\"p1\">**</ept> GUID in this format: <ph id=\"ph1\">`https://deployment-id.cloudapp.net/`</ph>",
+      "pos": [
+        8378,
+        8554
+      ]
+    },
+    {
+      "pos": [
+        8569,
+        8941
+      ],
+      "content": "Create a certificate with the common name (CN) equal to the GUID-based URL (for example, <bpt id=\"p1\">**</bpt>328187776e774ceda8fc57609d404462.cloudapp.net<ept id=\"p1\">**</ept>), use the portal to add the certificate to your staged cloud service, add the certificate information to your CSDEF and CSCFG files, repackage your application, and update your staged deployment to use the new package and CSCFG file."
+    },
+    {
+      "content": "test",
+      "pos": [
+        8985,
+        8989
+      ]
+    }
+  ],
+  "content": "<properties \n    pageTitle=\"Configure SSL for a cloud service | Microsoft Azure\" \n    description=\"Learn how to specify an HTTPS endpoint for a web role and how to upload an SSL certificate to secure your application.\" \n    services=\"cloud-services\" \n    documentationCenter=\".net\" \n    authors=\"Thraka\" \n    manager=\"timlt\" \n    editor=\"\"/>\n\n<tags \n    ms.service=\"cloud-services\" \n    ms.workload=\"tbd\" \n    ms.tgt_pltfrm=\"na\" \n    ms.devlang=\"na\" \n    ms.topic=\"article\" \n    ms.date=\"06/28/2015\"\n    ms.author=\"adegeo\"/>\n\n\n\n\n# Configuring SSL for an application in Azure\n\n> [AZURE.SELECTOR]\n- [Azure Portal](cloud-services-configure-ssl-certificate.md)\n- [Azure Preview Portal](cloud-services-configure-ssl-certificate-portal.md)\n\nSecure Socket Layer (SSL) encryption is the most commonly used method of securing data sent across the internet. This common task discusses how to specify an HTTPS endpoint for a web role and how to upload an SSL certificate to secure your application.\n\n> [AZURE.NOTE] The procedures in this task apply to Azure Cloud Services; for Websites, see [Configuring an SSL certificate for an Azure website](../web-sites-configure-ssl-certificate.md).\n\nThis task will use a production deployment; information on using a staging deployment is provided at the end of this topic.\n\nRead [this](cloud-services-how-to-create-deploy-portal.md) first if you have not yet created a cloud service.\n\n[AZURE.INCLUDE [websites-cloud-services-css-guided-walkthrough](../../includes/websites-cloud-services-css-guided-walkthrough.md)]\n\n## Step 1: Get an SSL certificate\n\nTo configure SSL for an application, you first need to get an SSL certificate that has been signed by a Certificate Authority (CA), a trusted third-party who issues certificates for this purpose. If you do not already have one, you will need to obtain one from a company that sells SSL certificates.\n\nThe certificate must meet the following requirements for SSL certificates in Azure:\n\n-   The certificate must contain a private key.\n-   The certificate must be created for key exchange, exportable to a Personal Information Exchange (.pfx) file.\n-   The certificate's subject name must match the domain used to access the cloud service. You cannot obtain an SSL certificate from a certificate authority (CA) for the cloudapp.net domain. You must acquire a custom domain name to use when access your service. When you request a certificate from a CA the certificate's subject name must match the custom domain name used to access your application. For example, if your custom domain name is **contoso.com** you would request a certificate from your CA for ***.contoso.com** or **www.contoso.com**.\n-   The certificate must use a minimum of 2048-bit encryption.\n\nFor test purposes, you can [create](cloud-services-certs-create.md) and use a self-signed certificate. A self-signed certificate is not authenticated through a CA and can use the cloudapp.net domain as the website URL. For example, the task below uses a self-signed certificate in which  the common name (CN) used in the certificate is **sslexample.cloudapp.net**.\n\nNext, you must include information about the certificate in your service definition and service configuration files.\n\n<a name=\"modify\"> </a>\n## Step 2: Modify the service definition and configuration files\n\nYour application must be configured to use the certificate, and an HTTPS endpoint must be added. As a result, the service definition and service configuration files need to be updated.\n\n1.  In your development environment, open the service definition file\n    (CSDEF), add a **Certificates** section within the **WebRole**\n    section, and include the following information about the\n    certificate:\n\n        <WebRole name=\"CertificateTesting\" vmsize=\"Small\">\n        ...\n            <Certificates>\n                <Certificate name=\"SampleCertificate\" \n                             storeLocation=\"LocalMachine\" \n                             storeName=\"CA\" />\n            </Certificates>\n        ...\n        </WebRole>\n\n    The **Certificates** section defines the name of our certificate, its location, and the name of the store where it is located. We have chosen to store the certificate in the CA (Certificate Authority)tore, but you can choose other options as well. See [How to associate a certificate with a service][] for more information.\n\n2.  In your service definition file, add an **InputEndpoint** element\n    within the **Endpoints** section to enable HTTPS:\n\n        <WebRole name=\"CertificateTesting\" vmsize=\"Small\">\n        ...\n            <Endpoints>\n                <InputEndpoint name=\"HttpsIn\" protocol=\"https\" port=\"443\" \n                    certificate=\"SampleCertificate\" />\n            </Endpoints>\n        ...\n        </WebRole>\n\n3.  In your service definition file, add a **Binding** element within\n    the **Sites** section. This adds an HTTPS binding to map the\n    endpoint to your site:\n\n        <WebRole name=\"CertificateTesting\" vmsize=\"Small\">\n        ...\n            <Sites>\n                <Site name=\"Web\">\n                    <Bindings>\n                        <Binding name=\"HttpsIn\" endpointName=\"HttpsIn\" />\n                    </Bindings>\n                </Site>\n            </Sites>\n        ...\n        </WebRole>\n\n    All of the required changes to the service definition file have been\n    completed, but you still need to add the certificate information to\n    the service configuration file.\n\n4.  In your service configuration file (CSCFG), ServiceConfiguration.Cloud.cscfg, add a **Certificates**\n    section within the **Role** section, replacing the sample thumbprint\n    value shown below with that of your certificate:\n\n        <Role name=\"Deployment\">\n        ...\n            <Certificates>\n                <Certificate name=\"SampleCertificate\" \n                    thumbprint=\"9427befa18ec6865a9ebdc79d4c38de50e6316ff\" \n                    thumbprintAlgorithm=\"sha1\" />\n            </Certificates>\n        ...\n        </Role>\n\n(The example above uses **sha1** for the thumbprint algorithm. Specify the appropriate value for your certificate's thumbprint algorithm.)\n\nNow that the service definition and service configuration files have\nbeen updated, package your deployment for uploading to Azure. If\nyou are using **cspack**, ensure that you don't use the\n**/generateConfigurationFile** flag, as that will overwrite the\ncertificate information you just inserted.\n\n## Step 3: Upload a certificate\n\nConnect to the portal and...\n\n1. Select your cloud service by either:\n    - In the Portal, select your **Cloud Service**. (Which will be in the **Browse All/Recent area**.)\n    \n        ![Publish your cloud service](media/cloud-services-configure-ssl-certificate-portal/browse.png)\n    \n        **OR**\n        \n    - Under **Browse All** select **Cloud Services** under **Filter By** and select the cloud service instance you want. \n\n3. Open the **settings** for the cloud service.\n\n    ![Open settings](media/cloud-services-configure-ssl-certificate-portal/all-settings.png)\n\n4. Click on **Certificates**.\n\n    ![Click the certificates icon](media/cloud-services-configure-ssl-certificate-portal/certificate-item.png)\n\n4. Provide the **File**, **Password**, then click **Upload**.\n\n## Step 4: Connect to the role instance by using HTTPS\n\nNow that your deployment is up and running in Azure, you can\nconnect to it using HTTPS.\n    \n1.  Click on the **Site URL** to open up the web browser.\n\n    ![Click on Site URL](media/cloud-services-configure-ssl-certificate-portal/navigate.png)\n\n2.  In your web browser, modify the link to use **https** instead of **http**, and then visit the page.\n\n    >[AZURE.NOTE] If you are using a self-signed certificate, when you browse to an HTTPS endpoint that's associated with the self-signed certificate you will see a certificate error in the browser. Using a certificate signed by a trusted certification authority will eliminate this problem; in the meantime, you can ignore the error. (Another option is to add the self-signed certificate to the user's trusted certificate authority certificate store.)\n\n    ![Site preview](media/cloud-services-configure-ssl-certificate-portal/show-site.png)\n\n    >[AZURE.TIP] If you want to use SSL for a staging deployment instead of a production deployment, you'll first need to determine the URL used for the staging deployment. Once your cloud service has been deployed, the URL to the staging envorionment is determined by the **Deployment ID** GUID in this format: `https://deployment-id.cloudapp.net/`  \n      \n    >Create a certificate with the common name (CN) equal to the GUID-based URL (for example, **328187776e774ceda8fc57609d404462.cloudapp.net**), use the portal to add the certificate to your staged cloud service, add the certificate information to your CSDEF and CSCFG files, repackage your application, and update your staged deployment to use the new package and CSCFG file.\n\n[Azure Portal]: http://portal.azure.com/\n\ntest\n"
+}

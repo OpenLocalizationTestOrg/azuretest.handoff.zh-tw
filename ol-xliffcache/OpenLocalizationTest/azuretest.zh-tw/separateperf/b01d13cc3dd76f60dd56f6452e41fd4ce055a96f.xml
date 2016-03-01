@@ -1,0 +1,628 @@
+{
+  "nodes": [
+    {
+      "content": "How to delegate user registration and product subscription",
+      "pos": [
+        28,
+        86
+      ]
+    },
+    {
+      "content": "Learn how to delegate user registration and product subscription to a third party in Azure API Management.",
+      "pos": [
+        106,
+        212
+      ]
+    },
+    {
+      "content": "How to delegate user registration and product subscription",
+      "pos": [
+        526,
+        584
+      ]
+    },
+    {
+      "content": "Delegation allows you to use your existing website for handling developer sign-in/sign-up and subscription to products as opposed to using the built-in functionality in the developer portal.",
+      "pos": [
+        586,
+        776
+      ]
+    },
+    {
+      "content": "This enables your website to own the user data and perform the validation of these steps in a custom way.",
+      "pos": [
+        777,
+        882
+      ]
+    },
+    {
+      "pos": [
+        887,
+        961
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"delegate-signin-up\"&gt;</ph> <ph id=\"ph2\">&lt;/a&gt;</ph>Delegating developer sign-in and sign-up"
+    },
+    {
+      "content": "To delegate developer sign-in and sign-up to your existing website you will need to create a special delegation endpoint on your site that acts as the entry-point for any such request initiated from the API Management developer portal.",
+      "pos": [
+        963,
+        1198
+      ]
+    },
+    {
+      "content": "The final workflow will be as follows:",
+      "pos": [
+        1200,
+        1238
+      ]
+    },
+    {
+      "content": "Developer clicks on the sign-in or sign-up link at the API Management developer portal",
+      "pos": [
+        1243,
+        1329
+      ]
+    },
+    {
+      "content": "Browser is redirected to the delegation endpoint",
+      "pos": [
+        1333,
+        1381
+      ]
+    },
+    {
+      "content": "Delegation endpoint in return redirects to or presents UI asking user to sign-in or sign-up",
+      "pos": [
+        1385,
+        1476
+      ]
+    },
+    {
+      "content": "On success, the user is redirected back to the API Management developer portal page they started from",
+      "pos": [
+        1480,
+        1581
+      ]
+    },
+    {
+      "content": "To begin, let's first set-up API Management to route requests via your delegation endpoint.",
+      "pos": [
+        1584,
+        1675
+      ]
+    },
+    {
+      "content": "In the API Management publisher portal, click on <bpt id=\"p1\">**</bpt>Security<ept id=\"p1\">**</ept> and then click the <bpt id=\"p2\">**</bpt>Delegation<ept id=\"p2\">**</ept> tab.",
+      "pos": [
+        1676,
+        1776
+      ]
+    },
+    {
+      "content": "Click the checkbox to enable 'Delegate sign-in &amp; sign-up'.",
+      "pos": [
+        1777,
+        1835
+      ]
+    },
+    {
+      "content": "Delegation page",
+      "pos": [
+        1839,
+        1854
+      ]
+    },
+    {
+      "pos": [
+        1896,
+        2014
+      ],
+      "content": "Decide what the URL of your special delegation endpoint will be and enter it in the <bpt id=\"p1\">**</bpt>Delegation endpoint URL<ept id=\"p1\">**</ept> field."
+    },
+    {
+      "content": "Within the <bpt id=\"p1\">**</bpt>Delegation authentication key<ept id=\"p1\">**</ept> field enter a secret that will be used to compute a signature provided to you for verification to ensure that the request is indeed coming from Azure API Management.",
+      "pos": [
+        2019,
+        2229
+      ]
+    },
+    {
+      "content": "You can click the <bpt id=\"p1\">**</bpt>generate<ept id=\"p1\">**</ept> button to have API Managemnet randomly generate a key for you.",
+      "pos": [
+        2230,
+        2323
+      ]
+    },
+    {
+      "content": "Now you need to create the <bpt id=\"p1\">**</bpt>delegation endpoint<ept id=\"p1\">**</ept>.",
+      "pos": [
+        2325,
+        2376
+      ]
+    },
+    {
+      "content": "It has to perform a number of actions:",
+      "pos": [
+        2377,
+        2415
+      ]
+    },
+    {
+      "content": "Receive a request in the following form:",
+      "pos": [
+        2420,
+        2460
+      ]
+    },
+    {
+      "content": "http://www.yourwebsite.com/apimdelegation?operation=SignIn&amp;returnUrl={URL of source page}&amp;salt={string}&amp;sig={string}",
+      "pos": [
+        2469,
+        2585
+      ]
+    },
+    {
+      "content": "Query parameters for the sign-in / sign-up case:",
+      "pos": [
+        2592,
+        2640
+      ]
+    },
+    {
+      "pos": [
+        2647,
+        2751
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>operation<ept id=\"p1\">**</ept>: identifies what type of delegation request it is - it can only be <bpt id=\"p2\">**</bpt>SignIn<ept id=\"p2\">**</ept> in this case"
+    },
+    {
+      "pos": [
+        2758,
+        2844
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>returnUrl<ept id=\"p1\">**</ept>: the URL of the page where the user clicked on a sign-in or sign-up link"
+    },
+    {
+      "pos": [
+        2851,
+        2917
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>salt<ept id=\"p1\">**</ept>: a special salt string used for computing a security hash"
+    },
+    {
+      "pos": [
+        2924,
+        3009
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>sig<ept id=\"p1\">**</ept>: a computed security hash to be used for comparison to your own computed hash"
+    },
+    {
+      "content": "Verify that the request is coming from Azure API Management (optional, but highly recommended for security)",
+      "pos": [
+        3014,
+        3121
+      ]
+    },
+    {
+      "pos": [
+        3129,
+        3258
+      ],
+      "content": "Compute an HMAC-SHA512 hash of a string based on the <bpt id=\"p1\">**</bpt>returnUrl<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>salt<ept id=\"p2\">**</ept> query parameters (<bpt id=\"p3\">[</bpt><ept id=\"p3\">example code provided below]</ept>):"
+    },
+    {
+      "pos": [
+        3269,
+        3306
+      ],
+      "content": "HMAC(<bpt id=\"p1\">**</bpt>salt<ept id=\"p1\">**</ept> + '\\n' + <bpt id=\"p2\">**</bpt>returnUrl<ept id=\"p2\">**</ept>)"
+    },
+    {
+      "content": "Compare the above-computed hash to the value of the <bpt id=\"p1\">**</bpt>sig<ept id=\"p1\">**</ept> query parameter.",
+      "pos": [
+        3323,
+        3399
+      ]
+    },
+    {
+      "content": "If the two hashes match, move on to the next step, otherwise deny the request.",
+      "pos": [
+        3400,
+        3478
+      ]
+    },
+    {
+      "pos": [
+        3483,
+        3606
+      ],
+      "content": "Verify that you are receiving a request for sign-in/sign-up: the <bpt id=\"p1\">**</bpt>operation<ept id=\"p1\">**</ept> query parameter will be set to \"<bpt id=\"p2\">**</bpt>SignIn<ept id=\"p2\">**</ept>\"."
+    },
+    {
+      "content": "Present the user with UI to sign-in or sign-up",
+      "pos": [
+        3611,
+        3657
+      ]
+    },
+    {
+      "content": "If the user is signing-up you have to create a corresponding account for them in API Management.",
+      "pos": [
+        3662,
+        3758
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt><ept id=\"p1\">Create a user]</ept> with the API Management REST API.",
+      "pos": [
+        3759,
+        3808
+      ]
+    },
+    {
+      "content": "When doing so, ensure that you set the user ID to the same it is in your user store or to an ID that you can keep track of.",
+      "pos": [
+        3809,
+        3932
+      ]
+    },
+    {
+      "content": "When the user is successfully authenticated:",
+      "pos": [
+        3937,
+        3981
+      ]
+    },
+    {
+      "pos": [
+        3989,
+        4059
+      ],
+      "content": "<bpt id=\"p1\">[</bpt><ept id=\"p1\">request a single-sign-on (SSO) token]</ept> via the API Management REST API"
+    },
+    {
+      "content": "append a returnUrl query parameter to the SSO URL you have received from the API call above:",
+      "pos": [
+        4067,
+        4159
+      ]
+    },
+    {
+      "content": "e.g. https://customer.portal.azure-api.net/signin-sso?token&amp;returnUrl=/return/url",
+      "pos": [
+        4170,
+        4251
+      ]
+    },
+    {
+      "content": "redirect the user to the above produced URL",
+      "pos": [
+        4260,
+        4303
+      ]
+    },
+    {
+      "pos": [
+        4305,
+        4460
+      ],
+      "content": "In addition to the <bpt id=\"p1\">**</bpt>SignIn<ept id=\"p1\">**</ept> operation, you can also perform account management by following the previous steps and using one of the following operations."
+    },
+    {
+      "content": "ChangePassword",
+      "pos": [
+        4468,
+        4482
+      ]
+    },
+    {
+      "content": "ChangeProfile",
+      "pos": [
+        4491,
+        4504
+      ]
+    },
+    {
+      "content": "CloseAccount",
+      "pos": [
+        4513,
+        4525
+      ]
+    },
+    {
+      "content": "You must pass the following query parameters for account management operations.",
+      "pos": [
+        4529,
+        4608
+      ]
+    },
+    {
+      "pos": [
+        4614,
+        4726
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>operation<ept id=\"p1\">**</ept>: identifies what type of delegation request it is (ChangePassword, ChangeProfile, or CloseAccount)"
+    },
+    {
+      "pos": [
+        4731,
+        4779
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>userId<ept id=\"p1\">**</ept>: the user id of the account to manage"
+    },
+    {
+      "pos": [
+        4784,
+        4850
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>salt<ept id=\"p1\">**</ept>: a special salt string used for computing a security hash"
+    },
+    {
+      "pos": [
+        4855,
+        4940
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>sig<ept id=\"p1\">**</ept>: a computed security hash to be used for comparison to your own computed hash"
+    },
+    {
+      "pos": [
+        4945,
+        5021
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"delegate-product-subscription\"&gt;</ph> <ph id=\"ph2\">&lt;/a&gt;</ph>Delegating product subscription"
+    },
+    {
+      "content": "Delegating product subscription works similarly to delegating user sign-in/-up.",
+      "pos": [
+        5023,
+        5102
+      ]
+    },
+    {
+      "content": "The final workflow would be as follows:",
+      "pos": [
+        5103,
+        5142
+      ]
+    },
+    {
+      "content": "Developer selects a product in the API Management developer portal and clicks on the Subscribe button",
+      "pos": [
+        5147,
+        5248
+      ]
+    },
+    {
+      "content": "Browser is redirected to the delegation endpoint",
+      "pos": [
+        5252,
+        5300
+      ]
+    },
+    {
+      "content": "Delegation endpoint performs required product subscription steps - this is up to you and may entail redirecting to another page to request billing information, asking additional questions, or simply storing the information and not requiring any user action",
+      "pos": [
+        5304,
+        5560
+      ]
+    },
+    {
+      "content": "On success, the user is redirected back to the API Management developer portal page they started from",
+      "pos": [
+        5564,
+        5665
+      ]
+    },
+    {
+      "pos": [
+        5667,
+        5763
+      ],
+      "content": "To enable the functionality, on the <bpt id=\"p1\">**</bpt>Delegation<ept id=\"p1\">**</ept> page click <bpt id=\"p2\">**</bpt>Delegate product subscription<ept id=\"p2\">**</ept>."
+    },
+    {
+      "content": "Then ensure the delegation endpoint performs the following actions:",
+      "pos": [
+        5765,
+        5832
+      ]
+    },
+    {
+      "content": "Receive a request in the following form:",
+      "pos": [
+        5838,
+        5878
+      ]
+    },
+    {
+      "content": "http://www.yourwebsite.com/apimdelegation?operation={operation}&amp;productId={product to subscribe to}&amp;userId={user making request}&amp;salt={string}&amp;sig={string}",
+      "pos": [
+        5887,
+        6042
+      ]
+    },
+    {
+      "content": "Query parameters for the product subscription case:",
+      "pos": [
+        6049,
+        6100
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>operation<ept id=\"p1\">**</ept>: identifies what type of delegation request it is.",
+      "pos": [
+        6107,
+        6171
+      ]
+    },
+    {
+      "content": "For product subscription requests the valid options are:",
+      "pos": [
+        6172,
+        6228
+      ]
+    },
+    {
+      "content": "\"Subscribe\": a request to subscribe the user to a given product with provided ID (see below)",
+      "pos": [
+        6239,
+        6331
+      ]
+    },
+    {
+      "content": "\"Unsubscribe\": a request to unsubscribe a user from a product",
+      "pos": [
+        6342,
+        6403
+      ]
+    },
+    {
+      "content": "\"Renew\": a requst to renew a subscription (e.g. that may be expiring)",
+      "pos": [
+        6414,
+        6483
+      ]
+    },
+    {
+      "pos": [
+        6490,
+        6561
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>productId<ept id=\"p1\">**</ept>: the ID of the product the user requested to subscribe to"
+    },
+    {
+      "pos": [
+        6568,
+        6627
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>userId<ept id=\"p1\">**</ept>: the ID of the user for whom the request is made"
+    },
+    {
+      "pos": [
+        6634,
+        6700
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>salt<ept id=\"p1\">**</ept>: a special salt string used for computing a security hash"
+    },
+    {
+      "pos": [
+        6707,
+        6792
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>sig<ept id=\"p1\">**</ept>: a computed security hash to be used for comparison to your own computed hash"
+    },
+    {
+      "content": "Verify that the request is coming from Azure API Management (optional, but highly recommended for security)",
+      "pos": [
+        6798,
+        6905
+      ]
+    },
+    {
+      "pos": [
+        6913,
+        7017
+      ],
+      "content": "Compute an HMAC-SHA512 of a string based on the <bpt id=\"p1\">**</bpt>productId<ept id=\"p1\">**</ept>, <bpt id=\"p2\">**</bpt>userId<ept id=\"p2\">**</ept> and <bpt id=\"p3\">**</bpt>salt<ept id=\"p3\">**</ept> query parameters:"
+    },
+    {
+      "pos": [
+        7028,
+        7085
+      ],
+      "content": "HMAC(<bpt id=\"p1\">**</bpt>salt<ept id=\"p1\">**</ept> + '\\n' + <bpt id=\"p2\">**</bpt>productId<ept id=\"p2\">**</ept> + '\\n' + <bpt id=\"p3\">**</bpt>userId<ept id=\"p3\">**</ept>)"
+    },
+    {
+      "content": "Compare the above-computed hash to the value of the <bpt id=\"p1\">**</bpt>sig<ept id=\"p1\">**</ept> query parameter.",
+      "pos": [
+        7102,
+        7178
+      ]
+    },
+    {
+      "content": "If the two hashes match, move on to the next step, otherwise deny the request.",
+      "pos": [
+        7179,
+        7257
+      ]
+    },
+    {
+      "pos": [
+        7266,
+        7407
+      ],
+      "content": "Perform any product subscription processing based on the type of operation requested in <bpt id=\"p1\">**</bpt>operation<ept id=\"p1\">**</ept> - e.g. billing, further questions, etc."
+    },
+    {
+      "pos": [
+        7412,
+        7578
+      ],
+      "content": "On successfully subscribing the user to the product on your side, subscribe the user to the API Management product by <bpt id=\"p1\">[</bpt><ept id=\"p1\">calling the REST API for product subscription]</ept>."
+    },
+    {
+      "pos": [
+        7583,
+        7663
+      ],
+      "content": "Redirect the user back to the <bpt id=\"p1\">**</bpt>returnUrl<ept id=\"p1\">**</ept> provided when receiving the request."
+    },
+    {
+      "pos": [
+        7668,
+        7718
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"delegate-example-code\"&gt;</ph> <ph id=\"ph2\">&lt;/a&gt;</ph> Example Code"
+    },
+    {
+      "content": "These code samples show how to take the <bpt id=\"p1\">*</bpt>delegation validation key<ept id=\"p1\">*</ept>, which is set in the Delegation screen of the API Management portal, to create a HMAC which is then used to validate the signature, proving the validity of the passed returnUrl.",
+      "pos": [
+        7723,
+        7968
+      ]
+    },
+    {
+      "content": "The same code works for the productId and userId with slight modification.",
+      "pos": [
+        7969,
+        8043
+      ]
+    },
+    {
+      "content": "C# code to generate hash of returnUrl",
+      "pos": [
+        8047,
+        8084
+      ]
+    },
+    {
+      "content": "NodeJS code to generate hash of returnUrl",
+      "pos": [
+        8645,
+        8686
+      ]
+    },
+    {
+      "content": "Next steps",
+      "pos": [
+        9203,
+        9213
+      ]
+    },
+    {
+      "content": "For more information on delegation, see the following video.",
+      "pos": [
+        9215,
+        9275
+      ]
+    },
+    {
+      "content": "test",
+      "pos": [
+        9840,
+        9844
+      ]
+    }
+  ],
+  "content": "<properties \n    pageTitle=\"How to delegate user registration and product subscription\" \n    description=\"Learn how to delegate user registration and product subscription to a third party in Azure API Management.\" \n    services=\"api-management\" \n    documentationCenter=\"\" \n    authors=\"antonba\" \n    manager=\"dwrede\" \n    editor=\"\"/>\n\n<tags \n    ms.service=\"api-management\" \n    ms.workload=\"mobile\" \n    ms.tgt_pltfrm=\"na\" \n    ms.devlang=\"na\" \n    ms.topic=\"article\" \n    ms.date=\"06/18/2015\" \n    ms.author=\"antonba\"/>\n\n# How to delegate user registration and product subscription\n\nDelegation allows you to use your existing website for handling developer sign-in/sign-up and subscription to products as opposed to using the built-in functionality in the developer portal. This enables your website to own the user data and perform the validation of these steps in a custom way.\n\n## <a name=\"delegate-signin-up\"> </a>Delegating developer sign-in and sign-up\n\nTo delegate developer sign-in and sign-up to your existing website you will need to create a special delegation endpoint on your site that acts as the entry-point for any such request initiated from the API Management developer portal.\n\nThe final workflow will be as follows:\n\n1. Developer clicks on the sign-in or sign-up link at the API Management developer portal\n2. Browser is redirected to the delegation endpoint\n3. Delegation endpoint in return redirects to or presents UI asking user to sign-in or sign-up\n4. On success, the user is redirected back to the API Management developer portal page they started from\n\n\nTo begin, let's first set-up API Management to route requests via your delegation endpoint. In the API Management publisher portal, click on **Security** and then click the **Delegation** tab. Click the checkbox to enable 'Delegate sign-in & sign-up'.\n\n![Delegation page][api-management-delegation-signin-up]\n\n* Decide what the URL of your special delegation endpoint will be and enter it in the **Delegation endpoint URL** field. \n\n* Within the **Delegation authentication key** field enter a secret that will be used to compute a signature provided to you for verification to ensure that the request is indeed coming from Azure API Management. You can click the **generate** button to have API Managemnet randomly generate a key for you.\n\nNow you need to create the **delegation endpoint**. It has to perform a number of actions:\n\n1. Receive a request in the following form:\n\n    > *http://www.yourwebsite.com/apimdelegation?operation=SignIn&returnUrl={URL of source page}&salt={string}&sig={string}*\n\n    Query parameters for the sign-in / sign-up case:\n    - **operation**: identifies what type of delegation request it is - it can only be **SignIn** in this case\n    - **returnUrl**: the URL of the page where the user clicked on a sign-in or sign-up link\n    - **salt**: a special salt string used for computing a security hash\n    - **sig**: a computed security hash to be used for comparison to your own computed hash\n\n2. Verify that the request is coming from Azure API Management (optional, but highly recommended for security)\n\n    * Compute an HMAC-SHA512 hash of a string based on the **returnUrl** and **salt** query parameters ([example code provided below]):\n        > HMAC(**salt** + '\\n' + **returnUrl**)\n         \n    * Compare the above-computed hash to the value of the **sig** query parameter. If the two hashes match, move on to the next step, otherwise deny the request.\n\n2. Verify that you are receiving a request for sign-in/sign-up: the **operation** query parameter will be set to \"**SignIn**\".\n\n3. Present the user with UI to sign-in or sign-up\n\n4. If the user is signing-up you have to create a corresponding account for them in API Management. [Create a user] with the API Management REST API. When doing so, ensure that you set the user ID to the same it is in your user store or to an ID that you can keep track of.\n\n5. When the user is successfully authenticated:\n\n    * [request a single-sign-on (SSO) token] via the API Management REST API\n\n    * append a returnUrl query parameter to the SSO URL you have received from the API call above:\n        > e.g. https://customer.portal.azure-api.net/signin-sso?token&returnUrl=/return/url \n\n    * redirect the user to the above produced URL\n\nIn addition to the **SignIn** operation, you can also perform account management by following the previous steps and using one of the following operations.\n\n-   **ChangePassword**\n-   **ChangeProfile**\n-   **CloseAccount**\n\nYou must pass the following query parameters for account management operations.\n\n-   **operation**: identifies what type of delegation request it is (ChangePassword, ChangeProfile, or CloseAccount)\n-   **userId**: the user id of the account to manage\n-   **salt**: a special salt string used for computing a security hash\n-   **sig**: a computed security hash to be used for comparison to your own computed hash\n\n## <a name=\"delegate-product-subscription\"> </a>Delegating product subscription\n\nDelegating product subscription works similarly to delegating user sign-in/-up. The final workflow would be as follows:\n\n1. Developer selects a product in the API Management developer portal and clicks on the Subscribe button\n2. Browser is redirected to the delegation endpoint\n3. Delegation endpoint performs required product subscription steps - this is up to you and may entail redirecting to another page to request billing information, asking additional questions, or simply storing the information and not requiring any user action\n4. On success, the user is redirected back to the API Management developer portal page they started from\n\nTo enable the functionality, on the **Delegation** page click **Delegate product subscription**.\n\nThen ensure the delegation endpoint performs the following actions:\n\n\n1. Receive a request in the following form:\n\n    > *http://www.yourwebsite.com/apimdelegation?operation={operation}&productId={product to subscribe to}&userId={user making request}&salt={string}&sig={string}*\n\n    Query parameters for the product subscription case:\n    - **operation**: identifies what type of delegation request it is. For product subscription requests the valid options are:\n        - \"Subscribe\": a request to subscribe the user to a given product with provided ID (see below)\n        - \"Unsubscribe\": a request to unsubscribe a user from a product\n        - \"Renew\": a requst to renew a subscription (e.g. that may be expiring)\n    - **productId**: the ID of the product the user requested to subscribe to\n    - **userId**: the ID of the user for whom the request is made\n    - **salt**: a special salt string used for computing a security hash\n    - **sig**: a computed security hash to be used for comparison to your own computed hash\n\n\n2. Verify that the request is coming from Azure API Management (optional, but highly recommended for security)\n\n    * Compute an HMAC-SHA512 of a string based on the **productId**, **userId** and **salt** query parameters:\n        > HMAC(**salt** + '\\n' + **productId** + '\\n' + **userId**)\n         \n    * Compare the above-computed hash to the value of the **sig** query parameter. If the two hashes match, move on to the next step, otherwise deny the request.\n    \n3. Perform any product subscription processing based on the type of operation requested in **operation** - e.g. billing, further questions, etc.\n\n4. On successfully subscribing the user to the product on your side, subscribe the user to the API Management product by [calling the REST API for product subscription].\n\n5. Redirect the user back to the **returnUrl** provided when receiving the request.\n\n## <a name=\"delegate-example-code\"> </a> Example Code ##\n\nThese code samples show how to take the *delegation validation key*, which is set in the Delegation screen of the API Management portal, to create a HMAC which is then used to validate the signature, proving the validity of the passed returnUrl. The same code works for the productId and userId with slight modification.\n\n**C# code to generate hash of returnUrl**\n\n    using System.Security.Cryptography;\n\n    string key = \"delegation validation key\";\n    string returnUrl = \"returnUrl query parameter\";\n    string salt = \"salt query parameter\";\n    string signature;\n    using (var encoder = new HMACSHA512(Convert.FromBase64String(key)))\n    {\n        signature = Convert.ToBase64String(encoder.ComputeHash(Encoding.UTF8.GetBytes(salt + \"\\n\" + returnUrl)));\n        // change to (salt + \"\\n\" + productId + \"\\n\" + userId) when delegating product subscription\n        // compare signature to sig query parameter\n    }\n\n\n**NodeJS code to generate hash of returnUrl**\n\n    var crypto = require('crypto');\n    \n    var key = 'delegation validation key'; \n    var returnUrl = 'returnUrl query parameter';\n    var salt = 'salt query parameter';\n    \n    var hmac = crypto.createHmac('sha512', new Buffer(key, 'base64'));\n    var digest = hmac.update(salt + '\\n' + returnUrl).digest();\n    // change to (salt + \"\\n\" + productId + \"\\n\" + userId) when delegating product subscription\n    // compare signature to sig query parameter\n    \n    var signature = digest.toString('base64');\n\n## Next steps\n\nFor more information on delegation, see the following video.\n\n> [AZURE.VIDEO delegating-user-authentication-and-product-subscription-to-a-3rd-party-site]\n\n[Delegating developer sign-in and sign-up]: #delegate-signin-up\n[Delegating product subscription]: #delegate-product-subscription\n[request a single-sign-on (SSO) token]: http://go.microsoft.com/fwlink/?LinkId=507409\n[create a user]: http://go.microsoft.com/fwlink/?LinkId=507655#CreateUser\n[calling the REST API for product subscription]: http://go.microsoft.com/fwlink/?LinkId=507655#SSO\n[Next steps]: #next-steps\n[example code provided below]: #delegate-example-code\n\n[api-management-delegation-signin-up]: ./media/api-management-howto-setup-delegation/api-management-delegation-signin-up.png \ntest\n"
+}

@@ -1,0 +1,551 @@
+{
+  "nodes": [
+    {
+      "content": "Build a service using an existing SQL database with the Mobile Services .NET backend | Microsoft Azure",
+      "pos": [
+        27,
+        129
+      ]
+    },
+    {
+      "content": "Learn how to use an existing cloud or on-premises SQL database with your .NET based mobile service",
+      "pos": [
+        148,
+        246
+      ]
+    },
+    {
+      "content": "Build a service using an existing SQL database with the Mobile Services .NET backend",
+      "pos": [
+        568,
+        652
+      ]
+    },
+    {
+      "content": "The Mobile Services .NET backend makes it easy to take advantage of existing assets in building a mobile service.",
+      "pos": [
+        654,
+        767
+      ]
+    },
+    {
+      "content": "One particularly interesting scenario is using an existing SQL database (either on-premises or in the cloud), that may already be used by other applications, to make existing data available to mobile clients.",
+      "pos": [
+        768,
+        976
+      ]
+    },
+    {
+      "content": "In this case it's a requirement that database model (or <bpt id=\"p1\">*</bpt>schema<ept id=\"p1\">*</ept>) remain unchanged, in order for existing solutions to continue working.",
+      "pos": [
+        977,
+        1113
+      ]
+    },
+    {
+      "content": "Exploring the existing database model",
+      "pos": [
+        1147,
+        1184
+      ]
+    },
+    {
+      "content": "For this tutorial we will use the database that was created with your mobile service, but we will not use the default model that is created.",
+      "pos": [
+        1186,
+        1326
+      ]
+    },
+    {
+      "content": "Instead, we will manually create an arbitrary model that will represent an existing application that you may have.",
+      "pos": [
+        1327,
+        1441
+      ]
+    },
+    {
+      "content": "For full details about how to connect to an on-premises database instead, check out <bpt id=\"p1\">[</bpt>Connect to an on-premises SQL Server from an Azure mobile service using Hybrid Connections<ept id=\"p1\">](mobile-services-dotnet-backend-hybrid-connections-get-started.md)</ept>.",
+      "pos": [
+        1442,
+        1685
+      ]
+    },
+    {
+      "content": "Start by creating a Mobile Services server project in <bpt id=\"p1\">**</bpt>Visual Studio 2013 Update 2<ept id=\"p1\">**</ept> or by using the quickstart project that you can download on the Mobile Services tab for your service in the <bpt id=\"p2\">[</bpt>Azure Management Portal<ept id=\"p2\">](http://manage.windowsazure.com)</ept>.",
+      "pos": [
+        1690,
+        1942
+      ]
+    },
+    {
+      "content": "For the purposes of this tutorial, we will assume your server project name is <bpt id=\"p1\">**</bpt>ShoppingService<ept id=\"p1\">**</ept>.",
+      "pos": [
+        1943,
+        2041
+      ]
+    },
+    {
+      "content": "Create a <bpt id=\"p1\">**</bpt>Customer.cs<ept id=\"p1\">**</ept> file inside the <bpt id=\"p2\">**</bpt>Models<ept id=\"p2\">**</ept> folder and use the following implementation.",
+      "pos": [
+        2046,
+        2142
+      ]
+    },
+    {
+      "content": "You will need to add an assembly reference to <bpt id=\"p1\">**</bpt>System.ComponentModel.DataAnnotations<ept id=\"p1\">**</ept> to your project.",
+      "pos": [
+        2143,
+        2247
+      ]
+    },
+    {
+      "pos": [
+        2669,
+        2763
+      ],
+      "content": "Create an <bpt id=\"p1\">**</bpt>Order.cs<ept id=\"p1\">**</ept> file inside the <bpt id=\"p2\">**</bpt>Models<ept id=\"p2\">**</ept> folder and use the following implementation:"
+    },
+    {
+      "content": "You will note that these two classes have a <bpt id=\"p1\">*</bpt>relationship<ept id=\"p1\">*</ept>: every <bpt id=\"p2\">**</bpt>Order<ept id=\"p2\">**</ept> is associated with a single <bpt id=\"p3\">**</bpt>Customer<ept id=\"p3\">**</ept> and a <bpt id=\"p4\">**</bpt>Customer<ept id=\"p4\">**</ept> can be associated with multiple <bpt id=\"p5\">**</bpt>Orders<ept id=\"p5\">**</ept>.",
+      "pos": [
+        3287,
+        3466
+      ]
+    },
+    {
+      "content": "Having relationships is common in existing data models.",
+      "pos": [
+        3467,
+        3522
+      ]
+    },
+    {
+      "pos": [
+        3527,
+        3617
+      ],
+      "content": "Create an <bpt id=\"p1\">**</bpt>ExistingContext.cs<ept id=\"p1\">**</ept> file inside the <bpt id=\"p2\">**</bpt>Models<ept id=\"p2\">**</ept> folder and implement it as so:"
+    },
+    {
+      "content": "The structure above approximates an existing Entity Framework model that you may already be using for an existing application.",
+      "pos": [
+        4057,
+        4183
+      ]
+    },
+    {
+      "content": "Please note that the model is not aware of Mobile Services in any way at this stage.",
+      "pos": [
+        4184,
+        4268
+      ]
+    },
+    {
+      "content": "Creating data transfer objects (DTOs) for your mobile service",
+      "pos": [
+        4293,
+        4354
+      ]
+    },
+    {
+      "content": "The data model you would like to use with your mobile service may be arbitrarily complex; it could contain hundreds of entities with a variety of relationships between them.",
+      "pos": [
+        4356,
+        4529
+      ]
+    },
+    {
+      "content": "When building a mobile app, it is usually desirable to simplify the data model and eliminate relationships (or handle them manually) in order to minimize the payload being sent back and forth between the app and the service.",
+      "pos": [
+        4530,
+        4754
+      ]
+    },
+    {
+      "content": "In this section, we will create a set of simplified objects (known as \"data transfer objects\" or \"DTOs\"), that are mapped to the data you have in your database, yet contain only the minimal set of properties needed by your mobile app.",
+      "pos": [
+        4755,
+        4989
+      ]
+    },
+    {
+      "pos": [
+        4994,
+        5123
+      ],
+      "content": "Create the <bpt id=\"p1\">**</bpt>MobileCustomer.cs<ept id=\"p1\">**</ept> file in the <bpt id=\"p2\">**</bpt>DataObjects<ept id=\"p2\">**</ept> folder of your service project and use the following implementation:"
+    },
+    {
+      "content": "Note that this class is similar to the <bpt id=\"p1\">**</bpt>Customer<ept id=\"p1\">**</ept> class in the model, except the relationship property to <bpt id=\"p2\">**</bpt>Order<ept id=\"p2\">**</ept> is removed.",
+      "pos": [
+        5380,
+        5509
+      ]
+    },
+    {
+      "content": "For an object to work correctly with Mobile Services offline sync, it needs a set of <bpt id=\"p1\">*</bpt>system properties<ept id=\"p1\">*</ept> for optimistic concurrency, so you will notice that the DTO inherits from <bpt id=\"p2\">[</bpt><bpt id=\"p3\">**</bpt>EntityData<ept id=\"p3\">**</ept><ept id=\"p2\">](http://msdn.microsoft.com/library/microsoft.windowsazure.mobile.service.entitydata.aspx)</ept>, which contains those properties.",
+      "pos": [
+        5510,
+        5828
+      ]
+    },
+    {
+      "content": "The int-based <bpt id=\"p1\">**</bpt>CustomerId<ept id=\"p1\">**</ept> property from the original model is replaced by the string-based <bpt id=\"p2\">**</bpt>Id<ept id=\"p2\">**</ept> property from <bpt id=\"p3\">**</bpt>EntityData<ept id=\"p3\">**</ept>, which will be the <bpt id=\"p4\">**</bpt>Id<ept id=\"p4\">**</ept> that Mobile Services will use.",
+      "pos": [
+        5829,
+        6015
+      ]
+    },
+    {
+      "pos": [
+        6020,
+        6109
+      ],
+      "content": "Create the <bpt id=\"p1\">**</bpt>MobileOrder.cs<ept id=\"p1\">**</ept> file in the <bpt id=\"p2\">**</bpt>DataObjects<ept id=\"p2\">**</ept> folder of your service project."
+    },
+    {
+      "content": "The <bpt id=\"p1\">**</bpt>Customer<ept id=\"p1\">**</ept> relationship property has been replaced with the <bpt id=\"p2\">**</bpt>Customer<ept id=\"p2\">**</ept> name and a <bpt id=\"p3\">**</bpt>MobileCustomerId<ept id=\"p3\">**</ept> property that can be used to manually model the relationship on the client.",
+      "pos": [
+        6845,
+        7031
+      ]
+    },
+    {
+      "content": "For now you can ignore the <bpt id=\"p1\">**</bpt>CustomerId<ept id=\"p1\">**</ept> property, it is only used later on.",
+      "pos": [
+        7032,
+        7109
+      ]
+    },
+    {
+      "content": "You might notice that with the addition of the system properties on the <bpt id=\"p1\">**</bpt>EntityData<ept id=\"p1\">**</ept> base class, our DTOs now have more properties than the model types.",
+      "pos": [
+        7114,
+        7268
+      ]
+    },
+    {
+      "content": "Clearly we need a place to store these properties, so we will add a few extra columns to the original database.",
+      "pos": [
+        7269,
+        7380
+      ]
+    },
+    {
+      "content": "While this does change the database, it will not break existing applications since the changes are purely additive (adding new columns to the schema).",
+      "pos": [
+        7381,
+        7531
+      ]
+    },
+    {
+      "content": "To do that, add the following statements to the top of <bpt id=\"p1\">**</bpt>Customer.cs<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>Order.cs<ept id=\"p2\">**</ept>:",
+      "pos": [
+        7532,
+        7620
+      ]
+    },
+    {
+      "content": "Next, add these extra properties to each of the classes:",
+      "pos": [
+        7821,
+        7877
+      ]
+    },
+    {
+      "content": "The system properties just added have some built-in behaviors (for example automatic update of created/updated at) that happen transparently with database operations.",
+      "pos": [
+        8556,
+        8722
+      ]
+    },
+    {
+      "content": "To enable these behaviors, we need to make a change to <bpt id=\"p1\">**</bpt>ExistingContext.cs<ept id=\"p1\">**</ept>.",
+      "pos": [
+        8723,
+        8801
+      ]
+    },
+    {
+      "content": "At the top of the file, add the following:",
+      "pos": [
+        8802,
+        8844
+      ]
+    },
+    {
+      "pos": [
+        9002,
+        9154
+      ],
+      "content": "In the body of <bpt id=\"p1\">**</bpt>ExistingContext<ept id=\"p1\">**</ept>, override <bpt id=\"p2\">[</bpt><bpt id=\"p3\">**</bpt>OnModelCreating<ept id=\"p3\">**</ept><ept id=\"p2\">](http://msdn.microsoft.com/library/system.data.entity.dbcontext.onmodelcreating.aspx)</ept>:"
+    },
+    {
+      "content": "Let's populate the database with some example data.",
+      "pos": [
+        9550,
+        9601
+      ]
+    },
+    {
+      "content": "Open the file <bpt id=\"p1\">**</bpt>WebApiConfig.cs<ept id=\"p1\">**</ept>.",
+      "pos": [
+        9602,
+        9636
+      ]
+    },
+    {
+      "content": "Create a new <bpt id=\"p1\">[</bpt><bpt id=\"p2\">**</bpt>IDatabaseInitializer<ept id=\"p2\">**</ept><ept id=\"p1\">](http://msdn.microsoft.com/library/gg696323.aspx)</ept> and configure it in the <bpt id=\"p3\">**</bpt>Register<ept id=\"p3\">**</ept> method as shown below.",
+      "pos": [
+        9637,
+        9785
+      ]
+    },
+    {
+      "content": "Establishing a mapping between DTOs and model",
+      "pos": [
+        12045,
+        12090
+      ]
+    },
+    {
+      "content": "We now have the model types <bpt id=\"p1\">**</bpt>Customer<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>Order<ept id=\"p2\">**</ept> and the DTOs <bpt id=\"p3\">**</bpt>MobileCustomer<ept id=\"p3\">**</ept> and <bpt id=\"p4\">**</bpt>MobileOrder<ept id=\"p4\">**</ept>, but we  need to instruct the backend to automatically transform between the two.",
+      "pos": [
+        12092,
+        12280
+      ]
+    },
+    {
+      "content": "Here Mobile Services relies on <bpt id=\"p1\">[</bpt><bpt id=\"p2\">**</bpt>AutoMapper<ept id=\"p2\">**</ept><ept id=\"p1\">](http://automapper.org/)</ept>, an object relational mapper, which is already referenced in the project.",
+      "pos": [
+        12281,
+        12426
+      ]
+    },
+    {
+      "pos": [
+        12431,
+        12483
+      ],
+      "content": "Add the following to the top of <bpt id=\"p1\">**</bpt>WebApiConfig.cs<ept id=\"p1\">**</ept>:"
+    },
+    {
+      "pos": [
+        12558,
+        12656
+      ],
+      "content": "To define the mapping, add the following to the <bpt id=\"p1\">**</bpt>Register<ept id=\"p1\">**</ept> method of the <bpt id=\"p2\">**</bpt>WebApiConfig<ept id=\"p2\">**</ept> class."
+    },
+    {
+      "content": "AutoMapper will now map the objects to one another.",
+      "pos": [
+        13119,
+        13170
+      ]
+    },
+    {
+      "content": "All properties with corresponding names will be matched, for example <bpt id=\"p1\">**</bpt>MobileOrder.CustomerId<ept id=\"p1\">**</ept> will get automatically mapped to <bpt id=\"p2\">**</bpt>Order.CustomerId<ept id=\"p2\">**</ept>.",
+      "pos": [
+        13171,
+        13321
+      ]
+    },
+    {
+      "content": "Custom mappings can be configured as shown above, where we map the <bpt id=\"p1\">**</bpt>MobileCustomerName<ept id=\"p1\">**</ept> property to the <bpt id=\"p2\">**</bpt>Name<ept id=\"p2\">**</ept> property of the <bpt id=\"p3\">**</bpt>Customer<ept id=\"p3\">**</ept> relationship property.",
+      "pos": [
+        13322,
+        13488
+      ]
+    },
+    {
+      "content": "Implementing domain-specific logic",
+      "pos": [
+        13522,
+        13556
+      ]
+    },
+    {
+      "content": "The next step is to implement a <bpt id=\"p1\">[</bpt><bpt id=\"p2\">**</bpt>MappedEntityDomainManager<ept id=\"p2\">**</ept><ept id=\"p1\">](http://msdn.microsoft.com/library/dn643300.aspx)</ept>, which serves as an abstraction layer between our mapped data store and the controller which will serve HTTP traffic from our clients.",
+      "pos": [
+        13558,
+        13805
+      ]
+    },
+    {
+      "content": "We will be able to write our controller in the next section purely in terms of the DTOs and the <bpt id=\"p1\">**</bpt>MappedEntityDomainManager<ept id=\"p1\">**</ept> we add here will handle the communication with the original data store, while also giving us a place to implement any logic specific to it.",
+      "pos": [
+        13806,
+        14071
+      ]
+    },
+    {
+      "content": "Add a <bpt id=\"p1\">**</bpt>MobileCustomerDomainManager.cs<ept id=\"p1\">**</ept> to the <bpt id=\"p2\">**</bpt>Models<ept id=\"p2\">**</ept> folder of your project.",
+      "pos": [
+        14076,
+        14158
+      ]
+    },
+    {
+      "content": "Paste in the following implementation:",
+      "pos": [
+        14159,
+        14197
+      ]
+    },
+    {
+      "pos": [
+        17845,
+        17991
+      ],
+      "content": "An important part of this class is the <bpt id=\"p1\">**</bpt>GetKey<ept id=\"p1\">**</ept> method where we indicate how to locate the ID property of the object in the original data model."
+    },
+    {
+      "pos": [
+        17996,
+        18075
+      ],
+      "content": "Add a <bpt id=\"p1\">**</bpt>MobileOrderDomainManager.cs<ept id=\"p1\">**</ept> to the <bpt id=\"p2\">**</bpt>Models<ept id=\"p2\">**</ept> folder of your project:"
+    },
+    {
+      "content": "In this case the <bpt id=\"p1\">**</bpt>InsertAsync<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>UpdateAsync<ept id=\"p2\">**</ept> methods are interesting; that's where we enforce the relationship that each <bpt id=\"p3\">**</bpt>Order<ept id=\"p3\">**</ept> must have a valid associated <bpt id=\"p4\">**</bpt>Customer<ept id=\"p4\">**</ept>.",
+      "pos": [
+        22526,
+        22707
+      ]
+    },
+    {
+      "content": "In <bpt id=\"p1\">**</bpt>InsertAsync<ept id=\"p1\">**</ept> you'll notice that we populate the <bpt id=\"p2\">**</bpt>MobileOrder.CustomerId<ept id=\"p2\">**</ept> property, which maps to the <bpt id=\"p3\">**</bpt>Order.CustomerId<ept id=\"p3\">**</ept> property.",
+      "pos": [
+        22708,
+        22847
+      ]
+    },
+    {
+      "content": "We get that value by based looking up the <bpt id=\"p1\">**</bpt>Customer<ept id=\"p1\">**</ept> with the matching <bpt id=\"p2\">**</bpt>MobileOrder.MobileCustomerId<ept id=\"p2\">**</ept>.",
+      "pos": [
+        22848,
+        22954
+      ]
+    },
+    {
+      "content": "This is because by default the client is only aware of the Mobile Services ID (<bpt id=\"p1\">**</bpt>MobileOrder.MobileCustomerId<ept id=\"p1\">**</ept>) of the <bpt id=\"p2\">**</bpt>Customer<ept id=\"p2\">**</ept>, which is different than its actual primary key needed to set the foreign key (<bpt id=\"p3\">**</bpt>MobileOrder.CustomerId<ept id=\"p3\">**</ept>) from <bpt id=\"p4\">**</bpt>Order<ept id=\"p4\">**</ept> to <bpt id=\"p5\">**</bpt>Customer<ept id=\"p5\">**</ept>.",
+      "pos": [
+        22955,
+        23226
+      ]
+    },
+    {
+      "content": "This is only used internally within the service to facilitate the insert operation.",
+      "pos": [
+        23227,
+        23310
+      ]
+    },
+    {
+      "content": "We are now ready to create controllers to expose our DTOs to our clients.",
+      "pos": [
+        23312,
+        23385
+      ]
+    },
+    {
+      "content": "Implementing a TableController using DTOs",
+      "pos": [
+        23416,
+        23457
+      ]
+    },
+    {
+      "pos": [
+        23462,
+        23538
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Controllers<ept id=\"p1\">**</ept> folder, add the file <bpt id=\"p2\">**</bpt>MobileCustomerController.cs<ept id=\"p2\">**</ept>:"
+    },
+    {
+      "content": "You will note the use of the AuthorizeLevel attribute to restrict public access to the Insert/Update/Delete operations on the controller.",
+      "pos": [
+        25439,
+        25576
+      ]
+    },
+    {
+      "content": "For the purposes of this scenario, the list of Customers will be read-only, but we will allow the creation of new Orders and associating them with existing customers.",
+      "pos": [
+        25577,
+        25743
+      ]
+    },
+    {
+      "pos": [
+        25748,
+        25821
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Controllers<ept id=\"p1\">**</ept> folder, add the file <bpt id=\"p2\">**</bpt>MobileOrderController.cs<ept id=\"p2\">**</ept>:"
+    },
+    {
+      "content": "You are now ready to run your service.",
+      "pos": [
+        27643,
+        27681
+      ]
+    },
+    {
+      "content": "Press <bpt id=\"p1\">**</bpt>F5<ept id=\"p1\">**</ept> and use the test client built into the help page to modify the data.",
+      "pos": [
+        27682,
+        27763
+      ]
+    },
+    {
+      "content": "Please note that both controller implementations make exclusive use of the DTOs <bpt id=\"p1\">**</bpt>MobileCustomer<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>MobileOrder<ept id=\"p2\">**</ept> and are agnostic of the underlying model.",
+      "pos": [
+        27765,
+        27925
+      ]
+    },
+    {
+      "content": "These DTOs are readily serialized to JSON and can be used to exchange data with the  Mobile Services client SDK on all platforms.",
+      "pos": [
+        27926,
+        28055
+      ]
+    },
+    {
+      "content": "For example, if building a Windows Store app, the corresponding client-side type would look as shown below.",
+      "pos": [
+        28056,
+        28163
+      ]
+    },
+    {
+      "content": "The type would be analogous on other client platforms.",
+      "pos": [
+        28164,
+        28218
+      ]
+    },
+    {
+      "content": "As a next step, you can now build out the client app to access the service.",
+      "pos": [
+        28763,
+        28838
+      ]
+    },
+    {
+      "content": "For more information, see <bpt id=\"p1\">[</bpt>Add Mobile Services to an existing app<ept id=\"p1\">](mobile-services-dotnet-backend-windows-universal-dotnet-get-started-data.md#update-the-app-to-use-the-mobile-service)</ept>.",
+      "pos": [
+        28839,
+        29024
+      ]
+    },
+    {
+      "content": "test",
+      "pos": [
+        29026,
+        29030
+      ]
+    }
+  ],
+  "content": "<properties\n    pageTitle=\"Build a service using an existing SQL database with the Mobile Services .NET backend | Microsoft Azure\"\n    description=\"Learn how to use an existing cloud or on-premises SQL database with your .NET based mobile service\"\n    services=\"mobile-services\"\n    documentationCenter=\"\"\n    authors=\"ggailey777\"\n    manager=\"dwrede\"\n    editor=\"mollybos\"/>\n\n<tags\n    ms.service=\"mobile-services\"\n    ms.workload=\"mobile\"\n    ms.tgt_pltfrm=\"na\"\n    ms.devlang=\"multiple\"\n    ms.topic=\"article\" \n    ms.date=\"06/16/2015\"\n    ms.author=\"glenga\"/>\n\n\n# Build a service using an existing SQL database with the Mobile Services .NET backend\n\nThe Mobile Services .NET backend makes it easy to take advantage of existing assets in building a mobile service. One particularly interesting scenario is using an existing SQL database (either on-premises or in the cloud), that may already be used by other applications, to make existing data available to mobile clients. In this case it's a requirement that database model (or *schema*) remain unchanged, in order for existing solutions to continue working.\n\n<a name=\"ExistingModel\"></a>\n## Exploring the existing database model\n\nFor this tutorial we will use the database that was created with your mobile service, but we will not use the default model that is created. Instead, we will manually create an arbitrary model that will represent an existing application that you may have. For full details about how to connect to an on-premises database instead, check out [Connect to an on-premises SQL Server from an Azure mobile service using Hybrid Connections](mobile-services-dotnet-backend-hybrid-connections-get-started.md).\n\n1. Start by creating a Mobile Services server project in **Visual Studio 2013 Update 2** or by using the quickstart project that you can download on the Mobile Services tab for your service in the [Azure Management Portal](http://manage.windowsazure.com). For the purposes of this tutorial, we will assume your server project name is **ShoppingService**.\n\n2. Create a **Customer.cs** file inside the **Models** folder and use the following implementation. You will need to add an assembly reference to **System.ComponentModel.DataAnnotations** to your project.\n\n        using System.Collections.Generic;\n        using System.ComponentModel.DataAnnotations;\n\n        namespace ShoppingService.Models\n        {\n            public class Customer\n            {\n                [Key]\n                public int CustomerId { get; set; }\n\n                public string Name { get; set; }\n\n                public virtual ICollection<Order> Orders { get; set; }\n\n            }\n        }\n\n3. Create an **Order.cs** file inside the **Models** folder and use the following implementation:\n\n        using System.ComponentModel.DataAnnotations;\n\n        namespace ShoppingService.Models\n        {\n            public class Order\n            {\n                [Key]\n                public int OrderId { get; set; }\n\n                public string Item { get; set; }\n\n                public int Quantity { get; set; }\n\n                public bool Completed { get; set; }\n\n                public int CustomerId { get; set; }\n\n                public virtual Customer Customer { get; set; }\n\n            }\n        }\n\n    You will note that these two classes have a *relationship*: every **Order** is associated with a single **Customer** and a **Customer** can be associated with multiple **Orders**. Having relationships is common in existing data models.\n\n4. Create an **ExistingContext.cs** file inside the **Models** folder and implement it as so:\n\n        using System.Data.Entity;\n\n        namespace ShoppingService.Models\n        {\n            public class ExistingContext : DbContext\n            {\n                public ExistingContext()\n                    : base(\"Name=MS_TableConnectionString\")\n                {\n                }\n\n                public DbSet<Customer> Customers { get; set; }\n\n                public DbSet<Order> Orders { get; set; }\n\n            }\n        }\n\nThe structure above approximates an existing Entity Framework model that you may already be using for an existing application. Please note that the model is not aware of Mobile Services in any way at this stage.\n\n<a name=\"DTOs\"></a>\n## Creating data transfer objects (DTOs) for your mobile service\n\nThe data model you would like to use with your mobile service may be arbitrarily complex; it could contain hundreds of entities with a variety of relationships between them. When building a mobile app, it is usually desirable to simplify the data model and eliminate relationships (or handle them manually) in order to minimize the payload being sent back and forth between the app and the service. In this section, we will create a set of simplified objects (known as \"data transfer objects\" or \"DTOs\"), that are mapped to the data you have in your database, yet contain only the minimal set of properties needed by your mobile app.\n\n1. Create the **MobileCustomer.cs** file in the **DataObjects** folder of your service project and use the following implementation:\n\n        using Microsoft.WindowsAzure.Mobile.Service;\n\n        namespace ShoppingService.DataObjects\n        {\n            public class MobileCustomer : EntityData\n            {\n                public string Name { get; set; }\n            }\n        }\n\n    Note that this class is similar to the **Customer** class in the model, except the relationship property to **Order** is removed. For an object to work correctly with Mobile Services offline sync, it needs a set of *system properties* for optimistic concurrency, so you will notice that the DTO inherits from [**EntityData**](http://msdn.microsoft.com/library/microsoft.windowsazure.mobile.service.entitydata.aspx), which contains those properties. The int-based **CustomerId** property from the original model is replaced by the string-based **Id** property from **EntityData**, which will be the **Id** that Mobile Services will use.\n\n2. Create the **MobileOrder.cs** file in the **DataObjects** folder of your service project.\n\n        using Microsoft.WindowsAzure.Mobile.Service;\n        using Newtonsoft.Json;\n        using System.ComponentModel.DataAnnotations;\n        using System.ComponentModel.DataAnnotations.Schema;\n\n        namespace ShoppingService.DataObjects\n        {\n            public class MobileOrder : EntityData\n            {\n                public string Item { get; set; }\n\n                public int Quantity { get; set; }\n\n                public bool Completed { get; set; }\n\n                [NotMapped]\n                public int CustomerId { get; set; }\n\n                [Required]\n                public string MobileCustomerId { get; set; }\n\n                public string MobileCustomerName { get; set; }\n            }\n        }\n\n    The **Customer** relationship property has been replaced with the **Customer** name and a **MobileCustomerId** property that can be used to manually model the relationship on the client. For now you can ignore the **CustomerId** property, it is only used later on.\n\n3. You might notice that with the addition of the system properties on the **EntityData** base class, our DTOs now have more properties than the model types. Clearly we need a place to store these properties, so we will add a few extra columns to the original database. While this does change the database, it will not break existing applications since the changes are purely additive (adding new columns to the schema). To do that, add the following statements to the top of **Customer.cs** and **Order.cs**:\n\n        using System.ComponentModel.DataAnnotations.Schema;\n        using Microsoft.WindowsAzure.Mobile.Service.Tables;\n        using System.ComponentModel.DataAnnotations;\n        using System;\n\n4. Next, add these extra properties to each of the classes:\n\n        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]\n        [Index]\n        [TableColumn(TableColumnType.CreatedAt)]\n        public DateTimeOffset? CreatedAt { get; set; }\n\n        [TableColumn(TableColumnType.Deleted)]\n        public bool Deleted { get; set; }\n\n        [Index]\n        [TableColumn(TableColumnType.Id)]\n        [MaxLength(36)]\n        public string Id { get; set; }\n\n        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]\n        [TableColumn(TableColumnType.UpdatedAt)]\n        public DateTimeOffset? UpdatedAt { get; set; }\n\n        [TableColumn(TableColumnType.Version)]\n        [Timestamp]\n        public byte[] Version { get; set; }\n\n4. The system properties just added have some built-in behaviors (for example automatic update of created/updated at) that happen transparently with database operations. To enable these behaviors, we need to make a change to **ExistingContext.cs**. At the top of the file, add the following:\n\n        using System.Data.Entity.ModelConfiguration.Conventions;\n        using Microsoft.WindowsAzure.Mobile.Service.Tables;\n        using System.Linq;\n\n5. In the body of **ExistingContext**, override [**OnModelCreating**](http://msdn.microsoft.com/library/system.data.entity.dbcontext.onmodelcreating.aspx):\n\n        protected override void OnModelCreating(DbModelBuilder modelBuilder)\n        {\n            modelBuilder.Conventions.Add(\n                new AttributeToColumnAnnotationConvention<TableColumnAttribute, string>(\n                    \"ServiceTableColumn\", (property, attributes) => attributes.Single().ColumnType.ToString()));\n\n            base.OnModelCreating(modelBuilder);\n        }\n\n5. Let's populate the database with some example data. Open the file **WebApiConfig.cs**. Create a new [**IDatabaseInitializer**](http://msdn.microsoft.com/library/gg696323.aspx) and configure it in the **Register** method as shown below.\n\n        using Microsoft.WindowsAzure.Mobile.Service;\n        using ShoppingService.Models;\n        using System;\n        using System.Collections.Generic;\n        using System.Collections.ObjectModel;\n        using System.Data.Entity;\n        using System.Web.Http;\n\n        namespace ShoppingService\n        {\n            public static class WebApiConfig\n            {\n                public static void Register()\n                {\n                    ConfigOptions options = new ConfigOptions();\n\n                    HttpConfiguration config = ServiceConfig.Initialize(new ConfigBuilder(options));\n\n                    Database.SetInitializer(new ExistingInitializer());\n                }\n            }\n\n            public class ExistingInitializer : ClearDatabaseSchemaIfModelChanges<ExistingContext>\n            {\n                protected override void Seed(ExistingContext context)\n                {\n                    List<Order> orders = new List<Order>\n                    {\n                        new Order { OrderId = 10, Item = \"Guitars\", Quantity = 2, Id = Guid.NewGuid().ToString()},\n                        new Order { OrderId = 20, Item = \"Drums\", Quantity = 10, Id = Guid.NewGuid().ToString()},\n                        new Order { OrderId = 30, Item = \"Tambourines\", Quantity = 20, Id = Guid.NewGuid().ToString() }\n                    };\n\n                    List<Customer> customers = new List<Customer>\n                    {\n                        new Customer { CustomerId = 1, Name = \"John\", Orders = new Collection<Order> {\n                            orders[0]}, Id = Guid.NewGuid().ToString()},\n                        new Customer { CustomerId = 2, Name = \"Paul\", Orders = new Collection<Order> {\n                            orders[1]}, Id = Guid.NewGuid().ToString()},\n                        new Customer { CustomerId = 3, Name = \"Ringo\", Orders = new Collection<Order> {\n                            orders[2]}, Id = Guid.NewGuid().ToString()},\n                    };\n\n                    foreach (Customer c in customers)\n                    {\n                        context.Customers.Add(c);\n                    }\n\n                    base.Seed(context);\n                }\n            }\n        }\n\n<a name=\"Mapping\"></a>\n## Establishing a mapping between DTOs and model\n\nWe now have the model types **Customer** and **Order** and the DTOs **MobileCustomer** and **MobileOrder**, but we  need to instruct the backend to automatically transform between the two. Here Mobile Services relies on [**AutoMapper**](http://automapper.org/), an object relational mapper, which is already referenced in the project.\n\n1. Add the following to the top of **WebApiConfig.cs**:\n\n        using AutoMapper;\n        using ShoppingService.DataObjects;\n\n2. To define the mapping, add the following to the **Register** method of the **WebApiConfig** class.\n\n        Mapper.Initialize(cfg =>\n        {\n            cfg.CreateMap<MobileOrder, Order>();\n            cfg.CreateMap<MobileCustomer, Customer>();\n            cfg.CreateMap<Order, MobileOrder>()\n                .ForMember(dst => dst.MobileCustomerId, map => map.MapFrom(x => x.Customer.Id))\n                .ForMember(dst => dst.MobileCustomerName, map => map.MapFrom(x => x.Customer.Name));\n            cfg.CreateMap<Customer, MobileCustomer>();\n\n        });\n\nAutoMapper will now map the objects to one another. All properties with corresponding names will be matched, for example **MobileOrder.CustomerId** will get automatically mapped to **Order.CustomerId**. Custom mappings can be configured as shown above, where we map the **MobileCustomerName** property to the **Name** property of the **Customer** relationship property.\n\n<a name=\"DomainManager\"></a>\n## Implementing domain-specific logic\n\nThe next step is to implement a [**MappedEntityDomainManager**](http://msdn.microsoft.com/library/dn643300.aspx), which serves as an abstraction layer between our mapped data store and the controller which will serve HTTP traffic from our clients. We will be able to write our controller in the next section purely in terms of the DTOs and the **MappedEntityDomainManager** we add here will handle the communication with the original data store, while also giving us a place to implement any logic specific to it.\n\n1. Add a **MobileCustomerDomainManager.cs** to the **Models** folder of your project. Paste in the following implementation:\n\n        using AutoMapper;\n        using Microsoft.WindowsAzure.Mobile.Service;\n        using ShoppingService.DataObjects;\n        using System.Data.Entity;\n        using System.Linq;\n        using System.Net.Http;\n        using System.Threading.Tasks;\n        using System.Web.Http;\n        using System.Web.Http.OData;\n\n        namespace ShoppingService.Models\n        {\n            public class MobileCustomerDomainManager : MappedEntityDomainManager<MobileCustomer, Customer>\n            {\n                private ExistingContext context;\n\n                public MobileCustomerDomainManager(ExistingContext context, HttpRequestMessage request, ApiServices services)\n                    : base(context, request, services)\n                {\n                    Request = request;\n                    this.context = context;\n                }\n\n                public static int GetKey(string mobileCustomerId, DbSet<Customer> customers, HttpRequestMessage request)\n                {\n                    int customerId = customers\n                       .Where(c => c.Id == mobileCustomerId)\n                       .Select(c => c.CustomerId)\n                       .FirstOrDefault();\n\n                    if (customerId == 0)\n                    {\n                        throw new HttpResponseException(request.CreateNotFoundResponse());\n                    }\n                    return customerId;\n                }\n\n                protected override T GetKey<T>(string mobileCustomerId)\n                {\n                    return (T)(object)GetKey(mobileCustomerId, this.context.Customers, this.Request);\n                }\n\n                public override SingleResult<MobileCustomer> Lookup(string mobileCustomerId)\n                {\n                    int customerId = GetKey<int>(mobileCustomerId);\n                    return LookupEntity(c => c.CustomerId == customerId);\n                }\n\n                public override async Task<MobileCustomer> InsertAsync(MobileCustomer mobileCustomer)\n                {\n                    return await base.InsertAsync(mobileCustomer);\n                }\n\n                public override async Task<MobileCustomer> UpdateAsync(string mobileCustomerId, Delta<MobileCustomer> patch)\n                {\n                    int customerId = GetKey<int>(mobileCustomerId);\n\n                    Customer existingCustomer = await this.Context.Set<Customer>().FindAsync(customerId);\n                    if (existingCustomer == null)\n                    {\n                        throw new HttpResponseException(this.Request.CreateNotFoundResponse());\n                    }\n\n                    MobileCustomer existingCustomerDTO = Mapper.Map<Customer, MobileCustomer>(existingCustomer);\n                    patch.Patch(existingCustomerDTO);\n                    Mapper.Map<MobileCustomer, Customer>(existingCustomerDTO, existingCustomer);\n\n                    await this.SubmitChangesAsync();\n\n                    MobileCustomer updatedCustomerDTO = Mapper.Map<Customer, MobileCustomer>(existingCustomer);\n\n                    return updatedCustomerDTO;\n                }\n\n                public override async Task<MobileCustomer> ReplaceAsync(string mobileCustomerId, MobileCustomer mobileCustomer)\n                {\n                    return await base.ReplaceAsync(mobileCustomerId, mobileCustomer);\n                }\n\n                public override async Task<bool> DeleteAsync(string mobileCustomerId)\n                {\n                    int customerId = GetKey<int>(mobileCustomerId);\n                    return await DeleteItemAsync(customerId);\n                }\n            }\n        }\n\n    An important part of this class is the **GetKey** method where we indicate how to locate the ID property of the object in the original data model.\n\n2. Add a **MobileOrderDomainManager.cs** to the **Models** folder of your project:\n\n        using AutoMapper;\n        using Microsoft.WindowsAzure.Mobile.Service;\n        using ShoppingService.DataObjects;\n        using System.Linq;\n        using System.Net.Http;\n        using System.Threading.Tasks;\n        using System.Web.Http;\n        using System.Web.Http.OData;\n\n        namespace ShoppingService.Models\n        {\n            public class MobileOrderDomainManager : MappedEntityDomainManager<MobileOrder, Order>\n            {\n                private ExistingContext context;\n\n                public MobileOrderDomainManager(ExistingContext context, HttpRequestMessage request, ApiServices services)\n                    : base(context, request, services)\n                {\n                    Request = request;\n                    this.context = context;\n                }\n\n                protected override T GetKey<T>(string mobileOrderId)\n                {\n                    int orderId = this.context.Orders\n                        .Where(o => o.Id == mobileOrderId)\n                        .Select(o => o.OrderId)\n                        .FirstOrDefault();\n\n                    if (orderId == 0)\n                    {\n                        throw new HttpResponseException(this.Request.CreateNotFoundResponse());\n                    }\n                    return (T)(object)orderId;\n                }\n\n                public override SingleResult<MobileOrder> Lookup(string mobileOrderId)\n                {\n                    int orderId = GetKey<int>(mobileOrderId);\n                    return LookupEntity(o => o.OrderId == orderId);\n                }\n\n                private async Task<Customer> VerifyMobileCustomer(string mobileCustomerId, string mobileCustomerName)\n                {\n                    int customerId = MobileCustomerDomainManager.GetKey(mobileCustomerId, this.context.Customers, this.Request);\n                    Customer customer = await this.context.Customers.FindAsync(customerId);\n                    if (customer == null)\n                    {\n                        throw new HttpResponseException(Request.CreateBadRequestResponse(\"Customer with name '{0}' was not found\", mobileCustomerName));\n                    }\n                    return customer;\n                }\n\n                public override async Task<MobileOrder> InsertAsync(MobileOrder mobileOrder)\n                {\n                    Customer customer = await VerifyMobileCustomer(mobileOrder.MobileCustomerId, mobileOrder.MobileCustomerName);\n                    mobileOrder.CustomerId = customer.CustomerId;\n                    return await base.InsertAsync(mobileOrder);\n                }\n\n                public override async Task<MobileOrder> UpdateAsync(string mobileOrderId, Delta<MobileOrder> patch)\n                {\n                    Customer customer = await VerifyMobileCustomer(patch.GetEntity().MobileCustomerId, patch.GetEntity().MobileCustomerName);\n\n                    int orderId = GetKey<int>(mobileOrderId);\n\n                    Order existingOrder = await this.Context.Set<Order>().FindAsync(orderId);\n                    if (existingOrder == null)\n                    {\n                        throw new HttpResponseException(this.Request.CreateNotFoundResponse());\n                    }\n\n                    MobileOrder existingOrderDTO = Mapper.Map<Order, MobileOrder>(existingOrder);\n                    patch.Patch(existingOrderDTO);\n                    Mapper.Map<MobileOrder, Order>(existingOrderDTO, existingOrder);\n\n                    // This is required to map the right Id for the customer\n                    existingOrder.CustomerId = customer.CustomerId;\n\n                    await this.SubmitChangesAsync();\n\n                    MobileOrder updatedOrderDTO = Mapper.Map<Order, MobileOrder>(existingOrder);\n\n                    return updatedOrderDTO;\n                }\n\n                public override async Task<MobileOrder> ReplaceAsync(string mobileOrderId, MobileOrder mobileOrder)\n                {\n                    await VerifyMobileCustomer(mobileOrder.MobileCustomerId, mobileOrder.MobileCustomerName);\n\n                    return await base.ReplaceAsync(mobileOrderId, mobileOrder);\n                }\n\n                public override Task<bool> DeleteAsync(string mobileOrderId)\n                {\n                    int orderId = GetKey<int>(mobileOrderId);\n                    return DeleteItemAsync(orderId);\n                }\n            }\n        }\n\n    In this case the **InsertAsync** and **UpdateAsync** methods are interesting; that's where we enforce the relationship that each **Order** must have a valid associated **Customer**. In **InsertAsync** you'll notice that we populate the **MobileOrder.CustomerId** property, which maps to the **Order.CustomerId** property. We get that value by based looking up the **Customer** with the matching **MobileOrder.MobileCustomerId**. This is because by default the client is only aware of the Mobile Services ID (**MobileOrder.MobileCustomerId**) of the **Customer**, which is different than its actual primary key needed to set the foreign key (**MobileOrder.CustomerId**) from **Order** to **Customer**. This is only used internally within the service to facilitate the insert operation.\n\nWe are now ready to create controllers to expose our DTOs to our clients.\n\n<a name=\"Controller\"></a>\n## Implementing a TableController using DTOs\n\n1. In the **Controllers** folder, add the file **MobileCustomerController.cs**:\n\n        using Microsoft.WindowsAzure.Mobile.Service;\n        using Microsoft.WindowsAzure.Mobile.Service.Security;\n        using ShoppingService.DataObjects;\n        using ShoppingService.Models;\n        using System.Linq;\n        using System.Threading.Tasks;\n        using System.Web.Http;\n        using System.Web.Http.Controllers;\n        using System.Web.Http.OData;\n\n        namespace ShoppingService.Controllers\n        {\n            public class MobileCustomerController : TableController<MobileCustomer>\n            {\n                protected override void Initialize(HttpControllerContext controllerContext)\n                {\n                    base.Initialize(controllerContext);\n                    var context = new ExistingContext();\n                    DomainManager = new MobileCustomerDomainManager(context, Request, Services);\n                }\n\n                public IQueryable<MobileCustomer> GetAllMobileCustomers()\n                {\n                    return Query();\n                }\n\n                public SingleResult<MobileCustomer> GetMobileCustomer(string id)\n                {\n                    return Lookup(id);\n                }\n\n                [AuthorizeLevel(AuthorizationLevel.Admin)]\n                protected override Task<MobileCustomer> PatchAsync(string id, Delta<MobileCustomer> patch)\n                {\n                    return base.UpdateAsync(id, patch);\n                }\n\n                [AuthorizeLevel(AuthorizationLevel.Admin)]\n                protected override Task<MobileCustomer> PostAsync(MobileCustomer item)\n                {\n                    return base.InsertAsync(item);\n                }\n\n                [AuthorizeLevel(AuthorizationLevel.Admin)]\n                protected override Task DeleteAsync(string id)\n                {\n                    return base.DeleteAsync(id);\n                }\n            }\n        }\n\n    You will note the use of the AuthorizeLevel attribute to restrict public access to the Insert/Update/Delete operations on the controller. For the purposes of this scenario, the list of Customers will be read-only, but we will allow the creation of new Orders and associating them with existing customers.\n\n2. In the **Controllers** folder, add the file **MobileOrderController.cs**:\n\n        using Microsoft.WindowsAzure.Mobile.Service;\n        using ShoppingService.DataObjects;\n        using ShoppingService.Models;\n        using System.Linq;\n        using System.Threading.Tasks;\n        using System.Web.Http;\n        using System.Web.Http.Controllers;\n        using System.Web.Http.Description;\n        using System.Web.Http.OData;\n\n        namespace ShoppingService.Controllers\n        {\n            public class MobileOrderController : TableController<MobileOrder>\n            {\n                protected override void Initialize(HttpControllerContext controllerContext)\n                {\n                    base.Initialize(controllerContext);\n                    ExistingContext context = new ExistingContext();\n                    DomainManager = new MobileOrderDomainManager(context, Request, Services);\n                }\n\n                public IQueryable<MobileOrder> GetAllMobileOrders()\n                {\n                    return Query();\n                }\n\n                public SingleResult<MobileOrder> GetMobileOrder(string id)\n                {\n                    return Lookup(id);\n                }\n\n                public Task<MobileOrder> PatchMobileOrder(string id, Delta<MobileOrder> patch)\n                {\n                    return UpdateAsync(id, patch);\n                }\n\n                [ResponseType(typeof(MobileOrder))]\n                public async Task<IHttpActionResult> PostMobileOrder(MobileOrder item)\n                {\n                    MobileOrder current = await InsertAsync(item);\n                    return CreatedAtRoute(\"Tables\", new { id = current.Id }, current);\n                }\n\n                public Task DeleteMobileOrder(string id)\n                {\n                    return DeleteAsync(id);\n                }\n            }\n        }\n\n3. You are now ready to run your service. Press **F5** and use the test client built into the help page to modify the data.\n\nPlease note that both controller implementations make exclusive use of the DTOs **MobileCustomer** and **MobileOrder** and are agnostic of the underlying model. These DTOs are readily serialized to JSON and can be used to exchange data with the  Mobile Services client SDK on all platforms. For example, if building a Windows Store app, the corresponding client-side type would look as shown below. The type would be analogous on other client platforms.\n\n    using Microsoft.WindowsAzure.MobileServices;\n    using System;\n\n    namespace ShoppingClient\n    {\n        public class MobileCustomer\n        {\n            public string Id { get; set; }\n\n            public string Name { get; set; }\n\n            [CreatedAt]\n            public DateTimeOffset? CreatedAt { get; set; }\n\n            [UpdatedAt]\n            public DateTimeOffset? UpdatedAt { get; set; }\n\n            public bool Deleted { get; set; }\n\n            [Version]\n            public string Version { get; set; }\n\n        }\n\n    }\n\nAs a next step, you can now build out the client app to access the service. For more information, see [Add Mobile Services to an existing app](mobile-services-dotnet-backend-windows-universal-dotnet-get-started-data.md#update-the-app-to-use-the-mobile-service).\n\ntest\n"
+}

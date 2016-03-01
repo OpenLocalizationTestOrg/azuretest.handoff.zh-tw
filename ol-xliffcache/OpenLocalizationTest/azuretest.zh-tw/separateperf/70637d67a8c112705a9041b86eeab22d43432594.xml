@@ -1,0 +1,586 @@
+{
+  "nodes": [
+    {
+      "content": "Notification Hubs Breaking News Tutorial - iOS",
+      "pos": [
+        27,
+        73
+      ]
+    },
+    {
+      "content": "Learn how to use Azure Service Bus Notification Hubs to send breaking news notifications to iOS devices.",
+      "pos": [
+        92,
+        196
+      ]
+    },
+    {
+      "content": "Use Notification Hubs to send breaking news",
+      "pos": [
+        524,
+        567
+      ]
+    },
+    {
+      "content": "Overview",
+      "pos": [
+        692,
+        700
+      ]
+    },
+    {
+      "content": "This topic shows you how to use Azure Notification Hubs to broadcast breaking news notifications to an iOS app.",
+      "pos": [
+        702,
+        813
+      ]
+    },
+    {
+      "content": "When complete, you will be able to register for breaking news categories you are interested in, and receive only push notifications for those categories.",
+      "pos": [
+        814,
+        967
+      ]
+    },
+    {
+      "content": "This scenario is a common pattern for many apps where notifications have to be sent to groups of users that have previously declared interest in them, e.g. RSS reader, apps for music fans, etc.",
+      "pos": [
+        968,
+        1161
+      ]
+    },
+    {
+      "content": "Broadcast scenarios are enabled by including one or more <bpt id=\"p1\">_</bpt>tags<ept id=\"p1\">_</ept> when creating a registration in the notification hub.",
+      "pos": [
+        1163,
+        1280
+      ]
+    },
+    {
+      "content": "When notifications are sent to a tag, all devices that have registered for the tag will receive the notification.",
+      "pos": [
+        1281,
+        1394
+      ]
+    },
+    {
+      "content": "Because tags are simply strings, they do not have to be provisioned in advance.",
+      "pos": [
+        1395,
+        1474
+      ]
+    },
+    {
+      "content": "For more information about tags, refer to <bpt id=\"p1\">[</bpt><ept id=\"p1\">Notification Hubs Guidance]</ept>.",
+      "pos": [
+        1475,
+        1546
+      ]
+    },
+    {
+      "content": "Prerequisites",
+      "pos": [
+        1551,
+        1564
+      ]
+    },
+    {
+      "content": "This topic builds on the app you created in <bpt id=\"p1\">[</bpt>Get started with Notification Hubs<ept id=\"p1\">][get-started]</ept>.",
+      "pos": [
+        1566,
+        1660
+      ]
+    },
+    {
+      "content": "Before starting this tutorial, you must have already completed <bpt id=\"p1\">[</bpt>Get started with Notification Hubs<ept id=\"p1\">][get-started]</ept>.",
+      "pos": [
+        1661,
+        1774
+      ]
+    },
+    {
+      "content": "Add category selection to the app",
+      "pos": [
+        1778,
+        1811
+      ]
+    },
+    {
+      "content": "The first step is to add the UI elements to your existing storyboard that enable the user to select categories to register.",
+      "pos": [
+        1813,
+        1936
+      ]
+    },
+    {
+      "content": "The categories selected by a user are stored on the device.",
+      "pos": [
+        1937,
+        1996
+      ]
+    },
+    {
+      "content": "When the app starts, a device registration is created in your notification hub with the selected categories as tags.",
+      "pos": [
+        1997,
+        2113
+      ]
+    },
+    {
+      "content": "In your MainStoryboard_iPhone.storyboard add the following components from the object library:",
+      "pos": [
+        2118,
+        2212
+      ]
+    },
+    {
+      "content": "A label with \"Breaking News\" text,",
+      "pos": [
+        2219,
+        2253
+      ]
+    },
+    {
+      "content": "Labels with category texts \"World\", \"Politics\", \"Business\", \"Technology\", \"Science\", \"Sports\",",
+      "pos": [
+        2260,
+        2354
+      ]
+    },
+    {
+      "pos": [
+        2361,
+        2444
+      ],
+      "content": "Six switches, one per category, set each switch <bpt id=\"p1\">**</bpt>State<ept id=\"p1\">**</ept> to be <bpt id=\"p2\">**</bpt>Off<ept id=\"p2\">**</ept> by default."
+    },
+    {
+      "content": "One button labeled \"Subscribe\"",
+      "pos": [
+        2451,
+        2481
+      ]
+    },
+    {
+      "content": "Your storyboard should look as follows:",
+      "pos": [
+        2487,
+        2526
+      ]
+    },
+    {
+      "content": "![][3]",
+      "pos": [
+        2532,
+        2538
+      ]
+    },
+    {
+      "content": "In the assistant editor, create outlets for all the switches and call them \"WorldSwitch\", \"PoliticsSwitch\", \"BusinessSwitch\", \"TechnologySwitch\", \"ScienceSwitch\", \"SportsSwitch\"",
+      "pos": [
+        2543,
+        2720
+      ]
+    },
+    {
+      "content": "Create an Action for your button called \"subscribe\".",
+      "pos": [
+        2726,
+        2778
+      ]
+    },
+    {
+      "content": "Your ViewController.h should contain the following:",
+      "pos": [
+        2779,
+        2830
+      ]
+    },
+    {
+      "content": "Create a new <bpt id=\"p1\">**</bpt>Cocoa Touch Class<ept id=\"p1\">**</ept> called <ph id=\"ph1\">`Notifications`</ph>.",
+      "pos": [
+        3301,
+        3359
+      ]
+    },
+    {
+      "content": "Copy the following code in the interface section of the file Notifications.h:",
+      "pos": [
+        3360,
+        3437
+      ]
+    },
+    {
+      "content": "Add the following import directive to Notifications.m:",
+      "pos": [
+        3774,
+        3828
+      ]
+    },
+    {
+      "pos": [
+        3898,
+        4192
+      ],
+      "content": "Copy the following code in the implementation section of the file Notifications.m and replace the <ph id=\"ph1\">`&lt;hub name&gt;`</ph> and <ph id=\"ph2\">`&lt;connection string with listen access&gt;`</ph> placeholders with your notification hub name and the connection string for <bpt id=\"p1\">*</bpt>DefaultListenSharedAccessSignature<ept id=\"p1\">*</ept> that you obtained earlier."
+    },
+    {
+      "content": "This class uses local storage to store and retrieve the categories of news that this device will receive.",
+      "pos": [
+        5398,
+        5503
+      ]
+    },
+    {
+      "content": "Also, it contains a method to register for these categories.",
+      "pos": [
+        5504,
+        5564
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> Because credentials that are distributed with a client app are not generally secure, you should only distribute the key for listen access with your client app.",
+      "pos": [
+        5572,
+        5744
+      ]
+    },
+    {
+      "content": "Listen access enables your app to register for notifications, but existing registrations cannot be modified and notifications cannot be sent.",
+      "pos": [
+        5745,
+        5886
+      ]
+    },
+    {
+      "content": "The full access key is used in a secured backend service for sending notifications and changing existing registrations.",
+      "pos": [
+        5887,
+        6006
+      ]
+    },
+    {
+      "content": "In the AppDelegate.h file, add an import statement for Notifications.h and add a property for an instance of the Notifications class:",
+      "pos": [
+        6011,
+        6144
+      ]
+    },
+    {
+      "content": "This creates a singleton instance of the Notification class in the AppDelegate.",
+      "pos": [
+        6246,
+        6325
+      ]
+    },
+    {
+      "pos": [
+        6330,
+        6481
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>didFinishLaunchingWithOptions<ept id=\"p1\">**</ept> method in AppDelegate.m, add the code to initialize the notifications instance at the beginning of the method:"
+    },
+    {
+      "content": "The initializes the Notification singleton.",
+      "pos": [
+        6547,
+        6590
+      ]
+    },
+    {
+      "content": "In the <bpt id=\"p1\">**</bpt>didRegisterForRemoteNotificationsWithDeviceToken<ept id=\"p1\">**</ept> method in AppDelegate.m, replace the code in the method with the following code to pass the device token to the notifications class.",
+      "pos": [
+        6596,
+        6788
+      ]
+    },
+    {
+      "content": "The notifications class will perform the registering for notifications with the categories.",
+      "pos": [
+        6789,
+        6880
+      ]
+    },
+    {
+      "content": "If the user changes category selections, we call the <ph id=\"ph1\">`subscribeWithCategories`</ph> method in response to the <bpt id=\"p1\">**</bpt>subscribe<ept id=\"p1\">**</ept> button to update them.",
+      "pos": [
+        6881,
+        7022
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> Because the device token assigned by the Apple Push Notification Service (APNS) can chance at any time, you should register for notifications frequently to avoid notification failures.",
+      "pos": [
+        7030,
+        7227
+      ]
+    },
+    {
+      "content": "This example registers for notification every time that the app starts.",
+      "pos": [
+        7228,
+        7299
+      ]
+    },
+    {
+      "content": "For apps that are run frequently, more than once a day, you can probably skip registration to preserve bandwidth if less than a day has passed since the previous registration.",
+      "pos": [
+        7300,
+        7475
+      ]
+    },
+    {
+      "pos": [
+        8003,
+        8124
+      ],
+      "content": "Note that at this point there should be no other code in the <bpt id=\"p1\">**</bpt>didRegisterForRemoteNotificationsWithDeviceToken<ept id=\"p1\">**</ept> method."
+    },
+    {
+      "content": "The following methods should already be present in AppDelegate.m from completing the <bpt id=\"p1\">[</bpt>Get started with Notification Hubs<ept id=\"p1\">][get-started]</ept> tutorial.",
+      "pos": [
+        8130,
+        8274
+      ]
+    },
+    {
+      "content": "If not, add them.",
+      "pos": [
+        8276,
+        8293
+      ]
+    },
+    {
+      "pos": [
+        8877,
+        8979
+      ],
+      "content": "This method handles notifications received when the app is running by displaying a simple <bpt id=\"p1\">**</bpt>UIAlert<ept id=\"p1\">**</ept>."
+    },
+    {
+      "content": "In ViewController.m, add a import statement for AppDelegate.h and copy the following code into the XCode-generated <bpt id=\"p1\">**</bpt>subscribe<ept id=\"p1\">**</ept> method.",
+      "pos": [
+        8985,
+        9121
+      ]
+    },
+    {
+      "content": "This code will update the notification registration to use the new category tags the user has chosen in the user interface.",
+      "pos": [
+        9122,
+        9245
+      ]
+    },
+    {
+      "content": "This method creates an <bpt id=\"p1\">**</bpt>NSMutableArray<ept id=\"p1\">**</ept> of categories and uses the <bpt id=\"p2\">**</bpt>Notifications<ept id=\"p2\">**</ept> class to store the list in the local storage and registers the corresponding tags with your notification hub.",
+      "pos": [
+        10184,
+        10380
+      ]
+    },
+    {
+      "content": "When categories are changed, the registration is recreated with the new categories.",
+      "pos": [
+        10381,
+        10464
+      ]
+    },
+    {
+      "pos": [
+        10470,
+        10611
+      ],
+      "content": "In ViewController.m, add the following code in the <bpt id=\"p1\">**</bpt>viewDidLoad<ept id=\"p1\">**</ept> method to set the user interface based on the previously saved categories."
+    },
+    {
+      "content": "The app can now store a set of categories in the device local storage used to register with the notification hub whenever the app starts.",
+      "pos": [
+        11400,
+        11537
+      ]
+    },
+    {
+      "content": "The user can change the selection of categories at runtime and click the <bpt id=\"p1\">**</bpt>subscribe<ept id=\"p1\">**</ept> method to update the registration for the device.",
+      "pos": [
+        11539,
+        11675
+      ]
+    },
+    {
+      "content": "Next, you will update the app to send the breaking news notifications directly in the app itself.",
+      "pos": [
+        11676,
+        11773
+      ]
+    },
+    {
+      "content": "Send notifications",
+      "pos": [
+        11778,
+        11796
+      ]
+    },
+    {
+      "content": "Normally notifications would be sent by a backend service but, for this tutorial we will update our send notification code so that we can send breaking news notifications directly from the app.",
+      "pos": [
+        11798,
+        11991
+      ]
+    },
+    {
+      "content": "To do this we will update the <ph id=\"ph1\">`SendNotificationRESTAPI`</ph> method that we defined in the <bpt id=\"p1\">[</bpt>Get started with Notification Hubs<ept id=\"p1\">][get-started]</ept> tutorial.",
+      "pos": [
+        11992,
+        12137
+      ]
+    },
+    {
+      "pos": [
+        12143,
+        12321
+      ],
+      "content": "In ViewController.m update the <ph id=\"ph1\">`SendNotificationRESTAPI`</ph> method as follows so that it takes a Platform Notification Service <ph id=\"ph2\">`pns`</ph> parameter, and a parameter for the category tag."
+    },
+    {
+      "content": "In ViewController.m update the <bpt id=\"p1\">**</bpt>Send Notification<ept id=\"p1\">**</ept> action as shown in the code that follows.",
+      "pos": [
+        17033,
+        17127
+      ]
+    },
+    {
+      "content": "So that it will send the notifications using each tag individually and send to multiple platforms.",
+      "pos": [
+        17128,
+        17226
+      ]
+    },
+    {
+      "content": "Rebuild your project and make sure you have no build errors.",
+      "pos": [
+        17923,
+        17983
+      ]
+    },
+    {
+      "content": "Run the app and generate notifications",
+      "pos": [
+        17988,
+        18026
+      ]
+    },
+    {
+      "content": "Press the Run button to build the project and start the app.",
+      "pos": [
+        18031,
+        18091
+      ]
+    },
+    {
+      "content": "Select some breaking news options to subscribe to and then press the <bpt id=\"p1\">**</bpt>Subscribe<ept id=\"p1\">**</ept> button.",
+      "pos": [
+        18092,
+        18182
+      ]
+    },
+    {
+      "content": "You should see a dialog indicating the notifications have been subscribed to.",
+      "pos": [
+        18183,
+        18260
+      ]
+    },
+    {
+      "content": "![][1]",
+      "pos": [
+        18266,
+        18272
+      ]
+    },
+    {
+      "pos": [
+        18278,
+        18447
+      ],
+      "content": "When you choose <bpt id=\"p1\">**</bpt>Subscribe<ept id=\"p1\">**</ept>, the app converts the selected categories into tags and requests a new device registration for the selected tags from the notification hub."
+    },
+    {
+      "pos": [
+        18452,
+        18539
+      ],
+      "content": "Enter a message to be sent as breaking news then press the <bpt id=\"p1\">**</bpt>Send Notification<ept id=\"p1\">**</ept> button"
+    },
+    {
+      "content": "![][2]",
+      "pos": [
+        18545,
+        18551
+      ]
+    },
+    {
+      "content": "Each device subscribed to breaking news will receive the breaking news notifications you just sent.",
+      "pos": [
+        18557,
+        18656
+      ]
+    },
+    {
+      "content": "Next steps",
+      "pos": [
+        18663,
+        18673
+      ]
+    },
+    {
+      "content": "In this tutorial we learned how to broadcast breaking news by category.",
+      "pos": [
+        18675,
+        18746
+      ]
+    },
+    {
+      "content": "Consider completing one of the following tutorials that highlight other advanced Notification Hubs scenarios:",
+      "pos": [
+        18747,
+        18856
+      ]
+    },
+    {
+      "content": "Use Notification Hubs to broadcast localized breaking news",
+      "pos": [
+        18863,
+        18921
+      ]
+    },
+    {
+      "content": "Learn how to expand the breaking news app to enable sending localized notifications.",
+      "pos": [
+        18930,
+        19014
+      ]
+    },
+    {
+      "content": "Notify users with Notification Hubs",
+      "pos": [
+        19021,
+        19056
+      ]
+    },
+    {
+      "content": "Learn how to push notifications to specific authenticated users.",
+      "pos": [
+        19065,
+        19129
+      ]
+    },
+    {
+      "content": "This is a good solution for sending notifications only to specific users.",
+      "pos": [
+        19130,
+        19203
+      ]
+    }
+  ],
+  "content": "<properties\n    pageTitle=\"Notification Hubs Breaking News Tutorial - iOS\"\n    description=\"Learn how to use Azure Service Bus Notification Hubs to send breaking news notifications to iOS devices.\"\n    services=\"notification-hubs\"\n    documentationCenter=\"ios\"\n    authors=\"wesmc7777\"\n    manager=\"dwrede\"\n    editor=\"\"/>\n\n<tags\n    ms.service=\"notification-hubs\"\n    ms.workload=\"mobile\"\n    ms.tgt_pltfrm=\"mobile-ios\"\n    ms.devlang=\"objective-c\"\n    ms.topic=\"article\"\n    ms.date=\"06/16/2015\"\n    ms.author=\"wesmc\"/>\n\n# Use Notification Hubs to send breaking news\n\n[AZURE.INCLUDE [notification-hubs-selector-breaking-news](../../includes/notification-hubs-selector-breaking-news.md)]\n\n\n##Overview\n\nThis topic shows you how to use Azure Notification Hubs to broadcast breaking news notifications to an iOS app. When complete, you will be able to register for breaking news categories you are interested in, and receive only push notifications for those categories. This scenario is a common pattern for many apps where notifications have to be sent to groups of users that have previously declared interest in them, e.g. RSS reader, apps for music fans, etc.\n\nBroadcast scenarios are enabled by including one or more _tags_ when creating a registration in the notification hub. When notifications are sent to a tag, all devices that have registered for the tag will receive the notification. Because tags are simply strings, they do not have to be provisioned in advance. For more information about tags, refer to [Notification Hubs Guidance].\n\n\n##Prerequisites\n\nThis topic builds on the app you created in [Get started with Notification Hubs][get-started]. Before starting this tutorial, you must have already completed [Get started with Notification Hubs][get-started].\n\n##Add category selection to the app\n\nThe first step is to add the UI elements to your existing storyboard that enable the user to select categories to register. The categories selected by a user are stored on the device. When the app starts, a device registration is created in your notification hub with the selected categories as tags.\n\n1. In your MainStoryboard_iPhone.storyboard add the following components from the object library:\n    + A label with \"Breaking News\" text,\n    + Labels with category texts \"World\", \"Politics\", \"Business\", \"Technology\", \"Science\", \"Sports\",\n    + Six switches, one per category, set each switch **State** to be **Off** by default.\n    + One button labeled \"Subscribe\"\n\n    Your storyboard should look as follows:\n\n    ![][3]\n\n2. In the assistant editor, create outlets for all the switches and call them \"WorldSwitch\", \"PoliticsSwitch\", \"BusinessSwitch\", \"TechnologySwitch\", \"ScienceSwitch\", \"SportsSwitch\"\n\n\n3. Create an Action for your button called \"subscribe\". Your ViewController.h should contain the following:\n\n        @property (weak, nonatomic) IBOutlet UISwitch *WorldSwitch;\n        @property (weak, nonatomic) IBOutlet UISwitch *PoliticsSwitch;\n        @property (weak, nonatomic) IBOutlet UISwitch *BusinessSwitch;\n        @property (weak, nonatomic) IBOutlet UISwitch *TechnologySwitch;\n        @property (weak, nonatomic) IBOutlet UISwitch *ScienceSwitch;\n        @property (weak, nonatomic) IBOutlet UISwitch *SportsSwitch;\n\n        - (IBAction)subscribe:(id)sender;\n\n4. Create a new **Cocoa Touch Class** called `Notifications`. Copy the following code in the interface section of the file Notifications.h:\n\n        @property NSData* deviceToken;\n\n        - (void)storeCategoriesAndSubscribeWithCategories:(NSArray*)categories\n                    completion:(void (^)(NSError* error))completion;\n\n        - (NSSet*)retrieveCategories;\n\n        - (void)subscribeWithCategories:(NSSet*)categories completion:(void (^)(NSError *))completion;\n\n5. Add the following import directive to Notifications.m:\n\n        #import <WindowsAzureMessaging/WindowsAzureMessaging.h>\n\n6. Copy the following code in the implementation section of the file Notifications.m and replace the `<hub name>` and `<connection string with listen access>` placeholders with your notification hub name and the connection string for *DefaultListenSharedAccessSignature* that you obtained earlier.\n\n        - (void)storeCategoriesAndSubscribeWithCategories:(NSSet *)categories completion:(void (^)(NSError *))completion {\n            NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];\n            [defaults setValue:[categories allObjects] forKey:@\"BreakingNewsCategories\"];\n\n            [self subscribeWithCategories:categories completion:completion];\n        }\n\n\n        - (NSSet*)retrieveCategories {\n            NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];\n\n            NSArray* categories = [defaults stringArrayForKey:@\"BreakingNewsCategories\"];\n\n            if (!categories) return [[NSSet alloc] init];\n            return [[NSSet alloc] initWithArray:categories];\n        }\n\n\n        - (void)subscribeWithCategories:(NSSet *)categories completion:(void (^)(NSError *))completion\n        {\n            SBNotificationHub* hub = [[SBNotificationHub alloc]\n                                        initWithConnectionString:@\"<connection string with listen access>\"\n                                        notificationHubPath:@\"<hub name>\"];\n\n            [hub registerNativeWithDeviceToken:self.deviceToken tags:categories completion: completion];\n        }\n\n\n\n    This class uses local storage to store and retrieve the categories of news that this device will receive. Also, it contains a method to register for these categories.\n\n    > [AZURE.NOTE] Because credentials that are distributed with a client app are not generally secure, you should only distribute the key for listen access with your client app. Listen access enables your app to register for notifications, but existing registrations cannot be modified and notifications cannot be sent. The full access key is used in a secured backend service for sending notifications and changing existing registrations.\n\n7. In the AppDelegate.h file, add an import statement for Notifications.h and add a property for an instance of the Notifications class:\n\n        #import \"Notifications.h\"\n\n        @property (nonatomic) Notifications* notifications;\n\n    This creates a singleton instance of the Notification class in the AppDelegate.\n\n8. In the **didFinishLaunchingWithOptions** method in AppDelegate.m, add the code to initialize the notifications instance at the beginning of the method:\n\n        self.notifications = [[Notifications alloc] init];\n\n    The initializes the Notification singleton.\n\n\n9. In the **didRegisterForRemoteNotificationsWithDeviceToken** method in AppDelegate.m, replace the code in the method with the following code to pass the device token to the notifications class. The notifications class will perform the registering for notifications with the categories. If the user changes category selections, we call the `subscribeWithCategories` method in response to the **subscribe** button to update them.\n\n    > [AZURE.NOTE] Because the device token assigned by the Apple Push Notification Service (APNS) can chance at any time, you should register for notifications frequently to avoid notification failures. This example registers for notification every time that the app starts. For apps that are run frequently, more than once a day, you can probably skip registration to preserve bandwidth if less than a day has passed since the previous registration.\n\n        self.notifications.deviceToken = deviceToken;\n\n        // Retrieves the categories from local storage and requests a registration for these categories\n        // each time the app starts and performs a registration.\n\n        NSSet* categories = [self.notifications retrieveCategories];\n        [self.notifications subscribeWithCategories:categories completion:^(NSError* error) {\n            if (error != nil) {\n                NSLog(@\"Error registering for notifications: %@\", error);\n            }\n        }];\n\n\n    Note that at this point there should be no other code in the **didRegisterForRemoteNotificationsWithDeviceToken** method.\n\n10. The following methods should already be present in AppDelegate.m from completing the [Get started with Notification Hubs][get-started] tutorial.  If not, add them.\n\n        -(void)MessageBox:(NSString *)title message:(NSString *)messageText\n        {\n            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:title message:messageText delegate:self\n                cancelButtonTitle:@\"OK\" otherButtonTitles: nil];\n            [alert show];\n        }\n\n        - (void)application:(UIApplication *)application didReceiveRemoteNotification:\n            (NSDictionary *)userInfo {\n            NSLog(@\"%@\", userInfo);\n            [self MessageBox:@\"Notification\" message:[[userInfo objectForKey:@\"aps\"] valueForKey:@\"alert\"]];\n        }\n\n    This method handles notifications received when the app is running by displaying a simple **UIAlert**.\n\n11. In ViewController.m, add a import statement for AppDelegate.h and copy the following code into the XCode-generated **subscribe** method. This code will update the notification registration to use the new category tags the user has chosen in the user interface.\n\n        NSMutableArray* categories = [[NSMutableArray alloc] init];\n\n        if (self.WorldSwitch.isOn) [categories addObject:@\"World\"];\n        if (self.PoliticsSwitch.isOn) [categories addObject:@\"Politics\"];\n        if (self.BusinessSwitch.isOn) [categories addObject:@\"Business\"];\n        if (self.TechnologySwitch.isOn) [categories addObject:@\"Technology\"];\n        if (self.ScienceSwitch.isOn) [categories addObject:@\"Science\"];\n        if (self.SportsSwitch.isOn) [categories addObject:@\"Sports\"];\n\n        Notifications* notifications = [(AppDelegate*)[[UIApplication sharedApplication]delegate] notifications];\n\n        [notifications storeCategoriesAndSubscribeWithCategories:categories completion: ^(NSError* error) {\n            if (!error) {\n                [self MessageBox:@\"Notification\" message:@\"Subscribed!\"];\n            } else {\n                NSLog(@\"Error subscribing: %@\", error);\n            }\n        }];\n\n    This method creates an **NSMutableArray** of categories and uses the **Notifications** class to store the list in the local storage and registers the corresponding tags with your notification hub. When categories are changed, the registration is recreated with the new categories.\n\n12. In ViewController.m, add the following code in the **viewDidLoad** method to set the user interface based on the previously saved categories.\n\n\n        // This updates the UI on startup based on the status of previously saved categories.\n\n        Notifications* notifications = [(BreakingNewsAppDelegate*)[[UIApplication sharedApplication]delegate] notifications];\n\n        NSSet* categories = [notifications retrieveCategories];\n\n        if ([categories containsObject:@\"World\"]) self.WorldSwitch.on = true;\n        if ([categories containsObject:@\"Politics\"]) self.PoliticsSwitch.on = true;\n        if ([categories containsObject:@\"Business\"]) self.BusinessSwitch.on = true;\n        if ([categories containsObject:@\"Technology\"]) self.TechnologySwitch.on = true;\n        if ([categories containsObject:@\"Science\"]) self.ScienceSwitch.on = true;\n        if ([categories containsObject:@\"Sports\"]) self.SportsSwitch.on = true;\n\n\n\nThe app can now store a set of categories in the device local storage used to register with the notification hub whenever the app starts.  The user can change the selection of categories at runtime and click the **subscribe** method to update the registration for the device. Next, you will update the app to send the breaking news notifications directly in the app itself.\n\n\n##Send notifications\n\nNormally notifications would be sent by a backend service but, for this tutorial we will update our send notification code so that we can send breaking news notifications directly from the app. To do this we will update the `SendNotificationRESTAPI` method that we defined in the [Get started with Notification Hubs][get-started] tutorial.\n\n\n1. In ViewController.m update the `SendNotificationRESTAPI` method as follows so that it takes a Platform Notification Service `pns` parameter, and a parameter for the category tag.\n\n        - (void)SendNotificationRESTAPI:(NSString*)pns Category:(NSString*)categoryTag\n        {\n            NSURLSession* session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration\n                                     defaultSessionConfiguration] delegate:nil delegateQueue:nil];\n\n            NSString *json;\n\n            // Construct the messages REST endpoint\n            NSURL* url = [NSURL URLWithString:[NSString stringWithFormat:@\"%@%@/messages/%@\", HubEndpoint,\n                                               HUBNAME, API_VERSION]];\n\n            // Generated the token to be used in the authorization header.\n            NSString* authorizationToken = [self generateSasToken:[url absoluteString]];\n\n            //Create the request to add the APNS notification message to the hub\n            NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];\n            [request setHTTPMethod:@\"POST\"];\n\n            // Add the category as a tag\n            [request setValue:categoryTag forHTTPHeaderField:@\"ServiceBusNotification-Tags\"];\n\n            // Windows Notification format of the notification message\n            if ([pns isEqualToString:@\"wns\"])\n            {\n                json = [NSString stringWithFormat:@\"<?xml version=\\\"1.0\\\" encoding=\\\"utf-8\\\"?>\"\n                                                   \"<toast>\"\n                                                   \"<visual><binding template=\\\"ToastText01\\\">\"\n                                                   \"<text id=\\\"1\\\">Breaking %@ News : %@</text>\"\n                                                   \"</binding>\"\n                                                   \"</visual>\"\n                                                   \"</toast>\",\n                        categoryTag, self.notificationMessage.text];\n\n                // Signify windows notification format\n                [request setValue:@\"windows\" forHTTPHeaderField:@\"ServiceBusNotification-Format\"];\n\n                // XML Content-Type\n                [request setValue:@\"application/xml\" forHTTPHeaderField:@\"Content-Type\"];\n\n                // Set X-WNS-TYPE header\n                [request setValue:@\"wns/toast\" forHTTPHeaderField:@\"X-WNS-Type\"];\n            }\n\n            // Google Cloud Messaging Notification format of the notification message\n            if ([pns isEqualToString:@\"gcm\"])\n            {\n                json = [NSString stringWithFormat:@\"{\\\"data\\\":{\\\"message\\\":\\\"Breaking %@ News : %@\\\"}}\",\n                        categoryTag, self.notificationMessage.text];\n                // Signify gcm notification format\n                [request setValue:@\"gcm\" forHTTPHeaderField:@\"ServiceBusNotification-Format\"];\n\n                // JSON Content-Type\n                [request setValue:@\"application/json;charset=utf-8\" forHTTPHeaderField:@\"Content-Type\"];\n            }\n\n            // Apple Notification format of the notification message\n            if ([pns isEqualToString:@\"apns\"])\n            {\n                json = [NSString stringWithFormat:@\"{\\\"aps\\\":{\\\"alert\\\":\\\"Breaking %@ News : %@\\\"}}\",\n                        categoryTag, self.notificationMessage.text];\n                // Signify apple notification format\n                [request setValue:@\"apple\" forHTTPHeaderField:@\"ServiceBusNotification-Format\"];\n\n                // JSON Content-Type\n                [request setValue:@\"application/json;charset=utf-8\" forHTTPHeaderField:@\"Content-Type\"];\n            }\n\n            //Authenticate the notification message POST request with the SaS token\n            [request setValue:authorizationToken forHTTPHeaderField:@\"Authorization\"];\n\n            //Add the notification message body\n            [request setHTTPBody:[json dataUsingEncoding:NSUTF8StringEncoding]];\n\n            // Send the REST request\n            NSURLSessionDataTask* dataTask = [session dataTaskWithRequest:request\n                       completionHandler:^(NSData *data, NSURLResponse *response, NSError *error)\n                       {\n                       NSHTTPURLResponse* httpResponse = (NSHTTPURLResponse*) response;\n                           if (error || httpResponse.statusCode != 200)\n                           {\n                               NSLog(@\"\\nError status: %d\\nError: %@\", httpResponse.statusCode, error);\n                           }\n                           if (data != NULL)\n                           {\n                               //xmlParser = [[NSXMLParser alloc] initWithData:data];\n                               //[xmlParser setDelegate:self];\n                               //[xmlParser parse];\n                           }\n                       }];\n            [dataTask resume];\n        }\n\n\n\n2. In ViewController.m update the **Send Notification** action as shown in the code that follows. So that it will send the notifications using each tag individually and send to multiple platforms.\n\n\n\n        - (IBAction)SendNotificationMessage:(id)sender\n        {\n            self.sendResults.text = @\"\";\n\n            NSArray* categories = [NSArray arrayWithObjects: @\"World\", @\"Politics\", @\"Business\",\n                                    @\"Technology\", @\"Science\", @\"Sports\", nil];\n\n            // Lets send the message as breaking news for each category to WNS, GCM, and APNS\n            for(NSString* category in categories)\n            {\n                [self SendNotificationRESTAPI:@\"wns\" Category:category];\n                [self SendNotificationRESTAPI:@\"gcm\" Category:category];\n                [self SendNotificationRESTAPI:@\"apns\" Category:category];\n            }\n        }\n\n\n\n3. Rebuild your project and make sure you have no build errors.\n\n\n##Run the app and generate notifications\n\n1. Press the Run button to build the project and start the app. Select some breaking news options to subscribe to and then press the **Subscribe** button. You should see a dialog indicating the notifications have been subscribed to.\n\n    ![][1]\n\n    When you choose **Subscribe**, the app converts the selected categories into tags and requests a new device registration for the selected tags from the notification hub.\n\n2. Enter a message to be sent as breaking news then press the **Send Notification** button\n\n    ![][2]\n\n\n3. Each device subscribed to breaking news will receive the breaking news notifications you just sent.\n\n\n\n## Next steps\n\nIn this tutorial we learned how to broadcast breaking news by category. Consider completing one of the following tutorials that highlight other advanced Notification Hubs scenarios:\n\n+ **[Use Notification Hubs to broadcast localized breaking news]**\n\n    Learn how to expand the breaking news app to enable sending localized notifications.\n\n+ **[Notify users with Notification Hubs]**\n\n    Learn how to push notifications to specific authenticated users. This is a good solution for sending notifications only to specific users.\n\n\n\n<!-- Images. -->\n[1]: ./media/notification-hubs-ios-send-breaking-news/notification-hub-breakingnews-subscribed.png\n[2]: ./media/notification-hubs-ios-send-breaking-news/notification-hub-breakingnews-ios1.png\n[3]: ./media/notification-hubs-ios-send-breaking-news/notification-hub-breakingnews-ios2.png\n\n\n\n\n\n\n\n\n<!-- URLs. -->\n[How To: Service Bus Notification Hubs (iOS Apps)]: http://msdn.microsoft.com/library/jj927168.aspx\n[Use Notification Hubs to broadcast localized breaking news]: /manage/services/notification-hubs/breaking-news-localized-dotnet/\n[Mobile Service]: /develop/mobile/tutorials/get-started\n[Notify users with Notification Hubs]: notification-hubs-aspnet-backend-ios-notify-users.md\n[Azure Management Portal]: https://manage.windowsazure.com/\n[Notification Hubs Guidance]: http://msdn.microsoft.com/library/dn530749.aspx\n[Notification Hubs How-To for iOS]: http://msdn.microsoft.com/library/jj927168.aspx\n[get-started]: /manage/services/notification-hubs/get-started-notification-hubs-ios/\n"
+}

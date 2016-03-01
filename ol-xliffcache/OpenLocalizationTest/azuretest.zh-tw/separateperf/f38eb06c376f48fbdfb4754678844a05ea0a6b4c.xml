@@ -1,0 +1,1839 @@
+{
+  "nodes": [
+    {
+      "content": "Managing Concurrency in Microsoft Azure Storage",
+      "pos": [
+        28,
+        75
+      ]
+    },
+    {
+      "content": "How to manage concurrency for the Blob, Queue, Table, and File services",
+      "pos": [
+        95,
+        166
+      ]
+    },
+    {
+      "content": "Managing Concurrency in Microsoft Azure Storage",
+      "pos": [
+        469,
+        516
+      ]
+    },
+    {
+      "content": "Overview",
+      "pos": [
+        521,
+        529
+      ]
+    },
+    {
+      "content": "Modern Internet based applications usually have multiple users viewing and updating data simultaneously.",
+      "pos": [
+        532,
+        636
+      ]
+    },
+    {
+      "content": "This requires application developers to think carefully about how to provide a predictable experience to their end users, particularly for scenarios where multiple users can update the same data.",
+      "pos": [
+        637,
+        832
+      ]
+    },
+    {
+      "content": "There are three main data concurrency strategies developers will typically consider:",
+      "pos": [
+        833,
+        917
+      ]
+    },
+    {
+      "content": "Optimistic concurrency – An application performing an update will as part of its update verify if the data has changed since the application last read that data.",
+      "pos": [
+        926,
+        1087
+      ]
+    },
+    {
+      "content": "For example, if two users viewing a wiki page make an update to the same page then the wiki platform must ensure that the second update does not overwrite the first update – and that both users understand whether their update was successful or not.",
+      "pos": [
+        1088,
+        1336
+      ]
+    },
+    {
+      "content": "This strategy is most often used in web applications.",
+      "pos": [
+        1337,
+        1390
+      ]
+    },
+    {
+      "content": "Pessimistic concurrency – An application looking to perform an update will take a lock on an object preventing other users from updating the data until the lock is released.",
+      "pos": [
+        1395,
+        1568
+      ]
+    },
+    {
+      "content": "For example, in a master/slave data replication scenario where only the master will perform updates the master will typically hold an exclusive lock for an extended period of time on the data to ensure no one else can update it.",
+      "pos": [
+        1569,
+        1797
+      ]
+    },
+    {
+      "content": "Last writer wins – An approach that allows any update operations to proceed without verifying if any other application has updated the data since the application first read the data.",
+      "pos": [
+        1802,
+        1984
+      ]
+    },
+    {
+      "content": "This strategy (or lack of a formal strategy) is usually used where data is partitioned in such a way that there is no likelihood that multiple users will access the same data.",
+      "pos": [
+        1985,
+        2160
+      ]
+    },
+    {
+      "content": "It can also be useful where short-lived data streams are being processed.",
+      "pos": [
+        2161,
+        2234
+      ]
+    },
+    {
+      "content": "This article provides an overview of how the Azure Storage platform simplifies development by providing first class support for all three of these concurrency strategies.",
+      "pos": [
+        2238,
+        2408
+      ]
+    },
+    {
+      "content": "Azure Storage – Simplifies Cloud Development",
+      "pos": [
+        2415,
+        2459
+      ]
+    },
+    {
+      "content": "The Azure storage service supports all three strategies, although it is distinctive in its ability to provide full support for optimistic and pessimistic concurrency because it was designed to embrace a strong consistency model which guarantees that when the Storage service commits a data insert or update operation all further accesses to that data will see the latest update.",
+      "pos": [
+        2460,
+        2838
+      ]
+    },
+    {
+      "content": "Storage platforms that use an eventual consistency model have a lag between when a write is performed by one user and when the updated data can be seen by other users thus complicating development of client applications in order to prevent inconsistencies from affecting end users.",
+      "pos": [
+        2839,
+        3120
+      ]
+    },
+    {
+      "content": "In addition to selecting an appropriate concurrency strategy developers should also be aware of how a storage platform isolates changes – particularly changes to the same object across transactions.",
+      "pos": [
+        3124,
+        3322
+      ]
+    },
+    {
+      "content": "The Azure storage service uses snapshot isolation to allow read operations to happen concurrently with write operations within a single partition.",
+      "pos": [
+        3323,
+        3469
+      ]
+    },
+    {
+      "content": "Unlike other isolation levels, snapshot isolation guarantees that all reads see a consistent snapshot of the data even while updates are occurring – essentially by returning the last committed values while an update transaction is being processed.",
+      "pos": [
+        3470,
+        3717
+      ]
+    },
+    {
+      "content": "Managing Concurrency in the Blob Service",
+      "pos": [
+        3724,
+        3764
+      ]
+    },
+    {
+      "content": "You can opt to use either optimistic or pessimistic concurrency models to manage access to blobs and containers in the blob service.",
+      "pos": [
+        3765,
+        3897
+      ]
+    },
+    {
+      "content": "If you do not explicitly specify a strategy last writes wins is the default.",
+      "pos": [
+        3898,
+        3974
+      ]
+    },
+    {
+      "content": "Optimistic concurrency for blobs and containers",
+      "pos": [
+        3982,
+        4029
+      ]
+    },
+    {
+      "content": "The Storage service assigns an identifier to every object stored.",
+      "pos": [
+        4033,
+        4098
+      ]
+    },
+    {
+      "content": "This identifier is updated every time an update operation is performed on an object.",
+      "pos": [
+        4099,
+        4183
+      ]
+    },
+    {
+      "content": "The identifier is returned to the client as part of an HTTP GET response using the ETag (entity tag) header that is defined within the HTTP protocol.",
+      "pos": [
+        4184,
+        4333
+      ]
+    },
+    {
+      "content": "A user performing an update on such an object can send in the original ETag along with a conditional header to ensure that an update will only occur if a certain condition has been met – in this case the condition is an “If-Match” header which requires the Storage Service to ensure the value of the ETag specified in the update request is the same as that stored in the Storage Service.",
+      "pos": [
+        4334,
+        4721
+      ]
+    },
+    {
+      "content": "The outline of this process is as follows:",
+      "pos": [
+        4725,
+        4767
+      ]
+    },
+    {
+      "content": "Retrieve a blob from the storage service, the response includes an HTTP ETag Header value that identifies the current version of the object in the storage service.",
+      "pos": [
+        4775,
+        4938
+      ]
+    },
+    {
+      "pos": [
+        4943,
+        5093
+      ],
+      "content": "When you update the blob, include the ETag value you received in step 1 in the <bpt id=\"p1\">**</bpt>If-Match<ept id=\"p1\">**</ept> conditional header of the request you send to the service."
+    },
+    {
+      "content": "The service compares the ETag value in the request with the current ETag value of the blob.",
+      "pos": [
+        5098,
+        5189
+      ]
+    },
+    {
+      "content": "If the current ETag value of the blob is a different version than the ETag in the <bpt id=\"p1\">**</bpt>If-Match<ept id=\"p1\">**</ept> conditional header in the request, the service returns a 412 error to the client.",
+      "pos": [
+        5194,
+        5370
+      ]
+    },
+    {
+      "content": "This indicates to the client that another process has updated the blob since the client retrieved it.",
+      "pos": [
+        5371,
+        5472
+      ]
+    },
+    {
+      "pos": [
+        5477,
+        5736
+      ],
+      "content": "If the current ETag value of the blob is the same version as the ETag in the <bpt id=\"p1\">**</bpt>If-Match<ept id=\"p1\">**</ept> conditional header in the request, the service performs the requested operation and updates the current ETag value of the blob to show that it has created a new version."
+    },
+    {
+      "content": "The following C# snippet (using the Client Storage Library 4.2.0) shows a simple example of how to construct an <bpt id=\"p1\">**</bpt>If-Match AccessCondition<ept id=\"p1\">**</ept> based on the ETag value that is accessed from the properties of a blob that was previously either retrieved or inserted.",
+      "pos": [
+        5740,
+        6001
+      ]
+    },
+    {
+      "content": "It then uses the <bpt id=\"p1\">**</bpt>AccessCondition<ept id=\"p1\">**</ept> object when it updating the blob: the <bpt id=\"p2\">**</bpt>AccessCondition<ept id=\"p2\">**</ept> object adds the <bpt id=\"p3\">**</bpt>If-Match<ept id=\"p3\">**</ept> header to the request.",
+      "pos": [
+        6002,
+        6148
+      ]
+    },
+    {
+      "content": "If another process has updated the blob, the blob service returns an HTTP 412 (Precondition Failed) status message.",
+      "pos": [
+        6149,
+        6264
+      ]
+    },
+    {
+      "content": "The full sample can be downloaded <bpt id=\"p1\">[</bpt>here<ept id=\"p1\">](http://code.msdn.microsoft.com/windowsazure/Managing-Concurrency-using-56018114)</ept>.",
+      "pos": [
+        6265,
+        6387
+      ]
+    },
+    {
+      "content": "The Storage Service also includes support for additional conditional headers such as <bpt id=\"p1\">**</bpt>If-Modified-Since<ept id=\"p1\">**</ept>, <bpt id=\"p2\">**</bpt>If-Unmodified-Since<ept id=\"p2\">**</ept> and <bpt id=\"p3\">**</bpt>If-None-Match<ept id=\"p3\">**</ept> as well as combinations thereof.",
+      "pos": [
+        7717,
+        7903
+      ]
+    },
+    {
+      "content": "For more information see <bpt id=\"p1\">[</bpt>Specifying Conditional Headers for Blob Service Operations<ept id=\"p1\">](http://msdn.microsoft.com/library/azure/dd179371.aspx)</ept> on MSDN.",
+      "pos": [
+        7904,
+        8053
+      ]
+    },
+    {
+      "pos": [
+        8057,
+        8227
+      ],
+      "content": "The following table summarizes the container operations that accept conditional headers such as <bpt id=\"p1\">**</bpt>If-Match<ept id=\"p1\">**</ept> in the request and that return an ETag value in the response."
+    },
+    {
+      "content": "Operation",
+      "pos": [
+        8231,
+        8240
+      ]
+    },
+    {
+      "content": "Returns Container ETag value",
+      "pos": [
+        8244,
+        8272
+      ]
+    },
+    {
+      "content": "Accepts conditional headers",
+      "pos": [
+        8275,
+        8302
+      ]
+    },
+    {
+      "content": "Create Container",
+      "pos": [
+        8379,
+        8395
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        8399,
+        8402
+      ]
+    },
+    {
+      "content": "No",
+      "pos": [
+        8407,
+        8409
+      ]
+    },
+    {
+      "content": "Get Container Properties",
+      "pos": [
+        8411,
+        8435
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        8439,
+        8442
+      ]
+    },
+    {
+      "content": "No",
+      "pos": [
+        8447,
+        8449
+      ]
+    },
+    {
+      "content": "Get Container Metadata",
+      "pos": [
+        8451,
+        8473
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        8475,
+        8478
+      ]
+    },
+    {
+      "content": "No",
+      "pos": [
+        8483,
+        8485
+      ]
+    },
+    {
+      "content": "Set Container Metadata",
+      "pos": [
+        8487,
+        8509
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        8511,
+        8514
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        8519,
+        8522
+      ]
+    },
+    {
+      "content": "Get Container ACL",
+      "pos": [
+        8524,
+        8541
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        8544,
+        8547
+      ]
+    },
+    {
+      "content": "No",
+      "pos": [
+        8552,
+        8554
+      ]
+    },
+    {
+      "content": "Set Container ACL",
+      "pos": [
+        8556,
+        8573
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        8576,
+        8579
+      ]
+    },
+    {
+      "content": "Yes (*)",
+      "pos": [
+        8584,
+        8591
+      ]
+    },
+    {
+      "content": "Delete Container",
+      "pos": [
+        8593,
+        8609
+      ]
+    },
+    {
+      "content": "No",
+      "pos": [
+        8613,
+        8615
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        8617,
+        8620
+      ]
+    },
+    {
+      "content": "Lease Container",
+      "pos": [
+        8622,
+        8637
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        8642,
+        8645
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        8650,
+        8653
+      ]
+    },
+    {
+      "content": "List Blobs",
+      "pos": [
+        8655,
+        8665
+      ]
+    },
+    {
+      "content": "No",
+      "pos": [
+        8667,
+        8669
+      ]
+    },
+    {
+      "content": "No",
+      "pos": [
+        8671,
+        8673
+      ]
+    },
+    {
+      "content": "(*) The permissions defined by SetContainerACL are cached and updates to these permissions take 30 seconds to propagate during which period updates are not guaranteed to be consistent.",
+      "pos": [
+        8677,
+        8861
+      ]
+    },
+    {
+      "pos": [
+        8865,
+        9030
+      ],
+      "content": "The following table summarizes the blob operations that accept conditional headers such as <bpt id=\"p1\">**</bpt>If-Match<ept id=\"p1\">**</ept> in the request and that return an ETag value in the response."
+    },
+    {
+      "content": "Operation",
+      "pos": [
+        9034,
+        9043
+      ]
+    },
+    {
+      "content": "Returns ETag value",
+      "pos": [
+        9047,
+        9065
+      ]
+    },
+    {
+      "content": "Accepts conditional headers",
+      "pos": [
+        9067,
+        9094
+      ]
+    },
+    {
+      "content": "Put Blob",
+      "pos": [
+        9158,
+        9166
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        9170,
+        9173
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        9178,
+        9181
+      ]
+    },
+    {
+      "content": "Get Blob",
+      "pos": [
+        9183,
+        9191
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        9195,
+        9198
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        9203,
+        9206
+      ]
+    },
+    {
+      "content": "Get Blob Properties",
+      "pos": [
+        9208,
+        9227
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        9232,
+        9235
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        9240,
+        9243
+      ]
+    },
+    {
+      "content": "Set Blob Properties",
+      "pos": [
+        9245,
+        9264
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        9269,
+        9272
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        9277,
+        9280
+      ]
+    },
+    {
+      "content": "Get Blob Metadata",
+      "pos": [
+        9282,
+        9299
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        9302,
+        9305
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        9310,
+        9313
+      ]
+    },
+    {
+      "content": "Set Blob Metadata",
+      "pos": [
+        9315,
+        9332
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        9335,
+        9338
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        9343,
+        9346
+      ]
+    },
+    {
+      "content": "Lease Blob (*)",
+      "pos": [
+        9348,
+        9362
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        9364,
+        9367
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        9372,
+        9375
+      ]
+    },
+    {
+      "content": "Snapshot Blob",
+      "pos": [
+        9377,
+        9390
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        9393,
+        9396
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        9401,
+        9404
+      ]
+    },
+    {
+      "content": "Copy Blob",
+      "pos": [
+        9406,
+        9415
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        9418,
+        9421
+      ]
+    },
+    {
+      "content": "Yes (for source and destination blob)",
+      "pos": [
+        9426,
+        9463
+      ]
+    },
+    {
+      "content": "Abort Copy Blob",
+      "pos": [
+        9465,
+        9480
+      ]
+    },
+    {
+      "content": "No",
+      "pos": [
+        9485,
+        9487
+      ]
+    },
+    {
+      "content": "No",
+      "pos": [
+        9489,
+        9491
+      ]
+    },
+    {
+      "content": "Delete Blob",
+      "pos": [
+        9493,
+        9504
+      ]
+    },
+    {
+      "content": "No",
+      "pos": [
+        9509,
+        9511
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        9513,
+        9516
+      ]
+    },
+    {
+      "content": "Put Block",
+      "pos": [
+        9518,
+        9527
+      ]
+    },
+    {
+      "content": "No",
+      "pos": [
+        9530,
+        9532
+      ]
+    },
+    {
+      "content": "No",
+      "pos": [
+        9534,
+        9536
+      ]
+    },
+    {
+      "content": "Put Block List",
+      "pos": [
+        9538,
+        9552
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        9554,
+        9557
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        9562,
+        9565
+      ]
+    },
+    {
+      "content": "Get Block List",
+      "pos": [
+        9567,
+        9581
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        9583,
+        9586
+      ]
+    },
+    {
+      "content": "No",
+      "pos": [
+        9591,
+        9593
+      ]
+    },
+    {
+      "content": "Put Page",
+      "pos": [
+        9595,
+        9603
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        9607,
+        9610
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        9615,
+        9618
+      ]
+    },
+    {
+      "content": "Get Page Ranges",
+      "pos": [
+        9620,
+        9635
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        9640,
+        9643
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        9648,
+        9651
+      ]
+    },
+    {
+      "content": "(*) Lease Blob does not change the ETag on a blob.",
+      "pos": [
+        9653,
+        9703
+      ]
+    },
+    {
+      "content": "Pessimistic concurrency for blobs",
+      "pos": [
+        9711,
+        9744
+      ]
+    },
+    {
+      "content": "To lock a blob for exclusive use, you can acquire a <bpt id=\"p1\">[</bpt>lease<ept id=\"p1\">](http://msdn.microsoft.com/library/azure/ee691972.aspx)</ept> on it.",
+      "pos": [
+        9745,
+        9866
+      ]
+    },
+    {
+      "content": "When you acquire a lease, you specify for how long you need the lease: this can be for between 15 to 60 seconds or infinite which amounts to an exclusive lock.",
+      "pos": [
+        9867,
+        10026
+      ]
+    },
+    {
+      "content": "You can renew a finite lease to extend it, and you can release any lease when you are finished with it.",
+      "pos": [
+        10027,
+        10130
+      ]
+    },
+    {
+      "content": "The blob service automatically releases finite leases when they expire.",
+      "pos": [
+        10131,
+        10202
+      ]
+    },
+    {
+      "content": "Leases enable different synchronization strategies to be supported, including exclusive write / shared read, exclusive write / exclusive read and shared write / exclusive read.",
+      "pos": [
+        10206,
+        10382
+      ]
+    },
+    {
+      "content": "Where a lease exists the storage service enforces exclusive writes (put, set and delete operations) however ensuring exclusivity for read operations requires the developer to ensure that all client applications use a lease ID and that only one client at a time has a valid lease ID.",
+      "pos": [
+        10383,
+        10665
+      ]
+    },
+    {
+      "content": "Read operations that do not include a lease ID result in shared reads.",
+      "pos": [
+        10666,
+        10736
+      ]
+    },
+    {
+      "content": "The following C# snippet shows an example of acquiring an exclusive lease for 30 seconds on a blob, updating the content of the blob, and then releasing the lease.",
+      "pos": [
+        10740,
+        10903
+      ]
+    },
+    {
+      "content": "If there is already a valid lease on the blob when you try to acquire a new lease, the blob service returns an “HTTP (409) Conflict” status result.",
+      "pos": [
+        10904,
+        11051
+      ]
+    },
+    {
+      "content": "The snippet below uses an <bpt id=\"p1\">**</bpt>AccessCondition<ept id=\"p1\">**</ept> object to encapsulate the lease information when it makes a request to update the blob in the storage service.",
+      "pos": [
+        11052,
+        11208
+      ]
+    },
+    {
+      "content": "The full sample can be downloaded <bpt id=\"p1\">[</bpt>here<ept id=\"p1\">](http://code.msdn.microsoft.com/windowsazure/Managing-Concurrency-using-56018114)</ept>.",
+      "pos": [
+        11209,
+        11331
+      ]
+    },
+    {
+      "content": "If you attempt a write operation on a leased blob without passing the lease ID, the request fails with a 412 error.",
+      "pos": [
+        12381,
+        12496
+      ]
+    },
+    {
+      "content": "Note that if the lease expires before calling the <bpt id=\"p1\">**</bpt>UploadText<ept id=\"p1\">**</ept> method but you still pass the lease ID, the request also fails with a <bpt id=\"p2\">**</bpt>412<ept id=\"p2\">**</ept> error.",
+      "pos": [
+        12497,
+        12646
+      ]
+    },
+    {
+      "content": "For more information about managing lease expiry times and lease ids, see the <bpt id=\"p1\">[</bpt>Lease Blob<ept id=\"p1\">](http://msdn.microsoft.com/library/azure/ee691972.aspx)</ept> REST documentation.",
+      "pos": [
+        12647,
+        12812
+      ]
+    },
+    {
+      "content": "The following blob operations can use leases to manage pessimistic concurrency:",
+      "pos": [
+        12816,
+        12895
+      ]
+    },
+    {
+      "content": "Put Blob",
+      "pos": [
+        12904,
+        12912
+      ]
+    },
+    {
+      "content": "Get Blob",
+      "pos": [
+        12917,
+        12925
+      ]
+    },
+    {
+      "content": "Get Blob Properties",
+      "pos": [
+        12930,
+        12949
+      ]
+    },
+    {
+      "content": "Set Blob Properties",
+      "pos": [
+        12954,
+        12973
+      ]
+    },
+    {
+      "content": "Get Blob Metadata",
+      "pos": [
+        12978,
+        12995
+      ]
+    },
+    {
+      "content": "Set Blob Metadata",
+      "pos": [
+        13000,
+        13017
+      ]
+    },
+    {
+      "content": "Delete Blob",
+      "pos": [
+        13022,
+        13033
+      ]
+    },
+    {
+      "content": "Put Block",
+      "pos": [
+        13038,
+        13047
+      ]
+    },
+    {
+      "content": "Put Block List",
+      "pos": [
+        13052,
+        13066
+      ]
+    },
+    {
+      "content": "Get Block List",
+      "pos": [
+        13071,
+        13085
+      ]
+    },
+    {
+      "content": "Put Page",
+      "pos": [
+        13090,
+        13098
+      ]
+    },
+    {
+      "content": "Get Page Ranges",
+      "pos": [
+        13103,
+        13118
+      ]
+    },
+    {
+      "content": "Snapshot Blob - lease ID optional if a lease exists",
+      "pos": [
+        13123,
+        13174
+      ]
+    },
+    {
+      "content": "Copy Blob - lease ID required if a lease exists on the destination blob",
+      "pos": [
+        13179,
+        13250
+      ]
+    },
+    {
+      "content": "Abort Copy Blob - lease ID required if an infinite lease exists on the destination blob",
+      "pos": [
+        13255,
+        13342
+      ]
+    },
+    {
+      "content": "Lease Blob",
+      "pos": [
+        13347,
+        13357
+      ]
+    },
+    {
+      "content": "Pessimistic concurrency for containers",
+      "pos": [
+        13365,
+        13403
+      ]
+    },
+    {
+      "content": "Leases on containers enable the same synchronization strategies to be supported as on blobs (exclusive write / shared read, exclusive write / exclusive read and shared write / exclusive read) however unlike blobs the storage service only enforces exclusivity on delete operations.",
+      "pos": [
+        13404,
+        13684
+      ]
+    },
+    {
+      "content": "To delete a container with an active lease, a client must include the active lease ID with the delete request.",
+      "pos": [
+        13685,
+        13795
+      ]
+    },
+    {
+      "content": "All other container operations succeed on a leased container without including the lease ID in which case they are shared operations.",
+      "pos": [
+        13796,
+        13929
+      ]
+    },
+    {
+      "content": "If exclusivity of update (put or set) or read operations is required then developers should ensure all clients use a lease ID and that only one client at a time has a valid lease ID.",
+      "pos": [
+        13930,
+        14112
+      ]
+    },
+    {
+      "content": "The following container operations can use leases to manage pessimistic concurrency:",
+      "pos": [
+        14116,
+        14200
+      ]
+    },
+    {
+      "content": "Delete Container",
+      "pos": [
+        14208,
+        14224
+      ]
+    },
+    {
+      "content": "Get Container Properties",
+      "pos": [
+        14229,
+        14253
+      ]
+    },
+    {
+      "content": "Get Container Metadata",
+      "pos": [
+        14258,
+        14280
+      ]
+    },
+    {
+      "content": "Set Container Metadata",
+      "pos": [
+        14285,
+        14307
+      ]
+    },
+    {
+      "content": "Get Container ACL",
+      "pos": [
+        14312,
+        14329
+      ]
+    },
+    {
+      "content": "Set Container ACL",
+      "pos": [
+        14334,
+        14351
+      ]
+    },
+    {
+      "content": "Lease Container",
+      "pos": [
+        14356,
+        14371
+      ]
+    },
+    {
+      "content": "For more information see:",
+      "pos": [
+        14375,
+        14400
+      ]
+    },
+    {
+      "content": "Specifying Conditional Headers for Blob Service Operations",
+      "pos": [
+        14407,
+        14465
+      ]
+    },
+    {
+      "content": "Lease Container",
+      "pos": [
+        14525,
+        14540
+      ]
+    },
+    {
+      "content": "Lease Blob",
+      "pos": [
+        14600,
+        14610
+      ]
+    },
+    {
+      "content": "Managing Concurrency in the Table Service",
+      "pos": [
+        14673,
+        14714
+      ]
+    },
+    {
+      "content": "The table service uses optimistic concurrency checks as the default behavior when you are working with entities, unlike the blob service where you must explicitly choose to perform optimistic concurrency checks.",
+      "pos": [
+        14715,
+        14926
+      ]
+    },
+    {
+      "content": "The other difference between the table and blob services is that you can only manage the concurrency behavior of entities whereas with the blob service you can manage the concurrency of both containers and blobs.",
+      "pos": [
+        14927,
+        15139
+      ]
+    },
+    {
+      "content": "To use optimistic concurrency and to check if another process modified an entity since you retrieved it from the table storage service, you can use the ETag value you receive when the table service returns an entity.",
+      "pos": [
+        15143,
+        15359
+      ]
+    },
+    {
+      "content": "The outline of this process is as follows:",
+      "pos": [
+        15360,
+        15402
+      ]
+    },
+    {
+      "content": "Retrieve an entity from the table storage service, the response includes an ETag value that identifies the current identifier associated with that entity in the storage service.",
+      "pos": [
+        15410,
+        15587
+      ]
+    },
+    {
+      "pos": [
+        15592,
+        15742
+      ],
+      "content": "When you update the entity, include the ETag value you received in step 1 in the mandatory <bpt id=\"p1\">**</bpt>If-Match<ept id=\"p1\">**</ept> header of the request you send to the service."
+    },
+    {
+      "content": "The service compares the ETag value in the request with the current ETag value of the entity.",
+      "pos": [
+        15747,
+        15840
+      ]
+    },
+    {
+      "content": "If the current ETag value of the entity is different than the ETag in the mandatory <bpt id=\"p1\">**</bpt>If-Match<ept id=\"p1\">**</ept> header in the request, the service returns a 412 error to the client.",
+      "pos": [
+        15845,
+        16011
+      ]
+    },
+    {
+      "content": "This indicates to the client that another process has updated the entity since the client retrieved it.",
+      "pos": [
+        16012,
+        16115
+      ]
+    },
+    {
+      "pos": [
+        16120,
+        16427
+      ],
+      "content": "If the current ETag value of the entity is the same as the ETag in the mandatory <bpt id=\"p1\">**</bpt>If-Match<ept id=\"p1\">**</ept> header in the request or the <bpt id=\"p2\">**</bpt>If-Match<ept id=\"p2\">**</ept> header contains the wildcard character (*), the service performs the requested operation and updates the current ETag value of the entity to show that it has been updated."
+    },
+    {
+      "content": "Note that unlike the blob service, the table service requires the client to include an <bpt id=\"p1\">**</bpt>If-Match<ept id=\"p1\">**</ept> header in update requests.",
+      "pos": [
+        16431,
+        16557
+      ]
+    },
+    {
+      "content": "However, it is possible to force an unconditional update (last writer wins strategy) and bypass concurrency checks if the client sets the <bpt id=\"p1\">**</bpt>If-Match<ept id=\"p1\">**</ept> header to the wildcard character (*) in the request.",
+      "pos": [
+        16558,
+        16761
+      ]
+    },
+    {
+      "content": "The following C# snippet shows a customer entity that was previously either created or retrieved having their email address updated.",
+      "pos": [
+        16765,
+        16897
+      ]
+    },
+    {
+      "content": "The initial insert or retrieve operation stores the ETag value in the customer object, and because the sample uses the same object instance when it executes the replace operation, it automatically sends the ETag value back to the table service, enabling the service to check for concurrency violations.",
+      "pos": [
+        16898,
+        17200
+      ]
+    },
+    {
+      "content": "If another process has updated the entity in table storage, the service returns an HTTP 412 (Precondition Failed) status message.",
+      "pos": [
+        17201,
+        17330
+      ]
+    },
+    {
+      "content": "The full sample can be downloaded <bpt id=\"p1\">[</bpt>here<ept id=\"p1\">](http://code.msdn.microsoft.com/windowsazure/Managing-Concurrency-using-56018114)</ept>.",
+      "pos": [
+        17331,
+        17453
+      ]
+    },
+    {
+      "pos": [
+        17961,
+        18118
+      ],
+      "content": "To explicitly disable the concurrency check, you should set the <bpt id=\"p1\">**</bpt>ETag<ept id=\"p1\">**</ept> property of the <bpt id=\"p2\">**</bpt>employee<ept id=\"p2\">**</ept> object to “*” before you execute the replace operation."
+    },
+    {
+      "content": "customer.ETag = \"*\";",
+      "pos": [
+        18122,
+        18142
+      ]
+    },
+    {
+      "content": "The following table summarizes how the table entity operations use ETag values:",
+      "pos": [
+        18146,
+        18225
+      ]
+    },
+    {
+      "content": "Operation",
+      "pos": [
+        18229,
+        18238
+      ]
+    },
+    {
+      "content": "Returns ETag value",
+      "pos": [
+        18242,
+        18260
+      ]
+    },
+    {
+      "content": "Requires If-Match request header",
+      "pos": [
+        18262,
+        18294
+      ]
+    },
+    {
+      "content": "Query Entities",
+      "pos": [
+        18363,
+        18377
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        18379,
+        18382
+      ]
+    },
+    {
+      "content": "No",
+      "pos": [
+        18387,
+        18389
+      ]
+    },
+    {
+      "content": "Insert Entity",
+      "pos": [
+        18391,
+        18404
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        18407,
+        18410
+      ]
+    },
+    {
+      "content": "No",
+      "pos": [
+        18415,
+        18417
+      ]
+    },
+    {
+      "content": "Update Entity",
+      "pos": [
+        18419,
+        18432
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        18435,
+        18438
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        18443,
+        18446
+      ]
+    },
+    {
+      "content": "Merge Entity",
+      "pos": [
+        18448,
+        18460
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        18464,
+        18467
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        18472,
+        18475
+      ]
+    },
+    {
+      "content": "Delete Entity",
+      "pos": [
+        18477,
+        18490
+      ]
+    },
+    {
+      "content": "No",
+      "pos": [
+        18493,
+        18495
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        18497,
+        18500
+      ]
+    },
+    {
+      "content": "Insert or Replace Entity",
+      "pos": [
+        18502,
+        18526
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        18530,
+        18533
+      ]
+    },
+    {
+      "content": "No",
+      "pos": [
+        18538,
+        18540
+      ]
+    },
+    {
+      "content": "Insert or Merge Entity",
+      "pos": [
+        18542,
+        18564
+      ]
+    },
+    {
+      "content": "Yes",
+      "pos": [
+        18566,
+        18569
+      ]
+    },
+    {
+      "content": "No",
+      "pos": [
+        18574,
+        18576
+      ]
+    },
+    {
+      "pos": [
+        18579,
+        18764
+      ],
+      "content": "Note that the <bpt id=\"p1\">**</bpt>Insert or Replace Entity<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>Insert or Merge Entity<ept id=\"p2\">**</ept> operations do <bpt id=\"p3\">*</bpt>not<ept id=\"p3\">*</ept> perform any concurrency checks because they do not send an ETag value to the table service."
+    },
+    {
+      "content": "In general developers using tables should rely on optimistic concurrency when developing scalable applications.",
+      "pos": [
+        18768,
+        18879
+      ]
+    },
+    {
+      "content": "If pessimistic locking is needed, one approach developers can take when accessing Tables is to assign a designated blob for each table and try to take a lease on the blob before operating on the table.",
+      "pos": [
+        18880,
+        19081
+      ]
+    },
+    {
+      "content": "This approach does require the application to ensure all data access paths obtain the lease prior to operating on the table.",
+      "pos": [
+        19082,
+        19206
+      ]
+    },
+    {
+      "content": "You should also note that the minimum lease time is 15 seconds which requires careful consideration for scalability.",
+      "pos": [
+        19207,
+        19323
+      ]
+    },
+    {
+      "content": "For more information see:",
+      "pos": [
+        19327,
+        19352
+      ]
+    },
+    {
+      "content": "Operations on Entities",
+      "pos": [
+        19359,
+        19381
+      ]
+    },
+    {
+      "content": "Managing Concurrency in the Queue Service",
+      "pos": [
+        19444,
+        19485
+      ]
+    },
+    {
+      "content": "One scenario in which concurrency is a concern in the queueing service is where multiple clients are retrieving messages from a queue.",
+      "pos": [
+        19486,
+        19620
+      ]
+    },
+    {
+      "content": "When a message is retrieved from the queue, the response includes the message and a pop receipt value, which is required to delete the message.",
+      "pos": [
+        19621,
+        19764
+      ]
+    },
+    {
+      "content": "The message is not automatically deleted from the queue, but after it has been retrieved, it is not visible to other clients for the time interval specified by the visibilitytimeout parameter.",
+      "pos": [
+        19765,
+        19957
+      ]
+    },
+    {
+      "content": "The client that retrieves the message is expected to delete the message after it has been processed, and before the time specified by the TimeNextVisible element of the response, which is calculated based on the value of the visibilitytimeout parameter.",
+      "pos": [
+        19958,
+        20211
+      ]
+    },
+    {
+      "content": "The value of visibilitytimeout is added to the time at which the message is retrieved to determine the value of TimeNextVisible.",
+      "pos": [
+        20212,
+        20340
+      ]
+    },
+    {
+      "content": "The queue service does not have support for either optimistic or pessimistic concurrency and for this reason clients processing messages retrieved from a queue should ensure messages are processed in an idempotent manner.",
+      "pos": [
+        20344,
+        20565
+      ]
+    },
+    {
+      "content": "A last writer wins strategy is used for update operations such as SetQueueServiceProperties, SetQueueMetaData, SetQueueACL and UpdateMessage.",
+      "pos": [
+        20566,
+        20707
+      ]
+    },
+    {
+      "content": "For more information see:",
+      "pos": [
+        20711,
+        20736
+      ]
+    },
+    {
+      "content": "Queue Service REST API",
+      "pos": [
+        20743,
+        20765
+      ]
+    },
+    {
+      "content": "Get Messages",
+      "pos": [
+        20825,
+        20837
+      ]
+    },
+    {
+      "content": "Managing Concurrency in the File Service",
+      "pos": [
+        20900,
+        20940
+      ]
+    },
+    {
+      "content": "The file service can be accessed using two different protocol endpoints – SMB and REST.",
+      "pos": [
+        20941,
+        21028
+      ]
+    },
+    {
+      "content": "The REST service does not have support for either optimistic locking or pessimistic locking and all updates will follow a last writer wins strategy.",
+      "pos": [
+        21029,
+        21177
+      ]
+    },
+    {
+      "content": "SMB clients that mount file shares can leverage file system locking mechanisms to manage access to shared files – including the ability to perform pessimistic locking.",
+      "pos": [
+        21178,
+        21345
+      ]
+    },
+    {
+      "content": "When an SMB client opens a file, it specifies both the file access and share mode.",
+      "pos": [
+        21346,
+        21428
+      ]
+    },
+    {
+      "content": "Setting a File Access option of \"Write\" or \"Read/Write\" along with a File Share mode of \"None\" will result in the file being locked by an SMB client until the file is closed.",
+      "pos": [
+        21429,
+        21603
+      ]
+    },
+    {
+      "content": "If REST operation is attempted on a file where an SMB client has the file locked the REST service will return status code 409 (Conflict) with error code SharingViolation.",
+      "pos": [
+        21604,
+        21774
+      ]
+    },
+    {
+      "content": "When an SMB client opens a file for delete, it marks the file as pending delete until all other SMB client open handles on that file are closed.",
+      "pos": [
+        21778,
+        21922
+      ]
+    },
+    {
+      "content": "While a file is marked as pending delete, any REST operation on that file will return status code 409 (Conflict) with error code SMBDeletePending.",
+      "pos": [
+        21923,
+        22069
+      ]
+    },
+    {
+      "content": "Status code 404 (Not Found) is not returned since it is possible for the SMB client to remove the pending deletion flag prior to closing the file.",
+      "pos": [
+        22070,
+        22216
+      ]
+    },
+    {
+      "content": "In other words, status code 404 (Not Found) is only expected when the file has been removed.",
+      "pos": [
+        22217,
+        22309
+      ]
+    },
+    {
+      "content": "Note that while a file is in a SMB pending delete state, it will not be included in the List Files results.Also note that the REST Delete File and REST Delete Directory operations are committed atomically and do not result in pending delete state.",
+      "pos": [
+        22310,
+        22557
+      ]
+    },
+    {
+      "content": "For more information see:",
+      "pos": [
+        22561,
+        22586
+      ]
+    },
+    {
+      "content": "Managing File Locks",
+      "pos": [
+        22593,
+        22612
+      ]
+    },
+    {
+      "content": "Summary and Next Steps",
+      "pos": [
+        22675,
+        22697
+      ]
+    },
+    {
+      "content": "The Microsoft Azure Storage service has been designed to meet the needs of the most complex online applications without forcing developers to compromise or rethink key design assumptions such as concurrency and data consistency that they have come to take for granted.",
+      "pos": [
+        22698,
+        22966
+      ]
+    },
+    {
+      "content": "For the complete sample application referenced in this blog:",
+      "pos": [
+        22970,
+        23030
+      ]
+    },
+    {
+      "content": "Managing Concurrency using Azure Storage - Sample Application",
+      "pos": [
+        23037,
+        23098
+      ]
+    },
+    {
+      "content": "For more information on Azure Storage see:",
+      "pos": [
+        23184,
+        23226
+      ]
+    },
+    {
+      "content": "Microsoft Azure Storage Home Page",
+      "pos": [
+        23233,
+        23266
+      ]
+    },
+    {
+      "content": "Introduction to Azure Storage",
+      "pos": [
+        23317,
+        23346
+      ]
+    },
+    {
+      "pos": [
+        23375,
+        23541
+      ],
+      "content": "Storage Getting Started for <bpt id=\"p1\">[</bpt>Blob<ept id=\"p1\">](storage-dotnet-how-to-use-blobs.md)</ept>, <bpt id=\"p2\">[</bpt>Table<ept id=\"p2\">](storage-dotnet-how-to-use-tables.md)</ept> and <bpt id=\"p3\">[</bpt>Queues<ept id=\"p3\">](storage-dotnet-how-to-use-queues.md)</ept>"
+    },
+    {
+      "pos": [
+        23544,
+        23815
+      ],
+      "content": "Storage Architecture – <bpt id=\"p1\">[</bpt>Microsoft Azure Storage : A Highly Available Cloud Storage Service with Strong Consistency<ept id=\"p1\">](http://blogs.msdn.com/b/windowsazurestorage/archive/2011/11/20/windows-azure-storage-a-highly-available-cloud-storage-service-with-strong-consistency.aspx)</ept>"
+    }
+  ],
+  "content": "<properties \n    pageTitle=\"Managing Concurrency in Microsoft Azure Storage\" \n    description=\"How to manage concurrency for the Blob, Queue, Table, and File services\" \n    services=\"storage\" \n    documentationCenter=\"\" \n    authors=\"tamram\" \n    manager=\"adinah\" \n    editor=\"\"/>\n\n<tags \n    ms.service=\"storage\" \n    ms.workload=\"storage\" \n    ms.tgt_pltfrm=\"na\" \n    ms.devlang=\"dotnet\" \n    ms.topic=\"article\" \n    ms.date=\"06/18/2015\" \n    ms.author=\"tamram\"/>\n\n# Managing Concurrency in Microsoft Azure Storage\n\n## Overview \n\nModern Internet based applications usually have multiple users viewing and updating data simultaneously. This requires application developers to think carefully about how to provide a predictable experience to their end users, particularly for scenarios where multiple users can update the same data. There are three main data concurrency strategies developers will typically consider:  \n\n\n1.  Optimistic concurrency – An application performing an update will as part of its update verify if the data has changed since the application last read that data. For example, if two users viewing a wiki page make an update to the same page then the wiki platform must ensure that the second update does not overwrite the first update – and that both users understand whether their update was successful or not. This strategy is most often used in web applications.\n2.  Pessimistic concurrency – An application looking to perform an update will take a lock on an object preventing other users from updating the data until the lock is released. For example, in a master/slave data replication scenario where only the master will perform updates the master will typically hold an exclusive lock for an extended period of time on the data to ensure no one else can update it.\n3.  Last writer wins – An approach that allows any update operations to proceed without verifying if any other application has updated the data since the application first read the data. This strategy (or lack of a formal strategy) is usually used where data is partitioned in such a way that there is no likelihood that multiple users will access the same data. It can also be useful where short-lived data streams are being processed.  \n\nThis article provides an overview of how the Azure Storage platform simplifies development by providing first class support for all three of these concurrency strategies.  \n\n## Azure Storage – Simplifies Cloud Development\nThe Azure storage service supports all three strategies, although it is distinctive in its ability to provide full support for optimistic and pessimistic concurrency because it was designed to embrace a strong consistency model which guarantees that when the Storage service commits a data insert or update operation all further accesses to that data will see the latest update. Storage platforms that use an eventual consistency model have a lag between when a write is performed by one user and when the updated data can be seen by other users thus complicating development of client applications in order to prevent inconsistencies from affecting end users.  \n\nIn addition to selecting an appropriate concurrency strategy developers should also be aware of how a storage platform isolates changes – particularly changes to the same object across transactions. The Azure storage service uses snapshot isolation to allow read operations to happen concurrently with write operations within a single partition. Unlike other isolation levels, snapshot isolation guarantees that all reads see a consistent snapshot of the data even while updates are occurring – essentially by returning the last committed values while an update transaction is being processed.  \n\n## Managing Concurrency in the Blob Service\nYou can opt to use either optimistic or pessimistic concurrency models to manage access to blobs and containers in the blob service. If you do not explicitly specify a strategy last writes wins is the default.  \n\n### Optimistic concurrency for blobs and containers  \n\nThe Storage service assigns an identifier to every object stored. This identifier is updated every time an update operation is performed on an object. The identifier is returned to the client as part of an HTTP GET response using the ETag (entity tag) header that is defined within the HTTP protocol. A user performing an update on such an object can send in the original ETag along with a conditional header to ensure that an update will only occur if a certain condition has been met – in this case the condition is an “If-Match” header which requires the Storage Service to ensure the value of the ETag specified in the update request is the same as that stored in the Storage Service.  \n\nThe outline of this process is as follows:  \n\n1.  Retrieve a blob from the storage service, the response includes an HTTP ETag Header value that identifies the current version of the object in the storage service.\n2.  When you update the blob, include the ETag value you received in step 1 in the **If-Match** conditional header of the request you send to the service.\n3.  The service compares the ETag value in the request with the current ETag value of the blob.\n4.  If the current ETag value of the blob is a different version than the ETag in the **If-Match** conditional header in the request, the service returns a 412 error to the client. This indicates to the client that another process has updated the blob since the client retrieved it.\n5.  If the current ETag value of the blob is the same version as the ETag in the **If-Match** conditional header in the request, the service performs the requested operation and updates the current ETag value of the blob to show that it has created a new version.  \n\nThe following C# snippet (using the Client Storage Library 4.2.0) shows a simple example of how to construct an **If-Match AccessCondition** based on the ETag value that is accessed from the properties of a blob that was previously either retrieved or inserted. It then uses the **AccessCondition** object when it updating the blob: the **AccessCondition** object adds the **If-Match** header to the request. If another process has updated the blob, the blob service returns an HTTP 412 (Precondition Failed) status message. The full sample can be downloaded [here](http://code.msdn.microsoft.com/windowsazure/Managing-Concurrency-using-56018114).  \n\n    // Retrieve the ETag from the newly created blob\n    // Etag is already populated as UploadText should cause a PUT Blob call \n    // to storage blob service which returns the etag in response.\n    string orignalETag = blockBlob.Properties.ETag;\n     \n    // This code simulates an update by a third party.\n    string helloText = \"Blob updated by a third party.\";\n     \n    // No etag, provided so orignal blob is overwritten (thus generating a new etag)\n    blockBlob.UploadText(helloText);\n    Console.WriteLine(\"Blob updated. Updated ETag = {0}\", \n    blockBlob.Properties.ETag);\n     \n    // Now try to update the blob using the orignal ETag provided when the blob was created\n    try\n    {\n        Console.WriteLine(\"Trying to update blob using orignal etag to generate if-match access condition\");\n        blockBlob.UploadText(helloText,accessCondition:\n        AccessCondition.GenerateIfMatchCondition(orignalETag));\n    }\n    catch (StorageException ex)\n    {\n        if (ex.RequestInformation.HttpStatusCode == (int)HttpStatusCode.PreconditionFailed)\n        {\n            Console.WriteLine(\"Precondition failure as expected. Blob's orignal etag no longer matches\");\n            // TODO: client can decide on how it wants to handle the 3rd party updated content.\n        }\n        else\n            throw;\n    }  \n\nThe Storage Service also includes support for additional conditional headers such as **If-Modified-Since**, **If-Unmodified-Since** and **If-None-Match** as well as combinations thereof. For more information see [Specifying Conditional Headers for Blob Service Operations](http://msdn.microsoft.com/library/azure/dd179371.aspx) on MSDN.  \n\nThe following table summarizes the container operations that accept conditional headers such as **If-Match** in the request and that return an ETag value in the response.  \n\nOperation   |Returns Container ETag value|  Accepts conditional headers|\n------------|-----------------------|------------------------------------|\nCreate Container|   Yes|    No|\nGet Container Properties|   Yes|    No|\nGet Container Metadata| Yes|    No|\nSet Container Metadata| Yes|    Yes|\nGet Container ACL|  Yes|    No|\nSet Container ACL|  Yes|    Yes (*)|\nDelete Container|   No| Yes|\nLease Container|    Yes|    Yes|\nList Blobs| No| No  \n\n(*) The permissions defined by SetContainerACL are cached and updates to these permissions take 30 seconds to propagate during which period updates are not guaranteed to be consistent.  \n\nThe following table summarizes the blob operations that accept conditional headers such as **If-Match** in the request and that return an ETag value in the response.  \n\nOperation   |Returns ETag value |Accepts conditional headers|\n-----------|-------------------|----------------------------|\nPut Blob|   Yes|    Yes|\nGet Blob|   Yes|    Yes|\nGet Blob Properties|    Yes|    Yes|\nSet Blob Properties|    Yes|    Yes|\nGet Blob Metadata|  Yes|    Yes|\nSet Blob Metadata|  Yes|    Yes|\nLease Blob (*)| Yes|    Yes|\nSnapshot Blob|  Yes|    Yes|\nCopy Blob|  Yes|    Yes (for source and destination blob)|\nAbort Copy Blob|    No| No|\nDelete Blob|    No| Yes|\nPut Block|  No| No|\nPut Block List| Yes|    Yes|\nGet Block List| Yes|    No|\nPut Page|   Yes|    Yes|\nGet Page Ranges|    Yes|    Yes\n\n(*) Lease Blob does not change the ETag on a blob.  \n\n### Pessimistic concurrency for blobs\nTo lock a blob for exclusive use, you can acquire a [lease](http://msdn.microsoft.com/library/azure/ee691972.aspx) on it. When you acquire a lease, you specify for how long you need the lease: this can be for between 15 to 60 seconds or infinite which amounts to an exclusive lock. You can renew a finite lease to extend it, and you can release any lease when you are finished with it. The blob service automatically releases finite leases when they expire.  \n\nLeases enable different synchronization strategies to be supported, including exclusive write / shared read, exclusive write / exclusive read and shared write / exclusive read. Where a lease exists the storage service enforces exclusive writes (put, set and delete operations) however ensuring exclusivity for read operations requires the developer to ensure that all client applications use a lease ID and that only one client at a time has a valid lease ID. Read operations that do not include a lease ID result in shared reads.  \n\nThe following C# snippet shows an example of acquiring an exclusive lease for 30 seconds on a blob, updating the content of the blob, and then releasing the lease. If there is already a valid lease on the blob when you try to acquire a new lease, the blob service returns an “HTTP (409) Conflict” status result. The snippet below uses an **AccessCondition** object to encapsulate the lease information when it makes a request to update the blob in the storage service. The full sample can be downloaded [here](http://code.msdn.microsoft.com/windowsazure/Managing-Concurrency-using-56018114).  \n\n    // Acquire lease for 15 seconds\n    string lease = blockBlob.AcquireLease(TimeSpan.FromSeconds(15), null);\n    Console.WriteLine(\"Blob lease acquired. Lease = {0}\", lease);\n     \n    // Update blob using lease. This operation will succeed\n    const string helloText = \"Blob updated\";\n    var accessCondition = AccessCondition.GenerateLeaseCondition(lease);\n    blockBlob.UploadText(helloText, accessCondition: accessCondition);\n    Console.WriteLine(\"Blob updated using an exclusive lease\");\n     \n    //Simulate third party update to blob without lease\n    try\n    {\n        // Below operation will fail as no valid lease provided\n        Console.WriteLine(\"Trying to update blob without valid lease\");\n        blockBlob.UploadText(\"Update without lease, will fail\");\n    }\n    catch (StorageException ex)\n    {\n        if (ex.RequestInformation.HttpStatusCode == (int)HttpStatusCode.PreconditionFailed)\n            Console.WriteLine(\"Precondition failure as expected. Blob's lease does not match\");\n        else\n            throw;\n    }  \n\nIf you attempt a write operation on a leased blob without passing the lease ID, the request fails with a 412 error. Note that if the lease expires before calling the **UploadText** method but you still pass the lease ID, the request also fails with a **412** error. For more information about managing lease expiry times and lease ids, see the [Lease Blob](http://msdn.microsoft.com/library/azure/ee691972.aspx) REST documentation.  \n\nThe following blob operations can use leases to manage pessimistic concurrency:  \n\n\n-   Put Blob\n-   Get Blob\n-   Get Blob Properties\n-   Set Blob Properties\n-   Get Blob Metadata\n-   Set Blob Metadata\n-   Delete Blob\n-   Put Block\n-   Put Block List\n-   Get Block List\n-   Put Page\n-   Get Page Ranges\n-   Snapshot Blob - lease ID optional if a lease exists\n-   Copy Blob - lease ID required if a lease exists on the destination blob\n-   Abort Copy Blob - lease ID required if an infinite lease exists on the destination blob\n-   Lease Blob  \n\n### Pessimistic concurrency for containers\nLeases on containers enable the same synchronization strategies to be supported as on blobs (exclusive write / shared read, exclusive write / exclusive read and shared write / exclusive read) however unlike blobs the storage service only enforces exclusivity on delete operations. To delete a container with an active lease, a client must include the active lease ID with the delete request. All other container operations succeed on a leased container without including the lease ID in which case they are shared operations. If exclusivity of update (put or set) or read operations is required then developers should ensure all clients use a lease ID and that only one client at a time has a valid lease ID.  \n\nThe following container operations can use leases to manage pessimistic concurrency:  \n\n-   Delete Container\n-   Get Container Properties\n-   Get Container Metadata\n-   Set Container Metadata\n-   Get Container ACL\n-   Set Container ACL\n-   Lease Container  \n\nFor more information see:  \n\n- [Specifying Conditional Headers for Blob Service Operations](http://msdn.microsoft.com/library/azure/dd179371.aspx)\n- [Lease Container](http://msdn.microsoft.com/library/azure/jj159103.aspx)\n- [Lease Blob ](http://msdn.microsoft.com/library/azure/ee691972.aspx) \n\n## Managing Concurrency in the Table Service\nThe table service uses optimistic concurrency checks as the default behavior when you are working with entities, unlike the blob service where you must explicitly choose to perform optimistic concurrency checks. The other difference between the table and blob services is that you can only manage the concurrency behavior of entities whereas with the blob service you can manage the concurrency of both containers and blobs.  \n\nTo use optimistic concurrency and to check if another process modified an entity since you retrieved it from the table storage service, you can use the ETag value you receive when the table service returns an entity. The outline of this process is as follows:  \n\n1.  Retrieve an entity from the table storage service, the response includes an ETag value that identifies the current identifier associated with that entity in the storage service.\n2.  When you update the entity, include the ETag value you received in step 1 in the mandatory **If-Match** header of the request you send to the service.\n3.  The service compares the ETag value in the request with the current ETag value of the entity.\n4.  If the current ETag value of the entity is different than the ETag in the mandatory **If-Match** header in the request, the service returns a 412 error to the client. This indicates to the client that another process has updated the entity since the client retrieved it.\n5.  If the current ETag value of the entity is the same as the ETag in the mandatory **If-Match** header in the request or the **If-Match** header contains the wildcard character (*), the service performs the requested operation and updates the current ETag value of the entity to show that it has been updated.  \n\nNote that unlike the blob service, the table service requires the client to include an **If-Match** header in update requests. However, it is possible to force an unconditional update (last writer wins strategy) and bypass concurrency checks if the client sets the **If-Match** header to the wildcard character (*) in the request.  \n\nThe following C# snippet shows a customer entity that was previously either created or retrieved having their email address updated. The initial insert or retrieve operation stores the ETag value in the customer object, and because the sample uses the same object instance when it executes the replace operation, it automatically sends the ETag value back to the table service, enabling the service to check for concurrency violations. If another process has updated the entity in table storage, the service returns an HTTP 412 (Precondition Failed) status message. The full sample can be downloaded [here](http://code.msdn.microsoft.com/windowsazure/Managing-Concurrency-using-56018114).  \n\n    try\n    {\n        customer.Email = \"updatedEmail@contoso.org\";\n        TableOperation replaceCustomer = TableOperation.Replace(customer);\n        customerTable.Execute(replaceCustomer);\n        Console.WriteLine(\"Replace operation succeeded.\");\n    }\n    catch (StorageException ex)\n    {\n        if (ex.RequestInformation.HttpStatusCode == 412)\n            Console.WriteLine(\"Optimistic concurrency violation – entity has changed since it was retrieved.\");\n        else\n            throw; \n    }  \n\nTo explicitly disable the concurrency check, you should set the **ETag** property of the **employee** object to “*” before you execute the replace operation.  \n\ncustomer.ETag = \"*\";  \n\nThe following table summarizes how the table entity operations use ETag values:  \n\nOperation   |Returns ETag value |Requires If-Match request header|\n------------|-------------------|--------------------------------|\nQuery Entities| Yes|    No|\nInsert Entity|  Yes|    No|\nUpdate Entity|  Yes|    Yes|\nMerge Entity|   Yes|    Yes|\nDelete Entity|  No| Yes|\nInsert or Replace Entity|   Yes|    No|\nInsert or Merge Entity| Yes|    No \n\nNote that the **Insert or Replace Entity** and **Insert or Merge Entity** operations do *not* perform any concurrency checks because they do not send an ETag value to the table service.  \n\nIn general developers using tables should rely on optimistic concurrency when developing scalable applications. If pessimistic locking is needed, one approach developers can take when accessing Tables is to assign a designated blob for each table and try to take a lease on the blob before operating on the table. This approach does require the application to ensure all data access paths obtain the lease prior to operating on the table. You should also note that the minimum lease time is 15 seconds which requires careful consideration for scalability.  \n\nFor more information see:  \n\n- [Operations on Entities](http://msdn.microsoft.com/library/azure/dd179375.aspx)  \n\n## Managing Concurrency in the Queue Service\nOne scenario in which concurrency is a concern in the queueing service is where multiple clients are retrieving messages from a queue. When a message is retrieved from the queue, the response includes the message and a pop receipt value, which is required to delete the message. The message is not automatically deleted from the queue, but after it has been retrieved, it is not visible to other clients for the time interval specified by the visibilitytimeout parameter. The client that retrieves the message is expected to delete the message after it has been processed, and before the time specified by the TimeNextVisible element of the response, which is calculated based on the value of the visibilitytimeout parameter. The value of visibilitytimeout is added to the time at which the message is retrieved to determine the value of TimeNextVisible.  \n\nThe queue service does not have support for either optimistic or pessimistic concurrency and for this reason clients processing messages retrieved from a queue should ensure messages are processed in an idempotent manner. A last writer wins strategy is used for update operations such as SetQueueServiceProperties, SetQueueMetaData, SetQueueACL and UpdateMessage.  \n\nFor more information see:  \n\n- [Queue Service REST API](http://msdn.microsoft.com/library/azure/dd179363.aspx)\n- [Get Messages](http://msdn.microsoft.com/library/azure/dd179474.aspx)  \n\n## Managing Concurrency in the File Service\nThe file service can be accessed using two different protocol endpoints – SMB and REST. The REST service does not have support for either optimistic locking or pessimistic locking and all updates will follow a last writer wins strategy. SMB clients that mount file shares can leverage file system locking mechanisms to manage access to shared files – including the ability to perform pessimistic locking. When an SMB client opens a file, it specifies both the file access and share mode. Setting a File Access option of \"Write\" or \"Read/Write\" along with a File Share mode of \"None\" will result in the file being locked by an SMB client until the file is closed. If REST operation is attempted on a file where an SMB client has the file locked the REST service will return status code 409 (Conflict) with error code SharingViolation.  \n\nWhen an SMB client opens a file for delete, it marks the file as pending delete until all other SMB client open handles on that file are closed. While a file is marked as pending delete, any REST operation on that file will return status code 409 (Conflict) with error code SMBDeletePending. Status code 404 (Not Found) is not returned since it is possible for the SMB client to remove the pending deletion flag prior to closing the file. In other words, status code 404 (Not Found) is only expected when the file has been removed. Note that while a file is in a SMB pending delete state, it will not be included in the List Files results.Also note that the REST Delete File and REST Delete Directory operations are committed atomically and do not result in pending delete state.  \n\nFor more information see:  \n\n- [Managing File Locks](http://msdn.microsoft.com/library/azure/dn194265.aspx)  \n\n## Summary and Next Steps\nThe Microsoft Azure Storage service has been designed to meet the needs of the most complex online applications without forcing developers to compromise or rethink key design assumptions such as concurrency and data consistency that they have come to take for granted.  \n\nFor the complete sample application referenced in this blog:  \n\n- [Managing Concurrency using Azure Storage - Sample Application](http://code.msdn.microsoft.com/windowsazure/Managing-Concurrency-using-56018114)  \n\nFor more information on Azure Storage see:  \n\n- [Microsoft Azure Storage Home Page](http://azure.microsoft.com/services/storage/)\n- [Introduction to Azure Storage](storage-introduction.md)\n- Storage Getting Started for [Blob](storage-dotnet-how-to-use-blobs.md), [Table](storage-dotnet-how-to-use-tables.md) and [Queues](storage-dotnet-how-to-use-queues.md)\n- Storage Architecture – [Microsoft Azure Storage : A Highly Available Cloud Storage Service with Strong Consistency](http://blogs.msdn.com/b/windowsazurestorage/archive/2011/11/20/windows-azure-storage-a-highly-available-cloud-storage-service-with-strong-consistency.aspx)\n\n "
+}

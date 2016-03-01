@@ -1,0 +1,852 @@
+{
+  "nodes": [
+    {
+      "content": "Connecting DocumentDB with Azure Search using indexers | Microsoft Azure",
+      "pos": [
+        28,
+        100
+      ]
+    },
+    {
+      "content": "This article shows you how to use to Azure Search indexer with DocumentDB as a data source.",
+      "pos": [
+        120,
+        211
+      ]
+    },
+    {
+      "content": "Connecting DocumentDB with Azure Search using indexers",
+      "pos": [
+        531,
+        585
+      ]
+    },
+    {
+      "content": "If you're looking to implement great search experiences over your DocumentDB data, use Azure Search indexer for DocumentDB!",
+      "pos": [
+        587,
+        710
+      ]
+    },
+    {
+      "content": "In this article, we will show you how to integrate Azure DocumentDB with Azure Search without having to write any code to maintain indexing infrastructure!",
+      "pos": [
+        711,
+        866
+      ]
+    },
+    {
+      "pos": [
+        868,
+        1207
+      ],
+      "content": "To set this up, you have to <bpt id=\"p1\">[</bpt>setup an Azure Search account<ept id=\"p1\">](../search-get-started.md#start-with-the-free-service)</ept> (you don't need to upgrade to standard search), and then call the <bpt id=\"p2\">[</bpt>Azure Search REST API<ept id=\"p2\">](https://msdn.microsoft.com/library/azure/dn798935.aspx)</ept> to create a DocumentDB <bpt id=\"p3\">**</bpt>data source<ept id=\"p3\">**</ept> and an <bpt id=\"p4\">**</bpt>indexer<ept id=\"p4\">**</ept> for that data source."
+    },
+    {
+      "pos": [
+        1211,
+        1261
+      ],
+      "content": "<ph id=\"ph1\">&lt;a id=\"Concepts\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Azure Search indexer concepts"
+    },
+    {
+      "content": "Azure Search supports the creation and management of data sources (including DocumentDB) and indexers that operate against those data sources.",
+      "pos": [
+        1263,
+        1405
+      ]
+    },
+    {
+      "content": "A <bpt id=\"p1\">**</bpt>data source<ept id=\"p1\">**</ept> specifies what data needs to be indexed, credentials to access the data, and policies to enable Azure Search to efficiently identify changes in the data (such as modified or deleted documents inside your collection).",
+      "pos": [
+        1407,
+        1641
+      ]
+    },
+    {
+      "content": "The data source is defined as an independent resource so that it can be used by multiple indexers.",
+      "pos": [
+        1642,
+        1740
+      ]
+    },
+    {
+      "content": "An <bpt id=\"p1\">**</bpt>indexer<ept id=\"p1\">**</ept> describes how the data flows from your data source into a target search index.",
+      "pos": [
+        1742,
+        1835
+      ]
+    },
+    {
+      "content": "You should plan on creating one indexer for every target index and data source combination.",
+      "pos": [
+        1836,
+        1927
+      ]
+    },
+    {
+      "content": "While you can have multiple indexers writing into the same index, an indexer can only write into a single index.",
+      "pos": [
+        1928,
+        2040
+      ]
+    },
+    {
+      "content": "An indexer is used to:",
+      "pos": [
+        2041,
+        2063
+      ]
+    },
+    {
+      "content": "Perform a one-time copy of the data to populate an index.",
+      "pos": [
+        2068,
+        2125
+      ]
+    },
+    {
+      "content": "Sync an index with changes in the data source on a schedule.",
+      "pos": [
+        2128,
+        2188
+      ]
+    },
+    {
+      "content": "The schedule is part of the indexer definition.",
+      "pos": [
+        2189,
+        2236
+      ]
+    },
+    {
+      "content": "Invoke on-demand updates to an index as needed.",
+      "pos": [
+        2239,
+        2286
+      ]
+    },
+    {
+      "pos": [
+        2291,
+        2348
+      ],
+      "content": "<ph id=\"ph1\">&lt;a id=\"CreateDataSource\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Step 1: Create a data source"
+    },
+    {
+      "content": "Issue a HTTP POST request to create a new data source in your Azure Search service, including the following request headers.",
+      "pos": [
+        2350,
+        2474
+      ]
+    },
+    {
+      "content": "The <ph id=\"ph1\">`api-version`</ph> is required.",
+      "pos": [
+        2652,
+        2682
+      ]
+    },
+    {
+      "content": "Valid values include <ph id=\"ph1\">`2015-02-28`</ph> or a later version.",
+      "pos": [
+        2683,
+        2736
+      ]
+    },
+    {
+      "content": "The body of the request contains the data source definition, which should include the following fields:",
+      "pos": [
+        2738,
+        2841
+      ]
+    },
+    {
+      "pos": [
+        2845,
+        2883
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>name<ept id=\"p1\">**</ept>: The name of the data source."
+    },
+    {
+      "pos": [
+        2887,
+        2914
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>type<ept id=\"p1\">**</ept>: Use <ph id=\"ph1\">`documentdb`</ph>."
+    },
+    {
+      "pos": [
+        2918,
+        2934
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>credentials<ept id=\"p1\">**</ept>:"
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>connectionString<ept id=\"p1\">**</ept>: Required.",
+      "pos": [
+        2942,
+        2973
+      ]
+    },
+    {
+      "content": "Specify the connection info to your Azure DocumentDB database in the following format: <ph id=\"ph1\">`AccountEndpoint=&lt;DocumentDB endpoint url&gt;;AccountKey=&lt;DocumentDB auth key&gt;;Database=&lt;DocumentDB database id&gt;`</ph>",
+      "pos": [
+        2974,
+        3171
+      ]
+    },
+    {
+      "pos": [
+        3175,
+        3189
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>container<ept id=\"p1\">**</ept>:"
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>name<ept id=\"p1\">**</ept>: Required.",
+      "pos": [
+        3197,
+        3216
+      ]
+    },
+    {
+      "content": "Specify the DocumentDB collection to be indexed.",
+      "pos": [
+        3217,
+        3265
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>query<ept id=\"p1\">**</ept>: Optional.",
+      "pos": [
+        3274,
+        3294
+      ]
+    },
+    {
+      "content": "You can specify a query to flatten an arbitrary JSON document into a flat schema that Azure Search can index.",
+      "pos": [
+        3295,
+        3404
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>dataChangeDetectionPolicy<ept id=\"p1\">**</ept>: Optional.",
+      "pos": [
+        3408,
+        3448
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt>Data Change Detection Policy<ept id=\"p1\">](#DataChangeDetectionPolicy)</ept> below.",
+      "pos": [
+        3449,
+        3518
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>dataDeletionDetectionPolicy<ept id=\"p1\">**</ept>: Optional.",
+      "pos": [
+        3522,
+        3564
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt>Data Deletion Detection Policy<ept id=\"p1\">](#DataDeletionDetectionPolicy)</ept> below.",
+      "pos": [
+        3565,
+        3638
+      ]
+    },
+    {
+      "pos": [
+        3643,
+        3708
+      ],
+      "content": "<ph id=\"ph1\">&lt;a id=\"DataChangeDetectionPolicy\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Capturing changed documents"
+    },
+    {
+      "content": "The purpose of a data change detection policy is to efficiently identify changed data items.",
+      "pos": [
+        3710,
+        3802
+      ]
+    },
+    {
+      "content": "Currently, the only supported policy is the <ph id=\"ph1\">`High Water Mark`</ph> policy using the <ph id=\"ph2\">`_ts`</ph> last-modified timestamp property provided by DocumentDB - which is specified as follows:",
+      "pos": [
+        3803,
+        3976
+      ]
+    },
+    {
+      "content": "You will also need to add <ph id=\"ph1\">`_ts`</ph> in the projection and <ph id=\"ph2\">`WHERE`</ph> clause for your query.",
+      "pos": [
+        4122,
+        4206
+      ]
+    },
+    {
+      "content": "For example:",
+      "pos": [
+        4207,
+        4219
+      ]
+    },
+    {
+      "pos": [
+        4315,
+        4382
+      ],
+      "content": "<ph id=\"ph1\">&lt;a id=\"DataDeletionDetectionPolicy\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Capturing deleted documents"
+    },
+    {
+      "content": "When rows are deleted from the source table, you should delete those rows from the search index as well.",
+      "pos": [
+        4384,
+        4488
+      ]
+    },
+    {
+      "content": "The purpose of a data deletion detection policy is to efficiently identify deleted data items.",
+      "pos": [
+        4489,
+        4583
+      ]
+    },
+    {
+      "content": "Currently, the only supported policy is the <ph id=\"ph1\">`Soft Delete`</ph> policy (deletion is marked with a flag of some sort), which is specified as follows:",
+      "pos": [
+        4584,
+        4726
+      ]
+    },
+    {
+      "pos": [
+        5016,
+        5126
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> You will need to include the property in your SELECT clause if you are using a custom projection."
+    },
+    {
+      "pos": [
+        5131,
+        5187
+      ],
+      "content": "<ph id=\"ph1\">&lt;a id=\"CreateDataSourceExample\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Request body example"
+    },
+    {
+      "content": "The following example creates a data source with a custom query and policy hints:",
+      "pos": [
+        5189,
+        5270
+      ]
+    },
+    {
+      "content": "Response",
+      "pos": [
+        6146,
+        6154
+      ]
+    },
+    {
+      "content": "You will receive an HTTP 201 Created response if the data source was successfully created.",
+      "pos": [
+        6156,
+        6246
+      ]
+    },
+    {
+      "pos": [
+        6250,
+        6297
+      ],
+      "content": "<ph id=\"ph1\">&lt;a id=\"CreateIndex\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Step 2: Create an index"
+    },
+    {
+      "content": "Create a target Azure Search index if you don’t have one already.",
+      "pos": [
+        6299,
+        6364
+      ]
+    },
+    {
+      "content": "You can do this from the <bpt id=\"p1\">[</bpt>Azure Portal UI<ept id=\"p1\">](../search-get-started.md#test-service-operations)</ept> or by using the <bpt id=\"p2\">[</bpt>Create Index API<ept id=\"p2\">](https://msdn.microsoft.com/library/azure/dn798941.aspx)</ept>.",
+      "pos": [
+        6365,
+        6549
+      ]
+    },
+    {
+      "content": "Ensure that the schema of your target index is compatible with the schema of the source JSON documents or the output of your custom query projection.",
+      "pos": [
+        6720,
+        6869
+      ]
+    },
+    {
+      "content": "Figure A: Mapping between JSON Data Types and Azure Search Data Types",
+      "pos": [
+        6874,
+        6943
+      ]
+    },
+    {
+      "content": "JSON DATA TYPE",
+      "pos": [
+        6947,
+        6961
+      ]
+    },
+    {
+      "content": "COMPATIBLE TARGET INDEX FIELD TYPES",
+      "pos": [
+        6965,
+        7000
+      ]
+    },
+    {
+      "content": "Bool",
+      "pos": [
+        7013,
+        7017
+      ]
+    },
+    {
+      "content": "Edm.Boolean, Edm.String",
+      "pos": [
+        7018,
+        7041
+      ]
+    },
+    {
+      "content": "Numbers that look like integers",
+      "pos": [
+        7044,
+        7075
+      ]
+    },
+    {
+      "content": "Edm.Int32, Edm.Int64, Edm.String",
+      "pos": [
+        7076,
+        7108
+      ]
+    },
+    {
+      "content": "Numbers that look like floating-points",
+      "pos": [
+        7111,
+        7149
+      ]
+    },
+    {
+      "content": "Edm.Double, Edm.String",
+      "pos": [
+        7150,
+        7172
+      ]
+    },
+    {
+      "content": "String",
+      "pos": [
+        7175,
+        7181
+      ]
+    },
+    {
+      "content": "Edm.String",
+      "pos": [
+        7182,
+        7192
+      ]
+    },
+    {
+      "content": "Arrays of primitive types e.g. \"a\", \"b\", \"c\"",
+      "pos": [
+        7195,
+        7239
+      ]
+    },
+    {
+      "content": "Collection(Edm.String)",
+      "pos": [
+        7241,
+        7263
+      ]
+    },
+    {
+      "content": "Strings that look like dates",
+      "pos": [
+        7266,
+        7294
+      ]
+    },
+    {
+      "content": "Edm.DateTimeOffset, Edm.String",
+      "pos": [
+        7296,
+        7326
+      ]
+    },
+    {
+      "content": "GeoJSON objects e.g. { \"type\": \"Point\", \"coordinates\": [ long, lat ] }",
+      "pos": [
+        7329,
+        7399
+      ]
+    },
+    {
+      "content": "Edm.GeographyPoint",
+      "pos": [
+        7402,
+        7420
+      ]
+    },
+    {
+      "content": "Other JSON objects",
+      "pos": [
+        7424,
+        7442
+      ]
+    },
+    {
+      "content": "N/A",
+      "pos": [
+        7443,
+        7446
+      ]
+    },
+    {
+      "pos": [
+        7452,
+        7503
+      ],
+      "content": "<ph id=\"ph1\">&lt;a id=\"CreateIndexExample\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Request body example"
+    },
+    {
+      "content": "The following example creates an index with an id and description field:",
+      "pos": [
+        7505,
+        7577
+      ]
+    },
+    {
+      "content": "Response",
+      "pos": [
+        7954,
+        7962
+      ]
+    },
+    {
+      "content": "You will receive an HTTP 201 Created response if the index was successfully created.",
+      "pos": [
+        7964,
+        8048
+      ]
+    },
+    {
+      "pos": [
+        8052,
+        8103
+      ],
+      "content": "<ph id=\"ph1\">&lt;a id=\"CreateIndexer\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Step 3: Create an indexer"
+    },
+    {
+      "content": "You can create a new indexer within an Azure Search service by using an HTTP POST request with the following headers.",
+      "pos": [
+        8105,
+        8222
+      ]
+    },
+    {
+      "content": "The body of the request contains the indexer definition, which should include the following fields:",
+      "pos": [
+        8397,
+        8496
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>name<ept id=\"p1\">**</ept>: Required.",
+      "pos": [
+        8500,
+        8519
+      ]
+    },
+    {
+      "content": "The name of the indexer.",
+      "pos": [
+        8520,
+        8544
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>dataSourceName<ept id=\"p1\">**</ept>: Required.",
+      "pos": [
+        8548,
+        8577
+      ]
+    },
+    {
+      "content": "The name of an existing data source.",
+      "pos": [
+        8578,
+        8614
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>targetIndexName<ept id=\"p1\">**</ept>: Required.",
+      "pos": [
+        8618,
+        8648
+      ]
+    },
+    {
+      "content": "The name of an existing index.",
+      "pos": [
+        8649,
+        8679
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>schedule<ept id=\"p1\">**</ept>: Optional.",
+      "pos": [
+        8683,
+        8706
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt>Indexing Schedule<ept id=\"p1\">](#IndexingSchedule)</ept> below.",
+      "pos": [
+        8707,
+        8756
+      ]
+    },
+    {
+      "pos": [
+        8761,
+        8820
+      ],
+      "content": "<ph id=\"ph1\">&lt;a id=\"IndexingSchedule\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Running indexers on a schedule"
+    },
+    {
+      "content": "An indexer can optionally specify a schedule.",
+      "pos": [
+        8822,
+        8867
+      ]
+    },
+    {
+      "content": "If a schedule is present, the indexer will run periodically as per schedule.",
+      "pos": [
+        8868,
+        8944
+      ]
+    },
+    {
+      "content": "Schedule has the following attributes:",
+      "pos": [
+        8945,
+        8983
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>interval<ept id=\"p1\">**</ept>: Required.",
+      "pos": [
+        8987,
+        9010
+      ]
+    },
+    {
+      "content": "A duration value that specifies an interval or period for indexer runs.",
+      "pos": [
+        9011,
+        9082
+      ]
+    },
+    {
+      "content": "The smallest allowed interval is 5 minutes; the longest is one day.",
+      "pos": [
+        9083,
+        9150
+      ]
+    },
+    {
+      "content": "It must be formatted as an XSD \"dayTimeDuration\" value (a restricted subset of an <bpt id=\"p1\">[</bpt>ISO 8601 duration<ept id=\"p1\">](http://www.w3.org/TR/xmlschema11-2/#dayTimeDuration)</ept> value).",
+      "pos": [
+        9151,
+        9313
+      ]
+    },
+    {
+      "content": "The pattern for this is: <ph id=\"ph1\">`P(nD)(T(nH)(nM))`</ph>.",
+      "pos": [
+        9314,
+        9358
+      ]
+    },
+    {
+      "content": "Examples: <ph id=\"ph1\">`PT15M`</ph> for every 15 minutes, <ph id=\"ph2\">`PT2H`</ph> for every 2 hours.",
+      "pos": [
+        9359,
+        9424
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>startTime<ept id=\"p1\">**</ept>: Required.",
+      "pos": [
+        9429,
+        9453
+      ]
+    },
+    {
+      "content": "An UTC datetime that specifies when the indexer should start running.",
+      "pos": [
+        9454,
+        9523
+      ]
+    },
+    {
+      "pos": [
+        9529,
+        9582
+      ],
+      "content": "<ph id=\"ph1\">&lt;a id=\"CreateIndexerExample\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Request body example"
+    },
+    {
+      "pos": [
+        9584,
+        9802
+      ],
+      "content": "The following example creates an indexer that copies data from the collection referenced by the <ph id=\"ph1\">`myDocDbDataSource`</ph> data source to the <ph id=\"ph2\">`mySearchIndex`</ph> index on a schedule that starts on Jan 1, 2015 UTC and runs hourly."
+    },
+    {
+      "content": "Response",
+      "pos": [
+        10032,
+        10040
+      ]
+    },
+    {
+      "content": "You will receive an HTTP 201 Created response if the indexer was successfully created.",
+      "pos": [
+        10042,
+        10128
+      ]
+    },
+    {
+      "pos": [
+        10132,
+        10177
+      ],
+      "content": "<ph id=\"ph1\">&lt;a id=\"RunIndexer\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Step 4: Run an indexer"
+    },
+    {
+      "content": "In addition to running periodically on a schedule, an indexer can also be invoked on demand by issuing the following HTTP POST request:",
+      "pos": [
+        10179,
+        10314
+      ]
+    },
+    {
+      "content": "Response",
+      "pos": [
+        10473,
+        10481
+      ]
+    },
+    {
+      "content": "You will receive an HTTP 202 Accepted response if the indexer was successfully invoked.",
+      "pos": [
+        10483,
+        10570
+      ]
+    },
+    {
+      "pos": [
+        10574,
+        10631
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"GetIndexerStatus\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Step 5: Get indexer status"
+    },
+    {
+      "content": "You can issue a HTTP GET request to retrieve the current status and execution history of an indexer:",
+      "pos": [
+        10633,
+        10733
+      ]
+    },
+    {
+      "content": "Response",
+      "pos": [
+        10894,
+        10902
+      ]
+    },
+    {
+      "content": "You will see a HTTP 200 OK response returned along with a response body that contains information about overall indexer health status, the last indexer invocation, as well as the history of recent indexer invocations (if present).",
+      "pos": [
+        10904,
+        11134
+      ]
+    },
+    {
+      "content": "The response should look similar to the following:",
+      "pos": [
+        11137,
+        11187
+      ]
+    },
+    {
+      "content": "Execution history contains up to the 50 most recent completed executions, which are sorted in reverse chronological order (so the latest execution comes first in the response).",
+      "pos": [
+        11975,
+        12151
+      ]
+    },
+    {
+      "pos": [
+        12155,
+        12189
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"NextSteps\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Next steps"
+    },
+    {
+      "content": "Congratulations!",
+      "pos": [
+        12191,
+        12207
+      ]
+    },
+    {
+      "content": "You have just learned how to integrate Azure DocumentDB with Azure Search using the indexer for DocumentDB.",
+      "pos": [
+        12208,
+        12315
+      ]
+    },
+    {
+      "pos": [
+        12320,
+        12398
+      ],
+      "content": "To learn how more about Azure DocumentDB, click <bpt id=\"p1\">[</bpt>here<ept id=\"p1\">](/services/documentdb/)</ept>."
+    },
+    {
+      "pos": [
+        12403,
+        12473
+      ],
+      "content": "To learn how more about Azure Search, click <bpt id=\"p1\">[</bpt>here<ept id=\"p1\">](/services/search/)</ept>."
+    },
+    {
+      "content": "test",
+      "pos": [
+        12477,
+        12481
+      ]
+    }
+  ],
+  "content": "<properties \n    pageTitle=\"Connecting DocumentDB with Azure Search using indexers | Microsoft Azure\" \n    description=\"This article shows you how to use to Azure Search indexer with DocumentDB as a data source.\"\n    services=\"documentdb\" \n    documentationCenter=\"\" \n    authors=\"aliuy\" \n    manager=\"jhubbard\" \n    editor=\"mimig\"/>\n\n<tags \n    ms.service=\"documentdb\" \n    ms.devlang=\"rest-api\" \n    ms.topic=\"article\" \n    ms.tgt_pltfrm=\"NA\" \n    ms.workload=\"data-services\" \n    ms.date=\"06/16/2015\" \n    ms.author=\"andrl\"/>\n\n#Connecting DocumentDB with Azure Search using indexers\n\nIf you're looking to implement great search experiences over your DocumentDB data, use Azure Search indexer for DocumentDB! In this article, we will show you how to integrate Azure DocumentDB with Azure Search without having to write any code to maintain indexing infrastructure!\n\nTo set this up, you have to [setup an Azure Search account](../search-get-started.md#start-with-the-free-service) (you don't need to upgrade to standard search), and then call the [Azure Search REST API](https://msdn.microsoft.com/library/azure/dn798935.aspx) to create a DocumentDB **data source** and an **indexer** for that data source.\n\n##<a id=\"Concepts\"></a>Azure Search indexer concepts\n\nAzure Search supports the creation and management of data sources (including DocumentDB) and indexers that operate against those data sources.\n\nA **data source** specifies what data needs to be indexed, credentials to access the data, and policies to enable Azure Search to efficiently identify changes in the data (such as modified or deleted documents inside your collection). The data source is defined as an independent resource so that it can be used by multiple indexers.\n\nAn **indexer** describes how the data flows from your data source into a target search index. You should plan on creating one indexer for every target index and data source combination. While you can have multiple indexers writing into the same index, an indexer can only write into a single index. An indexer is used to: \n\n- Perform a one-time copy of the data to populate an index.\n- Sync an index with changes in the data source on a schedule. The schedule is part of the indexer definition.\n- Invoke on-demand updates to an index as needed. \n\n##<a id=\"CreateDataSource\"></a>Step 1: Create a data source\n\nIssue a HTTP POST request to create a new data source in your Azure Search service, including the following request headers.\n    \n    POST https://[Search service name].search.windows.net/datasources?api-version=[api-version]\n    Content-Type: application/json\n    api-key: [Search service admin key]\n\nThe `api-version` is required. Valid values include `2015-02-28` or a later version.\n\nThe body of the request contains the data source definition, which should include the following fields:\n\n- **name**: The name of the data source.\n\n- **type**: Use `documentdb`.\n\n- **credentials**:\n\n    - **connectionString**: Required. Specify the connection info to your Azure DocumentDB database in the following format: `AccountEndpoint=<DocumentDB endpoint url>;AccountKey=<DocumentDB auth key>;Database=<DocumentDB database id>`\n\n- **container**:\n\n    - **name**: Required. Specify the DocumentDB collection to be indexed. \n\n    - **query**: Optional. You can specify a query to flatten an arbitrary JSON document into a flat schema that Azure Search can index.\n\n- **dataChangeDetectionPolicy**: Optional. See [Data Change Detection Policy](#DataChangeDetectionPolicy) below.\n\n- **dataDeletionDetectionPolicy**: Optional. See [Data Deletion Detection Policy](#DataDeletionDetectionPolicy) below.\n\n###<a id=\"DataChangeDetectionPolicy\"></a>Capturing changed documents\n\nThe purpose of a data change detection policy is to efficiently identify changed data items. Currently, the only supported policy is the `High Water Mark` policy using the `_ts` last-modified timestamp property provided by DocumentDB - which is specified as follows:\n\n    { \n        \"@odata.type\" : \"#Microsoft.Azure.Search.HighWaterMarkChangeDetectionPolicy\",\n        \"highWaterMarkColumnName\" : \"_ts\" \n    } \n\nYou will also need to add `_ts` in the projection and `WHERE` clause for your query. For example:\n\n    SELECT s.id, s.Title, s.Abstract, s._ts FROM Sessions s WHERE s._ts > @HighWaterMark\n\n\n###<a id=\"DataDeletionDetectionPolicy\"></a>Capturing deleted documents\n\nWhen rows are deleted from the source table, you should delete those rows from the search index as well. The purpose of a data deletion detection policy is to efficiently identify deleted data items. Currently, the only supported policy is the `Soft Delete` policy (deletion is marked with a flag of some sort), which is specified as follows:\n\n    { \n        \"@odata.type\" : \"#Microsoft.Azure.Search.SoftDeleteColumnDeletionDetectionPolicy\",\n        \"softDeleteColumnName\" : \"the property that specifies whether a document was deleted\", \n        \"softDeleteMarkerValue\" : \"the value that identifies a document as deleted\" \n    }\n\n> [AZURE.NOTE] You will need to include the property in your SELECT clause if you are using a custom projection.\n\n###<a id=\"CreateDataSourceExample\"></a>Request body example\n\nThe following example creates a data source with a custom query and policy hints:\n\n    {\n        \"name\": \"mydocdbdatasource\",\n        \"type\": \"documentdb\",\n        \"credentials\": {\n            \"connectionString\": \"AccountEndpoint=https://myDocDbEndpoint.documents.azure.com;AccountKey=myDocDbAuthKey;Database=myDocDbDatabaseId\"\n        },\n        \"container\": {\n            \"name\": \"myDocDbCollectionId\",\n            \"query\": \"SELECT s.id, s.Title, s.Abstract, s._ts FROM Sessions s WHERE s._ts > @HighWaterMark\" \n        },\n        \"dataChangeDetectionPolicy\": {\n            \"@odata.type\": \"#Microsoft.Azure.Search.HighWaterMarkChangeDetectionPolicy\",\n            \"highWaterMarkColumnName\": \"_ts\"\n        },\n        \"dataDeletionDetectionPolicy\": {\n            \"@odata.type\": \"#Microsoft.Azure.Search.SoftDeleteColumnDeletionDetectionPolicy\",\n            \"softDeleteColumnName\": \"isDeleted\",\n            \"softDeleteMarkerValue\": \"true\"\n        }\n    }\n\n###Response\n\nYou will receive an HTTP 201 Created response if the data source was successfully created.\n\n##<a id=\"CreateIndex\"></a>Step 2: Create an index\n\nCreate a target Azure Search index if you don’t have one already. You can do this from the [Azure Portal UI](../search-get-started.md#test-service-operations) or by using the [Create Index API](https://msdn.microsoft.com/library/azure/dn798941.aspx).\n\n    POST https://[Search service name].search.windows.net/indexes?api-version=[api-version]\n    Content-Type: application/json\n    api-key: [Search service admin key]\n\n\nEnsure that the schema of your target index is compatible with the schema of the source JSON documents or the output of your custom query projection.\n\n###Figure A: Mapping between JSON Data Types and Azure Search Data Types\n\n| JSON DATA TYPE|   COMPATIBLE TARGET INDEX FIELD TYPES|\n|---|---|\n|Bool|Edm.Boolean, Edm.String|\n|Numbers that look like integers|Edm.Int32, Edm.Int64, Edm.String|\n|Numbers that look like floating-points|Edm.Double, Edm.String|\n|String|Edm.String|\n|Arrays of primitive types e.g. \"a\", \"b\", \"c\" |Collection(Edm.String)|\n|Strings that look like dates| Edm.DateTimeOffset, Edm.String|\n|GeoJSON objects e.g. { \"type\": \"Point\", \"coordinates\": [ long, lat ] } | Edm.GeographyPoint |\n|Other JSON objects|N/A|\n\n###<a id=\"CreateIndexExample\"></a>Request body example\n\nThe following example creates an index with an id and description field:\n\n    {\n       \"name\": \"mysearchindex\",\n       \"fields\": [{\n         \"name\": \"id\",\n         \"type\": \"Edm.String\",\n         \"key\": true,\n         \"searchable\": false\n       }, {\n         \"name\": \"description\",\n         \"type\": \"Edm.String\",\n         \"filterable\": false,\n         \"sortable\": false,\n         \"facetable\": false,\n         \"suggestions\": true\n       }]\n     }\n\n###Response\n\nYou will receive an HTTP 201 Created response if the index was successfully created.\n\n##<a id=\"CreateIndexer\"></a>Step 3: Create an indexer\n\nYou can create a new indexer within an Azure Search service by using an HTTP POST request with the following headers.\n    \n    POST https://[Search service name].search.windows.net/indexers?api-version=[api-version]\n    Content-Type: application/json\n    api-key: [Search service admin key]\n\nThe body of the request contains the indexer definition, which should include the following fields:\n\n- **name**: Required. The name of the indexer.\n\n- **dataSourceName**: Required. The name of an existing data source.\n\n- **targetIndexName**: Required. The name of an existing index.\n\n- **schedule**: Optional. See [Indexing Schedule](#IndexingSchedule) below.\n\n###<a id=\"IndexingSchedule\"></a>Running indexers on a schedule\n\nAn indexer can optionally specify a schedule. If a schedule is present, the indexer will run periodically as per schedule. Schedule has the following attributes:\n\n- **interval**: Required. A duration value that specifies an interval or period for indexer runs. The smallest allowed interval is 5 minutes; the longest is one day. It must be formatted as an XSD \"dayTimeDuration\" value (a restricted subset of an [ISO 8601 duration](http://www.w3.org/TR/xmlschema11-2/#dayTimeDuration) value). The pattern for this is: `P(nD)(T(nH)(nM))`. Examples: `PT15M` for every 15 minutes, `PT2H` for every 2 hours. \n\n- **startTime**: Required. An UTC datetime that specifies when the indexer should start running. \n\n###<a id=\"CreateIndexerExample\"></a>Request body example\n\nThe following example creates an indexer that copies data from the collection referenced by the `myDocDbDataSource` data source to the `mySearchIndex` index on a schedule that starts on Jan 1, 2015 UTC and runs hourly.\n\n    {\n        \"name\" : \"mysearchindexer\",\n        \"dataSourceName\" : \"mydocdbdatasource\",\n        \"targetIndexName\" : \"mysearchindex\",\n        \"schedule\" : { \"interval\" : \"PT1H\", \"startTime\" : \"2015-01-01T00:00:00Z\" }\n    }\n\n###Response\n\nYou will receive an HTTP 201 Created response if the indexer was successfully created.\n\n##<a id=\"RunIndexer\"></a>Step 4: Run an indexer\n\nIn addition to running periodically on a schedule, an indexer can also be invoked on demand by issuing the following HTTP POST request: \n\n    POST https://[Search service name].search.windows.net/indexers/[indexer name]/run?api-version=[api-version]\n    api-key: [Search service admin key]\n\n###Response\n\nYou will receive an HTTP 202 Accepted response if the indexer was successfully invoked.\n\n##<a name=\"GetIndexerStatus\"></a>Step 5: Get indexer status\n\nYou can issue a HTTP GET request to retrieve the current status and execution history of an indexer: \n\n    GET https://[Search service name].search.windows.net/indexers/[indexer name]/status?api-version=[api-version]\n    api-key: [Search service admin key]\n\n###Response\n\nYou will see a HTTP 200 OK response returned along with a response body that contains information about overall indexer health status, the last indexer invocation, as well as the history of recent indexer invocations (if present). \n\nThe response should look similar to the following:\n\n    {\n        \"status\":\"running\",\n        \"lastResult\": {\n            \"status\":\"success\",\n            \"errorMessage\":null,\n            \"startTime\":\"2014-11-26T03:37:18.853Z\",\n            \"endTime\":\"2014-11-26T03:37:19.012Z\",\n            \"errors\":[],\n            \"itemsProcessed\":11,\n            \"itemsFailed\":0,\n            \"initialTrackingState\":null,\n            \"finalTrackingState\":null\n         },\n        \"executionHistory\":[ {\n            \"status\":\"success\",\n             \"errorMessage\":null,\n            \"startTime\":\"2014-11-26T03:37:18.853Z\",\n            \"endTime\":\"2014-11-26T03:37:19.012Z\",\n            \"errors\":[],\n            \"itemsProcessed\":11,\n            \"itemsFailed\":0,\n            \"initialTrackingState\":null,\n            \"finalTrackingState\":null\n        }]\n    }\n\nExecution history contains up to the 50 most recent completed executions, which are sorted in reverse chronological order (so the latest execution comes first in the response).\n\n##<a name=\"NextSteps\"></a>Next steps\n\nCongratulations! You have just learned how to integrate Azure DocumentDB with Azure Search using the indexer for DocumentDB.\n\n - To learn how more about Azure DocumentDB, click [here](/services/documentdb/).\n\n - To learn how more about Azure Search, click [here](/services/search/).\n \n\ntest\n"
+}

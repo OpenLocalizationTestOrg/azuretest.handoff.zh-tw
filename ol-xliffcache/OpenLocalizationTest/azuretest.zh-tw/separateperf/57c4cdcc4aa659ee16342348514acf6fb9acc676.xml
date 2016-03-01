@@ -1,0 +1,432 @@
+{
+  "nodes": [
+    {
+      "content": "Performance considerations for Azure Traffic Manager | Microsoft Azure",
+      "pos": [
+        26,
+        96
+      ]
+    },
+    {
+      "content": "Understand performance on Traffic Manager and how to test performance of your website when using Traffic Manager",
+      "pos": [
+        114,
+        226
+      ]
+    },
+    {
+      "content": "Performance considerations for Traffic Manager",
+      "pos": [
+        547,
+        593
+      ]
+    },
+    {
+      "content": "Common question regarding Azure Traffic Manager deals with potential performance problems that it might cause.",
+      "pos": [
+        596,
+        706
+      ]
+    },
+    {
+      "content": "The questions are typically along the lines of “How much latency will Traffic Manager add to my website?”, “My monitoring site says that my website was slow for a couple hours yesterday – were there any Traffic Manager issues at that time?”, “Where are the Traffic Manager servers?",
+      "pos": [
+        708,
+        989
+      ]
+    },
+    {
+      "content": "I want to make sure they are in the same datacenter as my website so that performance isn’t impacted”.",
+      "pos": [
+        990,
+        1092
+      ]
+    },
+    {
+      "content": "This page will talk about the direct performance impact that Traffic Manager can cause to a website.",
+      "pos": [
+        1094,
+        1194
+      ]
+    },
+    {
+      "content": "If you have a website in East US and one in Asia and your East US is failing the Traffic Manager probes, then all of your users will be directed to your Asia website and you will see performance impacts, but this performance impact has nothing to do with Traffic Manager itself.",
+      "pos": [
+        1196,
+        1474
+      ]
+    },
+    {
+      "content": "Important note about how Traffic Manager works",
+      "pos": [
+        1483,
+        1529
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt>Traffic Manager Overview<ept id=\"p1\">](traffic-manager-overview.md)</ept> is an excellent resource to learn how Traffic Manager works, but there is a lot of information on that page and picking out the key information relating to performance can be difficult.",
+      "pos": [
+        1531,
+        1772
+      ]
+    },
+    {
+      "content": "The important points to look at in the MSDN documentation is step #5 and #6 from Image 3, which I will explain in more detail here:",
+      "pos": [
+        1774,
+        1905
+      ]
+    },
+    {
+      "content": "Traffic Manager essentially only does one thing – DNS resolution.",
+      "pos": [
+        1909,
+        1974
+      ]
+    },
+    {
+      "content": "This means that the only performance impact that Traffic Manager can have on your website is the initial DNS lookup.",
+      "pos": [
+        1976,
+        2092
+      ]
+    },
+    {
+      "content": "A point of clarification about the Traffic Manager DNS lookup.",
+      "pos": [
+        2095,
+        2157
+      ]
+    },
+    {
+      "content": "Traffic Manager populates, and regularly updates, the normal Microsoft DNS root servers based on your policy and the probe results.",
+      "pos": [
+        2159,
+        2290
+      ]
+    },
+    {
+      "content": "So even during the initial DNS lookup there is no involvement by Traffic Manager since the DNS request is handled by the normal Microsoft DNS root servers.",
+      "pos": [
+        2292,
+        2447
+      ]
+    },
+    {
+      "content": "If Traffic Manager goes ‘down’ (ie. a failure in the VMs doing the policy probing and DNS updating) then there will be no impact to your Traffic Manager DNS name since the entries in the Microsoft DNS servers will still be preserved – the only impact will be that probing and updating based on policy will not happen (ie. if your primary site goes down, Traffic Manager will not be able to update DNS to point to your failover site).",
+      "pos": [
+        2449,
+        2882
+      ]
+    },
+    {
+      "content": "Traffic does NOT flow through Traffic Manager.",
+      "pos": [
+        2885,
+        2931
+      ]
+    },
+    {
+      "content": "There are no Traffic Manager servers acting as a middle-man between your clients and your Azure hosted service.",
+      "pos": [
+        2933,
+        3044
+      ]
+    },
+    {
+      "content": "Once the DNS lookup is finished then Traffic Manager is completely removed from the communication between client and server.",
+      "pos": [
+        3046,
+        3170
+      ]
+    },
+    {
+      "content": "DNS lookup is very fast, and is cached.",
+      "pos": [
+        3173,
+        3212
+      ]
+    },
+    {
+      "content": "The initial DNS lookup will depend on the client and their configured DNS servers, by typically a client can do a DNS lookup in ~50 ms (see http://www.solvedns.com/dns-comparison/).",
+      "pos": [
+        3214,
+        3395
+      ]
+    },
+    {
+      "content": "Once the first lookup is done the results will be cached for the DNS TTL, which for Traffic Manager is default of 300 seconds.",
+      "pos": [
+        3397,
+        3523
+      ]
+    },
+    {
+      "content": "The Traffic Manager policy you choose (performance, failover, round robin) has no influence on the DNS performance.",
+      "pos": [
+        3526,
+        3641
+      ]
+    },
+    {
+      "content": "Your performance policy can negatively impact your user’s experience, for example if you send US users to a service hosed in Asia, but this performance issue is not caused by Traffic Manager.",
+      "pos": [
+        3643,
+        3834
+      ]
+    },
+    {
+      "content": "Testing Traffic Manager Performance",
+      "pos": [
+        3843,
+        3878
+      ]
+    },
+    {
+      "content": "There are a few publicly available websites that you can use to determine your Traffic Manager performance and behavior.",
+      "pos": [
+        3880,
+        4000
+      ]
+    },
+    {
+      "content": "These sites are useful to determine the DNS latency and which of your hosted services your users around the world are being directed to.",
+      "pos": [
+        4002,
+        4138
+      ]
+    },
+    {
+      "content": "Keep in mind that most of these tools do not cache the DNS results so running the tests multiple times will show the full DNS lookup, whereas clients connecting to your Traffic Manager endpoint will only see the full DNS lookup performance impact once during the TTL duration.",
+      "pos": [
+        4140,
+        4416
+      ]
+    },
+    {
+      "content": "Sample tools to measure performance",
+      "pos": [
+        4422,
+        4457
+      ]
+    },
+    {
+      "content": "One of the simplest tools is WebSitePulse.",
+      "pos": [
+        4460,
+        4502
+      ]
+    },
+    {
+      "content": "Enter the URL and you will see statistics such as DNS resolution time, First Byte, Last Byte, and other performance statistics.",
+      "pos": [
+        4504,
+        4631
+      ]
+    },
+    {
+      "content": "You can choose from three different locations to test your site from.",
+      "pos": [
+        4633,
+        4702
+      ]
+    },
+    {
+      "content": "In this example you will see that the first execution shows that first DNS lookup time takes 0.204 sec.",
+      "pos": [
+        4704,
+        4807
+      ]
+    },
+    {
+      "content": "The second time we run this test on the same Traffic Manager endpoint the DNS lookup time takes 0.002 sec since the results are already cached.",
+      "pos": [
+        4809,
+        4952
+      ]
+    },
+    {
+      "content": "http://www.websitepulse.com/help/tools.php",
+      "pos": [
+        4954,
+        4996
+      ]
+    },
+    {
+      "content": "pulse1",
+      "pos": [
+        5001,
+        5007
+      ]
+    },
+    {
+      "content": "DNS time when cached:",
+      "pos": [
+        5097,
+        5118
+      ]
+    },
+    {
+      "content": "pulse2",
+      "pos": [
+        5123,
+        5129
+      ]
+    },
+    {
+      "content": "Another really useful tool to get DNS resolution time from multiple geographic regions simultaneously is Watchmouse’s Check Website tool.",
+      "pos": [
+        5222,
+        5359
+      ]
+    },
+    {
+      "content": "Enter the URL and you will see DNS resolution time, connection time, and speed from several geo locations.",
+      "pos": [
+        5361,
+        5467
+      ]
+    },
+    {
+      "content": "This is also handy to test the Traffic Manager Performance policy to see which hosted service your different users around the world are being sent to.",
+      "pos": [
+        5469,
+        5619
+      ]
+    },
+    {
+      "content": "http://www.watchmouse.com/en/checkit.php",
+      "pos": [
+        5621,
+        5661
+      ]
+    },
+    {
+      "content": "pulse1",
+      "pos": [
+        5666,
+        5672
+      ]
+    },
+    {
+      "content": "http://tools.pingdom.com/ – This will test a website and provide performance statistics for each element on the page on a visual graph.",
+      "pos": [
+        5767,
+        5902
+      ]
+    },
+    {
+      "content": "If you switch to the Page Analysis tab you can see the percentage of time spent doing DNS lookup.",
+      "pos": [
+        5904,
+        6001
+      ]
+    },
+    {
+      "content": "http://www.whatsmydns.net/ – This site will do a DNS lookup from 20 different geo locations and display the results on a map.",
+      "pos": [
+        6006,
+        6131
+      ]
+    },
+    {
+      "content": "This is a great visual representation to help determine which hosted service your clients will connect to.",
+      "pos": [
+        6133,
+        6239
+      ]
+    },
+    {
+      "content": "http://www.digwebinterface.com – Similar to the watchmouse site, but this one shows more detailed DNS information including CNAMEs and A records.",
+      "pos": [
+        6244,
+        6389
+      ]
+    },
+    {
+      "content": "Make sure you check the ‘Colorize output’ and ‘Stats’ under options, and select ‘All’ under Nameservers.",
+      "pos": [
+        6391,
+        6495
+      ]
+    },
+    {
+      "content": "Conclusion",
+      "pos": [
+        6500,
+        6510
+      ]
+    },
+    {
+      "content": "Given the above information we know that the only performance impact that Traffic Manager will have on a website is the first DNS lookup (times vary, but average ~50 ms), and then 0 performance impact for the duration of the DNS TTL (300 seconds default), and then again a refresh the DNS cache after the TTL expires.",
+      "pos": [
+        6512,
+        6829
+      ]
+    },
+    {
+      "content": "So the answer to the question “How much latency will Traffic Manager add to my website?\"",
+      "pos": [
+        6831,
+        6919
+      ]
+    },
+    {
+      "content": "is, essentially, zero.",
+      "pos": [
+        6920,
+        6942
+      ]
+    },
+    {
+      "content": "Next Steps",
+      "pos": [
+        6948,
+        6958
+      ]
+    },
+    {
+      "content": "About Traffic Manager traffic routing methods",
+      "pos": [
+        6962,
+        7007
+      ]
+    },
+    {
+      "content": "What is Traffic Manager?",
+      "pos": [
+        7054,
+        7078
+      ]
+    },
+    {
+      "content": "Cloud Services",
+      "pos": [
+        7115,
+        7129
+      ]
+    },
+    {
+      "content": "Websites",
+      "pos": [
+        7180,
+        7188
+      ]
+    },
+    {
+      "content": "Operations on Traffic Manager (REST API Reference)",
+      "pos": [
+        7241,
+        7291
+      ]
+    },
+    {
+      "content": "Azure Traffic Manager Cmdlets",
+      "pos": [
+        7342,
+        7371
+      ]
+    }
+  ],
+  "content": "<properties\n   pageTitle=\"Performance considerations for Azure Traffic Manager | Microsoft Azure\"\n   description=\"Understand performance on Traffic Manager and how to test performance of your website when using Traffic Manager\"\n   services=\"traffic-manager\"\n   documentationCenter=\"\"\n   authors=\"kwill-MSFT\"\n   manager=\"adinah\"\n   editor=\"joaoma\" />\n\n<tags \n   ms.service=\"traffic-manager\"\n   ms.devlang=\"na\"\n   ms.topic=\"article\"\n   ms.tgt_pltfrm=\"na\"\n   ms.workload=\"infrastructure-services\"\n   ms.date=\"08/19/2015\"\n   ms.author=\"joaoma\" />\n\n\n# Performance considerations for Traffic Manager\n\n\nCommon question regarding Azure Traffic Manager deals with potential performance problems that it might cause.  The questions are typically along the lines of “How much latency will Traffic Manager add to my website?”, “My monitoring site says that my website was slow for a couple hours yesterday – were there any Traffic Manager issues at that time?”, “Where are the Traffic Manager servers? I want to make sure they are in the same datacenter as my website so that performance isn’t impacted”.\n\nThis page will talk about the direct performance impact that Traffic Manager can cause to a website.  If you have a website in East US and one in Asia and your East US is failing the Traffic Manager probes, then all of your users will be directed to your Asia website and you will see performance impacts, but this performance impact has nothing to do with Traffic Manager itself.\n\n  \n\n## Important note about how Traffic Manager works\n\n[Traffic Manager Overview](traffic-manager-overview.md) is an excellent resource to learn how Traffic Manager works, but there is a lot of information on that page and picking out the key information relating to performance can be difficult.  The important points to look at in the MSDN documentation is step #5 and #6 from Image 3, which I will explain in more detail here:\n\n- Traffic Manager essentially only does one thing – DNS resolution.  This means that the only performance impact that Traffic Manager can have on your website is the initial DNS lookup.\n- A point of clarification about the Traffic Manager DNS lookup.  Traffic Manager populates, and regularly updates, the normal Microsoft DNS root servers based on your policy and the probe results.  So even during the initial DNS lookup there is no involvement by Traffic Manager since the DNS request is handled by the normal Microsoft DNS root servers.  If Traffic Manager goes ‘down’ (ie. a failure in the VMs doing the policy probing and DNS updating) then there will be no impact to your Traffic Manager DNS name since the entries in the Microsoft DNS servers will still be preserved – the only impact will be that probing and updating based on policy will not happen (ie. if your primary site goes down, Traffic Manager will not be able to update DNS to point to your failover site).\n- Traffic does NOT flow through Traffic Manager.  There are no Traffic Manager servers acting as a middle-man between your clients and your Azure hosted service.  Once the DNS lookup is finished then Traffic Manager is completely removed from the communication between client and server.\n- DNS lookup is very fast, and is cached.  The initial DNS lookup will depend on the client and their configured DNS servers, by typically a client can do a DNS lookup in ~50 ms (see http://www.solvedns.com/dns-comparison/).  Once the first lookup is done the results will be cached for the DNS TTL, which for Traffic Manager is default of 300 seconds.\n- The Traffic Manager policy you choose (performance, failover, round robin) has no influence on the DNS performance.  Your performance policy can negatively impact your user’s experience, for example if you send US users to a service hosed in Asia, but this performance issue is not caused by Traffic Manager.\n\n  \n\n## Testing Traffic Manager Performance\n\nThere are a few publicly available websites that you can use to determine your Traffic Manager performance and behavior.  These sites are useful to determine the DNS latency and which of your hosted services your users around the world are being directed to.  Keep in mind that most of these tools do not cache the DNS results so running the tests multiple times will show the full DNS lookup, whereas clients connecting to your Traffic Manager endpoint will only see the full DNS lookup performance impact once during the TTL duration.\n\n\n## Sample tools to measure performance\n\n\nOne of the simplest tools is WebSitePulse.  Enter the URL and you will see statistics such as DNS resolution time, First Byte, Last Byte, and other performance statistics.  You can choose from three different locations to test your site from.  In this example you will see that the first execution shows that first DNS lookup time takes 0.204 sec.  The second time we run this test on the same Traffic Manager endpoint the DNS lookup time takes 0.002 sec since the results are already cached.\n\nhttp://www.websitepulse.com/help/tools.php\n\n\n![pulse1](./media/traffic-manager-performance-considerations/traffic-manager-web-site-pulse.png)\n\nDNS time when cached:\n\n\n![pulse2](./media/traffic-manager-performance-considerations/traffic-manager-web-site-pulse2.png)\n\n\n\nAnother really useful tool to get DNS resolution time from multiple geographic regions simultaneously is Watchmouse’s Check Website tool.  Enter the URL and you will see DNS resolution time, connection time, and speed from several geo locations.  This is also handy to test the Traffic Manager Performance policy to see which hosted service your different users around the world are being sent to.\n\nhttp://www.watchmouse.com/en/checkit.php\n\n\n![pulse1](./media/traffic-manager-performance-considerations/traffic-manager-web-site-watchmouse.png)\n\nhttp://tools.pingdom.com/ – This will test a website and provide performance statistics for each element on the page on a visual graph.  If you switch to the Page Analysis tab you can see the percentage of time spent doing DNS lookup.\n\n \n\nhttp://www.whatsmydns.net/ – This site will do a DNS lookup from 20 different geo locations and display the results on a map.  This is a great visual representation to help determine which hosted service your clients will connect to.\n\n \n\nhttp://www.digwebinterface.com – Similar to the watchmouse site, but this one shows more detailed DNS information including CNAMEs and A records.  Make sure you check the ‘Colorize output’ and ‘Stats’ under options, and select ‘All’ under Nameservers.\n\n## Conclusion\n\nGiven the above information we know that the only performance impact that Traffic Manager will have on a website is the first DNS lookup (times vary, but average ~50 ms), and then 0 performance impact for the duration of the DNS TTL (300 seconds default), and then again a refresh the DNS cache after the TTL expires.  So the answer to the question “How much latency will Traffic Manager add to my website?\" is, essentially, zero.\n\n\n## Next Steps\n\n\n[About Traffic Manager traffic routing methods](traffic-manager-load-balancing-methods.md)\n\n[What is Traffic Manager?](../traffic-manmager-overview.md)\n\n[Cloud Services](http://go.microsoft.com/fwlink/?LinkId=314074)\n\n[Websites](http://go.microsoft.com/fwlink/p/?LinkId=393327)\n\n[Operations on Traffic Manager (REST API Reference)](http://go.microsoft.com/fwlink/?LinkId=313584)\n\n[Azure Traffic Manager Cmdlets](http://go.microsoft.com/fwlink/p/?LinkId=400769)\n \n"
+}

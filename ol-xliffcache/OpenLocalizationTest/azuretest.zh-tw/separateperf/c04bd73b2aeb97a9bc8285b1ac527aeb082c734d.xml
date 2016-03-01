@@ -1,0 +1,495 @@
+{
+  "nodes": [
+    {
+      "content": "Generate recommendations using Mahout and Hadoop | Microsoft Azure",
+      "pos": [
+        27,
+        93
+      ]
+    },
+    {
+      "content": "Learn how to use the Apache Mahout machine learning library to generate movie recommendations with Linux-based HDInsight (Hadoop).",
+      "pos": [
+        112,
+        242
+      ]
+    },
+    {
+      "content": "Generate movie recommendations by using Apache Mahout with Linux-based Hadoop in HDInsight (preview)",
+      "pos": [
+        571,
+        671
+      ]
+    },
+    {
+      "pos": [
+        753,
+        896
+      ],
+      "content": "Learn how to use the <bpt id=\"p1\">[</bpt>Apache Mahout<ept id=\"p1\">](http://mahout.apache.org)</ept> machine learning library with Azure HDInsight to generate movie recommendations."
+    },
+    {
+      "content": "Mahout is a <bpt id=\"p1\">[</bpt>machine learning<ept id=\"p1\">][ml]</ept> library for Apache Hadoop.",
+      "pos": [
+        898,
+        959
+      ]
+    },
+    {
+      "content": "Mahout contains algorithms for processing data, such as filtering, classification, and clustering.",
+      "pos": [
+        960,
+        1058
+      ]
+    },
+    {
+      "content": "In this article, you will use a recommendation engine to generate movie recommendations that are based on movies your friends have seen.",
+      "pos": [
+        1059,
+        1195
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> The steps in this document require a Linux-based Hadoop on HDInsight cluster (preview).",
+      "pos": [
+        1199,
+        1299
+      ]
+    },
+    {
+      "content": "For information on using Mahout with a Windows-based cluster, see <bpt id=\"p1\">[</bpt>Generate movie recommendations by using Apache Mahout with Windows-based Hadoop in HDInsight<ept id=\"p1\">](hdinsight-mahout.md)</ept>",
+      "pos": [
+        1300,
+        1481
+      ]
+    },
+    {
+      "content": "Prerequisites",
+      "pos": [
+        1485,
+        1498
+      ]
+    },
+    {
+      "content": "A Linux-based Hadoop on HDInsight cluster.",
+      "pos": [
+        1502,
+        1544
+      ]
+    },
+    {
+      "content": "For information about creating one, see <bpt id=\"p1\">[</bpt>Get started using Linux-based Hadoop in HDInsight<ept id=\"p1\">][getstarted]</ept>",
+      "pos": [
+        1545,
+        1648
+      ]
+    },
+    {
+      "pos": [
+        1652,
+        1711
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"recommendations\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Understanding recommendations"
+    },
+    {
+      "content": "One of the functions that is provided by Mahout is a recommendation engine.",
+      "pos": [
+        1713,
+        1788
+      ]
+    },
+    {
+      "content": "This engine accepts data in the format of <ph id=\"ph1\">`userID`</ph>, <ph id=\"ph2\">`itemId`</ph>, and <ph id=\"ph3\">`prefValue`</ph> (the users preference for the item).",
+      "pos": [
+        1789,
+        1903
+      ]
+    },
+    {
+      "content": "Mahout can then perform co-occurance analysis to determine: <bpt id=\"p1\">_</bpt>users who have a preference for an item also have a preference for these other items<ept id=\"p1\">_</ept>.",
+      "pos": [
+        1904,
+        2051
+      ]
+    },
+    {
+      "content": "Mahout then determines users with like-item preferences, which can be used to make recommendations.",
+      "pos": [
+        2052,
+        2151
+      ]
+    },
+    {
+      "content": "The following is an extremely simple example that uses movies:",
+      "pos": [
+        2153,
+        2215
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">__</bpt>Co-occurance<ept id=\"p1\">__</ept>: Joe, Alice, and Bob all liked <bpt id=\"p2\">_</bpt>Star Wars<ept id=\"p2\">_</ept>, <bpt id=\"p3\">_</bpt>The Empire Strikes Back<ept id=\"p3\">_</ept>, and <bpt id=\"p4\">_</bpt>Return of the Jedi<ept id=\"p4\">_</ept>.",
+      "pos": [
+        2219,
+        2332
+      ]
+    },
+    {
+      "content": "Mahout determines that users who like any one of these movies also like the other two.",
+      "pos": [
+        2333,
+        2419
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">__</bpt>Co-occurance<ept id=\"p1\">__</ept>: Bob and Alice also liked <bpt id=\"p2\">_</bpt>The Phantom Menace<ept id=\"p2\">_</ept>, <bpt id=\"p3\">_</bpt>Attack of the Clones<ept id=\"p3\">_</ept>, and <bpt id=\"p4\">_</bpt>Revenge of the Sith<ept id=\"p4\">_</ept>.",
+      "pos": [
+        2423,
+        2538
+      ]
+    },
+    {
+      "content": "Mahout determines that users who liked the previous three movies also like these three.",
+      "pos": [
+        2539,
+        2626
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">__</bpt>Similarity recommendation<ept id=\"p1\">__</ept>: Because Joe liked the first three movies, Mahout looks at movies that others with similar preferences liked, but Joe has not watched (liked/rated).",
+      "pos": [
+        2630,
+        2808
+      ]
+    },
+    {
+      "content": "In this case, Mahout recommends <bpt id=\"p1\">_</bpt>The Phantom Menace<ept id=\"p1\">_</ept>, <bpt id=\"p2\">_</bpt>Attack of the Clones<ept id=\"p2\">_</ept>, and <bpt id=\"p3\">_</bpt>Revenge of the Sith<ept id=\"p3\">_</ept>.",
+      "pos": [
+        2809,
+        2913
+      ]
+    },
+    {
+      "content": "Load the data",
+      "pos": [
+        2917,
+        2930
+      ]
+    },
+    {
+      "content": "Conveniently, <bpt id=\"p1\">[</bpt>GroupLens Research<ept id=\"p1\">][movielens]</ept> provides rating data for movies in a format that is compatible with Mahout.",
+      "pos": [
+        2932,
+        3053
+      ]
+    },
+    {
+      "content": "Use the following steps to download the data, then load it into the default storage for the cluster:",
+      "pos": [
+        3054,
+        3154
+      ]
+    },
+    {
+      "content": "Use SSH to connect to the Linux-based HDInsight cluster.",
+      "pos": [
+        3159,
+        3215
+      ]
+    },
+    {
+      "content": "The address to use when connecting is <ph id=\"ph1\">`CLUSTERNAME-ssh.azurehdinsight.net`</ph> and the port is <ph id=\"ph2\">`22`</ph>.",
+      "pos": [
+        3216,
+        3312
+      ]
+    },
+    {
+      "content": "For more information on using SSH to connect to HDInsight, see the following documents:",
+      "pos": [
+        3318,
+        3405
+      ]
+    },
+    {
+      "pos": [
+        3413,
+        3602
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Linux, Unix or OS X clients<ept id=\"p1\">**</ept>: See <bpt id=\"p2\">[</bpt>Connect to a Linux-based HDInsight cluster from Linux, OS X or Unix<ept id=\"p2\">](hdinsight-hadoop-linux-use-ssh-unix.md#connect-to-a-linux-based-hdinsight-cluster)</ept>"
+    },
+    {
+      "pos": [
+        3610,
+        3778
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Windows clients<ept id=\"p1\">**</ept>: See <bpt id=\"p2\">[</bpt>Connect to a Linux-based HDInsight cluster from Windows<ept id=\"p2\">](hdinsight-hadoop-linux-use-ssh-windows.md#connect-to-a-linux-based-hdinsight-cluster)</ept>"
+    },
+    {
+      "content": "Download the MovieLens 100k archive, which contains 100,000 ratings from 1000 users for 1700 movies.",
+      "pos": [
+        3783,
+        3883
+      ]
+    },
+    {
+      "content": "Extract the archive using the following command:",
+      "pos": [
+        3963,
+        4011
+      ]
+    },
+    {
+      "pos": [
+        4044,
+        4109
+      ],
+      "content": "This will extract the contents to a new folder named <bpt id=\"p1\">**</bpt>ml-100k<ept id=\"p1\">**</ept>."
+    },
+    {
+      "content": "Use the following commands to copy the data to HDInsight storage:",
+      "pos": [
+        4114,
+        4179
+      ]
+    },
+    {
+      "content": "The data contained in this file has a structure of <ph id=\"ph1\">`userID`</ph>, <ph id=\"ph2\">`movieID`</ph>, <ph id=\"ph3\">`userRating`</ph>, and <ph id=\"ph4\">`timestamp`</ph>, which tells us how highly each user rated a movie.",
+      "pos": [
+        4274,
+        4427
+      ]
+    },
+    {
+      "content": "Here is an example of the data:",
+      "pos": [
+        4428,
+        4459
+      ]
+    },
+    {
+      "content": "Run the job",
+      "pos": [
+        4615,
+        4626
+      ]
+    },
+    {
+      "content": "Use the following command to run the recommendation job:",
+      "pos": [
+        4628,
+        4684
+      ]
+    },
+    {
+      "pos": [
+        4836,
+        4931
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> The job may take several minutes to complete, and may run multiple MapReduce jobs."
+    },
+    {
+      "content": "View the output",
+      "pos": [
+        4935,
+        4950
+      ]
+    },
+    {
+      "content": "Once the job completes, use the following command to view the generated output:",
+      "pos": [
+        4955,
+        5034
+      ]
+    },
+    {
+      "content": "The output will appear as follows:",
+      "pos": [
+        5102,
+        5136
+      ]
+    },
+    {
+      "content": "The first column is the <ph id=\"ph1\">`userID`</ph>.",
+      "pos": [
+        5559,
+        5592
+      ]
+    },
+    {
+      "content": "The values contained in '[' and ']' are <ph id=\"ph1\">`movieId`</ph>:<ph id=\"ph2\">`recommendationScore`</ph>.",
+      "pos": [
+        5593,
+        5665
+      ]
+    },
+    {
+      "content": "Some of the other data contained in the <bpt id=\"p1\">**</bpt>ml-100k<ept id=\"p1\">**</ept> directory can be used to make the data more user friendly.",
+      "pos": [
+        5670,
+        5780
+      ]
+    },
+    {
+      "content": "First, download the data using the following command:",
+      "pos": [
+        5781,
+        5834
+      ]
+    },
+    {
+      "pos": [
+        5929,
+        6025
+      ],
+      "content": "This will copy the output data to a file named <bpt id=\"p1\">**</bpt>recommendations.txt<ept id=\"p1\">**</ept> in the current directory."
+    },
+    {
+      "content": "Use the following command to create a new Python script that will look up movie names for the data in the recommendations output:",
+      "pos": [
+        6030,
+        6159
+      ]
+    },
+    {
+      "content": "When the editor opens, use the following as the contents of the file:",
+      "pos": [
+        6203,
+        6272
+      ]
+    },
+    {
+      "pos": [
+        8124,
+        8188
+      ],
+      "content": "Press <bpt id=\"p1\">**</bpt>Ctrl-X<ept id=\"p1\">**</ept>, <bpt id=\"p2\">**</bpt>Y<ept id=\"p2\">**</ept>, and finally <bpt id=\"p3\">**</bpt>Enter<ept id=\"p3\">**</ept> to save the data."
+    },
+    {
+      "content": "Use the following command to make the file executable:",
+      "pos": [
+        8193,
+        8247
+      ]
+    },
+    {
+      "content": "Run the Python script:",
+      "pos": [
+        8294,
+        8316
+      ]
+    },
+    {
+      "content": "This will look at the recommendations generated for user ID 4.",
+      "pos": [
+        8409,
+        8471
+      ]
+    },
+    {
+      "pos": [
+        8479,
+        8549
+      ],
+      "content": "The <bpt id=\"p1\">**</bpt>u.data<ept id=\"p1\">**</ept> file is used to retrieve movies that the user has rated"
+    },
+    {
+      "pos": [
+        8556,
+        8619
+      ],
+      "content": "The <bpt id=\"p1\">**</bpt>u.item<ept id=\"p1\">**</ept> file is used to retrieve the names of the movies"
+    },
+    {
+      "pos": [
+        8626,
+        8713
+      ],
+      "content": "The <bpt id=\"p1\">**</bpt>recommendations.txt<ept id=\"p1\">**</ept> is used to retrieve the movie recommendations for this user"
+    },
+    {
+      "content": "The output from this command will be similar to the following:",
+      "pos": [
+        8719,
+        8781
+      ]
+    },
+    {
+      "content": "Delete temporary data",
+      "pos": [
+        10446,
+        10467
+      ]
+    },
+    {
+      "content": "Mahout jobs do not remove temporary data that is created while processing the job.",
+      "pos": [
+        10469,
+        10551
+      ]
+    },
+    {
+      "content": "The <ph id=\"ph1\">`--tempDir`</ph> parameter is specified in the example job to isolate the temporary files into a specific path for easy deletion.",
+      "pos": [
+        10552,
+        10680
+      ]
+    },
+    {
+      "content": "To remove the temp files, use the following command:",
+      "pos": [
+        10681,
+        10733
+      ]
+    },
+    {
+      "pos": [
+        10786,
+        10976
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.WARNING]</ph> If you do not remove the temporary files or the output file, you will receive a 'cannot overwrite file' error message if you run the job again with the same <ph id=\"ph2\">`--tempDir`</ph> path."
+    },
+    {
+      "content": "Next steps",
+      "pos": [
+        10980,
+        10990
+      ]
+    },
+    {
+      "content": "Now that you have learned how to use Mahout, discover other ways of working with data on HDInsight:",
+      "pos": [
+        10992,
+        11091
+      ]
+    },
+    {
+      "content": "Hive with HDInsight",
+      "pos": [
+        11096,
+        11115
+      ]
+    },
+    {
+      "content": "Pig with HDInsight",
+      "pos": [
+        11143,
+        11161
+      ]
+    },
+    {
+      "content": "MapReduce with HDInsight",
+      "pos": [
+        11188,
+        11212
+      ]
+    },
+    {
+      "content": "test",
+      "pos": [
+        11890,
+        11894
+      ]
+    }
+  ],
+  "content": "<properties\n    pageTitle=\"Generate recommendations using Mahout and Hadoop | Microsoft Azure\"\n    description=\"Learn how to use the Apache Mahout machine learning library to generate movie recommendations with Linux-based HDInsight (Hadoop).\"\n    services=\"hdinsight\"\n    documentationCenter=\"\"\n    authors=\"Blackmist\"\n    manager=\"paulettm\"\n    editor=\"cgronlun\"\n    tags=\"azure-portal\"/>\n\n<tags\n    ms.service=\"hdinsight\"\n    ms.workload=\"big-data\"\n    ms.tgt_pltfrm=\"na\"\n    ms.devlang=\"na\"\n    ms.topic=\"article\"\n    ms.date=\"09/02/2015\"\n    ms.author=\"larryfr\"/>\n\n#Generate movie recommendations by using Apache Mahout with Linux-based Hadoop in HDInsight (preview)\n\n[AZURE.INCLUDE [mahout-selector](../../includes/hdinsight-selector-mahout.md)]\n\nLearn how to use the [Apache Mahout](http://mahout.apache.org) machine learning library with Azure HDInsight to generate movie recommendations.\n\nMahout is a [machine learning][ml] library for Apache Hadoop. Mahout contains algorithms for processing data, such as filtering, classification, and clustering. In this article, you will use a recommendation engine to generate movie recommendations that are based on movies your friends have seen.\n\n> [AZURE.NOTE] The steps in this document require a Linux-based Hadoop on HDInsight cluster (preview). For information on using Mahout with a Windows-based cluster, see [Generate movie recommendations by using Apache Mahout with Windows-based Hadoop in HDInsight](hdinsight-mahout.md)\n\n##Prerequisites\n\n* A Linux-based Hadoop on HDInsight cluster. For information about creating one, see [Get started using Linux-based Hadoop in HDInsight][getstarted]\n\n##<a name=\"recommendations\"></a>Understanding recommendations\n\nOne of the functions that is provided by Mahout is a recommendation engine. This engine accepts data in the format of `userID`, `itemId`, and `prefValue` (the users preference for the item). Mahout can then perform co-occurance analysis to determine: _users who have a preference for an item also have a preference for these other items_. Mahout then determines users with like-item preferences, which can be used to make recommendations.\n\nThe following is an extremely simple example that uses movies:\n\n* __Co-occurance__: Joe, Alice, and Bob all liked _Star Wars_, _The Empire Strikes Back_, and _Return of the Jedi_. Mahout determines that users who like any one of these movies also like the other two.\n\n* __Co-occurance__: Bob and Alice also liked _The Phantom Menace_, _Attack of the Clones_, and _Revenge of the Sith_. Mahout determines that users who liked the previous three movies also like these three.\n\n* __Similarity recommendation__: Because Joe liked the first three movies, Mahout looks at movies that others with similar preferences liked, but Joe has not watched (liked/rated). In this case, Mahout recommends _The Phantom Menace_, _Attack of the Clones_, and _Revenge of the Sith_.\n\n##Load the data\n\nConveniently, [GroupLens Research][movielens] provides rating data for movies in a format that is compatible with Mahout. Use the following steps to download the data, then load it into the default storage for the cluster:\n\n1. Use SSH to connect to the Linux-based HDInsight cluster. The address to use when connecting is `CLUSTERNAME-ssh.azurehdinsight.net` and the port is `22`.\n\n    For more information on using SSH to connect to HDInsight, see the following documents:\n\n    * **Linux, Unix or OS X clients**: See [Connect to a Linux-based HDInsight cluster from Linux, OS X or Unix](hdinsight-hadoop-linux-use-ssh-unix.md#connect-to-a-linux-based-hdinsight-cluster)\n\n    * **Windows clients**: See [Connect to a Linux-based HDInsight cluster from Windows](hdinsight-hadoop-linux-use-ssh-windows.md#connect-to-a-linux-based-hdinsight-cluster)\n\n2. Download the MovieLens 100k archive, which contains 100,000 ratings from 1000 users for 1700 movies.\n\n        curl -O http://files.grouplens.org/datasets/movielens/ml-100k.zip\n\n3. Extract the archive using the following command:\n\n        unzip ml-100k.zip\n\n    This will extract the contents to a new folder named **ml-100k**.\n\n4. Use the following commands to copy the data to HDInsight storage:\n\n        cd ml-100k\n        hadoop fs -copyFromLocal ml-100k/u.data /example/data/u.data\n\n    The data contained in this file has a structure of `userID`, `movieID`, `userRating`, and `timestamp`, which tells us how highly each user rated a movie. Here is an example of the data:\n\n\n        196 242 3   881250949\n        186 302 3   891717742\n        22  377 1   878887116\n        244 51  2   880606923\n        166 346 1   886397596\n\n##Run the job\n\nUse the following command to run the recommendation job:\n\n    mahout recommenditembased -s SIMILARITY_COOCCURRENCE --input /example/data/u.data --output /example/data/mahoutout  --tempDir /temp/mahouttemp\n\n> [AZURE.NOTE] The job may take several minutes to complete, and may run multiple MapReduce jobs.\n\n##View the output\n\n1. Once the job completes, use the following command to view the generated output:\n\n        hadoop fs -text /example/data/mahoutout/part-r-00000\n\n    The output will appear as follows:\n\n        1   [234:5.0,347:5.0,237:5.0,47:5.0,282:5.0,275:5.0,88:5.0,515:5.0,514:5.0,121:5.0]\n        2   [282:5.0,210:5.0,237:5.0,234:5.0,347:5.0,121:5.0,258:5.0,515:5.0,462:5.0,79:5.0]\n        3   [284:5.0,285:4.828125,508:4.7543354,845:4.75,319:4.705128,124:4.7045455,150:4.6938777,311:4.6769233,248:4.65625,272:4.649266]\n        4   [690:5.0,12:5.0,234:5.0,275:5.0,121:5.0,255:5.0,237:5.0,895:5.0,282:5.0,117:5.0]\n\n    The first column is the `userID`. The values contained in '[' and ']' are `movieId`:`recommendationScore`.\n\n2. Some of the other data contained in the **ml-100k** directory can be used to make the data more user friendly. First, download the data using the following command:\n\n        hadoop fs -copyToLocal /example/data/mahoutout/part-r-00000 recommendations.txt\n\n    This will copy the output data to a file named **recommendations.txt** in the current directory.\n\n3. Use the following command to create a new Python script that will look up movie names for the data in the recommendations output:\n\n        nano show_recommendations.py\n\n    When the editor opens, use the following as the contents of the file:\n\n        #!/usr/bin/env python\n\n        import sys\n\n        if len(sys.argv) != 5:\n                print \"Arguments: userId userDataFilename movieFilename recommendationFilename\"\n                sys.exit(1)\n\n        userId, userDataFilename, movieFilename, recommendationFilename = sys.argv[1:]\n\n        print \"Reading Movies Descriptions\"\n        movieFile = open(movieFilename)\n        movieById = {}\n        for line in movieFile:\n                tokens = line.split(\"|\")\n                movieById[tokens[0]] = tokens[1:]\n        movieFile.close()\n\n        print \"Reading Rated Movies\"\n        userDataFile = open(userDataFilename)\n        ratedMovieIds = []\n        for line in userDataFile:\n                tokens = line.split(\"\\t\")\n                if tokens[0] == userId:\n                        ratedMovieIds.append((tokens[1],tokens[2]))\n        userDataFile.close()\n\n        print \"Reading Recommendations\"\n        recommendationFile = open(recommendationFilename)\n        recommendations = []\n        for line in recommendationFile:\n                tokens = line.split(\"\\t\")\n                if tokens[0] == userId:\n                        movieIdAndScores = tokens[1].strip(\"[]\\n\").split(\",\")\n                        recommendations = [ movieIdAndScore.split(\":\") for movieIdAndScore in movieIdAndScores ]\n                        break\n        recommendationFile.close()\n\n        print \"Rated Movies\"\n        print \"------------------------\"\n        for movieId, rating in ratedMovieIds:\n                print \"%s, rating=%s\" % (movieById[movieId][0], rating)\n        print \"------------------------\"\n\n        print \"Recommended Movies\"\n        print \"------------------------\"\n        for movieId, score in recommendations:\n                print \"%s, score=%s\" % (movieById[movieId][0], score)\n        print \"------------------------\"\n\n    Press **Ctrl-X**, **Y**, and finally **Enter** to save the data.\n\n3. Use the following command to make the file executable:\n\n        chmod +x show_recommendations.py\n\n4. Run the Python script:\n\n        ./show_recommendations.py 4 ml-100k/u.data ml-100k/u.item recommendations.txt\n\n    This will look at the recommendations generated for user ID 4.\n\n    * The **u.data** file is used to retrieve movies that the user has rated\n    * The **u.item** file is used to retrieve the names of the movies\n    * The **recommendations.txt** is used to retrieve the movie recommendations for this user\n\n    The output from this command will be similar to the following:\n\n        Reading Movies Descriptions\n        Reading Rated Movies\n        Reading Recommendations\n        Rated Movies\n        ------------------------\n        Mimic (1997), rating=3\n        Ulee's Gold (1997), rating=5\n        Incognito (1997), rating=5\n        One Flew Over the Cuckoo's Nest (1975), rating=4\n        Event Horizon (1997), rating=4\n        Client, The (1994), rating=3\n        Liar Liar (1997), rating=5\n        Scream (1996), rating=4\n        Star Wars (1977), rating=5\n        Wedding Singer, The (1998), rating=5\n        Starship Troopers (1997), rating=4\n        Air Force One (1997), rating=5\n        Conspiracy Theory (1997), rating=3\n        Contact (1997), rating=5\n        Indiana Jones and the Last Crusade (1989), rating=3\n        Desperate Measures (1998), rating=5\n        Seven (Se7en) (1995), rating=4\n        Cop Land (1997), rating=5\n        Lost Highway (1997), rating=5\n        Assignment, The (1997), rating=5\n        Blues Brothers 2000 (1998), rating=5\n        Spawn (1997), rating=2\n        Wonderland (1997), rating=5\n        In & Out (1997), rating=5\n        ------------------------\n        Recommended Movies\n        ------------------------\n        Seven Years in Tibet (1997), score=5.0\n        Indiana Jones and the Last Crusade (1989), score=5.0\n        Jaws (1975), score=5.0\n        Sense and Sensibility (1995), score=5.0\n        Independence Day (ID4) (1996), score=5.0\n        My Best Friend's Wedding (1997), score=5.0\n        Jerry Maguire (1996), score=5.0\n        Scream 2 (1997), score=5.0\n        Time to Kill, A (1996), score=5.0\n        Rock, The (1996), score=5.0\n        ------------------------\n\n##Delete temporary data\n\nMahout jobs do not remove temporary data that is created while processing the job. The `--tempDir` parameter is specified in the example job to isolate the temporary files into a specific path for easy deletion. To remove the temp files, use the following command:\n\n    hadoop fs -rm -f -r wasb:///temp/mahouttemp\n\n> [AZURE.WARNING] If you do not remove the temporary files or the output file, you will receive a 'cannot overwrite file' error message if you run the job again with the same `--tempDir` path.\n\n##Next steps\n\nNow that you have learned how to use Mahout, discover other ways of working with data on HDInsight:\n\n* [Hive with HDInsight](../hadoop-use-hive.md)\n* [Pig with HDInsight](../hadoop-use-pig.md)\n* [MapReduce with HDInsight](../hadoop-use-mapreduce.md)\n\n[build]: http://mahout.apache.org/developers/buildingmahout.html\n[movielens]: http://grouplens.org/datasets/movielens/\n[100k]: http://files.grouplens.org/datasets/movielens/ml-100k.zip\n[getstarted]: hdinsight-hadoop-linux-tutorial-get-started.md\n[upload]: hdinsight-upload-data.md\n[ml]: http://en.wikipedia.org/wiki/Machine_learning\n[forest]: http://en.wikipedia.org/wiki/Random_forest\n[management]: https://manage.windowsazure.com/\n[enableremote]: ./media/hdinsight-mahout/enableremote.png\n[connect]: ./media/hdinsight-mahout/connect.png\n[hadoopcli]: ./media/hdinsight-mahout/hadoopcli.png\n[tools]: https://github.com/Blackmist/hdinsight-tools\n \ntest\n"
+}

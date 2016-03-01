@@ -1,0 +1,138 @@
+{
+  "nodes": [
+    {
+      "content": "Reliable Actors Events",
+      "pos": [
+        26,
+        48
+      ]
+    },
+    {
+      "content": "Introduction to Events for Service Fabric Reliable Actors.",
+      "pos": [
+        66,
+        124
+      ]
+    },
+    {
+      "content": "Actor Events",
+      "pos": [
+        422,
+        434
+      ]
+    },
+    {
+      "content": "Actor events provide a way to send best effort notifications from the Actor to the clients.",
+      "pos": [
+        435,
+        526
+      ]
+    },
+    {
+      "content": "Actor events are designed for Actor-Client communication and should NOT be used for Actor-to-Actor communication.",
+      "pos": [
+        527,
+        640
+      ]
+    },
+    {
+      "content": "Following code snippets shows how to use actor events in your application.",
+      "pos": [
+        642,
+        716
+      ]
+    },
+    {
+      "content": "Define an interface that describes the events published by the actor.",
+      "pos": [
+        718,
+        787
+      ]
+    },
+    {
+      "content": "This interface must be derived from the <ph id=\"ph1\">`IActorEvents`</ph> interface.",
+      "pos": [
+        788,
+        853
+      ]
+    },
+    {
+      "content": "The arguments of the methods must be <bpt id=\"p1\">[</bpt>data contract serializable<ept id=\"p1\">](service-fabric-reliable-actors-notes-on-actor-type-serialization.md)</ept>.",
+      "pos": [
+        854,
+        989
+      ]
+    },
+    {
+      "content": "The methods must return void as event notifications are one-way and best effort.",
+      "pos": [
+        990,
+        1070
+      ]
+    },
+    {
+      "content": "Declare the events published by the actor in the actor interface.",
+      "pos": [
+        1196,
+        1261
+      ]
+    },
+    {
+      "content": "On the client side, implement the event handler.",
+      "pos": [
+        1449,
+        1497
+      ]
+    },
+    {
+      "content": "On the client, create a proxy to the actor that publishes the event and subscribe to its events.",
+      "pos": [
+        1719,
+        1815
+      ]
+    },
+    {
+      "content": "In the event of failovers the actor may failover to a different process or node.",
+      "pos": [
+        1997,
+        2077
+      ]
+    },
+    {
+      "content": "The actor proxy manages the active subscriptions and automatically re-subscribes them.",
+      "pos": [
+        2078,
+        2164
+      ]
+    },
+    {
+      "content": "You can control the re-subscription interval through the <ph id=\"ph1\">`ActorProxyEventExtensions.SubscribeAsync&lt;TEvent&gt;`</ph> API.",
+      "pos": [
+        2165,
+        2277
+      ]
+    },
+    {
+      "content": "To unsubscribe use the <ph id=\"ph1\">`ActorProxyEventExtensions.UnsubscribeAsync&lt;TEvent&gt;`</ph> API.",
+      "pos": [
+        2278,
+        2358
+      ]
+    },
+    {
+      "content": "On the actor, simply publish the events as they happen.",
+      "pos": [
+        2360,
+        2415
+      ]
+    },
+    {
+      "content": "If there are subscribers subscribed to the event, the Actors runtime will send them the notification.",
+      "pos": [
+        2416,
+        2517
+      ]
+    }
+  ],
+  "content": "<properties\n   pageTitle=\"Reliable Actors Events\"\n   description=\"Introduction to Events for Service Fabric Reliable Actors.\"\n   services=\"service-fabric\"\n   documentationCenter=\".net\"\n   authors=\"jessebenson\"\n   manager=\"timlt\"\n   editor=\"\"/>\n\n<tags\n   ms.service=\"service-fabric\"\n   ms.devlang=\"dotnet\"\n   ms.topic=\"article\"\n   ms.tgt_pltfrm=\"NA\"\n   ms.workload=\"NA\"\n   ms.date=\"08/05/2015\"\n   ms.author=\"amanbha\"/>\n\n\n# Actor Events\nActor events provide a way to send best effort notifications from the Actor to the clients. Actor events are designed for Actor-Client communication and should NOT be used for Actor-to-Actor communication.\n\nFollowing code snippets shows how to use actor events in your application.\n\nDefine an interface that describes the events published by the actor. This interface must be derived from the `IActorEvents` interface. The arguments of the methods must be [data contract serializable](service-fabric-reliable-actors-notes-on-actor-type-serialization.md). The methods must return void as event notifications are one-way and best effort.\n\n```csharp\npublic interface IGameEvents : IActorEvents\n{\n    void GameScoreUpdated(Guid gameId, string currentScore);\n}\n```\n\nDeclare the events published by the actor in the actor interface.\n\n```csharp\npublic interface IGameActor : IActor, IActorEventPublisher<IGameEvents>\n{\n    Task UpdateGameStatus(GameStatus status);\n\n    [Readonly]\n    Task<string> GetGameScore();\n}\n```\n\nOn the client side, implement the event handler.\n\n```csharp\nclass GameEventsHandler : IGameEvents\n{\n    public void GameScoreUpdated(Guid gameId, string currentScore)\n    {\n        Console.WriteLine(@\"Updates: Game: {0}, Score: {1}\", gameId, currentScore);\n    }\n}\n```\n\nOn the client, create a proxy to the actor that publishes the event and subscribe to its events.\n\n```csharp\nvar proxy = ActorProxy.Create<IGameActor>(\n                    new ActorId(Guid.Parse(arg)), ApplicationName);\nproxy.SubscribeAsync(new GameEventsHandler()).Wait();\n```\n\nIn the event of failovers the actor may failover to a different process or node. The actor proxy manages the active subscriptions and automatically re-subscribes them. You can control the re-subscription interval through the `ActorProxyEventExtensions.SubscribeAsync<TEvent>` API. To unsubscribe use the `ActorProxyEventExtensions.UnsubscribeAsync<TEvent>` API.\n\nOn the actor, simply publish the events as they happen. If there are subscribers subscribed to the event, the Actors runtime will send them the notification.\n\n```csharp\nvar ev = GetEvent<IGameEvents>();\nev.GameScoreUpdated(Id.GetGuidId(), State.Status.Score);\n```\n"
+}

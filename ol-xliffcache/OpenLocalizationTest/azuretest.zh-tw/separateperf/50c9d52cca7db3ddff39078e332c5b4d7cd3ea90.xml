@@ -1,0 +1,775 @@
+{
+  "nodes": [
+    {
+      "content": "DataStax on Ubuntu Resource Manager Template",
+      "pos": [
+        27,
+        71
+      ]
+    },
+    {
+      "content": "Learn to easily deploy a new DataStax cluster on Ubuntu VMs using Azure PowerShell or the Azure CLI and a Resource Manager template",
+      "pos": [
+        90,
+        221
+      ]
+    },
+    {
+      "content": "DataStax on Ubuntu with a Resource Manager Template",
+      "pos": [
+        544,
+        595
+      ]
+    },
+    {
+      "content": "DataStax is a recognized industry leader in developing and delivering solutions based on Apache Cassandra™ - the commercially-supported, enterprise-ready NoSQL distributed database technology that is widely-acknowledged as agile, always-on, and predictably scalable to any size.",
+      "pos": [
+        597,
+        875
+      ]
+    },
+    {
+      "content": "DataStax offers both the Enterprise (DSE) and Community (DSC) flavors.",
+      "pos": [
+        876,
+        946
+      ]
+    },
+    {
+      "content": "It also provides capabilities like in-memory computing, enterprise-level security, fast and powerful integrated analytics, and enterprise search.",
+      "pos": [
+        947,
+        1092
+      ]
+    },
+    {
+      "pos": [
+        1094,
+        1367
+      ],
+      "content": "In addition to what is already available in Azure Marketplace, now you can also easily deploy a new DataStax cluster on Ubuntu VMs using a Resource Manager template deployed through <bpt id=\"p1\">[</bpt>Azure PowerShell<ept id=\"p1\">](../powershell-install-configure.md)</ept> or the <bpt id=\"p2\">[</bpt>Azure CLI<ept id=\"p2\">](../xplat-cli.md)</ept>."
+    },
+    {
+      "content": "Newly deployed clusters based on this template will have the topology described in the following diagram, although other topologies can be easily achieved by customizing the template presented in this article:",
+      "pos": [
+        1369,
+        1578
+      ]
+    },
+    {
+      "content": "cluster-architecture",
+      "pos": [
+        1582,
+        1602
+      ]
+    },
+    {
+      "content": "Using parameters, you can define the number of nodes that will be deployed in the new Apache Cassandra cluster.",
+      "pos": [
+        1672,
+        1783
+      ]
+    },
+    {
+      "content": "An instance of the DataStax Operation Center service will be also deployed in a stand-alone VM within the same VNET, giving you the ability to monitor the status of the cluster and all individual nodes, add/remove nodes, and perform all administrative tasks related to that cluster.",
+      "pos": [
+        1784,
+        2066
+      ]
+    },
+    {
+      "content": "Once the deployment is complete, you can access the Datastax Operations Center VM instance using the configured DNS address.",
+      "pos": [
+        2068,
+        2192
+      ]
+    },
+    {
+      "content": "The OpsCenter VM has SSH port 22 enabled, as well as port 8443 for HTTPS.",
+      "pos": [
+        2193,
+        2266
+      ]
+    },
+    {
+      "content": "The DNS address for the operations center will include the <bpt id=\"p1\">*</bpt>dnsName<ept id=\"p1\">*</ept> and <bpt id=\"p2\">*</bpt>region<ept id=\"p2\">*</ept> entered as parameters, resulting in the format <ph id=\"ph1\">`{dnsName}.{region}.cloudapp.azure.com`</ph>.",
+      "pos": [
+        2267,
+        2436
+      ]
+    },
+    {
+      "content": "If you created a deployment with the <bpt id=\"p1\">*</bpt>dnsName<ept id=\"p1\">*</ept> parameter set to \"datastax” in the \"West US” region you could access the Datastax Operations Center VM for the deployment at <ph id=\"ph1\">`https://datastax.westus.cloudapp.azure.com:8443`</ph>.",
+      "pos": [
+        2437,
+        2659
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> The certificate used in the deployment is a self-signed certificate that will create a browser warning.",
+      "pos": [
+        2663,
+        2779
+      ]
+    },
+    {
+      "content": "You can follow the process on the <bpt id=\"p1\">[</bpt>Datastax<ept id=\"p1\">](http://www.datastax.com/)</ept> web site for replacing the certificate with your own SSL certificate.",
+      "pos": [
+        2780,
+        2920
+      ]
+    },
+    {
+      "content": "Before diving into more details related to the Azure Resource Manager and the template we will use for this deployment, make sure you have Azure PowerShell or the Azure CLI configured correctly.",
+      "pos": [
+        2922,
+        3116
+      ]
+    },
+    {
+      "content": "Create a Datastax-based Cassandra cluster with a Resource Manager template",
+      "pos": [
+        3305,
+        3379
+      ]
+    },
+    {
+      "content": "Follow these steps to create an Apache Cassandra cluster, based on DataStax, using a Resource Manager template from the Github template repository.",
+      "pos": [
+        3381,
+        3528
+      ]
+    },
+    {
+      "content": "Each step will include directions for both Azure PowerShell and the Azure CLI.",
+      "pos": [
+        3529,
+        3607
+      ]
+    },
+    {
+      "content": "Step 1-a: Download the template files using PowerShell",
+      "pos": [
+        3613,
+        3667
+      ]
+    },
+    {
+      "content": "Create a local folder for the JSON template and other associated files (for example, C:\\Azure\\Templates\\DataStax).",
+      "pos": [
+        3669,
+        3783
+      ]
+    },
+    {
+      "content": "Substitute in the folder name of your local folder and run these commands:",
+      "pos": [
+        3785,
+        3859
+      ]
+    },
+    {
+      "content": "Step 1-b: Download the template files using the Azure CLI",
+      "pos": [
+        5995,
+        6052
+      ]
+    },
+    {
+      "content": "Clone the entire template repository using a git client of your choice, for example:",
+      "pos": [
+        6054,
+        6138
+      ]
+    },
+    {
+      "pos": [
+        6226,
+        6322
+      ],
+      "content": "When completed, look for the <bpt id=\"p1\">**</bpt>datastax-on-ubuntu<ept id=\"p1\">**</ept> folder in your C:\\Azure\\Templates directory."
+    },
+    {
+      "content": "Step 2: (optional) Understand the template parameters",
+      "pos": [
+        6328,
+        6381
+      ]
+    },
+    {
+      "content": "When you deploy non-trivial solutions like an Apache Cassandra cluster based on DataStax, you must specify a set of configuration parameters to deal with a number of settings required.",
+      "pos": [
+        6383,
+        6567
+      ]
+    },
+    {
+      "content": "By declaring these parameters in the template definition, it’s possible to specify values during deployment through an external file or in the command-line.",
+      "pos": [
+        6568,
+        6724
+      ]
+    },
+    {
+      "content": "In the \"parameters\" section at the top of the <bpt id=\"p1\">**</bpt>azuredeploy.json<ept id=\"p1\">**</ept> file, you’ll find the set of parameters that are required by the template to configure a DataStax cluster.",
+      "pos": [
+        6726,
+        6899
+      ]
+    },
+    {
+      "content": "Here is an example of the parameters section from this template's azuredeploy.json file:",
+      "pos": [
+        6900,
+        6988
+      ]
+    },
+    {
+      "content": "Each parameter has details such as data type and allowed values.",
+      "pos": [
+        9485,
+        9549
+      ]
+    },
+    {
+      "content": "This allows for validation of parameters passed during template execution in an interactive mode (e.g. PowerShell or Azure CLI), as well as a self-discovery UI that could be dynamically-built by parsing the list of required parameters and their descriptions.",
+      "pos": [
+        9550,
+        9808
+      ]
+    },
+    {
+      "content": "Step 3-a: Deploy a DataStax cluster with a template using PowerShell",
+      "pos": [
+        9814,
+        9882
+      ]
+    },
+    {
+      "content": "Prepare a parameters file for your deployment by creating a JSON file containing runtime values for all parameters.",
+      "pos": [
+        9884,
+        9999
+      ]
+    },
+    {
+      "content": "This file will then be passed as a single entity to the deployment command.",
+      "pos": [
+        10000,
+        10075
+      ]
+    },
+    {
+      "content": "If you do not include a parameters file, PowerShell will use any default values specified in the template, and then prompt you to fill in the remaining values.",
+      "pos": [
+        10076,
+        10235
+      ]
+    },
+    {
+      "pos": [
+        10237,
+        10320
+      ],
+      "content": "Here is an example set of parameters from the <bpt id=\"p1\">**</bpt>azuredeploy-parameters.json<ept id=\"p1\">**</ept> file:"
+    },
+    {
+      "content": "Fill in an Azure deployment name, resource group name, Azure location, and the folder of your saved JSON deployment file.",
+      "pos": [
+        11019,
+        11140
+      ]
+    },
+    {
+      "content": "Then run these commands:",
+      "pos": [
+        11141,
+        11165
+      ]
+    },
+    {
+      "content": "When you run the <bpt id=\"p1\">**</bpt>New-AzureResourceGroupDeployment<ept id=\"p1\">**</ept> command, this will extract parameter values from the JSON parameters file, and will start executing the template accordingly.",
+      "pos": [
+        11702,
+        11881
+      ]
+    },
+    {
+      "content": "Defining and using multiple parameter files with your different environments (e.g. Test, Production, etc.) will promote template reuse and simplify complex multi-environment solutions.",
+      "pos": [
+        11882,
+        12066
+      ]
+    },
+    {
+      "content": "When deploying, please keep in mind that a new Azure Storage Account needs to be created so the name you provide as the storage account parameter must be unique and meet all requirements for an Azure Storage Account (lowercase letters and numbers only).",
+      "pos": [
+        12068,
+        12321
+      ]
+    },
+    {
+      "content": "During and after deployment, you can check all the requests that were made during provisioning, including any errors that occurred.",
+      "pos": [
+        12323,
+        12454
+      ]
+    },
+    {
+      "pos": [
+        12458,
+        12542
+      ],
+      "content": "To do that, go to the <bpt id=\"p1\">[</bpt>Azure Portal<ept id=\"p1\">](https://portal.azure.com)</ept> and do the following:"
+    },
+    {
+      "content": "Click \"Browse” on the left-hand navigation bar, scroll down and click on \"Resource Groups”.",
+      "pos": [
+        12546,
+        12637
+      ]
+    },
+    {
+      "content": "After clicking on the Resource Group that you just created, it will bring up the \"Resource Group” blade.",
+      "pos": [
+        12642,
+        12746
+      ]
+    },
+    {
+      "content": "By clicking on the \"Events” bar graph in the \"Monitoring” part of the \"Resource Group” blade, you can see the events for your deployment:",
+      "pos": [
+        12751,
+        12888
+      ]
+    },
+    {
+      "content": "Clicking on individual events lets you drill further down into the details of each individual operation made on behalf of the template",
+      "pos": [
+        12891,
+        13025
+      ]
+    },
+    {
+      "content": "After your tests, if you need to remove this resource group and all of its resources (the storage account, virtual machine, and virtual network), use this single command:",
+      "pos": [
+        13027,
+        13197
+      ]
+    },
+    {
+      "content": "Step 3-b: Deploy a DataStax cluster with a template using the Azure CLI",
+      "pos": [
+        13271,
+        13342
+      ]
+    },
+    {
+      "content": "To deploy a Datastax cluster via the Azure CLI, first create a Resource Group by specifying a name and a location:",
+      "pos": [
+        13344,
+        13458
+      ]
+    },
+    {
+      "content": "Pass this Resource Group name, the location of the JSON template file, and the location of the parameters file (see the above PowerShell section for details) into the following command:",
+      "pos": [
+        13498,
+        13683
+      ]
+    },
+    {
+      "content": "You can check the status of individual resources deployments with the following command:",
+      "pos": [
+        13779,
+        13867
+      ]
+    },
+    {
+      "content": "A tour of the Datastax template structure and file organization",
+      "pos": [
+        13909,
+        13972
+      ]
+    },
+    {
+      "content": "In order to design a robust and reusable Resource Manager template, additional thinking is needed to organize the series of complex and interrelated tasks required during the deployment of a complex solution like DataStax.",
+      "pos": [
+        13974,
+        14196
+      ]
+    },
+    {
+      "content": "Leveraging ARM <bpt id=\"p1\">**</bpt>template linking<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>resource looping<ept id=\"p2\">**</ept> in addition to script execution through related extensions, it’s possible to implement a modular approach that can be reused with virtually any complex template-based deployment.",
+      "pos": [
+        14197,
+        14436
+      ]
+    },
+    {
+      "content": "This diagram describes the relationships between all the files downloaded from GitHub for this deployment:",
+      "pos": [
+        14438,
+        14544
+      ]
+    },
+    {
+      "content": "datastax-files",
+      "pos": [
+        14548,
+        14562
+      ]
+    },
+    {
+      "pos": [
+        14626,
+        14729
+      ],
+      "content": "This section steps you through the structure of the <bpt id=\"p1\">**</bpt>azuredeploy.json<ept id=\"p1\">**</ept> file for the Datastax cluster."
+    },
+    {
+      "content": "\"parameters\" section",
+      "pos": [
+        14735,
+        14755
+      ]
+    },
+    {
+      "content": "The \"parameters\" section of <bpt id=\"p1\">**</bpt>azuredeploy.json<ept id=\"p1\">**</ept> specifies modifiable parameters that are used in this template.",
+      "pos": [
+        14757,
+        14869
+      ]
+    },
+    {
+      "content": "The aforementioned <bpt id=\"p1\">**</bpt>azuredeploy-parameters.json<ept id=\"p1\">**</ept> file is used to pass values into the \"parameters\" section of azuredeploy.json during template execution.",
+      "pos": [
+        14870,
+        15025
+      ]
+    },
+    {
+      "content": "\"variables\" section",
+      "pos": [
+        15031,
+        15050
+      ]
+    },
+    {
+      "content": "The \"variables\" section specifies variables that can be used throughout this template.",
+      "pos": [
+        15052,
+        15138
+      ]
+    },
+    {
+      "content": "This contains a number of fields (JSON data types or fragments) that will be set to constants or calculated values at execution time.",
+      "pos": [
+        15139,
+        15272
+      ]
+    },
+    {
+      "content": "Here is the \"variables\" section for this Datastax template:",
+      "pos": [
+        15273,
+        15332
+      ]
+    },
+    {
+      "content": "Drilling down into this example, you can see two different approaches.",
+      "pos": [
+        17214,
+        17284
+      ]
+    },
+    {
+      "content": "In this first fragment, the \"osSettings” variable is a nested JSON element containing 4 key-value pairs:",
+      "pos": [
+        17285,
+        17389
+      ]
+    },
+    {
+      "content": "In this second fragment, the \"scripts\" variable is a JSON array where each element will be calculated at runtime using a template language function (concat) and the value of another variable plus string constants:",
+      "pos": [
+        17602,
+        17815
+      ]
+    },
+    {
+      "content": "\"resources\" section",
+      "pos": [
+        18126,
+        18145
+      ]
+    },
+    {
+      "content": "The <bpt id=\"p1\">**</bpt>\"resources\"<ept id=\"p1\">**</ept> section is where most of the action is happening.",
+      "pos": [
+        18147,
+        18216
+      ]
+    },
+    {
+      "content": "Looking carefully inside this section, you can immediately identify two different cases: the first one is an element defined of type <ph id=\"ph1\">`Microsoft.Resources/deployments`</ph> that basically means the invocation of a nested deployment within the main one.",
+      "pos": [
+        18217,
+        18463
+      ]
+    },
+    {
+      "content": "Through the \"templateLink\" element (and related version property), it’s possible to specify a linked template file that will be invoked passing a set of parameters as input, as seen in this fragment:",
+      "pos": [
+        18464,
+        18663
+      ]
+    },
+    {
+      "pos": [
+        19385,
+        19632
+      ],
+      "content": "From this first example, it is clear how <bpt id=\"p1\">**</bpt>azuredeploy.json<ept id=\"p1\">**</ept> in this scenario has been organized as a sort of orchestration mechanism, invoking a number of other template files, each one responsible for part of the required deployment activities."
+    },
+    {
+      "content": "In particular, the following linked templates will be used for this deployment:",
+      "pos": [
+        19634,
+        19713
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>shared-resource.json<ept id=\"p1\">**</ept>: contains the definition of all resources that will be shared across the deployment.",
+      "pos": [
+        19719,
+        19828
+      ]
+    },
+    {
+      "content": "Examples are storage accounts used to store VM’s OS disks and virtual networks.",
+      "pos": [
+        19829,
+        19908
+      ]
+    },
+    {
+      "pos": [
+        19913,
+        20046
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>opscenter-resources.json<ept id=\"p1\">**</ept>: deploys an OpsCenter VM and all related resources, including a network interface and public IP address."
+    },
+    {
+      "pos": [
+        20051,
+        20271
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>opscenter-install-resources.json<ept id=\"p1\">**</ept>: deploys the OpsCenter VM extension (custom script for Linux) that will invoke the specific bash script file (<bpt id=\"p2\">**</bpt>opscenter.sh<ept id=\"p2\">**</ept>) required to setup the OpsCenter service within that VM."
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>ephemeral-nodes-resources.json<ept id=\"p1\">**</ept>: deploys all cluster node VMs and connected resources (network cards, private IPs, etc.).",
+      "pos": [
+        20276,
+        20400
+      ]
+    },
+    {
+      "content": "This template will also deploy VM extensions (custom scripts for Linux) and invoke a bash script (<bpt id=\"p1\">**</bpt>dsenode.sh<ept id=\"p1\">**</ept>) to physically install Apache Cassandra bits on each node.",
+      "pos": [
+        20401,
+        20572
+      ]
+    },
+    {
+      "content": "Let’s drill down into how this last template is used, as it is one of the most interesting from a template development perspective.",
+      "pos": [
+        20574,
+        20705
+      ]
+    },
+    {
+      "content": "One important concept to highlight is how a single template file can deploy multiple copies of a single resource type, and for each instance can set unique values for required settings.",
+      "pos": [
+        20706,
+        20891
+      ]
+    },
+    {
+      "content": "This concept is known as <bpt id=\"p1\">**</bpt>Resource Looping<ept id=\"p1\">**</ept>.",
+      "pos": [
+        20892,
+        20938
+      ]
+    },
+    {
+      "content": "When <bpt id=\"p1\">**</bpt>ephemeral-nodes-resources.json<ept id=\"p1\">**</ept> is invoked from within the main <bpt id=\"p2\">**</bpt>azuredeploy.json<ept id=\"p2\">**</ept> file, a parameter called <bpt id=\"p3\">**</bpt>nodeCount<ept id=\"p3\">**</ept> is provided as part of the parameters list.",
+      "pos": [
+        20940,
+        21115
+      ]
+    },
+    {
+      "content": "Within the child template, nodeCount (the number of nodes to deploy in the cluster) will be used inside the <bpt id=\"p1\">**</bpt>\"copy”<ept id=\"p1\">**</ept> element of each resource that needs to be deployed in multiple copies, as highlighted in the fragment below.",
+      "pos": [
+        21116,
+        21343
+      ]
+    },
+    {
+      "content": "For all settings where you need unique values for different instances of the deployed resource, the <bpt id=\"p1\">**</bpt>copyindex()<ept id=\"p1\">**</ept> function can be used to obtain a numeric value indicating the current index in that particular resource loop creation.",
+      "pos": [
+        21344,
+        21578
+      ]
+    },
+    {
+      "content": "In the following fragment, you can see this concept applied to multiple VMs being created for the Datastax cluster nodes:",
+      "pos": [
+        21579,
+        21700
+      ]
+    },
+    {
+      "content": "Another important concept in resource creation is the ability to specify dependencies and precedencies between resources, as you can see in the <bpt id=\"p1\">**</bpt>dependsOn<ept id=\"p1\">**</ept> JSON array.",
+      "pos": [
+        24679,
+        24848
+      ]
+    },
+    {
+      "content": "In this particular template, each node will also have an attached 1TB disk (see \"dataDisks\") that can be used for hosting backups and snapshots of the Apache Cassandra instance.",
+      "pos": [
+        24849,
+        25026
+      ]
+    },
+    {
+      "content": "Attached disks are formatted as part of the node preparation activities triggered by the execution of the <bpt id=\"p1\">**</bpt>dsenode.sh<ept id=\"p1\">**</ept> script file.",
+      "pos": [
+        25028,
+        25161
+      ]
+    },
+    {
+      "content": "The first row of that script invokes another script:",
+      "pos": [
+        25162,
+        25214
+      ]
+    },
+    {
+      "content": "vm-disk-utils-0.1.sh is part of the <bpt id=\"p1\">**</bpt>shared_scripts\\ubuntu<ept id=\"p1\">**</ept> folder in the azure-quickstart-tempates github repo, and contains very useful functions for disk mounting, formatting, and striping.",
+      "pos": [
+        25247,
+        25441
+      ]
+    },
+    {
+      "content": "These functions can be used in all templates in the repo.",
+      "pos": [
+        25442,
+        25499
+      ]
+    },
+    {
+      "content": "Another interesting fragment to explore is the one related to CustomScriptForLinux VM extensions.",
+      "pos": [
+        25501,
+        25598
+      ]
+    },
+    {
+      "content": "These are installed as a separate type of resource, with a dependency on each cluster node (and the OpsCenter instance).",
+      "pos": [
+        25599,
+        25719
+      ]
+    },
+    {
+      "content": "They leverage the same resource looping mechanism described for virtual machines:",
+      "pos": [
+        25720,
+        25801
+      ]
+    },
+    {
+      "content": "By familiarizing yourself with the other files included in this deployment, you will be able to understand all the details and best practices required to organize and orchestrate complex deployment strategies for multi-nodes solutions, based on any technology, leveraging Azure Resource Manager templates.",
+      "pos": [
+        26702,
+        27007
+      ]
+    },
+    {
+      "content": "While not mandatory, a recommended approach is to structure your template files as highlighted by the following diagram:",
+      "pos": [
+        27008,
+        27128
+      ]
+    },
+    {
+      "content": "datastax-template-structure",
+      "pos": [
+        27132,
+        27159
+      ]
+    },
+    {
+      "content": "In essence, this approach suggests to:",
+      "pos": [
+        27236,
+        27274
+      ]
+    },
+    {
+      "content": "Define your core template file as a central orchestration point for all specific deployment activities, leveraging template linking to invoke sub template executions",
+      "pos": [
+        27280,
+        27445
+      ]
+    },
+    {
+      "content": "Create a specific template files that will deploy all resources shared across all other specific deployment tasks (e.g. storage accounts, vnet configuration, etc.).",
+      "pos": [
+        27450,
+        27614
+      ]
+    },
+    {
+      "content": "This can be heavily reused between deployments that have similar requirements in terms of common infrastructure.",
+      "pos": [
+        27615,
+        27727
+      ]
+    },
+    {
+      "content": "Include optional resource templates for spot requirements specific of a given resource",
+      "pos": [
+        27732,
+        27818
+      ]
+    },
+    {
+      "content": "For identical members of a group of resources (nodes in a cluster, etc.) create specific templates that leverage resource looping in order to deploy multiple instances with unique properties",
+      "pos": [
+        27823,
+        28013
+      ]
+    },
+    {
+      "content": "For all post deployment tasks (e.g. product installation, configurations, etc.) leverage script deployment extensions and create scripts specific to each technology",
+      "pos": [
+        28018,
+        28182
+      ]
+    },
+    {
+      "pos": [
+        28184,
+        28295
+      ],
+      "content": "For more information, see <bpt id=\"p1\">[</bpt>Azure Resource Manager Template Language<ept id=\"p1\">](../resource-group-authoring-templates.md)</ept>."
+    }
+  ],
+  "content": "<properties\n    pageTitle=\"DataStax on Ubuntu Resource Manager Template\"\n    description=\"Learn to easily deploy a new DataStax cluster on Ubuntu VMs using Azure PowerShell or the Azure CLI and a Resource Manager template\"\n    services=\"virtual-machines\"\n    documentationCenter=\"\"\n    authors=\"karthmut\"\n    manager=\"timlt\"\n    editor=\"tysonn\"/>\n\n<tags\n    ms.service=\"virtual-machines\"\n    ms.workload=\"multiple\"\n    ms.tgt_pltfrm=\"vm-windows\"\n    ms.devlang=\"na\"\n    ms.topic=\"article\"\n    ms.date=\"04/29/2015\"\n    ms.author=\"karthmut\"/>\n\n# DataStax on Ubuntu with a Resource Manager Template\n\nDataStax is a recognized industry leader in developing and delivering solutions based on Apache Cassandra™ - the commercially-supported, enterprise-ready NoSQL distributed database technology that is widely-acknowledged as agile, always-on, and predictably scalable to any size. DataStax offers both the Enterprise (DSE) and Community (DSC) flavors. It also provides capabilities like in-memory computing, enterprise-level security, fast and powerful integrated analytics, and enterprise search.\n\nIn addition to what is already available in Azure Marketplace, now you can also easily deploy a new DataStax cluster on Ubuntu VMs using a Resource Manager template deployed through [Azure PowerShell](../powershell-install-configure.md) or the [Azure CLI](../xplat-cli.md).\n\nNewly deployed clusters based on this template will have the topology described in the following diagram, although other topologies can be easily achieved by customizing the template presented in this article:\n\n![cluster-architecture](media/virtual-machines-datastax-template/cluster-architecture.png)\n\nUsing parameters, you can define the number of nodes that will be deployed in the new Apache Cassandra cluster. An instance of the DataStax Operation Center service will be also deployed in a stand-alone VM within the same VNET, giving you the ability to monitor the status of the cluster and all individual nodes, add/remove nodes, and perform all administrative tasks related to that cluster.\n\nOnce the deployment is complete, you can access the Datastax Operations Center VM instance using the configured DNS address. The OpsCenter VM has SSH port 22 enabled, as well as port 8443 for HTTPS. The DNS address for the operations center will include the *dnsName* and *region* entered as parameters, resulting in the format `{dnsName}.{region}.cloudapp.azure.com`. If you created a deployment with the *dnsName* parameter set to \"datastax” in the \"West US” region you could access the Datastax Operations Center VM for the deployment at `https://datastax.westus.cloudapp.azure.com:8443`.\n\n> [AZURE.NOTE] The certificate used in the deployment is a self-signed certificate that will create a browser warning. You can follow the process on the [Datastax](http://www.datastax.com/) web site for replacing the certificate with your own SSL certificate.\n\nBefore diving into more details related to the Azure Resource Manager and the template we will use for this deployment, make sure you have Azure PowerShell or the Azure CLI configured correctly.\n\n[AZURE.INCLUDE [arm-getting-setup-powershell](../../includes/arm-getting-setup-powershell.md)]\n\n[AZURE.INCLUDE [xplat-getting-set-up-arm](../../includes/xplat-getting-set-up-arm.md)]\n\n## Create a Datastax-based Cassandra cluster with a Resource Manager template\n\nFollow these steps to create an Apache Cassandra cluster, based on DataStax, using a Resource Manager template from the Github template repository. Each step will include directions for both Azure PowerShell and the Azure CLI.\n\n### Step 1-a: Download the template files using PowerShell\n\nCreate a local folder for the JSON template and other associated files (for example, C:\\Azure\\Templates\\DataStax).\n\nSubstitute in the folder name of your local folder and run these commands:\n\n    $folderName=\"C:\\Azure\\Templates\\DataStax\"\n    $webclient = New-Object System.Net.WebClient\n    $url = \"https://raw.githubusercontent.com/azure/azure-quickstart-templates/master/datastax-on-ubuntu/azuredeploy.json\"\n    $filePath = $folderName + \"\\azuredeploy.json\"\n    $webclient.DownloadFile($url,$filePath)\n    $url = \"https://raw.githubusercontent.com/azure/azure-quickstart-templates/master/datastax-on-ubuntu/azuredeploy-parameters.json\"\n    $filePath = $folderName + \"\\azuredeploy-parameters.json\"\n    $webclient.DownloadFile($url,$filePath)\n    $url = \"https://raw.githubusercontent.com/azure/azure-quickstart-templates/master/datastax-on-ubuntu/dsenode.sh\"\n    $filePath = $folderName + \"\\dsenode.sh\"\n    $webclient.DownloadFile($url,$filePath)\n    $url = \"https://raw.githubusercontent.com/azure/azure-quickstart-templates/master/datastax-on-ubuntu/ephemeral-nodes-resources.json\"\n    $filePath = $folderName + \"\\ephemeral-nodes-resources.json\"\n    $webclient.DownloadFile($url,$filePath)\n    $url = \"https://raw.githubusercontent.com/azure/azure-quickstart-templates/master/datastax-on-ubuntu/metadata.json\"\n    $filePath = $folderName + \"\\metadata.json\"\n    $webclient.DownloadFile($url,$filePath)\n    $url = \"https://raw.githubusercontent.com/azure/azure-quickstart-templates/master/datastax-on-ubuntu/opscenter-install-resources.json\"\n    $filePath = $folderName + \"\\opscenter-install-resources.json\"\n    $webclient.DownloadFile($url,$filePath)\n    $url = \"https://raw.githubusercontent.com/azure/azure-quickstart-templates/master/datastax-on-ubuntu/opscenter-resources.json\"\n    $filePath = $folderName + \"\\opscenter-resources.json\"\n    $webclient.DownloadFile($url,$filePath)\n    $url = \"https://raw.githubusercontent.com/azure/azure-quickstart-templates/master/datastax-on-ubuntu/opscenter.sh\"\n    $filePath = $folderName + \"\\opscenter.sh\"\n    $webclient.DownloadFile($url,$filePath)\n    $url = \"https://raw.githubusercontent.com/azure/azure-quickstart-templates/master/datastax-on-ubuntu/shared-resources.json\"\n    $filePath = $folderName + \"shared-resources.json\"\n    $webclient.DownloadFile($url,$filePath)\n\n### Step 1-b: Download the template files using the Azure CLI\n\nClone the entire template repository using a git client of your choice, for example:\n\n    git clone https://github.com/Azure/azure-quickstart-templates C:\\Azure\\Templates\n\nWhen completed, look for the **datastax-on-ubuntu** folder in your C:\\Azure\\Templates directory.\n\n### Step 2: (optional) Understand the template parameters\n\nWhen you deploy non-trivial solutions like an Apache Cassandra cluster based on DataStax, you must specify a set of configuration parameters to deal with a number of settings required. By declaring these parameters in the template definition, it’s possible to specify values during deployment through an external file or in the command-line.\n\nIn the \"parameters\" section at the top of the **azuredeploy.json** file, you’ll find the set of parameters that are required by the template to configure a DataStax cluster. Here is an example of the parameters section from this template's azuredeploy.json file:\n\n    \"parameters\": {\n        \"region\": {\n            \"type\": \"string\",\n            \"defaultValue\": \"West US\",\n            \"metadata\": {\n                \"Description\": \"Location where resources will be provisioned\"\n            }\n        },\n        \"storageAccountPrefix\": {\n            \"type\": \"string\",\n            \"defaultValue\": \"uniqueStorageAccountName\",\n            \"metadata\": {\n                \"Description\": \"Unique namespace for the Storage Account where the Virtual Machine's disks will be placed\"\n            }\n        },\n        \"dnsName\": {\n            \"type\": \"string\",\n            \"metadata\" : {\n                \"Description\": \"DNS subname for the opserations center public IP\"\n            }\n        },\n        \"virtualNetworkName\": {\n            \"type\": \"string\",\n            \"defaultValue\": \"myvnet\",\n            \"metadata\": {\n                \"Description\": \"Name of the virtual network provisioned for the cluster\"\n            }\n        },\n        \"adminUsername\": {\n            \"type\": \"string\",\n            \"metadata\": {\n                \"Description\": \"Administrator user name used when provisioning virtual machines\"\n            }\n        },\n        \"adminPassword\": {\n            \"type\": \"securestring\",\n            \"metadata\": {\n                \"Description\": \"Administrator password used when provisioning virtual machines\"\n            }\n        },\n        \"opsCenterAdminPassword\": {\n            \"type\": \"securestring\",\n            \"metadata\": {\n                \"Description\": \"Sets the operations center admin user password\"\n            }\n        },\n        \"clusterVmSize\": {\n            \"type\": \"string\",\n            \"defaultValue\": \"Standard_D3\",\n            \"allowedValues\": [\n                \"Standard_D1\",\n                \"Standard_D2\",\n                \"Standard_D3\",\n                \"Standard_D4\",\n                \"Standard_D11\",\n                \"Standard_D12\",\n                \"Standard_D13\",\n                \"Standard_D14\"\n            ],\n            \"metadata\": {\n                \"Description\": \"The size of the virtual machines used when provisioning cluster nodes\"\n            }\n        },\n        \"clusterNodeCount\": {\n            \"type\": \"int\",\n            \"metadata\": {\n                \"Description\": \"The number of nodes provisioned in the cluster\"\n            }\n        },\n        \"clusterName\": {\n            \"type\": \"string\",\n            \"metadata\": {\n                \"Description\": \"The name of the cluster provisioned\"\n            }\n        }\n    }\n\nEach parameter has details such as data type and allowed values. This allows for validation of parameters passed during template execution in an interactive mode (e.g. PowerShell or Azure CLI), as well as a self-discovery UI that could be dynamically-built by parsing the list of required parameters and their descriptions.\n\n### Step 3-a: Deploy a DataStax cluster with a template using PowerShell\n\nPrepare a parameters file for your deployment by creating a JSON file containing runtime values for all parameters. This file will then be passed as a single entity to the deployment command. If you do not include a parameters file, PowerShell will use any default values specified in the template, and then prompt you to fill in the remaining values.\n\nHere is an example set of parameters from the **azuredeploy-parameters.json** file:\n\n    {\n        \"storageAccountPrefix\": {\n            \"value\": \"scorianisa\"\n        },\n        \"dnsName\": {\n            \"value\": \"scorianids\"\n        },\n        \"virtualNetworkName\": {\n            \"value\": \"datastax\"\n        },\n        \"adminUsername\": {\n            \"value\": \"scoriani\"\n        },\n        \"adminPassword\": {\n            \"value\": \"\"\n        },\n        \"region\": {\n            \"value\": \"West US\"\n        },\n        \"opsCenterAdminPassword\": {\n            \"value\": \"\"\n        },\n        \"clusterVmSize\": {\n            \"value\": \"Standard_D3\"\n        },\n        \"clusterNodeCount\": {\n            \"value\": 3\n        },\n        \"clusterName\": {\n            \"value\": \"cl1\"\n        }\n    }\n\nFill in an Azure deployment name, resource group name, Azure location, and the folder of your saved JSON deployment file. Then run these commands:\n\n    $deployName=\"<deployment name>\"\n    $RGName=\"<resource group name>\"\n    $locName=\"<Azure location, such as West US>\"\n    $folderName=\"<folder name, such as C:\\Azure\\Templates\\DataStax>\"\n    $templateFile= $folderName + \"\\azuredeploy.json\"\n    $templateParameterFile= $folderName + \"\\azuredeploy-parameters.json\"\n\n    New-AzureResourceGroup –Name $RGName –Location $locName\n\n    New-AzureResourceGroupDeployment -Name $deployName -ResourceGroupName $RGName -TemplateParameterFile $templateParameterFile -TemplateFile $templateFile\n\nWhen you run the **New-AzureResourceGroupDeployment** command, this will extract parameter values from the JSON parameters file, and will start executing the template accordingly. Defining and using multiple parameter files with your different environments (e.g. Test, Production, etc.) will promote template reuse and simplify complex multi-environment solutions.\n\nWhen deploying, please keep in mind that a new Azure Storage Account needs to be created so the name you provide as the storage account parameter must be unique and meet all requirements for an Azure Storage Account (lowercase letters and numbers only).\n\nDuring and after deployment, you can check all the requests that were made during provisioning, including any errors that occurred.  \n\nTo do that, go to the [Azure Portal](https://portal.azure.com) and do the following:\n\n- Click \"Browse” on the left-hand navigation bar, scroll down and click on \"Resource Groups”.  \n- After clicking on the Resource Group that you just created, it will bring up the \"Resource Group” blade.  \n- By clicking on the \"Events” bar graph in the \"Monitoring” part of the \"Resource Group” blade, you can see the events for your deployment:\n- Clicking on individual events lets you drill further down into the details of each individual operation made on behalf of the template\n\nAfter your tests, if you need to remove this resource group and all of its resources (the storage account, virtual machine, and virtual network), use this single command:\n\n    Remove-AzureResourceGroup –Name \"<resource group name>\" -Force\n\n### Step 3-b: Deploy a DataStax cluster with a template using the Azure CLI\n\nTo deploy a Datastax cluster via the Azure CLI, first create a Resource Group by specifying a name and a location:\n\n    azure group create dsc \"West US\"\n\nPass this Resource Group name, the location of the JSON template file, and the location of the parameters file (see the above PowerShell section for details) into the following command:\n\n    azure group deployment create dsc -f .\\azuredeploy.json -e .\\azuredeploy-parameters.json\n\nYou can check the status of individual resources deployments with the following command:\n\n    azure group deployment list dsc\n\n## A tour of the Datastax template structure and file organization\n\nIn order to design a robust and reusable Resource Manager template, additional thinking is needed to organize the series of complex and interrelated tasks required during the deployment of a complex solution like DataStax. Leveraging ARM **template linking** and **resource looping** in addition to script execution through related extensions, it’s possible to implement a modular approach that can be reused with virtually any complex template-based deployment.\n\nThis diagram describes the relationships between all the files downloaded from GitHub for this deployment:\n\n![datastax-files](media/virtual-machines-datastax-template/datastax-files.png)\n\nThis section steps you through the structure of the **azuredeploy.json** file for the Datastax cluster.\n\n### \"parameters\" section\n\nThe \"parameters\" section of **azuredeploy.json** specifies modifiable parameters that are used in this template. The aforementioned **azuredeploy-parameters.json** file is used to pass values into the \"parameters\" section of azuredeploy.json during template execution.\n\n### \"variables\" section\n\nThe \"variables\" section specifies variables that can be used throughout this template. This contains a number of fields (JSON data types or fragments) that will be set to constants or calculated values at execution time. Here is the \"variables\" section for this Datastax template:\n\n    \"variables\": {\n    \"templateBaseUrl\": \"https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/datastax-on-ubuntu/\",\n    \"sharedTemplateUrl\": \"[concat(variables('templateBaseUrl'), 'shared-resources.json')]\",\n    \"clusterNodesTemplateUrl\": \"[concat(variables('templateBaseUrl'), 'ephemeral-nodes-resources.json')]\",\n    \"opsCenterTemplateUrl\": \"[concat(variables('templateBaseUrl'), 'opscenter-resources.json')]\",\n    \"opsCenterInstallTemplateUrl\": \"[concat(variables('templateBaseUrl'), 'opscenter-install-resources.json')]\",\n    \"opsCenterVmSize\": \"Standard_A1\",\n    \"networkSettings\": {\n        \"virtualNetworkName\": \"[parameters('virtualNetworkName')]\",\n        \"addressPrefix\": \"10.0.0.0/16\",\n        \"subnet\": {\n            \"dse\": {\n                \"name\": \"dse\",\n                \"prefix\": \"10.0.0.0/24\",\n                \"vnet\": \"[parameters('virtualNetworkName')]\"\n            }\n        },\n        \"statics\": {\n            \"clusterRange\": {\n                \"base\": \"10.0.0.\",\n                \"start\": 5\n            },\n            \"opsCenter\": \"10.0.0.240\"\n        }\n    },\n    \"osSettings\": {\n        \"imageReference\": {\n            \"publisher\": \"Canonical\",\n            \"offer\": \"UbuntuServer\",\n            \"sku\": \"14.04.2-LTS\",\n            \"version\": \"latest\"\n        },\n        \"scripts\": [\n            \"[concat(variables('templateBaseUrl'), 'dsenode.sh')]\",\n            \"[concat(variables('templateBaseUrl'), 'opscenter.sh')]\",\n            \"https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/shared_scripts/ubuntu/vm-disk-utils-0.1.sh\"\n        ]\n    },\n    \"sharedStorageAccountName\": \"[concat(parameters('storageAccountPrefix'),'cmn')]\",\n    \"nodeList\": \"[concat(variables('networkSettings').statics.clusterRange.base, variables('networkSettings').statics.clusterRange.start, '-', parameters('clusterNodeCount'))]\"\n    },\n\nDrilling down into this example, you can see two different approaches. In this first fragment, the \"osSettings” variable is a nested JSON element containing 4 key-value pairs:\n\n    \"osSettings\": {\n          \"imageReference\": {\n            \"publisher\": \"Canonical\",\n            \"offer\": \"UbuntuServer\",\n            \"sku\": \"14.04.2-LTS\",\n            \"version\": \"latest\"\n          },\n\n     \nIn this second fragment, the \"scripts\" variable is a JSON array where each element will be calculated at runtime using a template language function (concat) and the value of another variable plus string constants:\n\n          \"scripts\": [\n            \"[concat(variables('templateBaseUrl'), 'dsenode.sh')]\",\n            \"[concat(variables('templateBaseUrl'), 'opscenter.sh')]\",\n            \"https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/shared_scripts/ubuntu/vm-disk-utils-0.1.sh\"\n          ]\n\n### \"resources\" section\n\nThe **\"resources\"** section is where most of the action is happening. Looking carefully inside this section, you can immediately identify two different cases: the first one is an element defined of type `Microsoft.Resources/deployments` that basically means the invocation of a nested deployment within the main one. Through the \"templateLink\" element (and related version property), it’s possible to specify a linked template file that will be invoked passing a set of parameters as input, as seen in this fragment:\n\n    {\n          \"name\": \"shared\",\n          \"type\": \"Microsoft.Resources/deployments\",\n          \"apiVersion\": \"2015-01-01\",\n          \"properties\": {\n            \"mode\": \"Incremental\",\n            \"templateLink\": {\n              \"uri\": \"[variables('sharedTemplateUrl')]\",\n              \"contentVersion\": \"1.0.0.0\"\n            },\n            \"parameters\": {\n              \"region\": {\n                \"value\": \"[parameters('region')]\"\n              },\n              \"networkSettings\": {\n                \"value\": \"[variables('networkSettings')]\"\n              },\n              \"storageAccountName\": {\n                \"value\": \"[variables('sharedStorageAccountName')]\"\n              }\n            }\n          }\n        },\n\nFrom this first example, it is clear how **azuredeploy.json** in this scenario has been organized as a sort of orchestration mechanism, invoking a number of other template files, each one responsible for part of the required deployment activities.\n\nIn particular, the following linked templates will be used for this deployment:\n\n-   **shared-resource.json**: contains the definition of all resources that will be shared across the deployment. Examples are storage accounts used to store VM’s OS disks and virtual networks.\n-   **opscenter-resources.json**: deploys an OpsCenter VM and all related resources, including a network interface and public IP address.\n-   **opscenter-install-resources.json**: deploys the OpsCenter VM extension (custom script for Linux) that will invoke the specific bash script file (**opscenter.sh**) required to setup the OpsCenter service within that VM.\n-   **ephemeral-nodes-resources.json**: deploys all cluster node VMs and connected resources (network cards, private IPs, etc.). This template will also deploy VM extensions (custom scripts for Linux) and invoke a bash script (**dsenode.sh**) to physically install Apache Cassandra bits on each node.\n\nLet’s drill down into how this last template is used, as it is one of the most interesting from a template development perspective. One important concept to highlight is how a single template file can deploy multiple copies of a single resource type, and for each instance can set unique values for required settings. This concept is known as **Resource Looping**.\n\nWhen **ephemeral-nodes-resources.json** is invoked from within the main **azuredeploy.json** file, a parameter called **nodeCount** is provided as part of the parameters list. Within the child template, nodeCount (the number of nodes to deploy in the cluster) will be used inside the **\"copy”** element of each resource that needs to be deployed in multiple copies, as highlighted in the fragment below. For all settings where you need unique values for different instances of the deployed resource, the **copyindex()** function can be used to obtain a numeric value indicating the current index in that particular resource loop creation. In the following fragment, you can see this concept applied to multiple VMs being created for the Datastax cluster nodes:\n\n               {\n                  \"apiVersion\": \"2015-05-01-preview\",\n                  \"type\": \"Microsoft.Compute/virtualMachines\",\n                  \"name\": \"[concat(parameters('namespace'), 'vm', copyindex())]\",\n                  \"location\": \"[parameters('region')]\",\n                  \"copy\": {\n                    \"name\": \"[concat(parameters('namespace'), 'vmLoop')]\",\n                    \"count\": \"[parameters('nodeCount')]\"\n                  },\n                  \"dependsOn\": [\n                    \"[concat('Microsoft.Network/networkInterfaces/', parameters('namespace'), 'nic', copyindex())]\",\n                    \"[concat('Microsoft.Compute/availabilitySets/', parameters('namespace'), 'set')]\",\n                    \"[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]\"\n                  ],\n                  \"properties\": {\n                    \"availabilitySet\": {\n                      \"id\": \"[resourceId('Microsoft.Compute/availabilitySets', concat(parameters('namespace'), 'set'))]\"\n                    },\n                    \"hardwareProfile\": {\n                      \"vmSize\": \"[parameters('vmSize')]\"\n                    },\n                    \"osProfile\": {\n                      \"computername\": \"[concat(parameters('namespace'), 'vm', copyIndex())]\",\n                      \"adminUsername\": \"[parameters('adminUsername')]\",\n                      \"adminPassword\": \"[parameters('adminPassword')]\"\n                    },\n                    \"storageProfile\": {\n                      \"imageReference\": \"[parameters('osSettings').imageReference]\",\n                      \"osDisk\": {\n                        \"name\": \"osdisk\",\n                        \"vhd\": {\n                          \"uri\": \"[concat('http://',variables('storageAccountName'),'.blob.core.windows.net/vhds/', variables('vmName'), copyindex(), '-osdisk.vhd')]\"\n                        },\n                        \"caching\": \"ReadWrite\",\n                        \"createOption\": \"FromImage\"\n                      },\n                      \"dataDisks\": [\n                        {\n                          \"name\": \"datadisk1\",\n                          \"diskSizeGB\": 1023,\n                          \"lun\": 0,\n                          \"vhd\": {\n                            \"Uri\": \"[concat('http://', variables('storageAccountName'),'.blob.core.windows.net/','vhds/', variables('vmName'), copyindex(), 'DataDisk1.vhd')]\"\n                          },\n                          \"caching\": \"None\",\n                          \"createOption\": \"Empty\"\n                        }\n                      ]\n                    },\n                    \"networkProfile\": {\n                      \"networkInterfaces\": [\n                        {\n                          \"id\": \"[resourceId('Microsoft.Network/networkInterfaces',concat(parameters('namespace'), 'nic', copyindex()))]\"\n                        }\n                      ]\n                    }\n                  }\n                },\n\nAnother important concept in resource creation is the ability to specify dependencies and precedencies between resources, as you can see in the **dependsOn** JSON array. In this particular template, each node will also have an attached 1TB disk (see \"dataDisks\") that can be used for hosting backups and snapshots of the Apache Cassandra instance.\n\nAttached disks are formatted as part of the node preparation activities triggered by the execution of the **dsenode.sh** script file. The first row of that script invokes another script:\n\n    bash vm-disk-utils-0.1.sh\n\nvm-disk-utils-0.1.sh is part of the **shared_scripts\\ubuntu** folder in the azure-quickstart-tempates github repo, and contains very useful functions for disk mounting, formatting, and striping. These functions can be used in all templates in the repo.\n\nAnother interesting fragment to explore is the one related to CustomScriptForLinux VM extensions. These are installed as a separate type of resource, with a dependency on each cluster node (and the OpsCenter instance). They leverage the same resource looping mechanism described for virtual machines:\n\n    {\n    \"type\": \"Microsoft.Compute/virtualMachines/extensions\",\n    \"name\": \"[concat(parameters('namespace'), 'vm', copyindex(), '/installdsenode')]\",\n    \"apiVersion\": \"2015-05-01-preview\",\n    \"location\": \"[parameters('region')]\",\n    \"copy\": {\n        \"name\": \"[concat(parameters('namespace'), 'vmLoop')]\",\n        \"count\": \"[parameters('nodeCount')]\"\n    },\n    \"dependsOn\": [\n        \"[concat('Microsoft.Compute/virtualMachines/', parameters('namespace'), 'vm', copyindex())]\",\n        \"[concat('Microsoft.Network/networkInterfaces/', parameters('namespace'), 'nic', copyindex())]\"\n    ],\n    \"properties\": {\n        \"publisher\": \"Microsoft.OSTCExtensions\",\n        \"type\": \"CustomScriptForLinux\",\n        \"typeHandlerVersion\": \"1.2\",\n        \"settings\": {\n            \"fileUris\": \"[parameters('osSettings').scripts]\",\n            \"commandToExecute\": \"bash dsenode.sh\"\n        }\n    }\n    }\n\nBy familiarizing yourself with the other files included in this deployment, you will be able to understand all the details and best practices required to organize and orchestrate complex deployment strategies for multi-nodes solutions, based on any technology, leveraging Azure Resource Manager templates. While not mandatory, a recommended approach is to structure your template files as highlighted by the following diagram:\n\n![datastax-template-structure](media/virtual-machines-datastax-template/datastax-template-structure.png)\n\nIn essence, this approach suggests to:\n\n-   Define your core template file as a central orchestration point for all specific deployment activities, leveraging template linking to invoke sub template executions\n-   Create a specific template files that will deploy all resources shared across all other specific deployment tasks (e.g. storage accounts, vnet configuration, etc.). This can be heavily reused between deployments that have similar requirements in terms of common infrastructure.\n-   Include optional resource templates for spot requirements specific of a given resource\n-   For identical members of a group of resources (nodes in a cluster, etc.) create specific templates that leverage resource looping in order to deploy multiple instances with unique properties\n-   For all post deployment tasks (e.g. product installation, configurations, etc.) leverage script deployment extensions and create scripts specific to each technology\n\nFor more information, see [Azure Resource Manager Template Language](../resource-group-authoring-templates.md).\n \n"
+}

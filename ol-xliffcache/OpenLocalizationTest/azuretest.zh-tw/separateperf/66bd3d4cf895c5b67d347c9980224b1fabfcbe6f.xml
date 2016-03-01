@@ -1,0 +1,1475 @@
+{
+  "nodes": [
+    {
+      "content": "Adding custom Service Fabric health reports",
+      "pos": [
+        26,
+        69
+      ]
+    },
+    {
+      "content": "Describes how to send custom health reports to Azure Service Fabric health entities.",
+      "pos": [
+        87,
+        171
+      ]
+    },
+    {
+      "content": "Gives recommendations for designing and implementing quality health reports.",
+      "pos": [
+        172,
+        248
+      ]
+    },
+    {
+      "content": "Adding custom Service Fabric health reports",
+      "pos": [
+        539,
+        582
+      ]
+    },
+    {
+      "content": "Service Fabric introduces a <bpt id=\"p1\">[</bpt>Health Model<ept id=\"p1\">](service-fabric-health-introduction.md)</ept> designed to flag unhealthy cluster or application conditions on specific entities.",
+      "pos": [
+        583,
+        747
+      ]
+    },
+    {
+      "content": "This is accomplished by using <bpt id=\"p1\">**</bpt>health reporters<ept id=\"p1\">**</ept> (System components and watchdogs).",
+      "pos": [
+        748,
+        833
+      ]
+    },
+    {
+      "content": "The goal is easy and fast diagnosis and repair.",
+      "pos": [
+        834,
+        881
+      ]
+    },
+    {
+      "content": "Service writers need to think upfront about health.",
+      "pos": [
+        882,
+        933
+      ]
+    },
+    {
+      "content": "Any condition that can impact health should be reported on, especially if it can help flagging problems close to the root.",
+      "pos": [
+        934,
+        1056
+      ]
+    },
+    {
+      "content": "This can save a lot of debugging and investigation once the service is up and running at scale in the cloud (private or Azure).",
+      "pos": [
+        1057,
+        1184
+      ]
+    },
+    {
+      "content": "The Service Fabric reporters monitor identified conditions of interest.",
+      "pos": [
+        1186,
+        1257
+      ]
+    },
+    {
+      "content": "They report on those conditions based on their local view.",
+      "pos": [
+        1258,
+        1316
+      ]
+    },
+    {
+      "content": "The <bpt id=\"p1\">[</bpt>Health Store<ept id=\"p1\">](service-fabric-health-introduction.md#Health-Store)</ept> aggregates health data sent by all reporters to determine whether entities are globally healthy.",
+      "pos": [
+        1317,
+        1484
+      ]
+    },
+    {
+      "content": "The model is intended to be rich, flexible and easy to use.",
+      "pos": [
+        1485,
+        1544
+      ]
+    },
+    {
+      "content": "The quality of the health reports determines how accurate the health view of the cluster is.",
+      "pos": [
+        1545,
+        1637
+      ]
+    },
+    {
+      "content": "False positives that show unhealthy issues wrongly can negatively impact upgrades or other services that use health data, like repair services or alerting mechanisms.",
+      "pos": [
+        1638,
+        1804
+      ]
+    },
+    {
+      "content": "Therefore, some thought is needed to provide reports that capture conditions of interest in the best possible way.",
+      "pos": [
+        1805,
+        1919
+      ]
+    },
+    {
+      "content": "To design and implement health reporting, watchdogs and System components must:",
+      "pos": [
+        1921,
+        2000
+      ]
+    },
+    {
+      "content": "Define the condition they are interested in, the way it is monitored and the impact on the cluster/application functionality.",
+      "pos": [
+        2004,
+        2129
+      ]
+    },
+    {
+      "content": "This defines the health report property and health state.",
+      "pos": [
+        2130,
+        2187
+      ]
+    },
+    {
+      "pos": [
+        2191,
+        2305
+      ],
+      "content": "Determine the <bpt id=\"p1\">[</bpt>entity<ept id=\"p1\">](service-fabric-health-introduction.md#health-entities-and-hierarchy)</ept> the report applies to."
+    },
+    {
+      "content": "Determine where the reporting is done from, either from within service, internal or external watchdog.",
+      "pos": [
+        2309,
+        2411
+      ]
+    },
+    {
+      "content": "Define a source used to identify the reporter.",
+      "pos": [
+        2415,
+        2461
+      ]
+    },
+    {
+      "content": "Choose a reporting strategy, either periodically or on transitions.",
+      "pos": [
+        2465,
+        2532
+      ]
+    },
+    {
+      "content": "The recommended way is periodically, as it requires simpler code and is therefore less prone to errors.",
+      "pos": [
+        2533,
+        2636
+      ]
+    },
+    {
+      "content": "Determine how long the report for unhealthy conditions should stay in health store and how it should be cleared.",
+      "pos": [
+        2640,
+        2752
+      ]
+    },
+    {
+      "content": "This defines the report time to live and remove on expiration behavior.",
+      "pos": [
+        2753,
+        2824
+      ]
+    },
+    {
+      "content": "As mentioned above, reporting can be done from:",
+      "pos": [
+        2826,
+        2873
+      ]
+    },
+    {
+      "content": "The monitored Service Fabric service replica.",
+      "pos": [
+        2877,
+        2922
+      ]
+    },
+    {
+      "content": "Internal watchdogs deployed as a Service Fabric service.",
+      "pos": [
+        2926,
+        2982
+      ]
+    },
+    {
+      "content": "Eg.",
+      "pos": [
+        2983,
+        2986
+      ]
+    },
+    {
+      "content": "a Service Fabric stateless service that monitors conditions and issues report.",
+      "pos": [
+        2987,
+        3065
+      ]
+    },
+    {
+      "content": "The watchdogs can be deployed an all nodes or can be affinitized to the monitored service.",
+      "pos": [
+        3066,
+        3156
+      ]
+    },
+    {
+      "pos": [
+        3160,
+        3271
+      ],
+      "content": "Internal Watchdogs that run on the Service Fabric nodes but are <bpt id=\"p1\">**</bpt>not<ept id=\"p1\">**</ept> implemented as Service Fabric services."
+    },
+    {
+      "content": "External watchdogs that are probing the resource from <bpt id=\"p1\">**</bpt>outside<ept id=\"p1\">**</ept> the Service Fabric cluster.",
+      "pos": [
+        3275,
+        3368
+      ]
+    },
+    {
+      "content": "Eg.",
+      "pos": [
+        3369,
+        3372
+      ]
+    },
+    {
+      "content": "Gomez like monitoring service.",
+      "pos": [
+        3373,
+        3403
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> Out of the box, the cluster is populated with health reports sent by the system components.",
+      "pos": [
+        3407,
+        3511
+      ]
+    },
+    {
+      "content": "Read more at <bpt id=\"p1\">[</bpt>Using System health reports for troubleshooting<ept id=\"p1\">](service-fabric-understand-and-troubleshoot-with-system-health-reports.md)</ept>.",
+      "pos": [
+        3512,
+        3649
+      ]
+    },
+    {
+      "content": "The user reports must be sent on <bpt id=\"p1\">[</bpt>health entities<ept id=\"p1\">](service-fabric-health-introduction.md#health-entities-and-hierarchy)</ept> already created by the system.",
+      "pos": [
+        3650,
+        3800
+      ]
+    },
+    {
+      "content": "Once the health reporting design is clear, sending health reports is easy.",
+      "pos": [
+        3802,
+        3876
+      ]
+    },
+    {
+      "content": "It can be done through API using FabricClient.HealthManager.ReportHealth, through Powershell or through REST.",
+      "pos": [
+        3877,
+        3986
+      ]
+    },
+    {
+      "content": "Internally, all methods use a health client contained inside a fabric client.",
+      "pos": [
+        3987,
+        4064
+      ]
+    },
+    {
+      "content": "There are configuration knobs to batch reports for improved performance.",
+      "pos": [
+        4065,
+        4137
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> Report health is sync and only represents the validation work on client side.",
+      "pos": [
+        4141,
+        4231
+      ]
+    },
+    {
+      "content": "The fact that the report is accepted by the health client doesn't mean it is applied in store; it will be sent asynchronously, possibly batched with other reports and the processing on the server may fail (eg.",
+      "pos": [
+        4232,
+        4441
+      ]
+    },
+    {
+      "content": "stale sequence number, the entity on which the report must be applied has been deleted etc).",
+      "pos": [
+        4442,
+        4534
+      ]
+    },
+    {
+      "content": "Health client",
+      "pos": [
+        4539,
+        4552
+      ]
+    },
+    {
+      "content": "The health reports are sent to the Health Store using a health client, which lives inside the fabric client.",
+      "pos": [
+        4553,
+        4661
+      ]
+    },
+    {
+      "content": "The health client can be configured with the following:",
+      "pos": [
+        4662,
+        4717
+      ]
+    },
+    {
+      "content": "HealthReportSendInterval.",
+      "pos": [
+        4721,
+        4746
+      ]
+    },
+    {
+      "content": "The delay between the time the report is added to the client and the time it is sent to Health Store.",
+      "pos": [
+        4747,
+        4848
+      ]
+    },
+    {
+      "content": "This is used to batch reports in a single message rather than send one message per each report, for improved performance.",
+      "pos": [
+        4849,
+        4970
+      ]
+    },
+    {
+      "content": "Default: 30 seconds.",
+      "pos": [
+        4971,
+        4991
+      ]
+    },
+    {
+      "content": "HealthReportRetrySendInterval.",
+      "pos": [
+        4995,
+        5025
+      ]
+    },
+    {
+      "content": "The interval at which the health client re-sends accumulated health reports to Health Store.",
+      "pos": [
+        5026,
+        5118
+      ]
+    },
+    {
+      "content": "Default: 30 seconds.",
+      "pos": [
+        5119,
+        5139
+      ]
+    },
+    {
+      "content": "HealthOperationTimeout.",
+      "pos": [
+        5143,
+        5166
+      ]
+    },
+    {
+      "content": "The timeout for a report message sent to Health Store.",
+      "pos": [
+        5167,
+        5221
+      ]
+    },
+    {
+      "content": "If a message times out, the health client retries until the Health Store confirms that the reports have been processed.",
+      "pos": [
+        5222,
+        5341
+      ]
+    },
+    {
+      "content": "Default: 2 minutes.",
+      "pos": [
+        5342,
+        5361
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> When the reports are batched, the fabric client must be kept alive for at least HealthReportSendInterval to ensure they are sent.",
+      "pos": [
+        5365,
+        5507
+      ]
+    },
+    {
+      "content": "If the message is lost or Health Store is not able to apply them due to transient errors, the fabric client must be kept alive longer to give it a chance to retry.",
+      "pos": [
+        5508,
+        5671
+      ]
+    },
+    {
+      "content": "The buffering on the client takes the uniqueness of the reports into consideration.",
+      "pos": [
+        5673,
+        5756
+      ]
+    },
+    {
+      "content": "For example, if a particular bad reporter is reporting 100 reports per second on the same property of the same entity, the reports will get replaced with last version.",
+      "pos": [
+        5757,
+        5924
+      ]
+    },
+    {
+      "content": "At most one such report exists in the client queue.",
+      "pos": [
+        5925,
+        5976
+      ]
+    },
+    {
+      "content": "If batching is configured, the number of reports sent to the Health Store is just one per send interval, the last added report, which reflects the most current state of the entity.",
+      "pos": [
+        5977,
+        6157
+      ]
+    },
+    {
+      "content": "All configuration parameters can be specified when creating the FabricClient, by passing FabricClientSettings with desired values for health related entries.",
+      "pos": [
+        6158,
+        6315
+      ]
+    },
+    {
+      "content": "The following creates a fabric client and specifies that the reports should be sent as soon as they are added.",
+      "pos": [
+        6317,
+        6427
+      ]
+    },
+    {
+      "content": "On retryable errors or timeouts, retries happen every 40 seconds.",
+      "pos": [
+        6428,
+        6493
+      ]
+    },
+    {
+      "content": "Same parameters can be specified when creating a connection to a cluster through Powershell.",
+      "pos": [
+        6790,
+        6882
+      ]
+    },
+    {
+      "content": "The following starts a connection to a local cluster:",
+      "pos": [
+        6883,
+        6936
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> To ensure that unauthorized services can't report health against the entities in the cluster, the server can be configured to accept only requests from secured clients.",
+      "pos": [
+        8367,
+        8548
+      ]
+    },
+    {
+      "content": "Since the reporting is done through FabricClient, this means the FabricClient must have security enabled in order to be able to communicate with the cluster eg.",
+      "pos": [
+        8549,
+        8709
+      ]
+    },
+    {
+      "content": "with Kerberos or certificate authentication.",
+      "pos": [
+        8710,
+        8754
+      ]
+    },
+    {
+      "content": "Design health reporting",
+      "pos": [
+        8759,
+        8782
+      ]
+    },
+    {
+      "content": "The first step in generating high quality reports is identifying conditions that can impact the health of the service.",
+      "pos": [
+        8783,
+        8901
+      ]
+    },
+    {
+      "content": "Any condition that can help flag problems in the service or cluster when they start or even better, before they happen, can potentially save billions of dollars.",
+      "pos": [
+        8902,
+        9063
+      ]
+    },
+    {
+      "content": "Think less down time, less night hours spent investigating and repairing issues, high customer satisfaction.",
+      "pos": [
+        9064,
+        9172
+      ]
+    },
+    {
+      "content": "Once the conditions are identified, watchdog writers need to figure out the best way to monitor them for best balance between overhead and usefulness.",
+      "pos": [
+        9174,
+        9324
+      ]
+    },
+    {
+      "content": "For example, consider a service that does some complex calculations using some temporary files on a share.",
+      "pos": [
+        9325,
+        9431
+      ]
+    },
+    {
+      "content": "A watchdog could monitor the share to make sure enough space is available.",
+      "pos": [
+        9432,
+        9506
+      ]
+    },
+    {
+      "content": "It could listen for notifications for file/directory changes.",
+      "pos": [
+        9507,
+        9568
+      ]
+    },
+    {
+      "content": "It can report an warning if an up-front threshold is reached and error if the share is full.",
+      "pos": [
+        9569,
+        9661
+      ]
+    },
+    {
+      "content": "On warning, a repair system could start clean up of older files on the share.",
+      "pos": [
+        9662,
+        9739
+      ]
+    },
+    {
+      "content": "On error, a repair system could move the service replica to another node.",
+      "pos": [
+        9740,
+        9813
+      ]
+    },
+    {
+      "content": "Note how the condition states are described in terms of health: what is the state of the condition that can be considered healthy or unhealthy (warning or error).",
+      "pos": [
+        9814,
+        9976
+      ]
+    },
+    {
+      "content": "Once the monitoring details are set, watchdog writer need to figure out how to implement the watchdog.",
+      "pos": [
+        9978,
+        10080
+      ]
+    },
+    {
+      "content": "If the conditions can be determined from within the service, the watchdog can be part of the monitored service itself.",
+      "pos": [
+        10081,
+        10199
+      ]
+    },
+    {
+      "content": "For example, the service code can check the share usage and report using a local fabric client every time it tries to write a file.",
+      "pos": [
+        10200,
+        10331
+      ]
+    },
+    {
+      "content": "The advantage of this approach is that reporting is simple.",
+      "pos": [
+        10332,
+        10391
+      ]
+    },
+    {
+      "content": "Care must be taken to prevent watchdog bugs from impacting the service functionality.",
+      "pos": [
+        10392,
+        10477
+      ]
+    },
+    {
+      "content": "Reporting from within the monitored service is not always an option.",
+      "pos": [
+        10479,
+        10547
+      ]
+    },
+    {
+      "content": "An watchdog within the service may not be able to detect the conditions: either it doesn't have the logic or data to make the determination, or the overhead of monitoring the conditions is high, or the conditions are not specific to a service, but affect interactions between services.",
+      "pos": [
+        10548,
+        10833
+      ]
+    },
+    {
+      "content": "Another option is to have watchogs in the cluster as separate processes.",
+      "pos": [
+        10834,
+        10906
+      ]
+    },
+    {
+      "content": "The watchdogs simply monitor the conditions and report, without affecting the main services in any way.",
+      "pos": [
+        10907,
+        11010
+      ]
+    },
+    {
+      "content": "These watchdogs could for example be implemented as stateless services in the same application, deployed on all nodes or on the same nodes as the service.",
+      "pos": [
+        11011,
+        11165
+      ]
+    },
+    {
+      "content": "Sometimes, an watchdog running in the cluster is not an option either.",
+      "pos": [
+        11167,
+        11237
+      ]
+    },
+    {
+      "content": "If the monitored conditions are the availability or the functionality of the service as users see it, it's best to have the watchdogs in the same place as the user clients, testing the operations in the same way users call them.",
+      "pos": [
+        11238,
+        11466
+      ]
+    },
+    {
+      "content": "For example, we can have a watchog leaving outside the cluster and issuing requests to the service, checking the latency and the correctness of the result (for a calculator service, does 2+2 return 4 in a reasonable time?).",
+      "pos": [
+        11467,
+        11690
+      ]
+    },
+    {
+      "content": "Once the watchdog details have been finalized, decide a source id that uniquely identifies it.",
+      "pos": [
+        11692,
+        11786
+      ]
+    },
+    {
+      "content": "If multiple watchdogs of the same type are living in the cluster, they must either report on different entities, or if they report on the same entity, make sure the source id or the property is different, so reports can coexist.",
+      "pos": [
+        11787,
+        12015
+      ]
+    },
+    {
+      "content": "The property of the health report should capture the monitored condition.",
+      "pos": [
+        12016,
+        12089
+      ]
+    },
+    {
+      "content": "Eg.",
+      "pos": [
+        12090,
+        12093
+      ]
+    },
+    {
+      "content": "for the example above, the property could be ShareSize.",
+      "pos": [
+        12094,
+        12149
+      ]
+    },
+    {
+      "content": "If multiple data applied to the same condition, the property should contain some dynamic information to allow reports to coexist.",
+      "pos": [
+        12150,
+        12279
+      ]
+    },
+    {
+      "content": "For example, if there are multiple shares that need to be monitored, the property name can be ShareSize-sharename.",
+      "pos": [
+        12280,
+        12394
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> The health store should <bpt id=\"p1\">**</bpt>not<ept id=\"p1\">**</ept> be used to keep status information.",
+      "pos": [
+        12398,
+        12478
+      ]
+    },
+    {
+      "content": "Only health related information should be reported as health, information that impacts the health evaluation of an entity.",
+      "pos": [
+        12479,
+        12601
+      ]
+    },
+    {
+      "content": "The health store was not designed as a general purpose store.",
+      "pos": [
+        12602,
+        12663
+      ]
+    },
+    {
+      "content": "It uses health evaluation logic to aggregate all data into health state.",
+      "pos": [
+        12664,
+        12736
+      ]
+    },
+    {
+      "content": "Sending non-health related information (eg.",
+      "pos": [
+        12737,
+        12780
+      ]
+    },
+    {
+      "content": "reporting status with health state Ok) will not impact aggregated health state, but can negatively affect the performance of the health store.",
+      "pos": [
+        12781,
+        12923
+      ]
+    },
+    {
+      "content": "The next decision point is what entity to report on.",
+      "pos": [
+        12925,
+        12977
+      ]
+    },
+    {
+      "content": "Most of the time, this is obvious based on the condition.",
+      "pos": [
+        12978,
+        13035
+      ]
+    },
+    {
+      "content": "Choose the entity with best granularity possible.",
+      "pos": [
+        13036,
+        13085
+      ]
+    },
+    {
+      "content": "If a condition impacts all replicas in a partition, report on the partition, not on the service.",
+      "pos": [
+        13086,
+        13182
+      ]
+    },
+    {
+      "content": "There are corner cases where more thought is needed.",
+      "pos": [
+        13183,
+        13235
+      ]
+    },
+    {
+      "content": "If the condition impacts an entity (eg.",
+      "pos": [
+        13236,
+        13275
+      ]
+    },
+    {
+      "content": "replica) but the desire is to have the condition flagged for more than replica life duration, they it should be reported on partition.",
+      "pos": [
+        13276,
+        13410
+      ]
+    },
+    {
+      "content": "Otherwise, when the replica is deleted, all reports associated with it are cleaned up from store.",
+      "pos": [
+        13411,
+        13508
+      ]
+    },
+    {
+      "content": "This means watchdog writers needs to also think about the lifetime of the entity and of the report.",
+      "pos": [
+        13509,
+        13608
+      ]
+    },
+    {
+      "content": "It must be clear when a report should be cleaned up from a store (eg.",
+      "pos": [
+        13609,
+        13678
+      ]
+    },
+    {
+      "content": "when an Error reported on an entity is not applying anymore).",
+      "pos": [
+        13679,
+        13740
+      ]
+    },
+    {
+      "content": "Let's look at an example to put together the above points.",
+      "pos": [
+        13742,
+        13800
+      ]
+    },
+    {
+      "content": "Consider a Service Fabric application composed of a Master stateful persisted service and Slaves stateless services deployed on all nodes (one Slave service type for a type of task).",
+      "pos": [
+        13801,
+        13983
+      ]
+    },
+    {
+      "content": "The Master has a processing queue with commands to be executed by slaves.",
+      "pos": [
+        13984,
+        14057
+      ]
+    },
+    {
+      "content": "The slaves execute the incoming requests and send back Acks.",
+      "pos": [
+        14058,
+        14118
+      ]
+    },
+    {
+      "content": "One condition that could be monitored is Master processing queue length.",
+      "pos": [
+        14119,
+        14191
+      ]
+    },
+    {
+      "content": "If the master queue length reaches a threshold, report Warning, as that means the slaves can't handle the load.",
+      "pos": [
+        14192,
+        14303
+      ]
+    },
+    {
+      "content": "If the queue reached max length and commands are dropped, report Error as the service can't recover.",
+      "pos": [
+        14304,
+        14404
+      ]
+    },
+    {
+      "content": "The reports can be on property \"QueueStatus\".",
+      "pos": [
+        14405,
+        14450
+      ]
+    },
+    {
+      "content": "The watchdog lives inside the service and it's sent periodically on the Master primary replica.",
+      "pos": [
+        14451,
+        14546
+      ]
+    },
+    {
+      "content": "The TTL is 2 minutes and it's sent periodically every 30 seconds.",
+      "pos": [
+        14547,
+        14612
+      ]
+    },
+    {
+      "content": "If the primary goes down, the report is cleaned up automatically from store.",
+      "pos": [
+        14613,
+        14689
+      ]
+    },
+    {
+      "content": "If the service replica is up but deadlocked or having other issues, the report will expire in the health store and the entity will be evaluated at error.",
+      "pos": [
+        14690,
+        14843
+      ]
+    },
+    {
+      "content": "Other condition that can be monitored is task execution time.",
+      "pos": [
+        14845,
+        14906
+      ]
+    },
+    {
+      "content": "The Master distributes the tasks to the slaves based on the task type.",
+      "pos": [
+        14907,
+        14977
+      ]
+    },
+    {
+      "content": "Depending on the design, the Master could poll the slaves for task status or it could wait for slaves to send back ACKs when done.",
+      "pos": [
+        14978,
+        15108
+      ]
+    },
+    {
+      "content": "In the second case, care must be taken to detect situations where slaves die or messages get lost.",
+      "pos": [
+        15109,
+        15207
+      ]
+    },
+    {
+      "content": "One option is for Master to send a ping request to the same Slave, which sends back the status.",
+      "pos": [
+        15208,
+        15303
+      ]
+    },
+    {
+      "content": "If no status is received, consider failure and re-schedule the task.",
+      "pos": [
+        15304,
+        15372
+      ]
+    },
+    {
+      "content": "This assumes that the tasks are idempotent.",
+      "pos": [
+        15373,
+        15416
+      ]
+    },
+    {
+      "content": "We can translate the monitored condition as warning if task is not done in a certain time t1 (eg.",
+      "pos": [
+        15417,
+        15514
+      ]
+    },
+    {
+      "content": "10 minutes); and error if the task is not completed in time t2 (eg.",
+      "pos": [
+        15515,
+        15582
+      ]
+    },
+    {
+      "content": "20 minutes).",
+      "pos": [
+        15583,
+        15595
+      ]
+    },
+    {
+      "content": "This reporting can be done in multiple ways:",
+      "pos": [
+        15596,
+        15640
+      ]
+    },
+    {
+      "content": "The Master primary replica reports periodically on itself.",
+      "pos": [
+        15644,
+        15702
+      ]
+    },
+    {
+      "content": "We can have one property for all pending tasks in the queue: if at least one task takes longer, report on property \"PendingTasks\" warning or error, as appropriate.",
+      "pos": [
+        15703,
+        15866
+      ]
+    },
+    {
+      "content": "If there are no pending tasks or all are just started, report Ok.",
+      "pos": [
+        15867,
+        15932
+      ]
+    },
+    {
+      "content": "The tasks are persisted, so if primary goes down, the new promoted primary can continue to report properly.",
+      "pos": [
+        15933,
+        16040
+      ]
+    },
+    {
+      "content": "Another watchdog process (in the cloud or external) checks the tasks (from outside, based on desired task result) to see if they are completed.",
+      "pos": [
+        16044,
+        16187
+      ]
+    },
+    {
+      "content": "If they do not respect the thresholds, report on Master service.",
+      "pos": [
+        16188,
+        16252
+      ]
+    },
+    {
+      "content": "Report on each task and include the task identifier (eg: PendingTask+taskid).",
+      "pos": [
+        16253,
+        16330
+      ]
+    },
+    {
+      "content": "Report only on unhealthy states.",
+      "pos": [
+        16331,
+        16363
+      ]
+    },
+    {
+      "content": "Set TTL to a few minutes and mark the reports to be removed when expired to ensure cleanup.",
+      "pos": [
+        16364,
+        16455
+      ]
+    },
+    {
+      "content": "The slave that is executing a task is reporting if it takes longer than expected to run it.",
+      "pos": [
+        16459,
+        16550
+      ]
+    },
+    {
+      "content": "It reports on the service instance on property \"PendingTasks\".",
+      "pos": [
+        16551,
+        16613
+      ]
+    },
+    {
+      "content": "This pinpoints the service instance that has issues, but it doesn't capture the situation where the instance dies.",
+      "pos": [
+        16614,
+        16728
+      ]
+    },
+    {
+      "content": "The reports are cleaned up at that time.",
+      "pos": [
+        16729,
+        16769
+      ]
+    },
+    {
+      "content": "It could report on the Slave service; if the Slave completes the task, the slave instance clears the report from store.",
+      "pos": [
+        16770,
+        16889
+      ]
+    },
+    {
+      "content": "This doesn't capture the situation where the ack message is lost and the task is not finished from Master point of view.",
+      "pos": [
+        16890,
+        17010
+      ]
+    },
+    {
+      "content": "However the reporting is done in the cases described above, they will be captured in application health when health is evaluated.",
+      "pos": [
+        17012,
+        17141
+      ]
+    },
+    {
+      "content": "Report periodically vs. on transition",
+      "pos": [
+        17146,
+        17183
+      ]
+    },
+    {
+      "content": "Using the health reporting model, watchdogs can send reports periodically or on transitions.",
+      "pos": [
+        17184,
+        17276
+      ]
+    },
+    {
+      "content": "The recommended way is periodically, because the code is much simpler, therefore less error prone.",
+      "pos": [
+        17277,
+        17375
+      ]
+    },
+    {
+      "content": "The watchdogs must strive to be as simple as possible to avoid bugs which trigger wrong reports.",
+      "pos": [
+        17376,
+        17472
+      ]
+    },
+    {
+      "content": "Incorrect unhealthy report will impact health evaluation and scenarios based on health, like upgrades.",
+      "pos": [
+        17473,
+        17575
+      ]
+    },
+    {
+      "content": "Incorrect healthy reports hide issues in the cluster, which is not desired.",
+      "pos": [
+        17576,
+        17651
+      ]
+    },
+    {
+      "content": "For periodic reporting, the watchdog can be implemented with a timer.",
+      "pos": [
+        17653,
+        17722
+      ]
+    },
+    {
+      "content": "On timer callback, the watchdog can check the state and send an report based on current state.",
+      "pos": [
+        17723,
+        17817
+      ]
+    },
+    {
+      "content": "There is no need to see what report was sent previously or make any optimization in terms of messaging.",
+      "pos": [
+        17818,
+        17921
+      ]
+    },
+    {
+      "content": "The health client has batching logic to help with that.",
+      "pos": [
+        17922,
+        17977
+      ]
+    },
+    {
+      "content": "As long as the health client is kept alive, it will retry internally until the report is ACKed by the health store or the watchdog generates a newer report with the same entity, property and source.",
+      "pos": [
+        17978,
+        18176
+      ]
+    },
+    {
+      "content": "Reporting on transition requires careful state handling.",
+      "pos": [
+        18178,
+        18234
+      ]
+    },
+    {
+      "content": "The watchdog monitors some conditions and only reports when the conditions change.",
+      "pos": [
+        18235,
+        18317
+      ]
+    },
+    {
+      "content": "The plus side is that less reports are needed.",
+      "pos": [
+        18318,
+        18364
+      ]
+    },
+    {
+      "content": "The minus is that the logic of the watchdog is complex.",
+      "pos": [
+        18365,
+        18420
+      ]
+    },
+    {
+      "content": "The conditions or the reports must be maintained so they can be inspected to determine state changes.",
+      "pos": [
+        18421,
+        18522
+      ]
+    },
+    {
+      "content": "On failover, care must be taken to send a report which may have not be sent previously (queued, but not yet sent to health store).",
+      "pos": [
+        18523,
+        18653
+      ]
+    },
+    {
+      "content": "The sequence number must be always increasing, or the reports will be rejected due to staleness.",
+      "pos": [
+        18654,
+        18750
+      ]
+    },
+    {
+      "content": "In the rare cases where data loss is incurred, there may be synchronization needed between the state of the reporter and the state of the health store.",
+      "pos": [
+        18751,
+        18902
+      ]
+    },
+    {
+      "content": "Implement health reporting",
+      "pos": [
+        18907,
+        18933
+      ]
+    },
+    {
+      "content": "Once the entity and report details are clear, sending health reports can be done though API, Powershell or REST.",
+      "pos": [
+        18934,
+        19046
+      ]
+    },
+    {
+      "content": "API",
+      "pos": [
+        19052,
+        19055
+      ]
+    },
+    {
+      "content": "In order to report through API, users need to create a health report specific to the entity type they want to report on and then give it to a health client.",
+      "pos": [
+        19056,
+        19212
+      ]
+    },
+    {
+      "content": "The following example shows periodic reporting from a watchdog from within the cluster.",
+      "pos": [
+        19214,
+        19301
+      ]
+    },
+    {
+      "content": "The watcher checks whether an external resource can be accessed from within a node.",
+      "pos": [
+        19302,
+        19385
+      ]
+    },
+    {
+      "content": "The resource is needed by a service manifest within the application.",
+      "pos": [
+        19386,
+        19454
+      ]
+    },
+    {
+      "content": "If the resource is unavailable, the other services within the application can function properly.",
+      "pos": [
+        19455,
+        19551
+      ]
+    },
+    {
+      "content": "Therefore, the report is sent on the deployed service package entity, periodically, every 30 seconds.",
+      "pos": [
+        19552,
+        19653
+      ]
+    },
+    {
+      "content": "Powershell",
+      "pos": [
+        20848,
+        20858
+      ]
+    },
+    {
+      "pos": [
+        20859,
+        20937
+      ],
+      "content": "Users can send health reports with Send-ServiceFabric<bpt id=\"p1\">*</bpt>EntityType<ept id=\"p1\">*</ept>HealthReport."
+    },
+    {
+      "content": "The following example shows periodic reporting on CPU values on a node.",
+      "pos": [
+        20939,
+        21010
+      ]
+    },
+    {
+      "content": "The reports should be sent every 30 seconds, they have a TTL of 2 minute.",
+      "pos": [
+        21011,
+        21084
+      ]
+    },
+    {
+      "content": "If they expire, it means the reporter has issues, so the node is evaluated at error.",
+      "pos": [
+        21085,
+        21169
+      ]
+    },
+    {
+      "content": "When the CPU is above a threshold, the report has health state Warning, if CPU is above threshold for more than a configured time it's reported as Error.",
+      "pos": [
+        21170,
+        21323
+      ]
+    },
+    {
+      "content": "Otherwise, the reporter sends Ok.",
+      "pos": [
+        21324,
+        21357
+      ]
+    },
+    {
+      "content": "The following example reports a transient Warning on a replica.",
+      "pos": [
+        23234,
+        23297
+      ]
+    },
+    {
+      "content": "It first get the partition id and the replica id for the service it is interested in, then sends a report from PowershellWatcher on property ResourceDependency.",
+      "pos": [
+        23298,
+        23458
+      ]
+    },
+    {
+      "content": "The report is only of interest for 2 minutes, and it will be automatically removed from store.",
+      "pos": [
+        23459,
+        23553
+      ]
+    },
+    {
+      "content": "Next steps",
+      "pos": [
+        26128,
+        26138
+      ]
+    },
+    {
+      "content": "Based on the health data, service writers and cluster/application administrators can think of ways to consume the information.",
+      "pos": [
+        26140,
+        26266
+      ]
+    },
+    {
+      "content": "For example, they can set up alerts based on health status to catch severe issues before provoking outages.",
+      "pos": [
+        26267,
+        26374
+      ]
+    },
+    {
+      "content": "They can set up automatic repair systems to fix issues automatically.",
+      "pos": [
+        26375,
+        26444
+      ]
+    },
+    {
+      "content": "Introduction to Service Fabric Health Monitoring",
+      "pos": [
+        26447,
+        26495
+      ]
+    },
+    {
+      "content": "How to view Service Fabric health reports",
+      "pos": [
+        26538,
+        26579
+      ]
+    },
+    {
+      "content": "Using System health reports for troubleshooting",
+      "pos": [
+        26634,
+        26681
+      ]
+    },
+    {
+      "content": "How to Monitor and Diagnose Services locally",
+      "pos": [
+        26759,
+        26803
+      ]
+    },
+    {
+      "content": "Service Fabric Application Upgrade",
+      "pos": [
+        26883,
+        26917
+      ]
+    }
+  ],
+  "content": "<properties\n   pageTitle=\"Adding custom Service Fabric health reports\"\n   description=\"Describes how to send custom health reports to Azure Service Fabric health entities. Gives recommendations for designing and implementing quality health reports.\"\n   services=\"service-fabric\"\n   documentationCenter=\".net\"\n   authors=\"oanapl\"\n   manager=\"timlt\"\n   editor=\"\"/>\n\n<tags\n   ms.service=\"service-fabric\"\n   ms.devlang=\"dotnet\"\n   ms.topic=\"article\"\n   ms.tgt_pltfrm=\"na\"\n   ms.workload=\"na\"\n   ms.date=\"06/16/2015\"\n   ms.author=\"oanapl\"/>\n\n# Adding custom Service Fabric health reports\nService Fabric introduces a [Health Model](service-fabric-health-introduction.md) designed to flag unhealthy cluster or application conditions on specific entities. This is accomplished by using **health reporters** (System components and watchdogs). The goal is easy and fast diagnosis and repair. Service writers need to think upfront about health. Any condition that can impact health should be reported on, especially if it can help flagging problems close to the root. This can save a lot of debugging and investigation once the service is up and running at scale in the cloud (private or Azure).\n\nThe Service Fabric reporters monitor identified conditions of interest. They report on those conditions based on their local view. The [Health Store](service-fabric-health-introduction.md#Health-Store) aggregates health data sent by all reporters to determine whether entities are globally healthy. The model is intended to be rich, flexible and easy to use. The quality of the health reports determines how accurate the health view of the cluster is. False positives that show unhealthy issues wrongly can negatively impact upgrades or other services that use health data, like repair services or alerting mechanisms. Therefore, some thought is needed to provide reports that capture conditions of interest in the best possible way.\n\nTo design and implement health reporting, watchdogs and System components must:\n\n- Define the condition they are interested in, the way it is monitored and the impact on the cluster/application functionality. This defines the health report property and health state.\n\n- Determine the [entity](service-fabric-health-introduction.md#health-entities-and-hierarchy) the report applies to.\n\n- Determine where the reporting is done from, either from within service, internal or external watchdog.\n\n- Define a source used to identify the reporter.\n\n- Choose a reporting strategy, either periodically or on transitions. The recommended way is periodically, as it requires simpler code and is therefore less prone to errors.\n\n- Determine how long the report for unhealthy conditions should stay in health store and how it should be cleared. This defines the report time to live and remove on expiration behavior.\n\nAs mentioned above, reporting can be done from:\n\n- The monitored Service Fabric service replica.\n\n- Internal watchdogs deployed as a Service Fabric service. Eg. a Service Fabric stateless service that monitors conditions and issues report. The watchdogs can be deployed an all nodes or can be affinitized to the monitored service.\n\n- Internal Watchdogs that run on the Service Fabric nodes but are **not** implemented as Service Fabric services.\n\n- External watchdogs that are probing the resource from **outside** the Service Fabric cluster. Eg. Gomez like monitoring service.\n\n> [AZURE.NOTE] Out of the box, the cluster is populated with health reports sent by the system components. Read more at [Using System health reports for troubleshooting](service-fabric-understand-and-troubleshoot-with-system-health-reports.md). The user reports must be sent on [health entities](service-fabric-health-introduction.md#health-entities-and-hierarchy) already created by the system.\n\nOnce the health reporting design is clear, sending health reports is easy. It can be done through API using FabricClient.HealthManager.ReportHealth, through Powershell or through REST. Internally, all methods use a health client contained inside a fabric client. There are configuration knobs to batch reports for improved performance.\n\n> [AZURE.NOTE] Report health is sync and only represents the validation work on client side. The fact that the report is accepted by the health client doesn't mean it is applied in store; it will be sent asynchronously, possibly batched with other reports and the processing on the server may fail (eg. stale sequence number, the entity on which the report must be applied has been deleted etc).\n\n## Health client\nThe health reports are sent to the Health Store using a health client, which lives inside the fabric client. The health client can be configured with the following:\n\n- HealthReportSendInterval. The delay between the time the report is added to the client and the time it is sent to Health Store. This is used to batch reports in a single message rather than send one message per each report, for improved performance. Default: 30 seconds.\n\n- HealthReportRetrySendInterval. The interval at which the health client re-sends accumulated health reports to Health Store. Default: 30 seconds.\n\n- HealthOperationTimeout. The timeout for a report message sent to Health Store. If a message times out, the health client retries until the Health Store confirms that the reports have been processed. Default: 2 minutes.\n\n> [AZURE.NOTE] When the reports are batched, the fabric client must be kept alive for at least HealthReportSendInterval to ensure they are sent. If the message is lost or Health Store is not able to apply them due to transient errors, the fabric client must be kept alive longer to give it a chance to retry.\n\nThe buffering on the client takes the uniqueness of the reports into consideration. For example, if a particular bad reporter is reporting 100 reports per second on the same property of the same entity, the reports will get replaced with last version. At most one such report exists in the client queue. If batching is configured, the number of reports sent to the Health Store is just one per send interval, the last added report, which reflects the most current state of the entity.\nAll configuration parameters can be specified when creating the FabricClient, by passing FabricClientSettings with desired values for health related entries.\n\nThe following creates a fabric client and specifies that the reports should be sent as soon as they are added. On retryable errors or timeouts, retries happen every 40 seconds.\n\n```csharp\nvar clientSettings = new FabricClientSettings()\n{\n    HealthOperationTimeout = TimeSpan.FromSeconds(120),\n    HealthReportSendInterval = TimeSpan.FromSeconds(0),\n    HealthReportRetrySendInterval = TimeSpan.FromSeconds(40),\n};\nvar fabricClient = new FabricClient(clientSettings);\n```\n\nSame parameters can be specified when creating a connection to a cluster through Powershell. The following starts a connection to a local cluster:\n\n```powershell\nPS C:\\> Connect-ServiceFabricCluster -HealthOperationTimeoutInSec 120 -HealthReportSendIntervalInSec 0 -HealthReportRetrySendIntervalInSec 40\nTrue\n\nConnectionEndpoint   :\nFabricClientSettings : {\n                       ClientFriendlyName                   : PowerShell-1944858a-4c6d-465f-89c7-9021c12ac0bb\n                       PartitionLocationCacheLimit          : 100000\n                       PartitionLocationCacheBucketCount    : 1024\n                       ServiceChangePollInterval            : 00:02:00\n                       ConnectionInitializationTimeout      : 00:00:02\n                       KeepAliveInterval                    : 00:00:20\n                       HealthOperationTimeout               : 00:02:00\n                       HealthReportSendInterval             : 00:00:00\n                       HealthReportRetrySendInterval        : 00:00:40\n                       NotificationGatewayConnectionTimeout : 00:00:00\n                       NotificationCacheUpdateTimeout       : 00:00:00\n                       }\nGatewayInformation   : {\n                       NodeAddress                          : localhost:19000\n                       NodeId                               : 1880ec88a3187766a6da323399721f53\n                       NodeInstanceId                       : 130729063464981219\n                       NodeName                             : Node.1\n                       }\n```\n\n> [AZURE.NOTE] To ensure that unauthorized services can't report health against the entities in the cluster, the server can be configured to accept only requests from secured clients. Since the reporting is done through FabricClient, this means the FabricClient must have security enabled in order to be able to communicate with the cluster eg. with Kerberos or certificate authentication.\n\n## Design health reporting\nThe first step in generating high quality reports is identifying conditions that can impact the health of the service. Any condition that can help flag problems in the service or cluster when they start or even better, before they happen, can potentially save billions of dollars. Think less down time, less night hours spent investigating and repairing issues, high customer satisfaction.\n\nOnce the conditions are identified, watchdog writers need to figure out the best way to monitor them for best balance between overhead and usefulness. For example, consider a service that does some complex calculations using some temporary files on a share. A watchdog could monitor the share to make sure enough space is available. It could listen for notifications for file/directory changes. It can report an warning if an up-front threshold is reached and error if the share is full. On warning, a repair system could start clean up of older files on the share. On error, a repair system could move the service replica to another node. Note how the condition states are described in terms of health: what is the state of the condition that can be considered healthy or unhealthy (warning or error).\n\nOnce the monitoring details are set, watchdog writer need to figure out how to implement the watchdog. If the conditions can be determined from within the service, the watchdog can be part of the monitored service itself. For example, the service code can check the share usage and report using a local fabric client every time it tries to write a file. The advantage of this approach is that reporting is simple. Care must be taken to prevent watchdog bugs from impacting the service functionality.\n\nReporting from within the monitored service is not always an option. An watchdog within the service may not be able to detect the conditions: either it doesn't have the logic or data to make the determination, or the overhead of monitoring the conditions is high, or the conditions are not specific to a service, but affect interactions between services. Another option is to have watchogs in the cluster as separate processes. The watchdogs simply monitor the conditions and report, without affecting the main services in any way. These watchdogs could for example be implemented as stateless services in the same application, deployed on all nodes or on the same nodes as the service.\n\nSometimes, an watchdog running in the cluster is not an option either. If the monitored conditions are the availability or the functionality of the service as users see it, it's best to have the watchdogs in the same place as the user clients, testing the operations in the same way users call them. For example, we can have a watchog leaving outside the cluster and issuing requests to the service, checking the latency and the correctness of the result (for a calculator service, does 2+2 return 4 in a reasonable time?).\n\nOnce the watchdog details have been finalized, decide a source id that uniquely identifies it. If multiple watchdogs of the same type are living in the cluster, they must either report on different entities, or if they report on the same entity, make sure the source id or the property is different, so reports can coexist. The property of the health report should capture the monitored condition. Eg. for the example above, the property could be ShareSize. If multiple data applied to the same condition, the property should contain some dynamic information to allow reports to coexist. For example, if there are multiple shares that need to be monitored, the property name can be ShareSize-sharename.\n\n> [AZURE.NOTE] The health store should **not** be used to keep status information. Only health related information should be reported as health, information that impacts the health evaluation of an entity. The health store was not designed as a general purpose store. It uses health evaluation logic to aggregate all data into health state. Sending non-health related information (eg. reporting status with health state Ok) will not impact aggregated health state, but can negatively affect the performance of the health store.\n\nThe next decision point is what entity to report on. Most of the time, this is obvious based on the condition. Choose the entity with best granularity possible. If a condition impacts all replicas in a partition, report on the partition, not on the service. There are corner cases where more thought is needed. If the condition impacts an entity (eg. replica) but the desire is to have the condition flagged for more than replica life duration, they it should be reported on partition. Otherwise, when the replica is deleted, all reports associated with it are cleaned up from store. This means watchdog writers needs to also think about the lifetime of the entity and of the report. It must be clear when a report should be cleaned up from a store (eg. when an Error reported on an entity is not applying anymore).\n\nLet's look at an example to put together the above points. Consider a Service Fabric application composed of a Master stateful persisted service and Slaves stateless services deployed on all nodes (one Slave service type for a type of task). The Master has a processing queue with commands to be executed by slaves. The slaves execute the incoming requests and send back Acks. One condition that could be monitored is Master processing queue length. If the master queue length reaches a threshold, report Warning, as that means the slaves can't handle the load. If the queue reached max length and commands are dropped, report Error as the service can't recover. The reports can be on property \"QueueStatus\". The watchdog lives inside the service and it's sent periodically on the Master primary replica. The TTL is 2 minutes and it's sent periodically every 30 seconds. If the primary goes down, the report is cleaned up automatically from store. If the service replica is up but deadlocked or having other issues, the report will expire in the health store and the entity will be evaluated at error.\n\nOther condition that can be monitored is task execution time. The Master distributes the tasks to the slaves based on the task type. Depending on the design, the Master could poll the slaves for task status or it could wait for slaves to send back ACKs when done. In the second case, care must be taken to detect situations where slaves die or messages get lost. One option is for Master to send a ping request to the same Slave, which sends back the status. If no status is received, consider failure and re-schedule the task. This assumes that the tasks are idempotent.\nWe can translate the monitored condition as warning if task is not done in a certain time t1 (eg. 10 minutes); and error if the task is not completed in time t2 (eg. 20 minutes). This reporting can be done in multiple ways:\n\n- The Master primary replica reports periodically on itself. We can have one property for all pending tasks in the queue: if at least one task takes longer, report on property \"PendingTasks\" warning or error, as appropriate. If there are no pending tasks or all are just started, report Ok. The tasks are persisted, so if primary goes down, the new promoted primary can continue to report properly.\n\n- Another watchdog process (in the cloud or external) checks the tasks (from outside, based on desired task result) to see if they are completed. If they do not respect the thresholds, report on Master service. Report on each task and include the task identifier (eg: PendingTask+taskid). Report only on unhealthy states. Set TTL to a few minutes and mark the reports to be removed when expired to ensure cleanup.\n\n- The slave that is executing a task is reporting if it takes longer than expected to run it. It reports on the service instance on property \"PendingTasks\". This pinpoints the service instance that has issues, but it doesn't capture the situation where the instance dies. The reports are cleaned up at that time. It could report on the Slave service; if the Slave completes the task, the slave instance clears the report from store. This doesn't capture the situation where the ack message is lost and the task is not finished from Master point of view.\n\nHowever the reporting is done in the cases described above, they will be captured in application health when health is evaluated.\n\n## Report periodically vs. on transition\nUsing the health reporting model, watchdogs can send reports periodically or on transitions. The recommended way is periodically, because the code is much simpler, therefore less error prone. The watchdogs must strive to be as simple as possible to avoid bugs which trigger wrong reports. Incorrect unhealthy report will impact health evaluation and scenarios based on health, like upgrades. Incorrect healthy reports hide issues in the cluster, which is not desired.\n\nFor periodic reporting, the watchdog can be implemented with a timer. On timer callback, the watchdog can check the state and send an report based on current state. There is no need to see what report was sent previously or make any optimization in terms of messaging. The health client has batching logic to help with that. As long as the health client is kept alive, it will retry internally until the report is ACKed by the health store or the watchdog generates a newer report with the same entity, property and source.\n\nReporting on transition requires careful state handling. The watchdog monitors some conditions and only reports when the conditions change. The plus side is that less reports are needed. The minus is that the logic of the watchdog is complex. The conditions or the reports must be maintained so they can be inspected to determine state changes. On failover, care must be taken to send a report which may have not be sent previously (queued, but not yet sent to health store). The sequence number must be always increasing, or the reports will be rejected due to staleness. In the rare cases where data loss is incurred, there may be synchronization needed between the state of the reporter and the state of the health store.\n\n## Implement health reporting\nOnce the entity and report details are clear, sending health reports can be done though API, Powershell or REST.\n\n### API\nIn order to report through API, users need to create a health report specific to the entity type they want to report on and then give it to a health client.\n\nThe following example shows periodic reporting from a watchdog from within the cluster. The watcher checks whether an external resource can be accessed from within a node. The resource is needed by a service manifest within the application. If the resource is unavailable, the other services within the application can function properly. Therefore, the report is sent on the deployed service package entity, periodically, every 30 seconds.\n\n```csharp\nprivate static Uri ApplicationName = new Uri(\"fabric:/WordCount\");\nprivate static string ServiceManifestName = \"WordCount.Service\";\nprivate static string NodeName = FabricRuntime.GetNodeContext().NodeName;\nprivate static Timer ReportTimer = new Timer(new TimerCallback(SendReport), null, 30 * 1000, 30 * 1000);\nprivate static FabricClient Client = new FabricClient(new FabricClientSettings() { HealthReportSendInterval = TimeSpan.FromSeconds(0) });\n\npublic static void SendReport(object obj)\n{\n    // Test whether the resource can be accessed from the node\n    HealthState healthState = this.TestConnectivityToExternalResource();\n\n    // Send report on deployed service package, as the connectivity is needed by the specific service manifest\n    // and can be different on different nodes\n    var deployedServicePackageHealthReport = new DeployedServicePackageHealthReport(\n        ApplicationName,\n        ServiceManifestName,\n        NodeName,\n        new HealthInformation(\"ExternalSourceWatcher\", \"Connectivity\", healthState));\n\n    // TODO: handle exception. Code omitted for snipet brevity.\n    Client.HealthManager.ReportHealth(deployedServicePackageHealthReport);\n}\n```\n\n### Powershell\nUsers can send health reports with Send-ServiceFabric*EntityType*HealthReport.\n\nThe following example shows periodic reporting on CPU values on a node. The reports should be sent every 30 seconds, they have a TTL of 2 minute. If they expire, it means the reporter has issues, so the node is evaluated at error. When the CPU is above a threshold, the report has health state Warning, if CPU is above threshold for more than a configured time it's reported as Error. Otherwise, the reporter sends Ok.\n\n```powershell\nPS C:\\> Send-ServiceFabricNodeHealthReport -NodeName Node.1 -HealthState Warning -SourceId PowershellWatcher -HealthProperty CPU -Description \"CPU is above 80% threshold\" -TimeToLiveSec 120\n\nPS C:\\> Get-ServiceFabricNodeHealth -NodeName Node.1\nNodeName              : Node.1\nAggregatedHealthState : Warning\nUnhealthyEvaluations  :\n                        Unhealthy event: SourceId='PowershellWatcher', Property='CPU', HealthState='Warning', ConsiderWarningAsError=false.\n\nHealthEvents          :\n                        SourceId              : System.FM\n                        Property              : State\n                        HealthState           : Ok\n                        SequenceNumber        : 5\n                        SentAt                : 4/21/2015 8:01:17 AM\n                        ReceivedAt            : 4/21/2015 8:02:12 AM\n                        TTL                   : Infinite\n                        Description           : Fabric node is up.\n                        RemoveWhenExpired     : False\n                        IsExpired             : False\n                        Transitions           : ->Ok = 4/21/2015 8:02:12 AM\n\n                        SourceId              : PowershellWatcher\n                        Property              : CPU\n                        HealthState           : Warning\n                        SequenceNumber        : 130741236814913394\n                        SentAt                : 4/21/2015 9:01:21 PM\n                        ReceivedAt            : 4/21/2015 9:01:21 PM\n                        TTL                   : 00:02:00\n                        Description           : CPU is above 80% threshold\n                        RemoveWhenExpired     : False\n                        IsExpired             : False\n                        Transitions           : ->Warning = 4/21/2015 9:01:21 PM\n```\n\nThe following example reports a transient Warning on a replica. It first get the partition id and the replica id for the service it is interested in, then sends a report from PowershellWatcher on property ResourceDependency. The report is only of interest for 2 minutes, and it will be automatically removed from store.\n\n```powershell\nPS C:\\> $partitionId = (Get-ServiceFabricPartition -ServiceName fabric:/WordCount/WordCount.Service).PartitionId\n\nPS C:\\> $replicaId = (Get-ServiceFabricReplica -PartitionId $partitionId | where {$_.ReplicaRole -eq \"Primary\"}).ReplicaId\n\nPS C:\\> Send-ServiceFabricReplicaHealthReport -PartitionId $partitionId -ReplicaId $replicaId -HealthState Warning -SourceId PowershellWatcher -HealthProperty ResourceDependency -Description \"The external resource that the primary is using has been rebooted at 4/21/2015 9:01:21 PM. Expect processing delays for a few minutes.\" -TimeToLiveSec 120 -RemoveWhenExpired\n\nPS C:\\> Get-ServiceFabricReplicaHealth  -PartitionId $partitionId -ReplicaOrInstanceId $replicaId\n\n\nPartitionId           : 8f82daff-eb68-4fd9-b631-7a37629e08c0\nReplicaId             : 130740415594605869\nAggregatedHealthState : Warning\nUnhealthyEvaluations  :\n                        Unhealthy event: SourceId='PowershellWatcher', Property='ResourceDependency', HealthState='Warning', ConsiderWarningAsError=false.\n\nHealthEvents          :\n                        SourceId              : System.RA\n                        Property              : State\n                        HealthState           : Ok\n                        SequenceNumber        : 130740768777734943\n                        SentAt                : 4/21/2015 8:01:17 AM\n                        ReceivedAt            : 4/21/2015 8:02:12 AM\n                        TTL                   : Infinite\n                        Description           : Replica has been created.\n                        RemoveWhenExpired     : False\n                        IsExpired             : False\n                        Transitions           : ->Ok = 4/21/2015 8:02:12 AM\n\n                        SourceId              : PowershellWatcher\n                        Property              : ResourceDependency\n                        HealthState           : Warning\n                        SequenceNumber        : 130741243777723555\n                        SentAt                : 4/21/2015 9:12:57 PM\n                        ReceivedAt            : 4/21/2015 9:12:57 PM\n                        TTL                   : 00:02:00\n                        Description           : The external resource that the primary is using has been rebooted at 4/21/2015 9:01:21 PM. Expect processing delays for a few minutes.\n                        RemoveWhenExpired     : True\n                        IsExpired             : False\n                        Transitions           : ->Warning = 4/21/2015 9:12:32 PM\n```\n\n## Next steps\n\nBased on the health data, service writers and cluster/application administrators can think of ways to consume the information. For example, they can set up alerts based on health status to catch severe issues before provoking outages. They can set up automatic repair systems to fix issues automatically.\n\n[Introduction to Service Fabric Health Monitoring](service-fabric-health-introduction.md)\n\n[How to view Service Fabric health reports](service-fabric-view-entities-aggregated-health.md)\n\n[Using System health reports for troubleshooting](service-fabric-understand-and-troubleshoot-with-system-health-reports.md)\n\n[How to Monitor and Diagnose Services locally](service-fabric-diagnostics-how-to-monitor-and-diagnose-services-locally.md)\n\n[Service Fabric Application Upgrade](service-fabric-application-upgrade.md)\n "
+}

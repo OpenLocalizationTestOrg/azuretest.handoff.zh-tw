@@ -1,0 +1,537 @@
+{
+  "nodes": [
+    {
+      "content": "Develop Scalding MapReduce jobs with Maven | Microsoft Azure",
+      "pos": [
+        24,
+        84
+      ]
+    },
+    {
+      "content": "Learn how to use Maven to create a Scalding MapReduce job, then deploy and run the job on a Hadoop on HDInsight cluster.",
+      "pos": [
+        100,
+        220
+      ]
+    },
+    {
+      "content": "Develop Scalding MapReduce jobs with Apache Hadoop on HDInsight",
+      "pos": [
+        513,
+        576
+      ]
+    },
+    {
+      "content": "Scalding is a Scala library that makes it easy to create Hadoop MapReduce jobs.",
+      "pos": [
+        578,
+        657
+      ]
+    },
+    {
+      "content": "It offers a concise syntax, as well as tight integration with Scala.",
+      "pos": [
+        658,
+        726
+      ]
+    },
+    {
+      "content": "In this document, learn how to use Maven to create a basic word count MapReduce job written in Scalding.",
+      "pos": [
+        728,
+        832
+      ]
+    },
+    {
+      "content": "You will then learn how to deploy and run this job on an HDInsight cluster.",
+      "pos": [
+        833,
+        908
+      ]
+    },
+    {
+      "content": "Prerequisites",
+      "pos": [
+        913,
+        926
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>An Azure subscription<ept id=\"p1\">**</ept>.",
+      "pos": [
+        930,
+        956
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt>Get Azure free trial<ept id=\"p1\">](http://azure.microsoft.com/documentation/videos/get-azure-free-trial-for-testing-hadoop-in-hdinsight/)</ept>.",
+      "pos": [
+        957,
+        1087
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>A Windows or Linux based Hadoop on HDInsight cluster<ept id=\"p1\">**</ept>.",
+      "pos": [
+        1090,
+        1147
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt>Provision Linux-based Hadoop on HDInsight<ept id=\"p1\">](hdinsight-hadoop-provision-linux-clusters.md)</ept> or <bpt id=\"p2\">[</bpt>Provision Windows-based Hadoop on HDInsight<ept id=\"p2\">](hdinsight-provision-clusters.md)</ept> for more information.",
+      "pos": [
+        1148,
+        1345
+      ]
+    },
+    {
+      "content": "Maven",
+      "pos": [
+        1352,
+        1357
+      ]
+    },
+    {
+      "pos": [
+        1392,
+        1490
+      ],
+      "content": "<bpt id=\"p1\">[</bpt>Java platform JDK<ept id=\"p1\">](http://www.oracle.com/technetwork/java/javase/downloads/index.html)</ept> 7 or later"
+    },
+    {
+      "content": "Create and build the project",
+      "pos": [
+        1497,
+        1525
+      ]
+    },
+    {
+      "content": "Use the following command to create a new Maven project:",
+      "pos": [
+        1530,
+        1586
+      ]
+    },
+    {
+      "pos": [
+        1802,
+        1924
+      ],
+      "content": "This command will create a new directory named <bpt id=\"p1\">**</bpt>scaldingwordcount<ept id=\"p1\">**</ept>, and create the scaffolding for an Scala application."
+    },
+    {
+      "pos": [
+        1929,
+        2039
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>scaldingwordcount<ept id=\"p1\">**</ept> directory, open the <bpt id=\"p2\">**</bpt>pom.xml<ept id=\"p2\">**</ept> file and replace the contents with the following:"
+    },
+    {
+      "content": "This file describes the project, dependencies, and plugins.",
+      "pos": [
+        5781,
+        5840
+      ]
+    },
+    {
+      "content": "Here are the important entries:",
+      "pos": [
+        5841,
+        5872
+      ]
+    },
+    {
+      "pos": [
+        5880,
+        5975
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>maven.compiler.source<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>maven.compiler.target<ept id=\"p2\">**</ept>: sets the Java version for this project"
+    },
+    {
+      "pos": [
+        5983,
+        6072
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>repositories<ept id=\"p1\">**</ept>: the repositories that contain the dependency files used by this project"
+    },
+    {
+      "pos": [
+        6080,
+        6186
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>scalding-core_2.11<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>hadoop-core<ept id=\"p2\">**</ept>: this project depends on both Scalding and Hadoop core packages"
+    },
+    {
+      "pos": [
+        6194,
+        6254
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>maven-scala-plugin<ept id=\"p1\">**</ept>: plugin to compile scala applications"
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>maven-shade-plugin<ept id=\"p1\">**</ept>: plugin to create shaded (fat) jars.",
+      "pos": [
+        6262,
+        6321
+      ]
+    },
+    {
+      "content": "This plugin applies filters and transformations; specificially:",
+      "pos": [
+        6322,
+        6385
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>filters<ept id=\"p1\">**</ept>: The filters applied modify the meta information included with in the jar file.",
+      "pos": [
+        6397,
+        6488
+      ]
+    },
+    {
+      "content": "To prevent signing exceptions at runtime, this excludes various signature files that may be included with dependencies.",
+      "pos": [
+        6489,
+        6608
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>executions<ept id=\"p1\">**</ept>: The package phase execution configuration specifies the <bpt id=\"p2\">**</bpt>com.twitter.scalding.Tool<ept id=\"p2\">**</ept> class as the main class for the package.",
+      "pos": [
+        6620,
+        6762
+      ]
+    },
+    {
+      "content": "Without this, you would need to specify com.twitter.scalding.Tool, as well as the class that contains the application logic, when running the job with the hadoop command.",
+      "pos": [
+        6763,
+        6933
+      ]
+    },
+    {
+      "pos": [
+        6938,
+        7025
+      ],
+      "content": "Delete the <bpt id=\"p1\">**</bpt>src/test<ept id=\"p1\">**</ept> directory, as you will not be creating tests with this example."
+    },
+    {
+      "pos": [
+        7030,
+        7139
+      ],
+      "content": "Open the <bpt id=\"p1\">**</bpt>src/main/scala/com/microsoft/example/app.scala<ept id=\"p1\">**</ept> file and replace the contents with the following:"
+    },
+    {
+      "content": "This implements a basic word count job.",
+      "pos": [
+        7898,
+        7937
+      ]
+    },
+    {
+      "content": "Save and close the files.",
+      "pos": [
+        7942,
+        7967
+      ]
+    },
+    {
+      "pos": [
+        7972,
+        8076
+      ],
+      "content": "Use the following command from the <bpt id=\"p1\">**</bpt>scaldingwordcount<ept id=\"p1\">**</ept> directory to build and package the application:"
+    },
+    {
+      "pos": [
+        8103,
+        8239
+      ],
+      "content": "Once this job completes, the package containing the WordCount application can be found at <bpt id=\"p1\">**</bpt>target/scaldingwordcount-1.0-SNAPSHOT.jar<ept id=\"p1\">**</ept>."
+    },
+    {
+      "content": "Run the job on a Linux-based cluster",
+      "pos": [
+        8244,
+        8280
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> The following steps use SSH and the Hadoop command.",
+      "pos": [
+        8284,
+        8348
+      ]
+    },
+    {
+      "content": "For other methods of running MapReduce jobs, see <bpt id=\"p1\">[</bpt>Use MapReduce in Hadoop on HDInsight<ept id=\"p1\">](hdinsight-use-mapreduce.md)</ept>.",
+      "pos": [
+        8349,
+        8465
+      ]
+    },
+    {
+      "content": "Use the following command to upload the package to your HDInsight cluster:",
+      "pos": [
+        8470,
+        8544
+      ]
+    },
+    {
+      "content": "This copies the files from the local system to the head node.",
+      "pos": [
+        8650,
+        8711
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> If you used a password to secure your SSH account, you will be prompted for the password.",
+      "pos": [
+        8719,
+        8821
+      ]
+    },
+    {
+      "content": "If you used an SSH key, you may have to use the <ph id=\"ph1\">`-i`</ph> parameter and the path to the private key.",
+      "pos": [
+        8822,
+        8917
+      ]
+    },
+    {
+      "content": "For example, <ph id=\"ph1\">`scp -i /path/to/private/key target/scaldingwordcount-1.0-SNAPSHOT.jar username@clustername-ssh.azurehdinsight.net:.`</ph>",
+      "pos": [
+        8918,
+        9048
+      ]
+    },
+    {
+      "content": "Use the following command to connect to the cluster head node:",
+      "pos": [
+        9053,
+        9115
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> If you used a password to secure your SSH account, you will be prompted for the password.",
+      "pos": [
+        9180,
+        9282
+      ]
+    },
+    {
+      "content": "If you used an SSH key, you may have to use the <ph id=\"ph1\">`-i`</ph> parameter and the path to the private key.",
+      "pos": [
+        9283,
+        9378
+      ]
+    },
+    {
+      "content": "For example, <ph id=\"ph1\">`ssh -i /path/to/private/key username@clustername-ssh.azurehdinsight.net`</ph>",
+      "pos": [
+        9379,
+        9465
+      ]
+    },
+    {
+      "content": "Once connected to the head node, use the following command to run the word cound job",
+      "pos": [
+        9470,
+        9554
+      ]
+    },
+    {
+      "content": "This runs the WordCount class you implemented earlier.",
+      "pos": [
+        9743,
+        9797
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">`--hdfs`</ph> instructs the job to use HDFS.",
+      "pos": [
+        9798,
+        9837
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">`--input`</ph> specifies the input text file, while <ph id=\"ph2\">`--output`</ph> specifies the output location.",
+      "pos": [
+        9838,
+        9926
+      ]
+    },
+    {
+      "content": "After the job completes, use the following to view the output.",
+      "pos": [
+        9931,
+        9993
+      ]
+    },
+    {
+      "content": "This will display information similar to the following:",
+      "pos": [
+        10064,
+        10119
+      ]
+    },
+    {
+      "content": "Run the job on a Windows-based cluster",
+      "pos": [
+        10398,
+        10436
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> The following steps use Windows PowerShell.",
+      "pos": [
+        10440,
+        10496
+      ]
+    },
+    {
+      "content": "For other methods of running MapReduce jobs, see <bpt id=\"p1\">[</bpt>Use MapReduce in Hadoop on HDInsight<ept id=\"p1\">](hdinsight-use-mapreduce.md)</ept>.",
+      "pos": [
+        10497,
+        10613
+      ]
+    },
+    {
+      "pos": [
+        10618,
+        10695
+      ],
+      "content": "<bpt id=\"p1\">[</bpt>Install and configure Azure PowerShell<ept id=\"p1\">](../install-configure-powershell.md)</ept>."
+    },
+    {
+      "pos": [
+        10700,
+        10861
+      ],
+      "content": "Download <bpt id=\"p1\">[</bpt>hdinsight-tools.psm1<ept id=\"p1\">](https://github.com/Blackmist/hdinsight-tools/blob/master/hdinsight-tools.psm1)</ept> and save to a file named <bpt id=\"p2\">**</bpt>hdinsight-tools.psm1<ept id=\"p2\">**</ept>."
+    },
+    {
+      "content": "Open a new <bpt id=\"p1\">**</bpt>Azure PoweShell<ept id=\"p1\">**</ept> session and enter the following command.",
+      "pos": [
+        10866,
+        10937
+      ]
+    },
+    {
+      "content": "If hdinsight-tools.psm1 isn't in the current directory, provide the path to the file:",
+      "pos": [
+        10938,
+        11023
+      ]
+    },
+    {
+      "content": "This imports several functions for working with files in HDInsight.",
+      "pos": [
+        11073,
+        11140
+      ]
+    },
+    {
+      "content": "Use the following commands to upload the jar file containing the WordCount job.",
+      "pos": [
+        11145,
+        11224
+      ]
+    },
+    {
+      "content": "Replace <ph id=\"ph1\">`CLUSTERNAME`</ph> with the name of your HDInsight cluster:",
+      "pos": [
+        11225,
+        11287
+      ]
+    },
+    {
+      "content": "Once the upload has completed, use the following commands to run the job:",
+      "pos": [
+        11500,
+        11573
+      ]
+    },
+    {
+      "content": "Once the job completes, use the following to download the job output:",
+      "pos": [
+        12044,
+        12113
+      ]
+    },
+    {
+      "content": "The output consists of tab delimited word and count values.",
+      "pos": [
+        12237,
+        12296
+      ]
+    },
+    {
+      "content": "use the following command to display the results.",
+      "pos": [
+        12297,
+        12346
+      ]
+    },
+    {
+      "content": "The file should contain values similar to the following:",
+      "pos": [
+        12376,
+        12432
+      ]
+    },
+    {
+      "content": "If the output is empty, or the file doesn't exist, you can use the following to view any errors that occurred when running the job:",
+      "pos": [
+        12711,
+        12842
+      ]
+    },
+    {
+      "content": "Next steps",
+      "pos": [
+        12939,
+        12949
+      ]
+    },
+    {
+      "content": "Now that you have learned how to use Scalding to create MapReduce jobs for HDInsight, use the following links to explore other ways to work with Azure HDInsight.",
+      "pos": [
+        12951,
+        13112
+      ]
+    },
+    {
+      "content": "Use Hive with HDInsight",
+      "pos": [
+        13117,
+        13140
+      ]
+    },
+    {
+      "content": "Use Pig with HDInsight",
+      "pos": [
+        13169,
+        13191
+      ]
+    },
+    {
+      "content": "Use MapReduce jobs with HDInsight",
+      "pos": [
+        13219,
+        13252
+      ]
+    },
+    {
+      "content": "test",
+      "pos": [
+        13283,
+        13287
+      ]
+    }
+  ],
+  "content": "<properties\n pageTitle=\"Develop Scalding MapReduce jobs with Maven | Microsoft Azure\"\n description=\"Learn how to use Maven to create a Scalding MapReduce job, then deploy and run the job on a Hadoop on HDInsight cluster.\"\n services=\"hdinsight\"\n documentationCenter=\"\"\n authors=\"Blackmist\"\n manager=\"paulettm\"\n editor=\"cgronlun\"\n    tags=\"azure-portal\"/>\n<tags\n ms.service=\"hdinsight\"\n ms.devlang=\"na\"\n ms.topic=\"article\"\n ms.tgt_pltfrm=\"na\"\n ms.workload=\"big-data\"\n ms.date=\"07/06/2015\"\n ms.author=\"larryfr\"/>\n\n# Develop Scalding MapReduce jobs with Apache Hadoop on HDInsight\n\nScalding is a Scala library that makes it easy to create Hadoop MapReduce jobs. It offers a concise syntax, as well as tight integration with Scala.\n\nIn this document, learn how to use Maven to create a basic word count MapReduce job written in Scalding. You will then learn how to deploy and run this job on an HDInsight cluster.\n\n## Prerequisites\n\n- **An Azure subscription**. See [Get Azure free trial](http://azure.microsoft.com/documentation/videos/get-azure-free-trial-for-testing-hadoop-in-hdinsight/).\n* **A Windows or Linux based Hadoop on HDInsight cluster**. See [Provision Linux-based Hadoop on HDInsight](hdinsight-hadoop-provision-linux-clusters.md) or [Provision Windows-based Hadoop on HDInsight](hdinsight-provision-clusters.md) for more information.\n\n* **[Maven](http://maven.apache.org/)**\n\n* **[Java platform JDK](http://www.oracle.com/technetwork/java/javase/downloads/index.html) 7 or later**\n\n## Create and build the project\n\n1. Use the following command to create a new Maven project:\n\n        mvn archetype:generate -DgroupId=com.microsoft.example -DartifactId=scaldingwordcount -DarchetypeGroupId=org.scala-tools.archetypes -DarchetypeArtifactId=scala-archetype-simple -DinteractiveMode=false\n\n    This command will create a new directory named **scaldingwordcount**, and create the scaffolding for an Scala application.\n\n2. In the **scaldingwordcount** directory, open the **pom.xml** file and replace the contents with the following:\n\n        <project xmlns=\"http://maven.apache.org/POM/4.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd\">\n          <modelVersion>4.0.0</modelVersion>\n          <groupId>com.microsoft.example</groupId>\n          <artifactId>scaldingwordcount</artifactId>\n          <version>1.0-SNAPSHOT</version>\n          <name>${project.artifactId}</name>\n          <properties>\n            <maven.compiler.source>1.6</maven.compiler.source>\n            <maven.compiler.target>1.6</maven.compiler.target>\n            <encoding>UTF-8</encoding>\n          </properties>\n          <repositories>\n            <repository>\n              <id>conjars</id>\n              <url>http://conjars.org/repo</url>\n            </repository>\n            <repository>\n              <id>maven-central</id>\n              <url>http://repo1.maven.org/maven2</url>\n            </repository>\n          </repositories>\n          <dependencies>\n            <dependency>\n              <groupId>com.twitter</groupId>\n              <artifactId>scalding-core_2.11</artifactId>\n              <version>0.13.1</version>\n            </dependency>\n            <dependency>\n              <groupId>org.apache.hadoop</groupId>\n              <artifactId>hadoop-core</artifactId>\n              <version>1.2.1</version>\n              <scope>provided</scope>\n            </dependency>\n          </dependencies>\n          <build>\n            <sourceDirectory>src/main/scala</sourceDirectory>\n            <plugins>\n              <plugin>\n                <groupId>org.scala-tools</groupId>\n                <artifactId>maven-scala-plugin</artifactId>\n                <version>2.15.2</version>\n                <executions>\n                  <execution>\n                    <id>scala-compile-first</id>\n                    <phase>process-resources</phase>\n                    <goals>\n                      <goal>add-source</goal>\n                      <goal>compile</goal>\n                    </goals>\n                  </execution>\n                </executions>\n              </plugin>\n              <plugin>\n                <groupId>org.apache.maven.plugins</groupId>\n                <artifactId>maven-shade-plugin</artifactId>\n                <version>2.3</version>\n                <configuration>\n                  <transformers>\n                    <transformer implementation=\"org.apache.maven.plugins.shade.resource.ApacheLicenseResourceTransformer\">\n                    </transformer>\n                  </transformers>\n                  <filters>\n                    <filter>\n                      <artifact>*:*</artifact>\n                      <excludes>\n                        <exclude>META-INF/*.SF</exclude>\n                        <exclude>META-INF/*.DSA</exclude>\n                        <exclude>META-INF/*.RSA</exclude>\n                      </excludes>\n                    </filter>\n                  </filters>\n                </configuration>\n                <executions>\n                  <execution>\n                    <phase>package</phase>\n                    <goals>\n                      <goal>shade</goal>\n                    </goals>\n                    <configuration>\n                      <transformers>\n                        <transformer implementation=\"org.apache.maven.plugins.shade.resource.ManifestResourceTransformer\">\n                          <mainClass>com.twitter.scalding.Tool</mainClass>\n                        </transformer>\n                      </transformers>\n                    </configuration>\n                  </execution>\n                </executions>\n              </plugin>\n            </plugins>\n          </build>\n        </project>\n\n    This file describes the project, dependencies, and plugins. Here are the important entries:\n\n    * **maven.compiler.source** and **maven.compiler.target**: sets the Java version for this project\n\n    * **repositories**: the repositories that contain the dependency files used by this project\n\n    * **scalding-core_2.11** and **hadoop-core**: this project depends on both Scalding and Hadoop core packages\n\n    * **maven-scala-plugin**: plugin to compile scala applications\n\n    * **maven-shade-plugin**: plugin to create shaded (fat) jars. This plugin applies filters and transformations; specificially:\n\n        * **filters**: The filters applied modify the meta information included with in the jar file. To prevent signing exceptions at runtime, this excludes various signature files that may be included with dependencies.\n\n        * **executions**: The package phase execution configuration specifies the **com.twitter.scalding.Tool** class as the main class for the package. Without this, you would need to specify com.twitter.scalding.Tool, as well as the class that contains the application logic, when running the job with the hadoop command.\n\n3. Delete the **src/test** directory, as you will not be creating tests with this example.\n\n4. Open the **src/main/scala/com/microsoft/example/app.scala** file and replace the contents with the following:\n\n        package com.microsoft.example\n\n        import com.twitter.scalding._\n\n        class WordCount(args : Args) extends Job(args) {\n          // 1. Read lines from the specified input location\n          // 2. Extract individual words from each line\n          // 3. Group words and count them\n          // 4. Write output to the specified output location\n          TextLine(args(\"input\"))\n            .flatMap('line -> 'word) { line : String => tokenize(line) }\n            .groupBy('word) { _.size }\n            .write(Tsv(args(\"output\")))\n\n          //Tokenizer to split sentance into words\n          def tokenize(text : String) : Array[String] = {\n            text.toLowerCase.replaceAll(\"[^a-zA-Z0-9\\\\s]\", \"\").split(\"\\\\s+\")\n          }\n        }\n\n    This implements a basic word count job.\n\n5. Save and close the files.\n\n6. Use the following command from the **scaldingwordcount** directory to build and package the application:\n\n        mvn package\n\n    Once this job completes, the package containing the WordCount application can be found at **target/scaldingwordcount-1.0-SNAPSHOT.jar**.\n\n## Run the job on a Linux-based cluster\n\n> [AZURE.NOTE] The following steps use SSH and the Hadoop command. For other methods of running MapReduce jobs, see [Use MapReduce in Hadoop on HDInsight](hdinsight-use-mapreduce.md).\n\n1. Use the following command to upload the package to your HDInsight cluster:\n\n        scp target/scaldingwordcount-1.0-SNAPSHOT.jar username@clustername-ssh.azurehdinsight.net:\n\n    This copies the files from the local system to the head node.\n\n    > [AZURE.NOTE] If you used a password to secure your SSH account, you will be prompted for the password. If you used an SSH key, you may have to use the `-i` parameter and the path to the private key. For example, `scp -i /path/to/private/key target/scaldingwordcount-1.0-SNAPSHOT.jar username@clustername-ssh.azurehdinsight.net:.`\n\n2. Use the following command to connect to the cluster head node:\n\n        ssh username@clustername-ssh.azurehdinsight.net\n\n    > [AZURE.NOTE] If you used a password to secure your SSH account, you will be prompted for the password. If you used an SSH key, you may have to use the `-i` parameter and the path to the private key. For example, `ssh -i /path/to/private/key username@clustername-ssh.azurehdinsight.net`\n\n3. Once connected to the head node, use the following command to run the word cound job\n\n        hadoop jar scaldingwordcount-1.0-SNAPSHOT.jar com.microsoft.example.WordCount --hdfs --input wasb:///example/data/gutenberg/davinci.txt --output wasb:///example/wordcountout\n\n    This runs the WordCount class you implemented earlier. `--hdfs` instructs the job to use HDFS. `--input` specifies the input text file, while `--output` specifies the output location.\n\n4. After the job completes, use the following to view the output.\n\n        hadoop fs -text wasb:///example/wordcountout/part-00000\n\n    This will display information similar to the following:\n\n        writers 9\n        writes  18\n        writhed 1\n        writing 51\n        writings        24\n        written 208\n        writtenthese    1\n        wrong   11\n        wrongly 2\n        wrongplace      1\n        wrote   34\n        wrotefootnote   1\n        wrought 7\n\n## Run the job on a Windows-based cluster\n\n> [AZURE.NOTE] The following steps use Windows PowerShell. For other methods of running MapReduce jobs, see [Use MapReduce in Hadoop on HDInsight](hdinsight-use-mapreduce.md).\n\n1. [Install and configure Azure PowerShell](../install-configure-powershell.md).\n\n2. Download [hdinsight-tools.psm1](https://github.com/Blackmist/hdinsight-tools/blob/master/hdinsight-tools.psm1) and save to a file named **hdinsight-tools.psm1**.\n\n3. Open a new **Azure PoweShell** session and enter the following command. If hdinsight-tools.psm1 isn't in the current directory, provide the path to the file:\n\n        import-module hdinsight-tools.psm1\n\n    This imports several functions for working with files in HDInsight.\n\n4. Use the following commands to upload the jar file containing the WordCount job. Replace `CLUSTERNAME` with the name of your HDInsight cluster:\n\n        $clusterName=\"CLUSTERNAME\"\n        Add-HDInsightFile -clusterName $clusterName -localPath \\path\\to\\scaldingwordcount-1.0-SNAPSHOT.jar -destinationPath example/jars/scaldingwordcount-1.0-SNAPSHOT.jar\n\n5. Once the upload has completed, use the following commands to run the job:\n\n        $jobDef=New-AzureHDInsightMapReduceJobDefinition -JobName ScaldingWordCount -JarFile wasb:///example/jars/scaldingwordcount-1.0-SNAPSHOT.jar -ClassName com.microsoft.example.WordCount -arguments \"--hdfs\", \"--input\", \"wasb:///example/data/gutenberg/davinci.txt\", \"--output\", \"wasb:///example/wordcountout\"\n        $job = start-azurehdinsightjob -cluster $clusterName -jobdefinition $jobDef\n        wait-azurehdinsightjob -Job $job -waittimeoutinseconds 3600\n\n6. Once the job completes, use the following to download the job output:\n\n        Get-HDInsightFile -clusterName $clusterName -remotePath example/wordcountout/part-00000 -localPath output.txt\n\n7. The output consists of tab delimited word and count values. use the following command to display the results.\n\n        cat output.txt\n\n    The file should contain values similar to the following:\n\n        writers 9\n        writes  18\n        writhed 1\n        writing 51\n        writings        24\n        written 208\n        writtenthese    1\n        wrong   11\n        wrongly 2\n        wrongplace      1\n        wrote   34\n        wrotefootnote   1\n        wrought 7\n\n7. If the output is empty, or the file doesn't exist, you can use the following to view any errors that occurred when running the job:\n\n        Get-AzureHdinsightJobOutput -cluster $clusterName -jobId $job.JobId -standarderror\n\n## Next steps\n\nNow that you have learned how to use Scalding to create MapReduce jobs for HDInsight, use the following links to explore other ways to work with Azure HDInsight.\n\n* [Use Hive with HDInsight](hdinsight-use-hive.md)\n\n* [Use Pig with HDInsight](hdinsight-use-pig.md)\n\n* [Use MapReduce jobs with HDInsight](hdinsight-use-mapreduce.md)\n\ntest\n"
+}

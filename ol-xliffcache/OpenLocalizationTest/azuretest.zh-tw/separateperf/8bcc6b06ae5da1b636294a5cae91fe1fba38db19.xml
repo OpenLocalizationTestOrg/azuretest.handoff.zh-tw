@@ -1,0 +1,572 @@
+{
+  "nodes": [
+    {
+      "content": "Hash distribution and its effect on query performance in SQL Data Warehouse | Microsoft Azure",
+      "pos": [
+        26,
+        119
+      ]
+    },
+    {
+      "content": "Learn about hash distributed tables and how they affect query performance in Azure SQL Data Warehouse for developing solutions.",
+      "pos": [
+        137,
+        264
+      ]
+    },
+    {
+      "content": "Hash distribution and its effect on query performance in SQL Data Warehouse",
+      "pos": [
+        602,
+        677
+      ]
+    },
+    {
+      "content": "Making smart hash distribution decisions is one of the most important ways to improve query performance.",
+      "pos": [
+        679,
+        783
+      ]
+    },
+    {
+      "content": "There are in fact three major factors:",
+      "pos": [
+        787,
+        825
+      ]
+    },
+    {
+      "content": "Minimize Data Movement",
+      "pos": [
+        830,
+        852
+      ]
+    },
+    {
+      "content": "Avoid Data Skew",
+      "pos": [
+        856,
+        871
+      ]
+    },
+    {
+      "content": "Provide Balanced Execution",
+      "pos": [
+        875,
+        901
+      ]
+    },
+    {
+      "content": "Minimize data movement",
+      "pos": [
+        906,
+        928
+      ]
+    },
+    {
+      "content": "Data Movement most commonly arises when tables are joined together or aggregations on tables are performed.",
+      "pos": [
+        929,
+        1036
+      ]
+    },
+    {
+      "content": "Hash distributing tables on a shared key is one of the most effective methods for minimizing this movement.",
+      "pos": [
+        1037,
+        1144
+      ]
+    },
+    {
+      "content": "However, for the hash distribution to be effective in minimizing the movement the following criteria must all be true:",
+      "pos": [
+        1146,
+        1264
+      ]
+    },
+    {
+      "content": "Both tables need to be hash distributed and be joined on the shared distribution key",
+      "pos": [
+        1269,
+        1353
+      ]
+    },
+    {
+      "content": "The data types of both columns need to match",
+      "pos": [
+        1357,
+        1401
+      ]
+    },
+    {
+      "content": "The joining columns need to be equi-join (i.e. the values in the left table's column need to equal the values in the right table's column)",
+      "pos": [
+        1405,
+        1543
+      ]
+    },
+    {
+      "pos": [
+        1547,
+        1581
+      ],
+      "content": "The join is <bpt id=\"p1\">**</bpt>not<ept id=\"p1\">**</ept> a <ph id=\"ph1\">`CROSS JOIN`</ph>"
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> Columns used in <ph id=\"ph2\">`JOIN`</ph>, <ph id=\"ph3\">`GROUP BY`</ph>, <ph id=\"ph4\">`DISTINCT`</ph> and <ph id=\"ph5\">`HAVING`</ph> clauses all make for good HASH column candidates.",
+      "pos": [
+        1585,
+        1707
+      ]
+    },
+    {
+      "content": "On the other hand columns in the <ph id=\"ph1\">`WHERE`</ph> clause do <bpt id=\"p1\">**</bpt>not<ept id=\"p1\">**</ept> make for good hash column candidates.",
+      "pos": [
+        1708,
+        1804
+      ]
+    },
+    {
+      "content": "See the section on balanced execution below.",
+      "pos": [
+        1805,
+        1849
+      ]
+    },
+    {
+      "pos": [
+        1851,
+        2034
+      ],
+      "content": "Data movement may also arise from query syntax (<ph id=\"ph1\">`COUNT DISTINCT`</ph> and the <ph id=\"ph2\">`OVER`</ph> clause both being great examples) when used with columns that do not include the hash distribution key."
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> Round-Robin tables typically generate data movement.",
+      "pos": [
+        2038,
+        2103
+      ]
+    },
+    {
+      "content": "The data in the table has been allocated in a non-deterministic fashion and so the data must first be moved prior to most queries being completed.",
+      "pos": [
+        2104,
+        2250
+      ]
+    },
+    {
+      "content": "Avoid data skew",
+      "pos": [
+        2255,
+        2270
+      ]
+    },
+    {
+      "content": "In order for hash distribution to be effective it is important that the column chosen exhibits the following properties:",
+      "pos": [
+        2271,
+        2391
+      ]
+    },
+    {
+      "content": "The column contains a significant number of distinct values.",
+      "pos": [
+        2396,
+        2456
+      ]
+    },
+    {
+      "pos": [
+        2460,
+        2506
+      ],
+      "content": "The column does not suffer from <bpt id=\"p1\">**</bpt>data skew<ept id=\"p1\">**</ept>."
+    },
+    {
+      "content": "Each distinct value will be allocated to a distribution.",
+      "pos": [
+        2508,
+        2564
+      ]
+    },
+    {
+      "content": "Consequently, the data will require a reasonable number of distinct values to ensure enough unique hash values are generated.",
+      "pos": [
+        2565,
+        2690
+      ]
+    },
+    {
+      "content": "Otherwise we might get a poor quality hash.",
+      "pos": [
+        2691,
+        2734
+      ]
+    },
+    {
+      "content": "If the number of distributions exceeds the number of distinct values for example then some distributions will be left empty.",
+      "pos": [
+        2735,
+        2859
+      ]
+    },
+    {
+      "content": "This would hurt performance.",
+      "pos": [
+        2860,
+        2888
+      ]
+    },
+    {
+      "content": "Similarly, if all of the rows for the hashed column contained the same value then the data is said to be <bpt id=\"p1\">**</bpt>skewed<ept id=\"p1\">**</ept>.",
+      "pos": [
+        2890,
+        3006
+      ]
+    },
+    {
+      "content": "In this extreme case only one hash value would have been created resulting in all rows ending up inside a single distribution.",
+      "pos": [
+        3007,
+        3133
+      ]
+    },
+    {
+      "content": "Ideally, each distinct value in the hashed column would have the same number of rows.",
+      "pos": [
+        3134,
+        3219
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> Round-robin tables do not exhibit signs of skew.",
+      "pos": [
+        3223,
+        3284
+      ]
+    },
+    {
+      "content": "This is because the data is stored evenly across the distributions.",
+      "pos": [
+        3285,
+        3352
+      ]
+    },
+    {
+      "content": "Provide balanced execution",
+      "pos": [
+        3357,
+        3383
+      ]
+    },
+    {
+      "content": "Balanced execution is achieved when each distribution has the same amount of work to perform.",
+      "pos": [
+        3384,
+        3477
+      ]
+    },
+    {
+      "content": "Massively Parallel Processing (MPP) is a team game; everyone has to cross the line before anyone can be declared the winner.",
+      "pos": [
+        3478,
+        3602
+      ]
+    },
+    {
+      "content": "If every distribution has the same amount of work (i.e. data to process) then all of the queries will finish at about the same time.",
+      "pos": [
+        3603,
+        3735
+      ]
+    },
+    {
+      "content": "This is known as balanced execution.",
+      "pos": [
+        3736,
+        3772
+      ]
+    },
+    {
+      "content": "As has been seen, data skew can affect balanced execution.",
+      "pos": [
+        3774,
+        3832
+      ]
+    },
+    {
+      "content": "However, so can the choice of hash distribution key.",
+      "pos": [
+        3833,
+        3885
+      ]
+    },
+    {
+      "content": "If a column has been chosen that appears in the <ph id=\"ph1\">`WHERE`</ph> clause of a query then it is quite likely that the query will not be balanced.",
+      "pos": [
+        3886,
+        4020
+      ]
+    },
+    {
+      "pos": [
+        4026,
+        4127
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> The <ph id=\"ph2\">`WHERE`</ph> clause typically helps identify columns that are best used for partitioning."
+    },
+    {
+      "content": "A good example of a column that appears in the <ph id=\"ph1\">`WHERE`</ph> clause would be a date field.",
+      "pos": [
+        4129,
+        4213
+      ]
+    },
+    {
+      "content": "Date fields are a classic examples of great partitioning columns but often poor hash distribution columns.",
+      "pos": [
+        4215,
+        4321
+      ]
+    },
+    {
+      "content": "Typically, data warehouse queries are over a specified time period such as day, week or month.",
+      "pos": [
+        4322,
+        4416
+      ]
+    },
+    {
+      "content": "Hash distributing by date may have actually limited our scalablity and hurt our performance.",
+      "pos": [
+        4417,
+        4509
+      ]
+    },
+    {
+      "content": "If for example the date range specified was for a week i.e. 7 days then the maximum number of hashes would be 7 - one for each day.",
+      "pos": [
+        4510,
+        4641
+      ]
+    },
+    {
+      "content": "This means that only 7 of our distributions would contain data.",
+      "pos": [
+        4642,
+        4705
+      ]
+    },
+    {
+      "content": "The remaining distributions would not have any data.",
+      "pos": [
+        4706,
+        4758
+      ]
+    },
+    {
+      "content": "This would result in an unbalanced query execution as only 7 distributions are processing data.",
+      "pos": [
+        4759,
+        4854
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> Round-robin tables typically provide balanced execution.",
+      "pos": [
+        4858,
+        4927
+      ]
+    },
+    {
+      "content": "This is because the data is stored evenly across the distributions.",
+      "pos": [
+        4928,
+        4995
+      ]
+    },
+    {
+      "content": "Recommendations",
+      "pos": [
+        5000,
+        5015
+      ]
+    },
+    {
+      "content": "To maximize your performance and overall query throughput try and ensure that your hash distributed tables follow this pattern as much as possible:",
+      "pos": [
+        5016,
+        5163
+      ]
+    },
+    {
+      "content": "Hash distribution key:",
+      "pos": [
+        5165,
+        5187
+      ]
+    },
+    {
+      "pos": [
+        5192,
+        5271
+      ],
+      "content": "Is used in <ph id=\"ph1\">`JOIN`</ph>, <ph id=\"ph2\">`GROUP BY`</ph>, <ph id=\"ph3\">`DISTINCT`</ph>, or <ph id=\"ph4\">`HAVING`</ph> clauses in your queries."
+    },
+    {
+      "pos": [
+        5275,
+        5305
+      ],
+      "content": "Is not used in <ph id=\"ph1\">`WHERE`</ph> clauses"
+    },
+    {
+      "content": "Has lots of different values, at least 1000.",
+      "pos": [
+        5309,
+        5353
+      ]
+    },
+    {
+      "content": "Does not have a disproportionately large number of rows that will hash to a small number of distributions.",
+      "pos": [
+        5357,
+        5463
+      ]
+    },
+    {
+      "content": "Is defined as NOT NULL.",
+      "pos": [
+        5467,
+        5490
+      ]
+    },
+    {
+      "content": "NULL rows will congregate in one distribution.",
+      "pos": [
+        5491,
+        5537
+      ]
+    },
+    {
+      "content": "Summary",
+      "pos": [
+        5542,
+        5549
+      ]
+    },
+    {
+      "content": "Hash distribution can be summarized as follows:",
+      "pos": [
+        5551,
+        5598
+      ]
+    },
+    {
+      "content": "The hash function is deterministic.",
+      "pos": [
+        5602,
+        5637
+      ]
+    },
+    {
+      "content": "The same value is always assigned to the same distribution.",
+      "pos": [
+        5638,
+        5697
+      ]
+    },
+    {
+      "content": "One column is used as the distribution column.",
+      "pos": [
+        5700,
+        5746
+      ]
+    },
+    {
+      "content": "The hash function uses the nominated column to compute the row assignments to distributions.",
+      "pos": [
+        5747,
+        5839
+      ]
+    },
+    {
+      "content": "The hash function is based on the type of the column not on the values themselves",
+      "pos": [
+        5842,
+        5923
+      ]
+    },
+    {
+      "content": "Hash distributing a table can sometimes result in a skewed table",
+      "pos": [
+        5926,
+        5990
+      ]
+    },
+    {
+      "content": "Hash distributed tables generally require less data movement when resolving queries, and therefore improve query performance for large fact tables.",
+      "pos": [
+        5993,
+        6140
+      ]
+    },
+    {
+      "content": "Observe the recommendations for hash distributed column selection to enhance query throughput.",
+      "pos": [
+        6143,
+        6237
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> In SQL Data Warehouse data type consistency matters!",
+      "pos": [
+        6241,
+        6306
+      ]
+    },
+    {
+      "content": "Make sure that the existing schema is consistently using the same type for a column.",
+      "pos": [
+        6307,
+        6391
+      ]
+    },
+    {
+      "content": "This is especially important for the distribution key.",
+      "pos": [
+        6392,
+        6446
+      ]
+    },
+    {
+      "content": "If the distribution key data types are not synchronized and the tables are joined then needless data movement will occur.",
+      "pos": [
+        6447,
+        6568
+      ]
+    },
+    {
+      "content": "This could be costly if the tables are large and would result in reduced throughput  and performance.",
+      "pos": [
+        6569,
+        6670
+      ]
+    },
+    {
+      "content": "Next steps",
+      "pos": [
+        6676,
+        6686
+      ]
+    },
+    {
+      "pos": [
+        6687,
+        6743
+      ],
+      "content": "For more development tips, see <bpt id=\"p1\">[</bpt>development overview<ept id=\"p1\">][]</ept>."
+    }
+  ],
+  "content": "<properties\n   pageTitle=\"Hash distribution and its effect on query performance in SQL Data Warehouse | Microsoft Azure\"\n   description=\"Learn about hash distributed tables and how they affect query performance in Azure SQL Data Warehouse for developing solutions.\"\n   services=\"sql-data-warehouse\"\n   documentationCenter=\"NA\"\n   authors=\"jrowlandjones\"\n   manager=\"barbkess\"\n   editor=\"\"/>\n\n<tags\n   ms.service=\"sql-data-warehouse\"\n   ms.devlang=\"NA\"\n   ms.topic=\"article\"\n   ms.tgt_pltfrm=\"NA\"\n   ms.workload=\"data-services\"\n   ms.date=\"06/26/2015\"\n   ms.author=\"JRJ@BigBangData.co.uk;barbkess\"/>\n\n# Hash distribution and its effect on query performance in SQL Data Warehouse\n\nMaking smart hash distribution decisions is one of the most important ways to improve query performance.  \n\nThere are in fact three major factors:\n\n1. Minimize Data Movement\n2. Avoid Data Skew\n3. Provide Balanced Execution\n\n## Minimize data movement\nData Movement most commonly arises when tables are joined together or aggregations on tables are performed. Hash distributing tables on a shared key is one of the most effective methods for minimizing this movement.\n\nHowever, for the hash distribution to be effective in minimizing the movement the following criteria must all be true:\n\n1. Both tables need to be hash distributed and be joined on the shared distribution key\n2. The data types of both columns need to match\n3. The joining columns need to be equi-join (i.e. the values in the left table's column need to equal the values in the right table's column)\n4. The join is **not** a `CROSS JOIN`\n\n> [AZURE.NOTE] Columns used in `JOIN`, `GROUP BY`, `DISTINCT` and `HAVING` clauses all make for good HASH column candidates. On the other hand columns in the `WHERE` clause do **not** make for good hash column candidates. See the section on balanced execution below.\n\nData movement may also arise from query syntax (`COUNT DISTINCT` and the `OVER` clause both being great examples) when used with columns that do not include the hash distribution key.\n\n> [AZURE.NOTE] Round-Robin tables typically generate data movement. The data in the table has been allocated in a non-deterministic fashion and so the data must first be moved prior to most queries being completed.\n\n## Avoid data skew\nIn order for hash distribution to be effective it is important that the column chosen exhibits the following properties:\n\n1. The column contains a significant number of distinct values.\n2. The column does not suffer from **data skew**.\n\nEach distinct value will be allocated to a distribution. Consequently, the data will require a reasonable number of distinct values to ensure enough unique hash values are generated. Otherwise we might get a poor quality hash. If the number of distributions exceeds the number of distinct values for example then some distributions will be left empty. This would hurt performance.\n\nSimilarly, if all of the rows for the hashed column contained the same value then the data is said to be **skewed**. In this extreme case only one hash value would have been created resulting in all rows ending up inside a single distribution. Ideally, each distinct value in the hashed column would have the same number of rows.\n\n> [AZURE.NOTE] Round-robin tables do not exhibit signs of skew. This is because the data is stored evenly across the distributions.\n\n## Provide balanced execution\nBalanced execution is achieved when each distribution has the same amount of work to perform. Massively Parallel Processing (MPP) is a team game; everyone has to cross the line before anyone can be declared the winner. If every distribution has the same amount of work (i.e. data to process) then all of the queries will finish at about the same time. This is known as balanced execution.\n\nAs has been seen, data skew can affect balanced execution. However, so can the choice of hash distribution key. If a column has been chosen that appears in the `WHERE` clause of a query then it is quite likely that the query will not be balanced.  \n\n> [AZURE.NOTE] The `WHERE` clause typically helps identify columns that are best used for partitioning.\n\nA good example of a column that appears in the `WHERE` clause would be a date field.  Date fields are a classic examples of great partitioning columns but often poor hash distribution columns. Typically, data warehouse queries are over a specified time period such as day, week or month. Hash distributing by date may have actually limited our scalablity and hurt our performance. If for example the date range specified was for a week i.e. 7 days then the maximum number of hashes would be 7 - one for each day. This means that only 7 of our distributions would contain data. The remaining distributions would not have any data. This would result in an unbalanced query execution as only 7 distributions are processing data.\n\n> [AZURE.NOTE] Round-robin tables typically provide balanced execution. This is because the data is stored evenly across the distributions.\n\n## Recommendations\nTo maximize your performance and overall query throughput try and ensure that your hash distributed tables follow this pattern as much as possible:\n\nHash distribution key:\n\n1. Is used in `JOIN`, `GROUP BY`, `DISTINCT`, or `HAVING` clauses in your queries.\n2. Is not used in `WHERE` clauses\n3. Has lots of different values, at least 1000.\n4. Does not have a disproportionately large number of rows that will hash to a small number of distributions.\n5. Is defined as NOT NULL. NULL rows will congregate in one distribution.\n\n## Summary\n\nHash distribution can be summarized as follows:\n\n- The hash function is deterministic. The same value is always assigned to the same distribution.\n- One column is used as the distribution column. The hash function uses the nominated column to compute the row assignments to distributions.\n- The hash function is based on the type of the column not on the values themselves\n- Hash distributing a table can sometimes result in a skewed table\n- Hash distributed tables generally require less data movement when resolving queries, and therefore improve query performance for large fact tables.\n- Observe the recommendations for hash distributed column selection to enhance query throughput.\n\n> [AZURE.NOTE] In SQL Data Warehouse data type consistency matters! Make sure that the existing schema is consistently using the same type for a column. This is especially important for the distribution key. If the distribution key data types are not synchronized and the tables are joined then needless data movement will occur. This could be costly if the tables are large and would result in reduced throughput  and performance.\n\n\n## Next steps\nFor more development tips, see [development overview][].\n\n<!--Image references-->\n\n<!--Article references-->\n[development overview]: sql-data-warehouse-overview-develop.md\n\n<!--MSDN references-->\n\n<!--Other Web references-->\n"
+}

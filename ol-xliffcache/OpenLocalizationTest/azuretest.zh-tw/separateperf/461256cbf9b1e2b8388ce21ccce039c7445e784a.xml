@@ -1,0 +1,1181 @@
+{
+  "nodes": [
+    {
+      "content": "Configure AlwaysOn Availability Groups in Azure (PowerShell)",
+      "pos": [
+        28,
+        88
+      ]
+    },
+    {
+      "content": "Use PowerShell to create an AlwaysOn Availability Group in Azure.",
+      "pos": [
+        107,
+        172
+      ]
+    },
+    {
+      "content": "Configure AlwaysOn Availability Groups in Azure (PowerShell)",
+      "pos": [
+        524,
+        584
+      ]
+    },
+    {
+      "pos": [
+        587,
+        774
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> For the GUI-based tutorial of the same scenario, see <bpt id=\"p1\">[</bpt>Configure AlwaysOn Availability Groups in Azure (GUI)<ept id=\"p1\">](virtual-machines-sql-server-alwayson-availability-groups-gui.md)</ept>."
+    },
+    {
+      "content": "Azure virtual machines (VMs) can help database administrators to implement lower the cost of a high availability SQL Server system.",
+      "pos": [
+        776,
+        907
+      ]
+    },
+    {
+      "content": "This tutorial shows you how to implement an availability group using SQL Server AlwaysOn end-to-end inside an Azure environment.",
+      "pos": [
+        908,
+        1036
+      ]
+    },
+    {
+      "content": "At the end of the tutorial, your SQL Server AlwaysOn solution in Azure will consist of the following elements:",
+      "pos": [
+        1037,
+        1147
+      ]
+    },
+    {
+      "content": "A virtual network containing multiple subnets, including a front-end and a back-end subnet",
+      "pos": [
+        1151,
+        1241
+      ]
+    },
+    {
+      "content": "A domain controller with an Active Directory (AD) domain",
+      "pos": [
+        1245,
+        1301
+      ]
+    },
+    {
+      "content": "Two SQL Server VMs deployed to the back-end subnet and joined to the AD domain",
+      "pos": [
+        1305,
+        1383
+      ]
+    },
+    {
+      "content": "A 3-node WSFC cluster with the Node Majority quorum model",
+      "pos": [
+        1387,
+        1444
+      ]
+    },
+    {
+      "content": "An availability group with two synchronous-commit replicas of an availability database",
+      "pos": [
+        1448,
+        1534
+      ]
+    },
+    {
+      "content": "This scenario is chosen for its simplicity, not for its cost effectiveness or other factors on Azure.",
+      "pos": [
+        1536,
+        1637
+      ]
+    },
+    {
+      "content": "For example, you can minimize the number of VMs for a two-replica availability group in order to save on compute hours in Azure by using the domain controller as the quorum file share witness in a 2-node WSFC cluster.",
+      "pos": [
+        1638,
+        1855
+      ]
+    },
+    {
+      "content": "This method reduces the VM count by one from the above configuration.",
+      "pos": [
+        1856,
+        1925
+      ]
+    },
+    {
+      "content": "This tutorial is intended to show you the steps required to set up the described solution above without elaborating on the details of each step.",
+      "pos": [
+        1927,
+        2071
+      ]
+    },
+    {
+      "content": "Therefore, instead of showing you the GUI configuration steps, it uses PowerShell scripting to take you quickly through each step.",
+      "pos": [
+        2072,
+        2202
+      ]
+    },
+    {
+      "content": "It assumes the following:",
+      "pos": [
+        2203,
+        2228
+      ]
+    },
+    {
+      "content": "You already have an Azure account with the virtual machine subscription.",
+      "pos": [
+        2232,
+        2304
+      ]
+    },
+    {
+      "pos": [
+        2308,
+        2394
+      ],
+      "content": "You have installed the <bpt id=\"p1\">[</bpt>Azure PowerShell cmdlets<ept id=\"p1\">](..\\powershell-install-configure.md)</ept>."
+    },
+    {
+      "content": "You already know how to provision a SQL Server VM from the virtual machine gallery using the GUI.",
+      "pos": [
+        2398,
+        2495
+      ]
+    },
+    {
+      "content": "For more information, see <bpt id=\"p1\">[</bpt>Provisioning a SQL Server Virtual Machine on Azure<ept id=\"p1\">](virtual-machines-provision-sql-server.md)</ept>",
+      "pos": [
+        2496,
+        2616
+      ]
+    },
+    {
+      "content": "You already have a solid understanding of AlwaysOn Availability Groups for on-premise solutions.",
+      "pos": [
+        2620,
+        2716
+      ]
+    },
+    {
+      "content": "For more information, see <bpt id=\"p1\">[</bpt>AlwaysOn Availability Groups (SQL Server)<ept id=\"p1\">](https://msdn.microsoft.com/library/hh510230.aspx)</ept>.",
+      "pos": [
+        2717,
+        2837
+      ]
+    },
+    {
+      "content": "Connect to Your Azure Subscription and Create the Virtual Network",
+      "pos": [
+        2842,
+        2907
+      ]
+    },
+    {
+      "content": "In a PowerShell window on your local computer, import the Azure module, download a publishing settings file to your machine, and connect your PowerShell session to your Azure subscription by importing the downloaded publishing settings.",
+      "pos": [
+        2912,
+        3148
+      ]
+    },
+    {
+      "content": "The <bpt id=\"p1\">**</bpt>Get-AzurePublishgSettingsFile<ept id=\"p1\">**</ept> command automatically generates a management certificate with Azure downloads it to your machine.",
+      "pos": [
+        3355,
+        3490
+      ]
+    },
+    {
+      "content": "A browser will be automatically opened and you are prompted to enter the Microsoft account credentials for your Azure subscription.",
+      "pos": [
+        3491,
+        3622
+      ]
+    },
+    {
+      "content": "The downloaded <bpt id=\"p1\">**</bpt>.publishsettings<ept id=\"p1\">**</ept> file contains all the information you need to manage your Azure subscription.",
+      "pos": [
+        3623,
+        3736
+      ]
+    },
+    {
+      "content": "After saving this file to a local directory, import it using the <bpt id=\"p1\">**</bpt>Import-AzurePublishSettingsFile<ept id=\"p1\">**</ept> command.",
+      "pos": [
+        3737,
+        3846
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> The publishsettings file contains your credentials (unencoded) that are used to administer your Azure subscriptions and services.",
+      "pos": [
+        3857,
+        3999
+      ]
+    },
+    {
+      "content": "The security best practice for this file is to store it temporarily outside your source directories (for example in the Libraries\\Documents folder), and then delete it once the import has completed.",
+      "pos": [
+        4000,
+        4198
+      ]
+    },
+    {
+      "content": "A malicious user gaining access to the publishsettings file can edit, create, and delete your Azure services.",
+      "pos": [
+        4199,
+        4308
+      ]
+    },
+    {
+      "content": "Define a series of variables that you will use to create your cloud IT infrastructure.",
+      "pos": [
+        4313,
+        4399
+      ]
+    },
+    {
+      "content": "Pay attention to the following to ensure that your commands will succeed later:",
+      "pos": [
+        5460,
+        5539
+      ]
+    },
+    {
+      "pos": [
+        5551,
+        5732
+      ],
+      "content": "Variables <bpt id=\"p1\">**</bpt>$storageAccountName<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>$dcServiceName<ept id=\"p2\">**</ept> must be unique because they are used to identify your cloud storage account and cloud server, respectively, on the internet."
+    },
+    {
+      "pos": [
+        5744,
+        5910
+      ],
+      "content": "Names specified for variables <bpt id=\"p1\">**</bpt>$affinityGroupName<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>$virtualNetworkName<ept id=\"p2\">**</ept> are configured in the virtual network configuration document that you will use later."
+    },
+    {
+      "pos": [
+        5922,
+        6047
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>$sqlImageName<ept id=\"p1\">**</ept> specifies the updated name of the VM image that contains SQL Server 2012 Service Pack 1 Enterprise Edition."
+    },
+    {
+      "pos": [
+        6059,
+        6148
+      ],
+      "content": "For simplicity, <bpt id=\"p1\">**</bpt>Contoso!000<ept id=\"p1\">**</ept> is the same password used throughout the entire tutorial."
+    },
+    {
+      "content": "Create an affinity group.",
+      "pos": [
+        6153,
+        6178
+      ]
+    },
+    {
+      "content": "Create a virtual network by importing a configuration file.",
+      "pos": [
+        6382,
+        6441
+      ]
+    },
+    {
+      "content": "The configuration file contains the following XML document.",
+      "pos": [
+        6528,
+        6587
+      ]
+    },
+    {
+      "content": "In brief, it specifies a virtual network called <bpt id=\"p1\">**</bpt>ContosoNET<ept id=\"p1\">**</ept> in the affinity group called <bpt id=\"p2\">**</bpt>ContosoAG<ept id=\"p2\">**</ept>, and it has the address space <bpt id=\"p3\">**</bpt>10.10.0.0/16<ept id=\"p3\">**</ept> and has two subnets, <bpt id=\"p4\">**</bpt>10.10.1.0/24<ept id=\"p4\">**</ept> and <bpt id=\"p5\">**</bpt>10.10.2.0/24<ept id=\"p5\">**</ept>, which are the front subnet and back subnet, respectively.",
+      "pos": [
+        6588,
+        6858
+      ]
+    },
+    {
+      "content": "The front subnet is where you can place client applications such as Microsoft SharePoint, and the back subnet is where you will place the SQL Server VMs.",
+      "pos": [
+        6859,
+        7012
+      ]
+    },
+    {
+      "content": "If you change the <bpt id=\"p1\">**</bpt>$affinityGroupName<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>$virtualNetworkName<ept id=\"p2\">**</ept> variables earlier, you must also change the corresponding names below.",
+      "pos": [
+        7013,
+        7152
+      ]
+    },
+    {
+      "content": "Create a storage account that is associated with the affinity group you created and set it as the current storage account in your subscription.",
+      "pos": [
+        8127,
+        8270
+      ]
+    },
+    {
+      "content": "Create the DC server in new cloud service and availability set.",
+      "pos": [
+        8613,
+        8676
+      ]
+    },
+    {
+      "content": "This series of piped commands do the following things:",
+      "pos": [
+        9312,
+        9366
+      ]
+    },
+    {
+      "pos": [
+        9378,
+        9427
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>New-AzureVMConfig<ept id=\"p1\">**</ept> creates a VM configuration."
+    },
+    {
+      "pos": [
+        9439,
+        9537
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Add-AzureProvisioningConfig<ept id=\"p1\">**</ept> gives the configuration parameters of a standalone Windows server."
+    },
+    {
+      "pos": [
+        9549,
+        9675
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Add-AzureDataDisk<ept id=\"p1\">**</ept> adds the data disk that you will use for storing Active Directory data, with caching option set to None."
+    },
+    {
+      "pos": [
+        9687,
+        9785
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>New-AzureVM<ept id=\"p1\">**</ept> creates a new cloud service and creates the new Azure VM in the new cloud service."
+    },
+    {
+      "content": "Wait for the new VM to be fully provisioned and download the remote desktop file to your working directory.",
+      "pos": [
+        9790,
+        9897
+      ]
+    },
+    {
+      "content": "Since the new Azure VM takes a long time to provision, the while loop continues to poll the new VM until it is ready for use.",
+      "pos": [
+        9898,
+        10023
+      ]
+    },
+    {
+      "content": "The DC server is now successfully provisioned.",
+      "pos": [
+        10590,
+        10636
+      ]
+    },
+    {
+      "content": "Next, you will configure the Active Directory domain on this DC server.",
+      "pos": [
+        10637,
+        10708
+      ]
+    },
+    {
+      "content": "Leave the PowerShell window open on your local computer.",
+      "pos": [
+        10709,
+        10765
+      ]
+    },
+    {
+      "content": "You will use it again later to create the two SQL Server VMs.",
+      "pos": [
+        10766,
+        10827
+      ]
+    },
+    {
+      "content": "Configure the Domain Controller",
+      "pos": [
+        10832,
+        10863
+      ]
+    },
+    {
+      "content": "Connect to the DC server by launching the remote desktop file.",
+      "pos": [
+        10868,
+        10930
+      ]
+    },
+    {
+      "content": "Use the machine administrator’s username AzureAdmin and password <bpt id=\"p1\">**</bpt>Contoso!000<ept id=\"p1\">**</ept>, which you specified when creating the new VM.",
+      "pos": [
+        10931,
+        11058
+      ]
+    },
+    {
+      "content": "Open a PowerShell window in administrator mode.",
+      "pos": [
+        11063,
+        11110
+      ]
+    },
+    {
+      "pos": [
+        11115,
+        11236
+      ],
+      "content": "Run the following <bpt id=\"p1\">**</bpt>DCPROMO.EXE<ept id=\"p1\">**</ept> command to setup the <bpt id=\"p2\">**</bpt>corp.contoso.com<ept id=\"p2\">**</ept> domain, with the data directories on drive M."
+    },
+    {
+      "content": "Once the command completes, the VM restarts automatically.",
+      "pos": [
+        11786,
+        11844
+      ]
+    },
+    {
+      "content": "Connect to the DC server again by launching the remote desktop file.",
+      "pos": [
+        11849,
+        11917
+      ]
+    },
+    {
+      "content": "This time, log in as <bpt id=\"p1\">**</bpt>CORP\\Administrator<ept id=\"p1\">**</ept>.",
+      "pos": [
+        11918,
+        11962
+      ]
+    },
+    {
+      "content": "Open a PowerShell window in administrator mode and import the Active Directory PowerShell module using the following command:",
+      "pos": [
+        11967,
+        12092
+      ]
+    },
+    {
+      "content": "Run the following commands to add three users to the domain.",
+      "pos": [
+        12136,
+        12196
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>CORP\\Install<ept id=\"p1\">**</ept> is used to configure everything related to the SQL Server service instances, the WSFC cluster, and the availability group.",
+      "pos": [
+        12878,
+        13017
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>CORP\\SQLSvc1<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>CORP\\SQLSvc2<ept id=\"p2\">**</ept> are used as the SQL Server service accounts for the two SQL Server VMs.",
+      "pos": [
+        13018,
+        13127
+      ]
+    },
+    {
+      "pos": [
+        13132,
+        13247
+      ],
+      "content": "Next, run the following commands to give <bpt id=\"p1\">**</bpt>CORP\\Install<ept id=\"p1\">**</ept> the permissions to create computer objects in the domain."
+    },
+    {
+      "content": "The GUID specified above is the GUID for the computer object type.",
+      "pos": [
+        13750,
+        13816
+      ]
+    },
+    {
+      "content": "The <bpt id=\"p1\">**</bpt>CORP\\Install<ept id=\"p1\">**</ept> account needs the <bpt id=\"p2\">**</bpt>Read All Properties<ept id=\"p2\">**</ept> and <bpt id=\"p3\">**</bpt>Create Computer Objects<ept id=\"p3\">**</ept> permission in order to create the Active Direct objects for the WSFC cluster.",
+      "pos": [
+        13817,
+        13989
+      ]
+    },
+    {
+      "content": "The <bpt id=\"p1\">**</bpt>Read All Properties<ept id=\"p1\">**</ept> permission is already given to CORP\\Install by default, so you do not need to grant it explicitly.",
+      "pos": [
+        13990,
+        14116
+      ]
+    },
+    {
+      "content": "For more information on permissions needed to create the WSFC cluster, see <bpt id=\"p1\">[</bpt>Failover Cluster Step-by-Step Guide: Configuring Accounts in Active Directory<ept id=\"p1\">](https://technet.microsoft.com/library/cc731002%28v=WS.10%29.aspx)</ept>.",
+      "pos": [
+        14117,
+        14338
+      ]
+    },
+    {
+      "content": "Now that you have finished configuring Active Directory and the user objects, you will create two SQL Server VMs and join them to this domain.",
+      "pos": [
+        14344,
+        14486
+      ]
+    },
+    {
+      "content": "Create the SQL Server VMs",
+      "pos": [
+        14491,
+        14516
+      ]
+    },
+    {
+      "content": "Continue to use the PowerShell window that is open on your local computer.",
+      "pos": [
+        14521,
+        14595
+      ]
+    },
+    {
+      "content": "Define the following additional variables:",
+      "pos": [
+        14596,
+        14638
+      ]
+    },
+    {
+      "content": "The IP address <bpt id=\"p1\">**</bpt>10.10.0.4<ept id=\"p1\">**</ept> is typically assigned to the first VM you create in the <bpt id=\"p2\">**</bpt>10.10.0.0/16<ept id=\"p2\">**</ept> subnet of your Azure virtual network.",
+      "pos": [
+        15060,
+        15199
+      ]
+    },
+    {
+      "content": "You should verify this is the address of your DC server by running <bpt id=\"p1\">**</bpt>IPCONFIG<ept id=\"p1\">**</ept>.",
+      "pos": [
+        15200,
+        15280
+      ]
+    },
+    {
+      "pos": [
+        15285,
+        15386
+      ],
+      "content": "Run the following piped commands to create the first VM in the WSFC cluster, named <bpt id=\"p1\">**</bpt>ContosoQuorum<ept id=\"p1\">**</ept>:"
+    },
+    {
+      "content": "Note the following regarding the command above:",
+      "pos": [
+        16414,
+        16461
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>New-AzureVMConfig<ept id=\"p1\">**</ept> creates a VM configuration with the desired availability set name.",
+      "pos": [
+        16474,
+        16562
+      ]
+    },
+    {
+      "content": "The subsequent VMs will be created with the same availability set name so that they are joined to the same availability set.",
+      "pos": [
+        16563,
+        16687
+      ]
+    },
+    {
+      "pos": [
+        16699,
+        16787
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Add-AzureProvisioningConfig<ept id=\"p1\">**</ept> joins the VM to the Active Directory domain you created."
+    },
+    {
+      "pos": [
+        16799,
+        16852
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Set-AzureSubnet<ept id=\"p1\">**</ept> places the VM in the Back subnet."
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>New-AzureVM<ept id=\"p1\">**</ept> creates a new cloud service and creates the new Azure VM in the new cloud service.",
+      "pos": [
+        16864,
+        16962
+      ]
+    },
+    {
+      "content": "The <bpt id=\"p1\">**</bpt>DnsSettings<ept id=\"p1\">**</ept> parameter specifies that the DNS server for the servers in the new cloud service has the IP address <bpt id=\"p2\">**</bpt>10.10.0.4<ept id=\"p2\">**</ept>, which is the IP address of the DC server.",
+      "pos": [
+        16963,
+        17139
+      ]
+    },
+    {
+      "content": "This parameter is needed to enable the new VMs in the cloud service to join to the Active Directory domain successfully.",
+      "pos": [
+        17140,
+        17260
+      ]
+    },
+    {
+      "content": "Without this parameter, you must manually set the IPv4 settings in your VM to use the DC server as the primary DNS server after the VM is provisioned and then join the VM to the Active Directory domain.",
+      "pos": [
+        17261,
+        17463
+      ]
+    },
+    {
+      "pos": [
+        17468,
+        17573
+      ],
+      "content": "Run the following piped commands to create the SQL Server VMs, named <bpt id=\"p1\">**</bpt>ContosoSQL1<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>ContosoSQL2<ept id=\"p2\">**</ept>."
+    },
+    {
+      "content": "Note the following regarding the commands above:",
+      "pos": [
+        19847,
+        19895
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>New-AzureVMConfig<ept id=\"p1\">**</ept> uses the same availability set name as the DC server, and uses the SQL Server 2012 Service Pack 1 Enterprise Edition image in the virtual machine gallery.",
+      "pos": [
+        19903,
+        20079
+      ]
+    },
+    {
+      "content": "It also sets the operating system disk to read-caching only (no write caching).",
+      "pos": [
+        20080,
+        20159
+      ]
+    },
+    {
+      "content": "It is recommended that you migrate the database files to a separate data disk that you attach to the VM and configure it with no read or write caching.",
+      "pos": [
+        20160,
+        20311
+      ]
+    },
+    {
+      "content": "However, the next best thing is to remove write caching on the operating system disk, since you cannot remove read caching on the operating system disk.",
+      "pos": [
+        20312,
+        20464
+      ]
+    },
+    {
+      "pos": [
+        20476,
+        20564
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Add-AzureProvisioningConfig<ept id=\"p1\">**</ept> joins the VM to the Active Directory domain you created."
+    },
+    {
+      "pos": [
+        20576,
+        20629
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Set-AzureSubnet<ept id=\"p1\">**</ept> places the VM in the Back subnet."
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Add-AzureEndpoint<ept id=\"p1\">**</ept> adds access endpoints so that client applications can access these SQL Server services instances on the internet.",
+      "pos": [
+        20641,
+        20776
+      ]
+    },
+    {
+      "content": "Different ports are given to ContosoSQL1 and ContosoSQL2.",
+      "pos": [
+        20777,
+        20834
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>New-AzureVM<ept id=\"p1\">**</ept> creates the new SQL Server VM in the same cloud service as ContosoQuorum.",
+      "pos": [
+        20846,
+        20935
+      ]
+    },
+    {
+      "content": "You must place the VMs in the same cloud service if you want them to be in the same availability set.",
+      "pos": [
+        20936,
+        21037
+      ]
+    },
+    {
+      "content": "Wait for each VM to be fully provisioned and download its remote desktop file to your working directory.",
+      "pos": [
+        21042,
+        21146
+      ]
+    },
+    {
+      "content": "The for loop cycles through the three new VMs and executes the commands inside the top-level curly brackets for each of them.",
+      "pos": [
+        21147,
+        21272
+      ]
+    },
+    {
+      "content": "The SQL Server VMs are now provisioned and running, but they are installed with SQL Server with default options.",
+      "pos": [
+        22029,
+        22141
+      ]
+    },
+    {
+      "content": "Initialize the WSFC Cluster VMs",
+      "pos": [
+        22146,
+        22177
+      ]
+    },
+    {
+      "content": "In this section, you need to modify the three servers you will use in the WSFC cluster and the SQL Server installation.",
+      "pos": [
+        22179,
+        22298
+      ]
+    },
+    {
+      "content": "Specifically:",
+      "pos": [
+        22299,
+        22312
+      ]
+    },
+    {
+      "pos": [
+        22316,
+        22386
+      ],
+      "content": "(All servers) You need to install the <bpt id=\"p1\">**</bpt>Failover Clustering<ept id=\"p1\">**</ept> feature."
+    },
+    {
+      "pos": [
+        22390,
+        22470
+      ],
+      "content": "(All servers) You need to add <bpt id=\"p1\">**</bpt>CORP\\Install<ept id=\"p1\">**</ept> as the machine <bpt id=\"p2\">**</bpt>administrator<ept id=\"p2\">**</ept>."
+    },
+    {
+      "pos": [
+        22474,
+        22589
+      ],
+      "content": "(ContosoSQL1 and ContosoSQL2 only) You need to add <bpt id=\"p1\">**</bpt>CORP\\Install<ept id=\"p1\">**</ept> as a <bpt id=\"p2\">**</bpt>sysadmin<ept id=\"p2\">**</ept> role in the default database."
+    },
+    {
+      "pos": [
+        22593,
+        22710
+      ],
+      "content": "(ContosoSQL1 and ContosoSQL2 only) You need to add <bpt id=\"p1\">**</bpt>NT AUTHORITY\\System<ept id=\"p1\">**</ept> as a login with the following permissions:"
+    },
+    {
+      "content": "Alter any availability group",
+      "pos": [
+        22718,
+        22746
+      ]
+    },
+    {
+      "content": "Connect SQL",
+      "pos": [
+        22758,
+        22769
+      ]
+    },
+    {
+      "content": "View server state",
+      "pos": [
+        22781,
+        22798
+      ]
+    },
+    {
+      "content": "(ContosoSQL1 and ContosoSQL2 only) The <bpt id=\"p1\">**</bpt>TCP<ept id=\"p1\">**</ept> protocol is already enabled on the SQL Server VM.",
+      "pos": [
+        22802,
+        22898
+      ]
+    },
+    {
+      "content": "However, you still need to open the firewall for remote access of SQL Server.",
+      "pos": [
+        22899,
+        22976
+      ]
+    },
+    {
+      "content": "Now, you are ready to start.",
+      "pos": [
+        22978,
+        23006
+      ]
+    },
+    {
+      "content": "Beginning with <bpt id=\"p1\">**</bpt>ContosoQuorum<ept id=\"p1\">**</ept>, follow the steps below:",
+      "pos": [
+        23007,
+        23064
+      ]
+    },
+    {
+      "content": "Connect to <bpt id=\"p1\">**</bpt>ContosoQuorum<ept id=\"p1\">**</ept> by launching the remote desktop files.",
+      "pos": [
+        23069,
+        23136
+      ]
+    },
+    {
+      "content": "Use the machine administrator’s username <bpt id=\"p1\">**</bpt>AzureAdmin<ept id=\"p1\">**</ept> and password <bpt id=\"p2\">**</bpt>Contoso!000<ept id=\"p2\">**</ept>, which you specified when creating the VMs.",
+      "pos": [
+        23137,
+        23265
+      ]
+    },
+    {
+      "pos": [
+        23270,
+        23350
+      ],
+      "content": "Verify that the computers have been successfully joined to <bpt id=\"p1\">**</bpt>corp.contoso.com<ept id=\"p1\">**</ept>."
+    },
+    {
+      "content": "Wait for the SQL Server installation to finish running the automated initialization tasks before proceeding.",
+      "pos": [
+        23355,
+        23463
+      ]
+    },
+    {
+      "content": "Open a PowerShell window in administrator mode.",
+      "pos": [
+        23468,
+        23515
+      ]
+    },
+    {
+      "content": "Install the Windows Failover Clustering feature.",
+      "pos": [
+        23520,
+        23568
+      ]
+    },
+    {
+      "pos": [
+        23657,
+        23701
+      ],
+      "content": "Add <bpt id=\"p1\">**</bpt>CORP\\Install<ept id=\"p1\">**</ept> as local administrator."
+    },
+    {
+      "content": "Log out of ContosoQuorum.",
+      "pos": [
+        23765,
+        23790
+      ]
+    },
+    {
+      "content": "You are done with this server now.",
+      "pos": [
+        23791,
+        23825
+      ]
+    },
+    {
+      "content": "Next, initialize <bpt id=\"p1\">**</bpt>ContosoSQL1<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>ContosoSQL2<ept id=\"p2\">**</ept>.",
+      "pos": [
+        23847,
+        23900
+      ]
+    },
+    {
+      "content": "Follow the steps below, which are identical for both of the SQL Server VMs.",
+      "pos": [
+        23901,
+        23976
+      ]
+    },
+    {
+      "content": "Connect to the two SQL Server VMs by launching the remote desktop files.",
+      "pos": [
+        23981,
+        24053
+      ]
+    },
+    {
+      "content": "Use the machine administrator’s username <bpt id=\"p1\">**</bpt>AzureAdmin<ept id=\"p1\">**</ept> and password <bpt id=\"p2\">**</bpt>Contoso!000<ept id=\"p2\">**</ept>, which you specified when creating the VMs.",
+      "pos": [
+        24054,
+        24182
+      ]
+    },
+    {
+      "pos": [
+        24187,
+        24267
+      ],
+      "content": "Verify that the computers have been successfully joined to <bpt id=\"p1\">**</bpt>corp.contoso.com<ept id=\"p1\">**</ept>."
+    },
+    {
+      "content": "Wait for the SQL Server installation to finish running the automated initialization tasks before proceeding.",
+      "pos": [
+        24272,
+        24380
+      ]
+    },
+    {
+      "content": "Open a PowerShell window in administrator mode.",
+      "pos": [
+        24385,
+        24432
+      ]
+    },
+    {
+      "content": "Install the Windows Failover Clustering feature.",
+      "pos": [
+        24437,
+        24485
+      ]
+    },
+    {
+      "pos": [
+        24574,
+        24617
+      ],
+      "content": "Add <bpt id=\"p1\">**</bpt>CORP\\Install<ept id=\"p1\">**</ept> as local administrator"
+    },
+    {
+      "content": "Import the SQL Server PowerShell Provider.",
+      "pos": [
+        24681,
+        24723
+      ]
+    },
+    {
+      "pos": [
+        24845,
+        24923
+      ],
+      "content": "Add <bpt id=\"p1\">**</bpt>CORP\\Install<ept id=\"p1\">**</ept> as the sysadmin role for the default SQL Server instance."
+    },
+    {
+      "pos": [
+        25090,
+        25172
+      ],
+      "content": "Add <bpt id=\"p1\">**</bpt>NT AUTHORITY\\System<ept id=\"p1\">**</ept> as a login with the three permissions described above."
+    },
+    {
+      "content": "Open the firewall for remote access of SQL Server.",
+      "pos": [
+        25601,
+        25651
+      ]
+    },
+    {
+      "content": "Log out of both VMs.",
+      "pos": [
+        25853,
+        25873
+      ]
+    },
+    {
+      "content": "Finally, you are ready to configure the availability group.",
+      "pos": [
+        25895,
+        25954
+      ]
+    },
+    {
+      "content": "You will use the SQL Server PowerShell Provider to perform all of the work on <bpt id=\"p1\">**</bpt>ContosoSQL1<ept id=\"p1\">**</ept>.",
+      "pos": [
+        25955,
+        26049
+      ]
+    },
+    {
+      "content": "Configure the Availability Group",
+      "pos": [
+        26054,
+        26086
+      ]
+    },
+    {
+      "content": "Connect to <bpt id=\"p1\">**</bpt>ContosoSQL1<ept id=\"p1\">**</ept> again by launching the remote desktop files.",
+      "pos": [
+        26091,
+        26162
+      ]
+    },
+    {
+      "content": "Instead of logging in using the machine account, log in using <bpt id=\"p1\">**</bpt>CORP\\Install<ept id=\"p1\">**</ept>.",
+      "pos": [
+        26163,
+        26242
+      ]
+    },
+    {
+      "content": "Open a PowerShell window in administrator mode.",
+      "pos": [
+        26247,
+        26294
+      ]
+    },
+    {
+      "content": "Define the following variables:",
+      "pos": [
+        26299,
+        26330
+      ]
+    },
+    {
+      "content": "Import SQL Server PowerShell Provider.",
+      "pos": [
+        26771,
+        26809
+      ]
+    },
+    {
+      "content": "Change the SQL Server service account for ContosoSQL1 to CORP\\SQLSvc1.",
+      "pos": [
+        26914,
+        26984
+      ]
+    },
+    {
+      "content": "Change the SQL Server service account for ContosoSQL2 to CORP\\SQLSvc2.",
+      "pos": [
+        27498,
+        27568
+      ]
+    },
+    {
+      "content": "Download <bpt id=\"p1\">**</bpt>CreateAzureFailoverCluster.ps1<ept id=\"p1\">**</ept> from <bpt id=\"p2\">[</bpt>Create WSFC Cluster for AlwaysOn Availability Groups in Azure VM<ept id=\"p2\">](http://gallery.technet.microsoft.com/scriptcenter/Create-WSFC-Cluster-for-7c207d3a)</ept> to the local working directory.",
+      "pos": [
+        28082,
+        28313
+      ]
+    },
+    {
+      "content": "You will use this script to help you create a functional WSFC cluster.",
+      "pos": [
+        28314,
+        28384
+      ]
+    },
+    {
+      "content": "For important information on how WSFC interacts with the Azure network, see <bpt id=\"p1\">[</bpt>High Availability and Disaster Recovery for SQL Server in Azure Virtual Machines<ept id=\"p1\">](virtual-machines-sql-server-high-availability-and-disaster-recovery-solutions.md)</ept>.",
+      "pos": [
+        28385,
+        28626
+      ]
+    },
+    {
+      "content": "Change to your working directory and create the WSFC cluster with the downloaded script.",
+      "pos": [
+        28631,
+        28719
+      ]
+    },
+    {
+      "pos": [
+        28893,
+        29005
+      ],
+      "content": "Enable AlwaysOn Availability Groups for the default SQL Server instances on <bpt id=\"p1\">**</bpt>ContosoSQL1<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>ContosoSQL2<ept id=\"p2\">**</ept>."
+    },
+    {
+      "content": "Create a backup directory and grant permissions for the SQL Server service accounts.",
+      "pos": [
+        29457,
+        29541
+      ]
+    },
+    {
+      "content": "You will use this directory to prepare the availability database on the secondary replica.",
+      "pos": [
+        29542,
+        29632
+      ]
+    },
+    {
+      "pos": [
+        29878,
+        30048
+      ],
+      "content": "Create a database on <bpt id=\"p1\">**</bpt>ContosoSQL1<ept id=\"p1\">**</ept> called <bpt id=\"p2\">**</bpt>MyDB1<ept id=\"p2\">**</ept>, take both a full backup and a log backup, and restore them on <bpt id=\"p3\">**</bpt>ContosoSQL2<ept id=\"p3\">**</ept> with the **WITH NORECOVERY ** option."
+    },
+    {
+      "content": "Create the availability group endpoints on the SQL Server VMs and set the proper permissions on the endpoints.",
+      "pos": [
+        30568,
+        30678
+      ]
+    },
+    {
+      "content": "Create the availability replicas.",
+      "pos": [
+        31605,
+        31638
+      ]
+    },
+    {
+      "content": "Finally, create the availability group and join the secondary replica to the availability group.",
+      "pos": [
+        32256,
+        32352
+      ]
+    },
+    {
+      "content": "Next Steps",
+      "pos": [
+        32822,
+        32832
+      ]
+    },
+    {
+      "content": "You have now successfully implemented SQL Server AlwaysOn by creating an availability group in Azure.",
+      "pos": [
+        32833,
+        32934
+      ]
+    },
+    {
+      "content": "To configure a listener for this availability group, see <bpt id=\"p1\">[</bpt>Configure an ILB listener for AlwaysOn Availability Groups in Azure<ept id=\"p1\">](virtual-machines-sql-server-configure-ilb-alwayson-availability-group-listener.md)</ept>.",
+      "pos": [
+        32935,
+        33145
+      ]
+    },
+    {
+      "pos": [
+        33147,
+        33330
+      ],
+      "content": "For other information about using SQL Server in Azure, see <bpt id=\"p1\">[</bpt>SQL Server on Azure Virtual Machines<ept id=\"p1\">](../articles/virtual-machines/virtual-machines-sql-server-infrastructure-services.md)</ept>."
+    }
+  ],
+  "content": "<properties \n    pageTitle=\"Configure AlwaysOn Availability Groups in Azure (PowerShell)\"\n    description=\"Use PowerShell to create an AlwaysOn Availability Group in Azure.\"\n    services=\"virtual-machines\"\n    documentationCenter=\"na\"\n    authors=\"rothja\"\n    manager=\"jeffreyg\"\n    editor=\"monicar\" />\n<tags \n    ms.service=\"virtual-machines\"\n    ms.devlang=\"na\"\n    ms.topic=\"article\"\n    ms.tgt_pltfrm=\"vm-windows-sql-server\"\n    ms.workload=\"infrastructure-services\"\n    ms.date=\"08/14/2015\"\n    ms.author=\"jroth\" />\n\n# Configure AlwaysOn Availability Groups in Azure (PowerShell)\n\n>[AZURE.NOTE] For the GUI-based tutorial of the same scenario, see [Configure AlwaysOn Availability Groups in Azure (GUI)](virtual-machines-sql-server-alwayson-availability-groups-gui.md).\n\nAzure virtual machines (VMs) can help database administrators to implement lower the cost of a high availability SQL Server system. This tutorial shows you how to implement an availability group using SQL Server AlwaysOn end-to-end inside an Azure environment. At the end of the tutorial, your SQL Server AlwaysOn solution in Azure will consist of the following elements:\n\n- A virtual network containing multiple subnets, including a front-end and a back-end subnet\n\n- A domain controller with an Active Directory (AD) domain\n\n- Two SQL Server VMs deployed to the back-end subnet and joined to the AD domain\n\n- A 3-node WSFC cluster with the Node Majority quorum model\n\n- An availability group with two synchronous-commit replicas of an availability database\n\nThis scenario is chosen for its simplicity, not for its cost effectiveness or other factors on Azure. For example, you can minimize the number of VMs for a two-replica availability group in order to save on compute hours in Azure by using the domain controller as the quorum file share witness in a 2-node WSFC cluster. This method reduces the VM count by one from the above configuration.\n\nThis tutorial is intended to show you the steps required to set up the described solution above without elaborating on the details of each step. Therefore, instead of showing you the GUI configuration steps, it uses PowerShell scripting to take you quickly through each step. It assumes the following:\n\n- You already have an Azure account with the virtual machine subscription.\n\n- You have installed the [Azure PowerShell cmdlets](..\\powershell-install-configure.md).\n\n- You already know how to provision a SQL Server VM from the virtual machine gallery using the GUI. For more information, see [Provisioning a SQL Server Virtual Machine on Azure](virtual-machines-provision-sql-server.md)\n\n- You already have a solid understanding of AlwaysOn Availability Groups for on-premise solutions. For more information, see [AlwaysOn Availability Groups (SQL Server)](https://msdn.microsoft.com/library/hh510230.aspx).\n\n## Connect to Your Azure Subscription and Create the Virtual Network\n\n1. In a PowerShell window on your local computer, import the Azure module, download a publishing settings file to your machine, and connect your PowerShell session to your Azure subscription by importing the downloaded publishing settings.\n\n        Import-Module \"C:\\Program Files (x86)\\Microsoft SDKs\\Azure\\PowerShell\\Azure\\Azure.psd1\"\n        Get-AzurePublishSettingsFile\n        Import-AzurePublishSettingsFile <publishsettingsfilepath> \n\n    The **Get-AzurePublishgSettingsFile** command automatically generates a management certificate with Azure downloads it to your machine. A browser will be automatically opened and you are prompted to enter the Microsoft account credentials for your Azure subscription. The downloaded **.publishsettings** file contains all the information you need to manage your Azure subscription. After saving this file to a local directory, import it using the **Import-AzurePublishSettingsFile** command.\n    \n    >[AZURE.NOTE] The publishsettings file contains your credentials (unencoded) that are used to administer your Azure subscriptions and services. The security best practice for this file is to store it temporarily outside your source directories (for example in the Libraries\\Documents folder), and then delete it once the import has completed. A malicious user gaining access to the publishsettings file can edit, create, and delete your Azure services.\n\n1. Define a series of variables that you will use to create your cloud IT infrastructure.\n\n        $location = \"West US\"\n        $affinityGroupName = \"ContosoAG\"\n        $affinityGroupDescription = \"Contoso SQL HADR Affinity Group\"\n        $affinityGroupLabel = \"IaaS BI Affinity Group\"\n        $networkConfigPath = \"C:\\scripts\\Network.netcfg\"\n        $virtualNetworkName = \"ContosoNET\"\n        $storageAccountName = \"<uniquestorageaccountname>\"\n        $storageAccountLabel = \"Contoso SQL HADR Storage Account\"\n        $storageAccountContainer = \"https://\" + $storageAccountName + \".blob.core.windows.net/vhds/\"\n        $winImageName = (Get-AzureVMImage | where {$_.Label -like \"Windows Server 2008 R2 SP1*\"} | sort PublishedDate -Descending)[0].ImageName\n        $sqlImageName = (Get-AzureVMImage | where {$_.Label -like \"SQL Server 2012 SP1 Enterprise*\"} | sort PublishedDate -Descending)[0].ImageName\n        $dcServerName = \"ContosoDC\"\n        $dcServiceName = \"<uniqueservicename>\" \n        $availabilitySetName = \"SQLHADR\"\n        $vmAdminUser = \"AzureAdmin\" \n        $vmAdminPassword = \"Contoso!000\" \n        $workingDir = \"c:\\scripts\\\"\n\n    Pay attention to the following to ensure that your commands will succeed later:\n    \n    - Variables **$storageAccountName** and **$dcServiceName** must be unique because they are used to identify your cloud storage account and cloud server, respectively, on the internet.\n    \n    - Names specified for variables **$affinityGroupName** and **$virtualNetworkName** are configured in the virtual network configuration document that you will use later.\n    \n    - **$sqlImageName** specifies the updated name of the VM image that contains SQL Server 2012 Service Pack 1 Enterprise Edition.\n    \n    - For simplicity, **Contoso!000** is the same password used throughout the entire tutorial.\n\n1. Create an affinity group.\n\n        New-AzureAffinityGroup `\n            -Name $affinityGroupName `\n            -Location $location `\n            -Description $affinityGroupDescription `\n            -Label $affinityGroupLabel\n\n1. Create a virtual network by importing a configuration file.\n\n        Set-AzureVNetConfig `\n            -ConfigurationPath $networkConfigPath\n\n    The configuration file contains the following XML document. In brief, it specifies a virtual network called **ContosoNET** in the affinity group called **ContosoAG**, and it has the address space **10.10.0.0/16** and has two subnets, **10.10.1.0/24** and **10.10.2.0/24**, which are the front subnet and back subnet, respectively. The front subnet is where you can place client applications such as Microsoft SharePoint, and the back subnet is where you will place the SQL Server VMs. If you change the **$affinityGroupName** and **$virtualNetworkName** variables earlier, you must also change the corresponding names below.\n\n        <NetworkConfiguration xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns=\"http://schemas.microsoft.com/ServiceHosting/2011/07/NetworkConfiguration\">\n          <VirtualNetworkConfiguration>\n            <Dns />\n            <VirtualNetworkSites>\n              <VirtualNetworkSite name=\"ContosoNET\" AffinityGroup=\"ContosoAG\">\n                <AddressSpace>\n                  <AddressPrefix>10.10.0.0/16</AddressPrefix>\n                </AddressSpace>\n                <Subnets>\n                  <Subnet name=\"Front\">\n                    <AddressPrefix>10.10.1.0/24</AddressPrefix>\n                  </Subnet>\n                  <Subnet name=\"Back\">\n                    <AddressPrefix>10.10.2.0/24</AddressPrefix>\n                  </Subnet>\n                </Subnets>\n              </VirtualNetworkSite>\n            </VirtualNetworkSites>\n          </VirtualNetworkConfiguration>\n        </NetworkConfiguration>\n\n1. Create a storage account that is associated with the affinity group you created and set it as the current storage account in your subscription.\n\n        New-AzureStorageAccount `\n            -StorageAccountName $storageAccountName `\n            -Label $storageAccountLabel `\n            -AffinityGroup $affinityGroupName \n        Set-AzureSubscription `\n            -SubscriptionName (Get-AzureSubscription).SubscriptionName `\n            -CurrentStorageAccount $storageAccountName\n\n1. Create the DC server in new cloud service and availability set.\n\n        New-AzureVMConfig `\n            -Name $dcServerName `\n            -InstanceSize Medium `\n            -ImageName $winImageName `\n            -MediaLocation \"$storageAccountContainer$dcServerName.vhd\" `\n            -DiskLabel \"OS\" | \n            Add-AzureProvisioningConfig `\n                -Windows `\n                -DisableAutomaticUpdates `\n                -AdminUserName $vmAdminUser `\n                -Password $vmAdminPassword |\n                New-AzureVM `\n                    -ServiceName $dcServiceName `\n                    –AffinityGroup $affinityGroupName `\n                    -VNetName $virtualNetworkName\n\n    This series of piped commands do the following things:\n    \n    - **New-AzureVMConfig** creates a VM configuration.\n    \n    - **Add-AzureProvisioningConfig** gives the configuration parameters of a standalone Windows server.\n    \n    - **Add-AzureDataDisk** adds the data disk that you will use for storing Active Directory data, with caching option set to None.\n    \n    - **New-AzureVM** creates a new cloud service and creates the new Azure VM in the new cloud service.\n\n1. Wait for the new VM to be fully provisioned and download the remote desktop file to your working directory. Since the new Azure VM takes a long time to provision, the while loop continues to poll the new VM until it is ready for use.\n\n        $VMStatus = Get-AzureVM -ServiceName $dcServiceName -Name $dcServerName\n        \n        While ($VMStatus.InstanceStatus -ne \"ReadyRole\")\n        {\n            write-host \"Waiting for \" $VMStatus.Name \"... Current Status = \" $VMStatus.InstanceStatus\n            Start-Sleep -Seconds 15\n            $VMStatus = Get-AzureVM -ServiceName $dcServiceName -Name $dcServerName\n        }\n        \n        Get-AzureRemoteDesktopFile `\n            -ServiceName $dcServiceName `\n            -Name $dcServerName `\n            -LocalPath \"$workingDir$dcServerName.rdp\"\n\nThe DC server is now successfully provisioned. Next, you will configure the Active Directory domain on this DC server. Leave the PowerShell window open on your local computer. You will use it again later to create the two SQL Server VMs.\n\n## Configure the Domain Controller\n\n1. Connect to the DC server by launching the remote desktop file. Use the machine administrator’s username AzureAdmin and password **Contoso!000**, which you specified when creating the new VM.\n\n1. Open a PowerShell window in administrator mode.\n\n1. Run the following **DCPROMO.EXE** command to setup the **corp.contoso.com** domain, with the data directories on drive M.\n\n        dcpromo.exe `\n            /unattend `\n            /ReplicaOrNewDomain:Domain `\n            /NewDomain:Forest `\n            /NewDomainDNSName:corp.contoso.com `\n            /ForestLevel:4 `\n            /DomainNetbiosName:CORP `\n            /DomainLevel:4 `\n            /InstallDNS:Yes `\n            /ConfirmGc:Yes `\n            /CreateDNSDelegation:No `\n            /DatabasePath:\"C:\\Windows\\NTDS\" `\n            /LogPath:\"C:\\Windows\\NTDS\" `\n            /SYSVOLPath:\"C:\\Windows\\SYSVOL\" `\n            /SafeModeAdminPassword:\"Contoso!000\"\n\n    Once the command completes, the VM restarts automatically.\n\n1. Connect to the DC server again by launching the remote desktop file. This time, log in as **CORP\\Administrator**.\n\n1. Open a PowerShell window in administrator mode and import the Active Directory PowerShell module using the following command:\n\n        Import-Module ActiveDirectory\n\n1. Run the following commands to add three users to the domain.\n\n        $pwd = ConvertTo-SecureString \"Contoso!000\" -AsPlainText -Force\n        New-ADUser `\n            -Name 'Install' `\n            -AccountPassword  $pwd `\n            -PasswordNeverExpires $true `\n            -ChangePasswordAtLogon $false `\n            -Enabled $true\n        New-ADUser `\n            -Name 'SQLSvc1' `\n            -AccountPassword  $pwd `\n            -PasswordNeverExpires $true `\n            -ChangePasswordAtLogon $false `\n            -Enabled $true\n        New-ADUser `\n            -Name 'SQLSvc2' `\n            -AccountPassword  $pwd `\n            -PasswordNeverExpires $true `\n            -ChangePasswordAtLogon $false `\n            -Enabled $true\n\n    **CORP\\Install** is used to configure everything related to the SQL Server service instances, the WSFC cluster, and the availability group. **CORP\\SQLSvc1** and **CORP\\SQLSvc2** are used as the SQL Server service accounts for the two SQL Server VMs.\n\n1. Next, run the following commands to give **CORP\\Install** the permissions to create computer objects in the domain.\n\n        Cd ad:\n        $sid = new-object System.Security.Principal.SecurityIdentifier (Get-ADUser \"Install\").SID\n        $guid = new-object Guid bf967a86-0de6-11d0-a285-00aa003049e2\n        $ace1 = new-object System.DirectoryServices.ActiveDirectoryAccessRule $sid,\"CreateChild\",\"Allow\",$guid,\"All\"\n        $corp = Get-ADObject -Identity \"DC=corp,DC=contoso,DC=com\"\n        $acl = Get-Acl $corp\n        $acl.AddAccessRule($ace1)\n        Set-Acl -Path \"DC=corp,DC=contoso,DC=com\" -AclObject $acl \n\n    The GUID specified above is the GUID for the computer object type. The **CORP\\Install** account needs the **Read All Properties** and **Create Computer Objects** permission in order to create the Active Direct objects for the WSFC cluster. The **Read All Properties** permission is already given to CORP\\Install by default, so you do not need to grant it explicitly. For more information on permissions needed to create the WSFC cluster, see [Failover Cluster Step-by-Step Guide: Configuring Accounts in Active Directory](https://technet.microsoft.com/library/cc731002%28v=WS.10%29.aspx).\n\n    Now that you have finished configuring Active Directory and the user objects, you will create two SQL Server VMs and join them to this domain.\n\n## Create the SQL Server VMs\n\n1. Continue to use the PowerShell window that is open on your local computer. Define the following additional variables:\n\n        $domainName= \"corp\"\n        $FQDN = \"corp.contoso.com\"\n        $subnetName = \"Back\"\n        $sqlServiceName = \"<uniqueservicename>\"\n        $quorumServerName = \"ContosoQuorum\"\n        $sql1ServerName = \"ContosoSQL1\"\n        $sql2ServerName = \"ContosoSQL2\"\n        $availabilitySetName = \"SQLHADR\"\n        $dataDiskSize = 100\n        $dnsSettings = New-AzureDns -Name \"ContosoBackDNS\" -IPAddress \"10.10.0.4\"\n\n    The IP address **10.10.0.4** is typically assigned to the first VM you create in the **10.10.0.0/16** subnet of your Azure virtual network. You should verify this is the address of your DC server by running **IPCONFIG**.\n\n1. Run the following piped commands to create the first VM in the WSFC cluster, named **ContosoQuorum**:\n\n        New-AzureVMConfig `\n            -Name $quorumServerName `\n            -InstanceSize Medium `\n            -ImageName $winImageName `\n            -MediaLocation \"$storageAccountContainer$quorumServerName.vhd\" `\n            -AvailabilitySetName $availabilitySetName `\n            -DiskLabel \"OS\" | \n            Add-AzureProvisioningConfig `\n                -WindowsDomain `\n                -AdminUserName $vmAdminUser `\n                -Password $vmAdminPassword `\n                -DisableAutomaticUpdates `\n                -Domain $domainName `\n                -JoinDomain $FQDN `\n                -DomainUserName $vmAdminUser `\n                -DomainPassword $vmAdminPassword |\n                Set-AzureSubnet `\n                    -SubnetNames $subnetName |\n                    New-AzureVM `\n                        -ServiceName $sqlServiceName `\n                        –AffinityGroup $affinityGroupName `\n                        -VNetName $virtualNetworkName `\n                        -DnsSettings $dnsSettings\n\n    Note the following regarding the command above: \n    \n    - **New-AzureVMConfig** creates a VM configuration with the desired availability set name. The subsequent VMs will be created with the same availability set name so that they are joined to the same availability set.\n    \n    - **Add-AzureProvisioningConfig** joins the VM to the Active Directory domain you created.\n    \n    - **Set-AzureSubnet** places the VM in the Back subnet.\n    \n    - **New-AzureVM** creates a new cloud service and creates the new Azure VM in the new cloud service. The **DnsSettings** parameter specifies that the DNS server for the servers in the new cloud service has the IP address **10.10.0.4**, which is the IP address of the DC server. This parameter is needed to enable the new VMs in the cloud service to join to the Active Directory domain successfully. Without this parameter, you must manually set the IPv4 settings in your VM to use the DC server as the primary DNS server after the VM is provisioned and then join the VM to the Active Directory domain.\n\n1. Run the following piped commands to create the SQL Server VMs, named **ContosoSQL1** and **ContosoSQL2**.\n\n        # Create ContosoSQL1...\n        New-AzureVMConfig `\n            -Name $sql1ServerName `\n            -InstanceSize Large `\n            -ImageName $sqlImageName `\n            -MediaLocation \"$storageAccountContainer$sql1ServerName.vhd\" `\n            -AvailabilitySetName $availabilitySetName `\n            -HostCaching \"ReadOnly\" `\n            -DiskLabel \"OS\" | \n            Add-AzureProvisioningConfig `\n                -WindowsDomain `\n                -AdminUserName $vmAdminUser `\n                -Password $vmAdminPassword `\n                -DisableAutomaticUpdates `\n                -Domain $domainName `\n                -JoinDomain $FQDN `\n                -DomainUserName $vmAdminUser `\n                -DomainPassword $vmAdminPassword |\n                Set-AzureSubnet `\n                    -SubnetNames $subnetName |\n                    Add-AzureEndpoint `\n                        -Name \"SQL\" `\n                        -Protocol \"tcp\" `\n                        -PublicPort 1 `\n                        -LocalPort 1433 | \n                        New-AzureVM `\n                            -ServiceName $sqlServiceName\n        \n        # Create ContosoSQL2...\n        New-AzureVMConfig `\n            -Name $sql2ServerName `\n            -InstanceSize Large `\n            -ImageName $sqlImageName `\n            -MediaLocation \"$storageAccountContainer$sql2ServerName.vhd\" `\n            -AvailabilitySetName $availabilitySetName `\n            -HostCaching \"ReadOnly\" `\n            -DiskLabel \"OS\" | \n            Add-AzureProvisioningConfig `\n                -WindowsDomain `\n                -AdminUserName $vmAdminUser `\n                -Password $vmAdminPassword `\n                -DisableAutomaticUpdates `\n                -Domain $domainName `\n                -JoinDomain $FQDN `\n                -DomainUserName $vmAdminUser `\n                -DomainPassword $vmAdminPassword |\n                Set-AzureSubnet `\n                    -SubnetNames $subnetName |\n                    Add-AzureEndpoint `\n                        -Name \"SQL\" `\n                        -Protocol \"tcp\" `\n                        -PublicPort 2 `\n                        -LocalPort 1433 | \n                        New-AzureVM `\n                            -ServiceName $sqlServiceName\n\n    Note the following regarding the commands above:\n\n    - **New-AzureVMConfig** uses the same availability set name as the DC server, and uses the SQL Server 2012 Service Pack 1 Enterprise Edition image in the virtual machine gallery. It also sets the operating system disk to read-caching only (no write caching). It is recommended that you migrate the database files to a separate data disk that you attach to the VM and configure it with no read or write caching. However, the next best thing is to remove write caching on the operating system disk, since you cannot remove read caching on the operating system disk.\n    \n    - **Add-AzureProvisioningConfig** joins the VM to the Active Directory domain you created.\n    \n    - **Set-AzureSubnet** places the VM in the Back subnet.\n    \n    - **Add-AzureEndpoint** adds access endpoints so that client applications can access these SQL Server services instances on the internet. Different ports are given to ContosoSQL1 and ContosoSQL2.\n    \n    - **New-AzureVM** creates the new SQL Server VM in the same cloud service as ContosoQuorum. You must place the VMs in the same cloud service if you want them to be in the same availability set.\n\n1. Wait for each VM to be fully provisioned and download its remote desktop file to your working directory. The for loop cycles through the three new VMs and executes the commands inside the top-level curly brackets for each of them.\n\n        Foreach ($VM in $VMs = Get-AzureVM -ServiceName $sqlServiceName)\n        {\n            write-host \"Waiting for \" $VM.Name \"...\"\n        \n            # Loop until the VM status is \"ReadyRole\"\n            While ($VM.InstanceStatus -ne \"ReadyRole\")\n            {\n                write-host \"  Current Status = \" $VM.InstanceStatus\n                Start-Sleep -Seconds 15\n                $VM = Get-AzureVM -ServiceName $VM.ServiceName -Name $VM.InstanceName\n            }\n        \n            write-host \"  Current Status = \" $VM.InstanceStatus\n        \n            # Download remote desktop file\n            Get-AzureRemoteDesktopFile -ServiceName $VM.ServiceName -Name $VM.InstanceName -LocalPath \"$workingDir$($VM.InstanceName).rdp\"\n        }\n\n    The SQL Server VMs are now provisioned and running, but they are installed with SQL Server with default options.\n\n## Initialize the WSFC Cluster VMs\n\nIn this section, you need to modify the three servers you will use in the WSFC cluster and the SQL Server installation. Specifically:\n\n- (All servers) You need to install the **Failover Clustering** feature.\n\n- (All servers) You need to add **CORP\\Install** as the machine **administrator**.\n\n- (ContosoSQL1 and ContosoSQL2 only) You need to add **CORP\\Install** as a **sysadmin** role in the default database.\n\n- (ContosoSQL1 and ContosoSQL2 only) You need to add **NT AUTHORITY\\System** as a login with the following permissions:\n\n    - Alter any availability group\n    \n    - Connect SQL\n    \n    - View server state\n\n- (ContosoSQL1 and ContosoSQL2 only) The **TCP** protocol is already enabled on the SQL Server VM. However, you still need to open the firewall for remote access of SQL Server.\n\nNow, you are ready to start. Beginning with **ContosoQuorum**, follow the steps below:\n\n1. Connect to **ContosoQuorum** by launching the remote desktop files. Use the machine administrator’s username **AzureAdmin** and password **Contoso!000**, which you specified when creating the VMs.\n\n1. Verify that the computers have been successfully joined to **corp.contoso.com**.\n\n1. Wait for the SQL Server installation to finish running the automated initialization tasks before proceeding.\n\n1. Open a PowerShell window in administrator mode.\n\n1. Install the Windows Failover Clustering feature.\n\n        Import-Module ServerManager\n        Add-WindowsFeature Failover-Clustering\n\n1. Add **CORP\\Install** as local administrator.\n\n        net localgroup administrators \"CORP\\Install\" /Add\n\n1. Log out of ContosoQuorum. You are done with this server now.\n\n        logoff.exe\n\nNext, initialize **ContosoSQL1** and **ContosoSQL2**. Follow the steps below, which are identical for both of the SQL Server VMs.\n\n1. Connect to the two SQL Server VMs by launching the remote desktop files. Use the machine administrator’s username **AzureAdmin** and password **Contoso!000**, which you specified when creating the VMs.\n\n1. Verify that the computers have been successfully joined to **corp.contoso.com**.\n\n1. Wait for the SQL Server installation to finish running the automated initialization tasks before proceeding.\n\n1. Open a PowerShell window in administrator mode.\n\n1. Install the Windows Failover Clustering feature.\n\n        Import-Module ServerManager\n        Add-WindowsFeature Failover-Clustering\n\n1. Add **CORP\\Install** as local administrator\n\n        net localgroup administrators \"CORP\\Install\" /Add\n\n1. Import the SQL Server PowerShell Provider.\n\n        Set-ExecutionPolicy -Execution RemoteSigned -Force\n        Import-Module -Name \"sqlps\" -DisableNameChecking\n\n1. Add **CORP\\Install** as the sysadmin role for the default SQL Server instance.\n\n        net localgroup administrators \"CORP\\Install\" /Add\n        Invoke-SqlCmd -Query \"EXEC sp_addsrvrolemember 'CORP\\Install', 'sysadmin'\" -ServerInstance \".\"\n\n1. Add **NT AUTHORITY\\System** as a login with the three permissions described above.\n\n        Invoke-SqlCmd -Query \"CREATE LOGIN [NT AUTHORITY\\SYSTEM] FROM WINDOWS\" -ServerInstance \".\"\n        Invoke-SqlCmd -Query \"GRANT ALTER ANY AVAILABILITY GROUP TO [NT AUTHORITY\\SYSTEM] AS SA\" -ServerInstance \".\" \n        Invoke-SqlCmd -Query \"GRANT CONNECT SQL TO [NT AUTHORITY\\SYSTEM] AS SA\" -ServerInstance \".\"\n        Invoke-SqlCmd -Query \"GRANT VIEW SERVER STATE TO [NT AUTHORITY\\SYSTEM] AS SA\" -ServerInstance \".\"\n\n1. Open the firewall for remote access of SQL Server.\n\n        netsh advfirewall firewall add rule name='SQL Server (TCP-In)' program='C:\\Program Files\\Microsoft SQL Server\\MSSQL11.MSSQLSERVER\\MSSQL\\Binn\\sqlservr.exe' dir=in action=allow protocol=TCP\n\n1. Log out of both VMs.\n\n        logoff.exe\n\nFinally, you are ready to configure the availability group. You will use the SQL Server PowerShell Provider to perform all of the work on **ContosoSQL1**.\n\n## Configure the Availability Group\n\n1. Connect to **ContosoSQL1** again by launching the remote desktop files. Instead of logging in using the machine account, log in using **CORP\\Install**.\n\n1. Open a PowerShell window in administrator mode.\n\n1. Define the following variables:\n\n        $server1 = \"ContosoSQL1\"\n        $server2 = \"ContosoSQL2\"\n        $serverQuorum = \"ContosoQuorum\"\n        $acct1 = \"CORP\\SQLSvc1\"\n        $acct2 = \"CORP\\SQLSvc2\"\n        $password = \"Contoso!000\"\n        $clusterName = \"Cluster1\"\n        $timeout = New-Object System.TimeSpan -ArgumentList 0, 0, 30\n        $db = \"MyDB1\"\n        $backupShare = \"\\\\$server1\\backup\"\n        $quorumShare = \"\\\\$server1\\quorum\"\n        $ag = \"AG1\"\n\n1. Import SQL Server PowerShell Provider.\n\n        Set-ExecutionPolicy RemoteSigned -Force\n        Import-Module \"sqlps\" -DisableNameChecking\n\n1. Change the SQL Server service account for ContosoSQL1 to CORP\\SQLSvc1.\n\n        $wmi1 = new-object (\"Microsoft.SqlServer.Management.Smo.Wmi.ManagedComputer\") $server1\n        $wmi1.services | where {$_.Type -eq 'SqlServer'} | foreach{$_.SetServiceAccount($acct1,$password)}\n        $svc1 = Get-Service -ComputerName $server1 -Name 'MSSQLSERVER'\n        $svc1.Stop()\n        $svc1.WaitForStatus([System.ServiceProcess.ServiceControllerStatus]::Stopped,$timeout)\n        $svc1.Start(); \n        $svc1.WaitForStatus([System.ServiceProcess.ServiceControllerStatus]::Running,$timeout)\n\n1. Change the SQL Server service account for ContosoSQL2 to CORP\\SQLSvc2.\n\n        $wmi2 = new-object (\"Microsoft.SqlServer.Management.Smo.Wmi.ManagedComputer\") $server2\n        $wmi2.services | where {$_.Type -eq 'SqlServer'} | foreach{$_.SetServiceAccount($acct2,$password)}\n        $svc2 = Get-Service -ComputerName $server2 -Name 'MSSQLSERVER'\n        $svc2.Stop()\n        $svc2.WaitForStatus([System.ServiceProcess.ServiceControllerStatus]::Stopped,$timeout)\n        $svc2.Start(); \n        $svc2.WaitForStatus([System.ServiceProcess.ServiceControllerStatus]::Running,$timeout)\n\n1. Download **CreateAzureFailoverCluster.ps1** from [Create WSFC Cluster for AlwaysOn Availability Groups in Azure VM](http://gallery.technet.microsoft.com/scriptcenter/Create-WSFC-Cluster-for-7c207d3a) to the local working directory. You will use this script to help you create a functional WSFC cluster. For important information on how WSFC interacts with the Azure network, see [High Availability and Disaster Recovery for SQL Server in Azure Virtual Machines](virtual-machines-sql-server-high-availability-and-disaster-recovery-solutions.md).\n\n1. Change to your working directory and create the WSFC cluster with the downloaded script.\n\n        Set-ExecutionPolicy Unrestricted -Force\n        .\\CreateAzureFailoverCluster.ps1 -ClusterName \"$clusterName\" -ClusterNode \"$server1\",\"$server2\",\"$serverQuorum\"\n\n1. Enable AlwaysOn Availability Groups for the default SQL Server instances on **ContosoSQL1** and **ContosoSQL2**.\n\n        Enable-SqlAlwaysOn `\n            -Path SQLSERVER:\\SQL\\$server1\\Default `\n            -Force\n        Enable-SqlAlwaysOn `\n            -Path SQLSERVER:\\SQL\\$server2\\Default `\n            -NoServiceRestart\n        $svc2.Stop()\n        $svc2.WaitForStatus([System.ServiceProcess.ServiceControllerStatus]::Stopped,$timeout)\n        $svc2.Start(); \n        $svc2.WaitForStatus([System.ServiceProcess.ServiceControllerStatus]::Running,$timeout)\n\n1. Create a backup directory and grant permissions for the SQL Server service accounts. You will use this directory to prepare the availability database on the secondary replica.\n\n        $backup = \"C:\\backup\"\n        New-Item $backup -ItemType directory\n        net share backup=$backup \"/grant:$acct1,FULL\" \"/grant:$acct2,FULL\"\n        icacls.exe \"$backup\" /grant:r (\"$acct1\" + \":(OI)(CI)F\") (\"$acct2\" + \":(OI)(CI)F\")\n\n1. Create a database on **ContosoSQL1** called **MyDB1**, take both a full backup and a log backup, and restore them on **ContosoSQL2** with the **WITH NORECOVERY ** option.\n\n        Invoke-SqlCmd -Query \"CREATE database $db\"\n        Backup-SqlDatabase -Database $db -BackupFile \"$backupShare\\db.bak\" -ServerInstance $server1\n        Backup-SqlDatabase -Database $db -BackupFile \"$backupShare\\db.log\" -ServerInstance $server1 -BackupAction Log\n        Restore-SqlDatabase -Database $db -BackupFile \"$backupShare\\db.bak\" -ServerInstance $server2 -NoRecovery\n        Restore-SqlDatabase -Database $db -BackupFile \"$backupShare\\db.log\" -ServerInstance $server2 -RestoreAction Log -NoRecovery\n\n1. Create the availability group endpoints on the SQL Server VMs and set the proper permissions on the endpoints.\n\n        $endpoint = \n            New-SqlHadrEndpoint MyMirroringEndpoint `\n            -Port 5022 `\n            -Path \"SQLSERVER:\\SQL\\$server1\\Default\"\n        Set-SqlHadrEndpoint `\n            -InputObject $endpoint `\n            -State \"Started\"\n        $endpoint = \n            New-SqlHadrEndpoint MyMirroringEndpoint `\n            -Port 5022 `\n            -Path \"SQLSERVER:\\SQL\\$server2\\Default\"\n        Set-SqlHadrEndpoint `\n            -InputObject $endpoint `\n            -State \"Started\"\n        \n        Invoke-SqlCmd -Query \"CREATE LOGIN [$acct2] FROM WINDOWS\" -ServerInstance $server1\n        Invoke-SqlCmd -Query \"GRANT CONNECT ON ENDPOINT::[MyMirroringEndpoint] TO [$acct2]\" -ServerInstance $server1\n        Invoke-SqlCmd -Query \"CREATE LOGIN [$acct1] FROM WINDOWS\" -ServerInstance $server2\n        Invoke-SqlCmd -Query \"GRANT CONNECT ON ENDPOINT::[MyMirroringEndpoint] TO [$acct1]\" -ServerInstance $server2\n\n1. Create the availability replicas.\n\n        $primaryReplica = \n            New-SqlAvailabilityReplica `\n            -Name $server1 `\n            -EndpointURL \"TCP://$server1.corp.contoso.com:5022\" `\n            -AvailabilityMode \"SynchronousCommit\" `\n            -FailoverMode \"Automatic\" `\n            -Version 11 `\n            -AsTemplate\n        $secondaryReplica = \n            New-SqlAvailabilityReplica `\n            -Name $server2 `\n            -EndpointURL \"TCP://$server2.corp.contoso.com:5022\" `\n            -AvailabilityMode \"SynchronousCommit\" `\n            -FailoverMode \"Automatic\" `\n            -Version 11 `\n            -AsTemplate\n\n1. Finally, create the availability group and join the secondary replica to the availability group.\n\n        New-SqlAvailabilityGroup `\n            -Name $ag `\n            -Path \"SQLSERVER:\\SQL\\$server1\\Default\" `\n            -AvailabilityReplica @($primaryReplica,$secondaryReplica) `\n            -Database $db\n        Join-SqlAvailabilityGroup `\n            -Path \"SQLSERVER:\\SQL\\$server2\\Default\" `\n            -Name $ag\n        Add-SqlAvailabilityDatabase `\n            -Path \"SQLSERVER:\\SQL\\$server2\\Default\\AvailabilityGroups\\$ag\" `\n            -Database $db\n\n## Next Steps\nYou have now successfully implemented SQL Server AlwaysOn by creating an availability group in Azure. To configure a listener for this availability group, see [Configure an ILB listener for AlwaysOn Availability Groups in Azure](virtual-machines-sql-server-configure-ilb-alwayson-availability-group-listener.md).\n\nFor other information about using SQL Server in Azure, see [SQL Server on Azure Virtual Machines](../articles/virtual-machines/virtual-machines-sql-server-infrastructure-services.md)."
+}

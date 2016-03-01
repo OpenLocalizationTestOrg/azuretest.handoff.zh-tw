@@ -1,0 +1,656 @@
+{
+  "nodes": [
+    {
+      "content": "Profiling a Cloud Service Locally in the Compute Emulator",
+      "pos": [
+        28,
+        85
+      ]
+    },
+    {
+      "content": "Investigate performance issues in cloud services with the Visual Studio profiler",
+      "pos": [
+        135,
+        215
+      ]
+    },
+    {
+      "content": "Testing the Performance of a Cloud Service Locally in the Azure Compute Emulator Using the Visual Studio Profiler",
+      "pos": [
+        525,
+        638
+      ]
+    },
+    {
+      "content": "A variety of tools and techniques are available for testing the performance of cloud services.",
+      "pos": [
+        640,
+        734
+      ]
+    },
+    {
+      "content": "When you publish a cloud service to Azure, you can have Visual Studio collect profiling",
+      "pos": [
+        735,
+        822
+      ]
+    },
+    {
+      "content": "data and then analyze it locally, as described in <bpt id=\"p1\">[</bpt>Profiling an Azure Application<ept id=\"p1\">][1]</ept>.",
+      "pos": [
+        823,
+        909
+      ]
+    },
+    {
+      "content": "You can also use diagnostics to track a variety of performance",
+      "pos": [
+        910,
+        972
+      ]
+    },
+    {
+      "content": "counters, as described in <bpt id=\"p1\">[</bpt>Using performance counters in Azure<ept id=\"p1\">][2]</ept>.",
+      "pos": [
+        973,
+        1040
+      ]
+    },
+    {
+      "content": "You might also want to profile your application locally in the compute emulator before deploying it to the cloud.",
+      "pos": [
+        1041,
+        1154
+      ]
+    },
+    {
+      "content": "This article covers the CPU Sampling method of profiling, which can be done locally in the emulator.",
+      "pos": [
+        1156,
+        1256
+      ]
+    },
+    {
+      "content": "CPU sampling is a method of profiling that is not very intrusive.",
+      "pos": [
+        1257,
+        1322
+      ]
+    },
+    {
+      "content": "At a designated sampling interval, the profiler takes a snapshot of the call stack.",
+      "pos": [
+        1323,
+        1406
+      ]
+    },
+    {
+      "content": "The data is collected over a period of time, and shown in a report.",
+      "pos": [
+        1407,
+        1474
+      ]
+    },
+    {
+      "content": "This method of profiling tends to indicate where in a computationally intensive application most of the CPU work is being done.",
+      "pos": [
+        1475,
+        1602
+      ]
+    },
+    {
+      "content": "This gives you the opportunity to focus on the \"hot path\" where your application is spending the most time.",
+      "pos": [
+        1604,
+        1711
+      ]
+    },
+    {
+      "content": "Prerequisites",
+      "pos": [
+        1717,
+        1730
+      ]
+    },
+    {
+      "content": "You can run the profiler locally only if you have Visual Studio Premium or Visual Studio Ultimate.",
+      "pos": [
+        1732,
+        1830
+      ]
+    },
+    {
+      "pos": [
+        1836,
+        1903
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"step1\"&gt;</ph> <ph id=\"ph2\">&lt;/a&gt;</ph> Step 1: Configure Visual Studio for Profiling"
+    },
+    {
+      "content": "First, there are a few Visual Studio configuration options that might be helpful when profiling.",
+      "pos": [
+        1905,
+        2001
+      ]
+    },
+    {
+      "content": "To make sense of the profiling reports, you'll need symbols (.pdb files) for your application and also symbols for system libraries.",
+      "pos": [
+        2002,
+        2134
+      ]
+    },
+    {
+      "content": "You'll want to make sure that you reference the available symbol servers.",
+      "pos": [
+        2135,
+        2208
+      ]
+    },
+    {
+      "content": "To do this, on the <bpt id=\"p1\">**</bpt>Tools<ept id=\"p1\">**</ept> menu in Visual Studio, choose <bpt id=\"p2\">**</bpt>Options<ept id=\"p2\">**</ept>, then choose <bpt id=\"p3\">**</bpt>Debugging<ept id=\"p3\">**</ept>, then <bpt id=\"p4\">**</bpt>Symbols<ept id=\"p4\">**</ept>.",
+      "pos": [
+        2209,
+        2325
+      ]
+    },
+    {
+      "content": "Make sure that Microsoft Symbol Servers is listed under <bpt id=\"p1\">**</bpt>Symbol file (.pdb) locations<ept id=\"p1\">**</ept>.",
+      "pos": [
+        2326,
+        2415
+      ]
+    },
+    {
+      "content": "You can also reference http://referencesource.microsoft.com/symbols, which might have additional symbol files.",
+      "pos": [
+        2417,
+        2527
+      ]
+    },
+    {
+      "content": "If desired, you can simplify the reports that the profiler generates by setting Just My Code.",
+      "pos": [
+        2537,
+        2630
+      ]
+    },
+    {
+      "content": "With Just My Code enabled, function call stacks are simplified so that calls entirely internal to libraries and the .NET Framework are hidden from the reports.",
+      "pos": [
+        2631,
+        2790
+      ]
+    },
+    {
+      "content": "On the <bpt id=\"p1\">**</bpt>Tools<ept id=\"p1\">**</ept> menu, choose <bpt id=\"p2\">**</bpt>Options<ept id=\"p2\">**</ept>.",
+      "pos": [
+        2791,
+        2833
+      ]
+    },
+    {
+      "content": "Then expand the <bpt id=\"p1\">**</bpt>Performance Tools<ept id=\"p1\">**</ept> node, and choose <bpt id=\"p2\">**</bpt>General<ept id=\"p2\">**</ept>.",
+      "pos": [
+        2834,
+        2901
+      ]
+    },
+    {
+      "content": "Select the checkbox for <bpt id=\"p1\">**</bpt>Enable Just My Code for profiler reports<ept id=\"p1\">**</ept>.",
+      "pos": [
+        2902,
+        2971
+      ]
+    },
+    {
+      "content": "You can use these instructions with an existing project or with a new project.",
+      "pos": [
+        2982,
+        3060
+      ]
+    },
+    {
+      "content": "If you create a new project to try the techniques described below, choose a C# <bpt id=\"p1\">**</bpt>Azure Cloud Service<ept id=\"p1\">**</ept> project, and select a <bpt id=\"p2\">**</bpt>Web Role<ept id=\"p2\">**</ept> and a <bpt id=\"p3\">**</bpt>Worker Role<ept id=\"p3\">**</ept>.",
+      "pos": [
+        3062,
+        3222
+      ]
+    },
+    {
+      "content": "For example purposes, add some code to your project that takes",
+      "pos": [
+        3232,
+        3294
+      ]
+    },
+    {
+      "content": "a lot of time and demonstrates some obvious performance problem.",
+      "pos": [
+        3295,
+        3359
+      ]
+    },
+    {
+      "content": "For example, add the following code to a worker role project:",
+      "pos": [
+        3360,
+        3421
+      ]
+    },
+    {
+      "content": "Call this code from the RunAsync method in the worker role's RoleEntryPoint-derived class.",
+      "pos": [
+        3738,
+        3828
+      ]
+    },
+    {
+      "content": "(Ignore the warning about the method running synchronously.)",
+      "pos": [
+        3829,
+        3889
+      ]
+    },
+    {
+      "content": "Build and run your cloud service locally without debugging (Ctrl+F5), with the solution configuration set to <bpt id=\"p1\">**</bpt>Release<ept id=\"p1\">**</ept>.",
+      "pos": [
+        4240,
+        4361
+      ]
+    },
+    {
+      "content": "This ensures that all files and folders are created for running the application locally, and ensures that all the emulators are started.",
+      "pos": [
+        4362,
+        4498
+      ]
+    },
+    {
+      "content": "Start the Compute Emulator UI from the taskbar to verify that your worker role is running.",
+      "pos": [
+        4499,
+        4589
+      ]
+    },
+    {
+      "pos": [
+        4594,
+        4643
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"step2\"&gt;</ph> <ph id=\"ph2\">&lt;/a&gt;</ph> Step 2: Attach to a Process"
+    },
+    {
+      "content": "Instead of profiling the application by starting it from the Visual Studio 2010 IDE, you must attach the profiler to a running process.",
+      "pos": [
+        4645,
+        4780
+      ]
+    },
+    {
+      "pos": [
+        4783,
+        4887
+      ],
+      "content": "To attach the profiler to a process, on the <bpt id=\"p1\">**</bpt>Analyze<ept id=\"p1\">**</ept> menu, choose <bpt id=\"p2\">**</bpt>Profiler<ept id=\"p2\">**</ept> and <bpt id=\"p3\">**</bpt>Attach/Detach<ept id=\"p3\">**</ept>."
+    },
+    {
+      "content": "For a worker role, find the WaWorkerHost.exe process.",
+      "pos": [
+        4897,
+        4950
+      ]
+    },
+    {
+      "content": "If your project folder is on a network drive, the profiler will ask you to provide another location to save the profiling reports.",
+      "pos": [
+        4960,
+        5090
+      ]
+    },
+    {
+      "content": "You can also attach to a web role by attaching to WaIISHost.exe.",
+      "pos": [
+        5093,
+        5157
+      ]
+    },
+    {
+      "content": "If there are multiple worker role processes in your application, you need to use the processID to distinguish them.",
+      "pos": [
+        5159,
+        5274
+      ]
+    },
+    {
+      "content": "You can query the processID programmatically by accessing the Process object.",
+      "pos": [
+        5275,
+        5352
+      ]
+    },
+    {
+      "content": "For example, if you add this code to the Run method of the RoleEntryPoint-derived class in a role, you can look at the",
+      "pos": [
+        5353,
+        5471
+      ]
+    },
+    {
+      "content": "log in the Compute Emulator UI to know what process to connect to.",
+      "pos": [
+        5472,
+        5538
+      ]
+    },
+    {
+      "content": "To view the log, start the Compute Emulator UI.",
+      "pos": [
+        5716,
+        5763
+      ]
+    },
+    {
+      "content": "Open the worker role log console window in the Compute Emulator UI by clicking on the console window's title bar.",
+      "pos": [
+        5773,
+        5886
+      ]
+    },
+    {
+      "content": "You can see the process ID in the log.",
+      "pos": [
+        5887,
+        5925
+      ]
+    },
+    {
+      "content": "One you've attached, perform the steps in your application's UI (if needed) to reproduce the scenario.",
+      "pos": [
+        5935,
+        6037
+      ]
+    },
+    {
+      "pos": [
+        6039,
+        6107
+      ],
+      "content": "When you want to stop profiling, choose the <bpt id=\"p1\">**</bpt>Stop Profiling<ept id=\"p1\">**</ept> link."
+    },
+    {
+      "pos": [
+        6121,
+        6175
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"step3\"&gt;</ph> <ph id=\"ph2\">&lt;/a&gt;</ph> Step 3: View Performance Reports"
+    },
+    {
+      "content": "The performance report for your application is displayed.",
+      "pos": [
+        6177,
+        6234
+      ]
+    },
+    {
+      "content": "At this point, the profiler stops executing, saves data in a .vsp file, and displays a report",
+      "pos": [
+        6236,
+        6329
+      ]
+    },
+    {
+      "content": "that shows an analysis of this data.",
+      "pos": [
+        6330,
+        6366
+      ]
+    },
+    {
+      "content": "If you see String.wstrcpy in the Hot Path, click on Just My Code to change the view to show user code only.",
+      "pos": [
+        6378,
+        6485
+      ]
+    },
+    {
+      "content": "If you see String.Concat, try pressing the Show All Code button.",
+      "pos": [
+        6487,
+        6551
+      ]
+    },
+    {
+      "content": "You should see the Concatenate method and String.Concat taking up a large portion",
+      "pos": [
+        6553,
+        6634
+      ]
+    },
+    {
+      "content": "of the execution time.",
+      "pos": [
+        6635,
+        6657
+      ]
+    },
+    {
+      "content": "If you added the string concatenation code in this article, you should see a warning in the Task List for this.",
+      "pos": [
+        6668,
+        6779
+      ]
+    },
+    {
+      "content": "You may also see a warning that there is an excessive amount of garbage collection, which is due to the number of strings that are created and disposed.",
+      "pos": [
+        6780,
+        6932
+      ]
+    },
+    {
+      "pos": [
+        6946,
+        7012
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"step4\"&gt;</ph> <ph id=\"ph2\">&lt;/a&gt;</ph> Step 4: Make Changes and Compare Performance"
+    },
+    {
+      "content": "You can also compare the performance before and after a code change.",
+      "pos": [
+        7014,
+        7082
+      ]
+    },
+    {
+      "content": "Stop the running process, and edit the code to replace the string concatenation operation with the use of StringBuilder:",
+      "pos": [
+        7084,
+        7204
+      ]
+    },
+    {
+      "content": "Do another performance run, and then compare the performance.",
+      "pos": [
+        7524,
+        7585
+      ]
+    },
+    {
+      "content": "In the Performance Explorer, if the runs are in the same session, you can just select both reports, open the shortcut menu, and choose <bpt id=\"p1\">**</bpt>Compare Performance Reports<ept id=\"p1\">**</ept>.",
+      "pos": [
+        7586,
+        7753
+      ]
+    },
+    {
+      "content": "If you want to compare with a run in another performance session, open the <bpt id=\"p1\">**</bpt>Analyze<ept id=\"p1\">**</ept> menu, and choose <bpt id=\"p2\">**</bpt>Compare Performance Reports<ept id=\"p2\">**</ept>.",
+      "pos": [
+        7754,
+        7890
+      ]
+    },
+    {
+      "content": "Specify both files in the dialog box that appears.",
+      "pos": [
+        7891,
+        7941
+      ]
+    },
+    {
+      "content": "The reports highlight differences between the two runs.",
+      "pos": [
+        7952,
+        8007
+      ]
+    },
+    {
+      "content": "Congratulations!",
+      "pos": [
+        8018,
+        8034
+      ]
+    },
+    {
+      "content": "You've gotten started with the profiler.",
+      "pos": [
+        8035,
+        8075
+      ]
+    },
+    {
+      "pos": [
+        8080,
+        8127
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"troubleshooting\"&gt;</ph> <ph id=\"ph2\">&lt;/a&gt;</ph> Troubleshooting"
+    },
+    {
+      "content": "Make sure you are profiling a Release build and start without debugging.",
+      "pos": [
+        8131,
+        8203
+      ]
+    },
+    {
+      "content": "If the Attach/Detach option is not enabled on the Profiler menu, run the Performance Wizard.",
+      "pos": [
+        8207,
+        8299
+      ]
+    },
+    {
+      "content": "Use the Compute Emulator UI to view the status of your application.",
+      "pos": [
+        8303,
+        8370
+      ]
+    },
+    {
+      "content": "If you have problems starting applications in the emulator, or attaching the profiler, shut down the compute emulator and restart it.",
+      "pos": [
+        8375,
+        8508
+      ]
+    },
+    {
+      "content": "If that doesn't solve the problem, try rebooting.",
+      "pos": [
+        8509,
+        8558
+      ]
+    },
+    {
+      "content": "This problem can occur if you use the Compute Emulator to suspend and remove running deployments.",
+      "pos": [
+        8559,
+        8656
+      ]
+    },
+    {
+      "content": "If you have used any of the profiling commands from the",
+      "pos": [
+        8660,
+        8715
+      ]
+    },
+    {
+      "content": "command line, especially the global settings, make sure that VSPerfClrEnv /globaloff has been called and that VsPerfMon.exe has been shut down.",
+      "pos": [
+        8716,
+        8859
+      ]
+    },
+    {
+      "content": "If when sampling, you see the message \"PRF0025: No data was collected,\" check that the process you attached to has CPU activity.",
+      "pos": [
+        8863,
+        8991
+      ]
+    },
+    {
+      "content": "Applications that are not doing any computational work might not produce any sampling data.",
+      "pos": [
+        8992,
+        9083
+      ]
+    },
+    {
+      "content": "It's also possible that the process exited before any sampling was done.",
+      "pos": [
+        9085,
+        9157
+      ]
+    },
+    {
+      "content": "Check to see that the Run method for a role that you are profiling does not terminate.",
+      "pos": [
+        9158,
+        9244
+      ]
+    },
+    {
+      "pos": [
+        9249,
+        9285
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"nextSteps\"&gt;</ph> <ph id=\"ph2\">&lt;/a&gt;</ph> Next Steps"
+    },
+    {
+      "content": "Instrumenting Azure binaries in the emulator is not supported in the Visual Studio profiler, but if you want to test memory allocation, you can choose that option when profiling.",
+      "pos": [
+        9287,
+        9465
+      ]
+    },
+    {
+      "content": "You can also choose concurrency profiling, which helps you determine whether threads are wasting time competing for locks, or tier interaction profiling, which helps you track down performance problems when interacting between tiers of an application, most frequently between the data tier and a worker role.",
+      "pos": [
+        9466,
+        9774
+      ]
+    },
+    {
+      "content": "You can view the database queries that your app generates and use the profiling data to improve your use of the database.",
+      "pos": [
+        9776,
+        9897
+      ]
+    },
+    {
+      "content": "For information about tier interaction profiling, see <bpt id=\"p1\">[</bpt>Walkthrough: Using the Tier Interaction Profiler in Visual Studio Team System 2010<ept id=\"p1\">][3]</ept>.",
+      "pos": [
+        9898,
+        10040
+      ]
+    },
+    {
+      "content": "test",
+      "pos": [
+        11791,
+        11795
+      ]
+    }
+  ],
+  "content": "<properties \n    pageTitle=\"Profiling a Cloud Service Locally in the Compute Emulator\" \n    services=\"cloud-services\"\n    description=\"Investigate performance issues in cloud services with the Visual Studio profiler\" \n    documentationCenter=\"\"\n    authors=\"patshea123\" \n    manager=\"douge\" \n    editor=\"tglee\"\n    tags=\"\" \n    />\n\n<tags \n    ms.service=\"cloud-services\" \n    ms.workload=\"tbd\" \n    ms.tgt_pltfrm=\"na\" \n    ms.devlang=\"multiple\" \n    ms.topic=\"article\" \n    ms.date=\"05/27/2015\" \n    ms.author=\"patshea\"/>\n\n# Testing the Performance of a Cloud Service Locally in the Azure Compute Emulator Using the Visual Studio Profiler\n\nA variety of tools and techniques are available for testing the performance of cloud services.\nWhen you publish a cloud service to Azure, you can have Visual Studio collect profiling\ndata and then analyze it locally, as described in [Profiling an Azure Application][1].\nYou can also use diagnostics to track a variety of performance\ncounters, as described in [Using performance counters in Azure][2].\nYou might also want to profile your application locally in the compute emulator before deploying it to the cloud.\n\nThis article covers the CPU Sampling method of profiling, which can be done locally in the emulator. CPU sampling is a method of profiling that is not very intrusive. At a designated sampling interval, the profiler takes a snapshot of the call stack. The data is collected over a period of time, and shown in a report. This method of profiling tends to indicate where in a computationally intensive application most of the CPU work is being done.  This gives you the opportunity to focus on the \"hot path\" where your application is spending the most time.\n\n\n## Prerequisites\n\nYou can run the profiler locally only if you have Visual Studio Premium or Visual Studio Ultimate. \n\n## <a name=\"step1\"> </a> Step 1: Configure Visual Studio for Profiling\n\nFirst, there are a few Visual Studio configuration options that might be helpful when profiling. To make sense of the profiling reports, you'll need symbols (.pdb files) for your application and also symbols for system libraries. You'll want to make sure that you reference the available symbol servers. To do this, on the **Tools** menu in Visual Studio, choose **Options**, then choose **Debugging**, then **Symbols**. Make sure that Microsoft Symbol Servers is listed under **Symbol file (.pdb) locations**.  You can also reference http://referencesource.microsoft.com/symbols, which might have additional symbol files.\n\n![][4]\n\nIf desired, you can simplify the reports that the profiler generates by setting Just My Code. With Just My Code enabled, function call stacks are simplified so that calls entirely internal to libraries and the .NET Framework are hidden from the reports. On the **Tools** menu, choose **Options**. Then expand the **Performance Tools** node, and choose **General**. Select the checkbox for **Enable Just My Code for profiler reports**.\n\n![][17]\n\nYou can use these instructions with an existing project or with a new project.  If you create a new project to try the techniques described below, choose a C# **Azure Cloud Service** project, and select a **Web Role** and a **Worker Role**.\n\n![][5]\n\nFor example purposes, add some code to your project that takes\na lot of time and demonstrates some obvious performance problem. For example, add the following code to a worker role project:\n\n    public class Concatenator\n    {\n        public static string Concatenate(int number)\n        {\n            int count;\n            string s = \"\";\n            for (count = 0; count < number; count++)\n            {\n                s += \"\\n\" + count.ToString();\n            }\n            return s;\n        }\n    }\n\nCall this code from the RunAsync method in the worker role's RoleEntryPoint-derived class. (Ignore the warning about the method running synchronously.)\n\n        private async Task RunAsync(CancellationToken cancellationToken)\n        {\n            // TODO: Replace the following with your own logic.\n            while (!cancellationToken.IsCancellationRequested)\n            {\n                Trace.TraceInformation(\"Working\");\n                Concatenator.Concatenate(10000);\n            }\n        }\n\nBuild and run your cloud service locally without debugging (Ctrl+F5), with the solution configuration set to **Release**. This ensures that all files and folders are created for running the application locally, and ensures that all the emulators are started. Start the Compute Emulator UI from the taskbar to verify that your worker role is running.\n\n## <a name=\"step2\"> </a> Step 2: Attach to a Process\n\nInstead of profiling the application by starting it from the Visual Studio 2010 IDE, you must attach the profiler to a running process. \n\nTo attach the profiler to a process, on the **Analyze** menu, choose **Profiler** and **Attach/Detach**.\n\n![][6]\n\nFor a worker role, find the WaWorkerHost.exe process.\n\n![][7]\n\nIf your project folder is on a network drive, the profiler will ask you to provide another location to save the profiling reports.\n\n You can also attach to a web role by attaching to WaIISHost.exe.\n If there are multiple worker role processes in your application, you need to use the processID to distinguish them. You can query the processID programmatically by accessing the Process object. For example, if you add this code to the Run method of the RoleEntryPoint-derived class in a role, you can look at the\nlog in the Compute Emulator UI to know what process to connect to.\n\n    var process = System.Diagnostics.Process.GetCurrentProcess();\n    var message = String.Format(\"Process ID: {0}\", process.Id);\n    Trace.WriteLine(message, \"Information\");\n\nTo view the log, start the Compute Emulator UI.\n\n![][8]\n\nOpen the worker role log console window in the Compute Emulator UI by clicking on the console window's title bar. You can see the process ID in the log.\n\n![][9]\n\nOne you've attached, perform the steps in your application's UI (if needed) to reproduce the scenario.\n\nWhen you want to stop profiling, choose the **Stop Profiling** link.\n\n![][10]\n\n## <a name=\"step3\"> </a> Step 3: View Performance Reports\n\nThe performance report for your application is displayed.\n\nAt this point, the profiler stops executing, saves data in a .vsp file, and displays a report\nthat shows an analysis of this data.\n\n![][11]\n\n\nIf you see String.wstrcpy in the Hot Path, click on Just My Code to change the view to show user code only.  If you see String.Concat, try pressing the Show All Code button.\n\nYou should see the Concatenate method and String.Concat taking up a large portion\nof the execution time.\n\n![][12]\n\nIf you added the string concatenation code in this article, you should see a warning in the Task List for this. You may also see a warning that there is an excessive amount of garbage collection, which is due to the number of strings that are created and disposed.\n\n![][14]\n\n## <a name=\"step4\"> </a> Step 4: Make Changes and Compare Performance\n\nYou can also compare the performance before and after a code change.  Stop the running process, and edit the code to replace the string concatenation operation with the use of StringBuilder:\n\n    public static string Concatenate(int number)\n    {\n        int count;\n        System.Text.StringBuilder builder = new System.Text.StringBuilder(\"\");\n        for (count = 0; count < number; count++)\n        {\n             builder.Append(\"\\n\" + count.ToString());\n        }\n        return builder.ToString();\n    }\n\nDo another performance run, and then compare the performance. In the Performance Explorer, if the runs are in the same session, you can just select both reports, open the shortcut menu, and choose **Compare Performance Reports**. If you want to compare with a run in another performance session, open the **Analyze** menu, and choose **Compare Performance Reports**. Specify both files in the dialog box that appears.\n\n![][15]\n\nThe reports highlight differences between the two runs.\n\n![][16]\n\nCongratulations! You've gotten started with the profiler.\n\n## <a name=\"troubleshooting\"> </a> Troubleshooting\n\n- Make sure you are profiling a Release build and start without debugging.\n\n- If the Attach/Detach option is not enabled on the Profiler menu, run the Performance Wizard.\n\n- Use the Compute Emulator UI to view the status of your application. \n\n- If you have problems starting applications in the emulator, or attaching the profiler, shut down the compute emulator and restart it. If that doesn't solve the problem, try rebooting. This problem can occur if you use the Compute Emulator to suspend and remove running deployments.\n\n- If you have used any of the profiling commands from the\ncommand line, especially the global settings, make sure that VSPerfClrEnv /globaloff has been called and that VsPerfMon.exe has been shut down.\n\n- If when sampling, you see the message \"PRF0025: No data was collected,\" check that the process you attached to has CPU activity. Applications that are not doing any computational work might not produce any sampling data.  It's also possible that the process exited before any sampling was done. Check to see that the Run method for a role that you are profiling does not terminate.\n\n## <a name=\"nextSteps\"> </a> Next Steps\n\nInstrumenting Azure binaries in the emulator is not supported in the Visual Studio profiler, but if you want to test memory allocation, you can choose that option when profiling. You can also choose concurrency profiling, which helps you determine whether threads are wasting time competing for locks, or tier interaction profiling, which helps you track down performance problems when interacting between tiers of an application, most frequently between the data tier and a worker role.  You can view the database queries that your app generates and use the profiling data to improve your use of the database. For information about tier interaction profiling, see [Walkthrough: Using the Tier Interaction Profiler in Visual Studio Team System 2010][3].\n\n\n[Step 1: Configure Visual Studio for Profiling]: #step1\n[Step 2: Attach to a Process]: #step2\n[Step 3: View Profiling Reports]: #step3\n[Step 4: Make Changes and Compare Performance]: #step4\n[Troubleshooting]: #troubleshooting\n[Next Steps]: #nextSteps\n\n[1]: http://msdn.microsoft.com/library/azure/hh369930.aspx\n[2]: http://msdn.microsoft.com/library/azure/hh411542.aspx\n[3]: http://blogs.msdn.com/b/habibh/archive/2009/06/30/walkthrough-using-the-tier-interaction-profiler-in-visual-studio-team-system-2010.aspx\n[4]: ./media/cloud-services-performance-testing-visual-studio-profiler/ProfilingLocally09.png\n[5]: ./media/cloud-services-performance-testing-visual-studio-profiler/ProfilingLocally10.png\n[6]: ./media/cloud-services-performance-testing-visual-studio-profiler/ProfilingLocally02.png\n[7]: ./media/cloud-services-performance-testing-visual-studio-profiler/ProfilingLocally05.png\n[8]: ./media/cloud-services-performance-testing-visual-studio-profiler/ProfilingLocally010.png\n[9]: ./media/cloud-services-performance-testing-visual-studio-profiler/ProfilingLocally07.png\n[10]: ./media/cloud-services-performance-testing-visual-studio-profiler/ProfilingLocally06.png\n[11]: ./media/cloud-services-performance-testing-visual-studio-profiler/ProfilingLocally03.png\n[12]: ./media/cloud-services-performance-testing-visual-studio-profiler/ProfilingLocally011.png\n[14]: ./media/cloud-services-performance-testing-visual-studio-profiler/ProfilingLocally04.png \n[15]: ./media/cloud-services-performance-testing-visual-studio-profiler/ProfilingLocally013.png\n[16]: ./media/cloud-services-performance-testing-visual-studio-profiler/ProfilingLocally012.png\n[17]: ./media/cloud-services-performance-testing-visual-studio-profiler/ProfilingLocally08.png\n \ntest\n"
+}

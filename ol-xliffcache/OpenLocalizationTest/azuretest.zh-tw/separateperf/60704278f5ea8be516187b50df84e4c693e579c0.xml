@@ -1,0 +1,544 @@
+{
+  "nodes": [
+    {
+      "content": "Handle conflicts with offline data in universal Windows apps | Microsoft Azure",
+      "pos": [
+        28,
+        106
+      ]
+    },
+    {
+      "content": "Learn how to use Azure Mobile Services handle conflicts when syncing offline data in your universal Windows application",
+      "pos": [
+        126,
+        245
+      ]
+    },
+    {
+      "content": "Handling conflicts with offline data sync in Mobile Services",
+      "pos": [
+        592,
+        652
+      ]
+    },
+    {
+      "content": "Overview",
+      "pos": [
+        780,
+        788
+      ]
+    },
+    {
+      "content": "This topic shows you how to synchronize data and handle conflicts when using the offline capabilities of Azure Mobile Services.",
+      "pos": [
+        790,
+        917
+      ]
+    },
+    {
+      "content": "If you prefer to watch a video, the clip below follows the same steps as this tutorial.",
+      "pos": [
+        919,
+        1006
+      ]
+    },
+    {
+      "content": "In this tutorial, you download a universal Windows C# solution for an app that supports handling offline synchronization conflicts.",
+      "pos": [
+        1066,
+        1197
+      ]
+    },
+    {
+      "content": "You will integrate a mobile service with the app, and then run the Windows Store 8.1 and Windows Phone 8.1 clients to generate a sync conflict and resolve it.",
+      "pos": [
+        1198,
+        1356
+      ]
+    },
+    {
+      "content": "This tutorial builds on the steps and the sample app from the previous tutorial <bpt id=\"p1\">[</bpt><ept id=\"p1\">Get started with offline data]</ept>.",
+      "pos": [
+        1358,
+        1470
+      ]
+    },
+    {
+      "content": "Before you begin this tutorial, you should first complete <bpt id=\"p1\">[</bpt><ept id=\"p1\">Get started with offline data]</ept>.",
+      "pos": [
+        1471,
+        1561
+      ]
+    },
+    {
+      "content": "Prerequisites",
+      "pos": [
+        1566,
+        1579
+      ]
+    },
+    {
+      "content": "This tutorial requires Visual Studio 2013 running on Windows 8.1.",
+      "pos": [
+        1581,
+        1646
+      ]
+    },
+    {
+      "content": "Download the sample project",
+      "pos": [
+        1651,
+        1678
+      ]
+    },
+    {
+      "content": "![][0]",
+      "pos": [
+        1680,
+        1686
+      ]
+    },
+    {
+      "pos": [
+        1688,
+        1864
+      ],
+      "content": "This tutorial is a walkthrough of how the <bpt id=\"p1\">[</bpt><ept id=\"p1\">Todo Offline Mobile Services sample]</ept> handles sync conflicts between the local offline store and the Mobile Service database in Azure."
+    },
+    {
+      "pos": [
+        1869,
+        1981
+      ],
+      "content": "Download the zip file for the <bpt id=\"p1\">[</bpt><ept id=\"p1\">Mobile Services Samples GitHub Repository]</ept> and extract it to a working directory."
+    },
+    {
+      "pos": [
+        1987,
+        2149
+      ],
+      "content": "If you haven't already installed SQLite for Windows 8.1 and Windows Phone 8.1 as mentioned in the <bpt id=\"p1\">[</bpt><ept id=\"p1\">Get started with offline data]</ept> tutorial, install both runtimes."
+    },
+    {
+      "content": "In Visual Studio 2013, open the <bpt id=\"p1\">*</bpt>mobile-services-samples\\TodoOffline\\WindowsUniversal\\TodoOffline-Universal.sln<ept id=\"p1\">*</ept> solution file.",
+      "pos": [
+        2154,
+        2281
+      ]
+    },
+    {
+      "content": "Press the <bpt id=\"p1\">**</bpt>F5<ept id=\"p1\">**</ept> key to rebuild and run the project.",
+      "pos": [
+        2282,
+        2334
+      ]
+    },
+    {
+      "content": "Verify the NuGet packages are restored and the references are correctly set.",
+      "pos": [
+        2335,
+        2411
+      ]
+    },
+    {
+      "pos": [
+        2418,
+        2600
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> You may need to delete any old references to the SQLite runtime and replace them with the updated reference as mentioned in the <bpt id=\"p1\">[</bpt><ept id=\"p1\">Get started with offline data]</ept> tutorial."
+    },
+    {
+      "content": "In the app, type some text in <bpt id=\"p1\">**</bpt>Insert a TodoItem<ept id=\"p1\">**</ept>, then click <bpt id=\"p2\">**</bpt>Save<ept id=\"p2\">**</ept> to add some todo items to the local store.",
+      "pos": [
+        2605,
+        2720
+      ]
+    },
+    {
+      "content": "Then close the app.",
+      "pos": [
+        2721,
+        2740
+      ]
+    },
+    {
+      "pos": [
+        2742,
+        2863
+      ],
+      "content": "Note that the app is not yet connected to any mobile service, so the buttons <bpt id=\"p1\">**</bpt>Push<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>Pull<ept id=\"p2\">**</ept> will throw exceptions."
+    },
+    {
+      "content": "Test the app against your  mobile service",
+      "pos": [
+        2870,
+        2911
+      ]
+    },
+    {
+      "content": "Now it's time to test the app against Mobile Services.",
+      "pos": [
+        2913,
+        2967
+      ]
+    },
+    {
+      "content": "In the Azure Management Portal, find your mobile service's application key by clicking <bpt id=\"p1\">**</bpt>Manage Keys<ept id=\"p1\">**</ept> on the command bar of the <bpt id=\"p2\">**</bpt>Dashboard<ept id=\"p2\">**</ept> tab.",
+      "pos": [
+        2972,
+        3119
+      ]
+    },
+    {
+      "content": "Copy the <bpt id=\"p1\">**</bpt>Application Key<ept id=\"p1\">**</ept>.",
+      "pos": [
+        3120,
+        3149
+      ]
+    },
+    {
+      "content": "In Solution Explorer for Visual Studio, open the App.xaml.cs file in the client sample project.",
+      "pos": [
+        3154,
+        3249
+      ]
+    },
+    {
+      "content": "Change the initialization of the <bpt id=\"p1\">**</bpt>MobileServiceClient<ept id=\"p1\">**</ept> to use your mobile service URL and application key:",
+      "pos": [
+        3250,
+        3358
+      ]
+    },
+    {
+      "pos": [
+        3546,
+        3616
+      ],
+      "content": "In Visual Studio, press the <bpt id=\"p1\">**</bpt>F5<ept id=\"p1\">**</ept> key to build and run the app again."
+    },
+    {
+      "content": "![][0]",
+      "pos": [
+        3622,
+        3628
+      ]
+    },
+    {
+      "content": "Update the data in the backend to create a conflict",
+      "pos": [
+        3633,
+        3684
+      ]
+    },
+    {
+      "content": "In a real world scenario, a sync conflict would occur when one app pushes updates to a record in the database, and then another app tries to push an update to the same record using an outdated version field in that record.",
+      "pos": [
+        3686,
+        3908
+      ]
+    },
+    {
+      "content": "If you recall from the <bpt id=\"p1\">[</bpt><ept id=\"p1\">Get started with offline data]</ept>, the version system property is required to support the offline syncing features.",
+      "pos": [
+        3909,
+        4045
+      ]
+    },
+    {
+      "content": "This version information is examined with each database update.",
+      "pos": [
+        4046,
+        4109
+      ]
+    },
+    {
+      "content": "If an instance of the app tries to update a record using an outdated version, a conflict will occur and be caught as a <ph id=\"ph1\">`MobileServicePreconditionFailedException`</ph> in the app.",
+      "pos": [
+        4110,
+        4283
+      ]
+    },
+    {
+      "content": "If the app doesn't catch the <ph id=\"ph1\">`MobileServicePreconditionFailedException`</ph> then a <ph id=\"ph2\">`MobileServicePushFailedException`</ph> will end up being thrown describing how many sync errors were encountered.",
+      "pos": [
+        4284,
+        4472
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> To support synchronization of deleted records with offline data sync, you should enable <bpt id=\"p1\">[</bpt>Soft Delete<ept id=\"p1\">](mobile-services-using-soft-delete.md)</ept>.",
+      "pos": [
+        4475,
+        4628
+      ]
+    },
+    {
+      "content": "Otherwise, you have to manually remove records in the local store, or call <ph id=\"ph1\">`IMobileServiceSyncTable::PurgeAsync()`</ph> to purge the local store.",
+      "pos": [
+        4629,
+        4769
+      ]
+    },
+    {
+      "content": "The following steps show the Windows Phone 8.1 and Windows Store 8.1 clients running at the same time to cause and resolve a conflict using the sample.",
+      "pos": [
+        4772,
+        4923
+      ]
+    },
+    {
+      "content": "In Visual Studio, right click the Windows Phone 8.1 project and click <bpt id=\"p1\">**</bpt>Set as Startup Project<ept id=\"p1\">**</ept>.",
+      "pos": [
+        4928,
+        5025
+      ]
+    },
+    {
+      "content": "Then press <bpt id=\"p1\">**</bpt>Ctrl+F5<ept id=\"p1\">**</ept> keys to run the Windows Phone 8.1 client without debugging.",
+      "pos": [
+        5026,
+        5108
+      ]
+    },
+    {
+      "content": "Once you have the Windows Phone 8.1 client up and running in the emulator, click the <bpt id=\"p1\">**</bpt>Pull<ept id=\"p1\">**</ept> button to sync the local store with the current state of the database.",
+      "pos": [
+        5109,
+        5273
+      ]
+    },
+    {
+      "content": "![][3]",
+      "pos": [
+        5280,
+        5286
+      ]
+    },
+    {
+      "content": "In Visual Studio, right click the Windows 8.1 runtime project and click <bpt id=\"p1\">**</bpt>Set as Startup Project<ept id=\"p1\">**</ept> to set it back to the start up project.",
+      "pos": [
+        5296,
+        5434
+      ]
+    },
+    {
+      "content": "Then press <bpt id=\"p1\">**</bpt>F5<ept id=\"p1\">**</ept> to run it.",
+      "pos": [
+        5435,
+        5463
+      ]
+    },
+    {
+      "content": "Once you have the Windows Store 8.1 client up and running, click the <bpt id=\"p1\">**</bpt>Pull<ept id=\"p1\">**</ept> button to sync the local store with the current state of the database.",
+      "pos": [
+        5464,
+        5612
+      ]
+    },
+    {
+      "content": "![][4]",
+      "pos": [
+        5618,
+        5624
+      ]
+    },
+    {
+      "content": "At this point point both clients are synchronized with the database.",
+      "pos": [
+        5630,
+        5698
+      ]
+    },
+    {
+      "content": "The code for both clients are also using incremental sync, so that they will only sync incomplete todo items.",
+      "pos": [
+        5699,
+        5808
+      ]
+    },
+    {
+      "content": "Completed todo items will be ignored.",
+      "pos": [
+        5809,
+        5846
+      ]
+    },
+    {
+      "content": "Choose one of the items and edit the text of the same item in both clients to a different value.",
+      "pos": [
+        5847,
+        5943
+      ]
+    },
+    {
+      "content": "Click the <bpt id=\"p1\">**</bpt>Push<ept id=\"p1\">**</ept> button to sync both changes with the database on the server.",
+      "pos": [
+        5944,
+        6023
+      ]
+    },
+    {
+      "content": "![][5]",
+      "pos": [
+        6029,
+        6035
+      ]
+    },
+    {
+      "content": "![][6]",
+      "pos": [
+        6041,
+        6047
+      ]
+    },
+    {
+      "content": "The client whose push was executing last encounters the conflict and allows the user to decide which value to commit to the database.",
+      "pos": [
+        6053,
+        6186
+      ]
+    },
+    {
+      "content": "The exception provides the correct version value which is used for resolving the conflict.",
+      "pos": [
+        6187,
+        6277
+      ]
+    },
+    {
+      "content": "![][7]",
+      "pos": [
+        6283,
+        6289
+      ]
+    },
+    {
+      "content": "Review of the code for handling sync conflicts",
+      "pos": [
+        6295,
+        6341
+      ]
+    },
+    {
+      "content": "In order to use the offline features for Mobile Services, you must include the version column in both your local database and your data transfer object.",
+      "pos": [
+        6343,
+        6495
+      ]
+    },
+    {
+      "content": "This is accomplished by updating the <ph id=\"ph1\">`TodoItem`</ph> class the following member:",
+      "pos": [
+        6496,
+        6571
+      ]
+    },
+    {
+      "pos": [
+        6636,
+        6786
+      ],
+      "content": "The <ph id=\"ph1\">`__version`</ph> column is included in the local database in the  <ph id=\"ph2\">`OnNavigatedTo()`</ph> method when the <ph id=\"ph3\">`TodoItem`</ph> class is used to define the local store."
+    },
+    {
+      "content": "To handle offline sync conflicts in your code, you create a class that implements <ph id=\"ph1\">`IMobileServiceSyncHandler`</ph>.",
+      "pos": [
+        6788,
+        6898
+      ]
+    },
+    {
+      "content": "Pass an object of this type in the call to <ph id=\"ph1\">`MobileServiceClient.SyncContext.InitializeAsync()`</ph>.",
+      "pos": [
+        6899,
+        6994
+      ]
+    },
+    {
+      "content": "This also occurs in the  <ph id=\"ph1\">`OnNavigatedTo()`</ph> method of the sample.",
+      "pos": [
+        6995,
+        7059
+      ]
+    },
+    {
+      "content": "The class <ph id=\"ph1\">`SyncHandler`</ph> in <bpt id=\"p1\">**</bpt>SyncHandler.cs<ept id=\"p1\">**</ept> implements <ph id=\"ph2\">`IMobileServiceSyncHandler`</ph>.",
+      "pos": [
+        7163,
+        7248
+      ]
+    },
+    {
+      "content": "The method <ph id=\"ph1\">`ExecuteTableOperationAsync`</ph> is called when each push operation is sent to the server.",
+      "pos": [
+        7249,
+        7346
+      ]
+    },
+    {
+      "content": "If an exception of type <ph id=\"ph1\">`MobileServicePreconditionFailedException`</ph> is thrown, this means that there is a conflict between the local and remote versions of an item.",
+      "pos": [
+        7347,
+        7510
+      ]
+    },
+    {
+      "content": "To resolve conflicts in favor of the local item, you should simply retry the operation.",
+      "pos": [
+        7512,
+        7599
+      ]
+    },
+    {
+      "content": "Once a conflict has occurred, the local item version will be updated to match the server version, so executing the operation again will overwrite the server changes with the local changes:",
+      "pos": [
+        7600,
+        7788
+      ]
+    },
+    {
+      "content": "To resolve conflicts in favor of the server item, simply return from the <ph id=\"ph1\">`ExecuteTableOperationAsync`</ph>.",
+      "pos": [
+        7828,
+        7930
+      ]
+    },
+    {
+      "content": "The local version of the object will be discarded and replaced with the value from the server.",
+      "pos": [
+        7931,
+        8025
+      ]
+    },
+    {
+      "pos": [
+        8027,
+        8116
+      ],
+      "content": "To stop the push operation (but retain the queued changes), use the method <ph id=\"ph1\">`AbortPush()`</ph>:"
+    },
+    {
+      "content": "This will stop the current push operation but will keep all pending changes, including the current operation if <ph id=\"ph1\">`AbortPush`</ph> is called from <ph id=\"ph2\">`ExecuteTableOperationAsync`</ph>.",
+      "pos": [
+        8146,
+        8314
+      ]
+    },
+    {
+      "content": "The next time that <ph id=\"ph1\">`PushAsync()`</ph> is called, these changes will be sent to the server.",
+      "pos": [
+        8315,
+        8400
+      ]
+    },
+    {
+      "pos": [
+        8403,
+        8603
+      ],
+      "content": "When a push is canceled, <ph id=\"ph1\">`PushAsync`</ph> will throw a <ph id=\"ph2\">`MobileServicePushFailedException`</ph>, and the exception property <ph id=\"ph3\">`PushResult.Status`</ph> will have the value <ph id=\"ph4\">`MobileServicePushStatus.CancelledByOperation`</ph>."
+    }
+  ],
+  "content": "<properties \n    pageTitle=\"Handle conflicts with offline data in universal Windows apps | Microsoft Azure\" \n    description=\"Learn how to use Azure Mobile Services handle conflicts when syncing offline data in your universal Windows application\" \n    documentationCenter=\"windows\" \n    authors=\"wesmc7777\" \n    manager=\"dwrede\" \n    editor=\"\" \n    services=\"mobile-services\"/>\n\n<tags \n    ms.service=\"mobile-services\" \n    ms.workload=\"mobile\" \n    ms.tgt_pltfrm=\"mobile-windows-store\" \n    ms.devlang=\"dotnet\" \n    ms.topic=\"article\" \n    ms.date=\"07/23/2015\" \n    ms.author=\"glenga\"/>\n\n\n# Handling conflicts with offline data sync in Mobile Services\n\n[AZURE.INCLUDE [mobile-services-selector-offline-conflicts](../../includes/mobile-services-selector-offline-conflicts.md)]\n\n##Overview\n\nThis topic shows you how to synchronize data and handle conflicts when using the offline capabilities of Azure Mobile Services.\n\nIf you prefer to watch a video, the clip below follows the same steps as this tutorial.\n\n> [AZURE.VIDEO build-offline-apps-azure-mobile-services]\n\nIn this tutorial, you download a universal Windows C# solution for an app that supports handling offline synchronization conflicts. You will integrate a mobile service with the app, and then run the Windows Store 8.1 and Windows Phone 8.1 clients to generate a sync conflict and resolve it.\n\nThis tutorial builds on the steps and the sample app from the previous tutorial [Get started with offline data]. Before you begin this tutorial, you should first complete [Get started with offline data].\n\n\n##Prerequisites\n\nThis tutorial requires Visual Studio 2013 running on Windows 8.1.\n\n\n##Download the sample project\n\n![][0]\n\nThis tutorial is a walkthrough of how the [Todo Offline Mobile Services sample] handles sync conflicts between the local offline store and the Mobile Service database in Azure.\n\n1. Download the zip file for the [Mobile Services Samples GitHub Repository] and extract it to a working directory. \n\n2. If you haven't already installed SQLite for Windows 8.1 and Windows Phone 8.1 as mentioned in the [Get started with offline data] tutorial, install both runtimes.\n\n3. In Visual Studio 2013, open the *mobile-services-samples\\TodoOffline\\WindowsUniversal\\TodoOffline-Universal.sln* solution file. Press the **F5** key to rebuild and run the project. Verify the NuGet packages are restored and the references are correctly set.\n\n    >[AZURE.NOTE] You may need to delete any old references to the SQLite runtime and replace them with the updated reference as mentioned in the [Get started with offline data] tutorial.\n\n4. In the app, type some text in **Insert a TodoItem**, then click **Save** to add some todo items to the local store. Then close the app.\n\nNote that the app is not yet connected to any mobile service, so the buttons **Push** and **Pull** will throw exceptions.\n\n\n\n\n##Test the app against your  mobile service\n\nNow it's time to test the app against Mobile Services.\n\n1. In the Azure Management Portal, find your mobile service's application key by clicking **Manage Keys** on the command bar of the **Dashboard** tab. Copy the **Application Key**.\n\n2. In Solution Explorer for Visual Studio, open the App.xaml.cs file in the client sample project. Change the initialization of the **MobileServiceClient** to use your mobile service URL and application key:\n\n         public static MobileServiceClient MobileService = new MobileServiceClient(\n            \"https://your-mobile-service.azure-mobile.net/\",\n            \"Your AppKey\"\n        );\n\n3. In Visual Studio, press the **F5** key to build and run the app again.\n\n    ![][0]\n\n\n##Update the data in the backend to create a conflict\n\nIn a real world scenario, a sync conflict would occur when one app pushes updates to a record in the database, and then another app tries to push an update to the same record using an outdated version field in that record. If you recall from the [Get started with offline data], the version system property is required to support the offline syncing features. This version information is examined with each database update. If an instance of the app tries to update a record using an outdated version, a conflict will occur and be caught as a `MobileServicePreconditionFailedException` in the app. If the app doesn't catch the `MobileServicePreconditionFailedException` then a `MobileServicePushFailedException` will end up being thrown describing how many sync errors were encountered.\n\n>[AZURE.NOTE] To support synchronization of deleted records with offline data sync, you should enable [Soft Delete](mobile-services-using-soft-delete.md). Otherwise, you have to manually remove records in the local store, or call `IMobileServiceSyncTable::PurgeAsync()` to purge the local store.\n\n\nThe following steps show the Windows Phone 8.1 and Windows Store 8.1 clients running at the same time to cause and resolve a conflict using the sample.\n\n1. In Visual Studio, right click the Windows Phone 8.1 project and click **Set as Startup Project**. Then press **Ctrl+F5** keys to run the Windows Phone 8.1 client without debugging. Once you have the Windows Phone 8.1 client up and running in the emulator, click the **Pull** button to sync the local store with the current state of the database.\n \n    ![][3]\n \n   \n2. In Visual Studio, right click the Windows 8.1 runtime project and click **Set as Startup Project** to set it back to the start up project. Then press **F5** to run it. Once you have the Windows Store 8.1 client up and running, click the **Pull** button to sync the local store with the current state of the database.\n\n    ![][4]\n \n3. At this point point both clients are synchronized with the database. The code for both clients are also using incremental sync, so that they will only sync incomplete todo items. Completed todo items will be ignored. Choose one of the items and edit the text of the same item in both clients to a different value. Click the **Push** button to sync both changes with the database on the server.\n\n    ![][5]\n\n    ![][6]\n\n\n4. The client whose push was executing last encounters the conflict and allows the user to decide which value to commit to the database. The exception provides the correct version value which is used for resolving the conflict.\n\n    ![][7]\n\n\n\n##Review of the code for handling sync conflicts\n\nIn order to use the offline features for Mobile Services, you must include the version column in both your local database and your data transfer object. This is accomplished by updating the `TodoItem` class the following member:\n\n        [Version]\n        public string Version { get; set; }\n\nThe `__version` column is included in the local database in the  `OnNavigatedTo()` method when the `TodoItem` class is used to define the local store.\n\nTo handle offline sync conflicts in your code, you create a class that implements `IMobileServiceSyncHandler`. Pass an object of this type in the call to `MobileServiceClient.SyncContext.InitializeAsync()`. This also occurs in the  `OnNavigatedTo()` method of the sample.\n\n     await App.MobileService.SyncContext.InitializeAsync(store, new SyncHandler(App.MobileService));\n\nThe class `SyncHandler` in **SyncHandler.cs** implements `IMobileServiceSyncHandler`. The method `ExecuteTableOperationAsync` is called when each push operation is sent to the server. If an exception of type `MobileServicePreconditionFailedException` is thrown, this means that there is a conflict between the local and remote versions of an item.\n\nTo resolve conflicts in favor of the local item, you should simply retry the operation. Once a conflict has occurred, the local item version will be updated to match the server version, so executing the operation again will overwrite the server changes with the local changes:\n\n    await operation.ExecuteAsync(); \n\nTo resolve conflicts in favor of the server item, simply return from the `ExecuteTableOperationAsync`. The local version of the object will be discarded and replaced with the value from the server.\n\nTo stop the push operation (but retain the queued changes), use the method `AbortPush()`:\n\n    operation.AbortPush();\n\nThis will stop the current push operation but will keep all pending changes, including the current operation if `AbortPush` is called from `ExecuteTableOperationAsync`. The next time that `PushAsync()` is called, these changes will be sent to the server. \n\nWhen a push is canceled, `PushAsync` will throw a `MobileServicePushFailedException`, and the exception property `PushResult.Status` will have the value `MobileServicePushStatus.CancelledByOperation`. \n\n\n\n<!-- Images -->\n[0]: ./media/mobile-services-windows-store-dotnet-handling-conflicts-offline-data/mobile-services-handling-conflicts-app-run1.png\n[1]: ./media/mobile-services-windows-store-dotnet-handling-conflicts-offline-data/javascript-backend-database.png\n[2]: ./media/mobile-services-windows-store-dotnet-handling-conflicts-offline-data/dotnet-backend-database.png\n[3]: ./media/mobile-services-windows-store-dotnet-handling-conflicts-offline-data/wp81-view.png\n[4]: ./media/mobile-services-windows-store-dotnet-handling-conflicts-offline-data/win81-view.png\n[5]: ./media/mobile-services-windows-store-dotnet-handling-conflicts-offline-data/wp81-edit-text.png\n[6]: ./media/mobile-services-windows-store-dotnet-handling-conflicts-offline-data/win81-edit-text.png\n[7]: ./media/mobile-services-windows-store-dotnet-handling-conflicts-offline-data/conflict.png\n\n\n\n\n<!-- URLs -->\n[Handling conflicts code sample]: http://go.microsoft.com/fwlink/?LinkId=394787\n[Get started with Mobile Services]: ../mobile-services-windows-store-get-started.md\n[Get started with offline data]: mobile-services-windows-store-dotnet-get-started-offline-data.md\n[SQLite for Windows 8.1]: http://go.microsoft.com/fwlink/?LinkId=394776\n[Azure Management Portal]: https://manage.windowsazure.com/\n[Handling Database Conflicts]: mobile-services-windows-store-dotnet-handle-database-conflicts.md#test-app\n[Mobile Services Samples GitHub Repository]: http://go.microsoft.com/fwlink/?LinkId=512865\n[Todo Offline Mobile Services sample]: http://go.microsoft.com/fwlink/?LinkId=512866\n "
+}

@@ -1,0 +1,936 @@
+{
+  "nodes": [
+    {
+      "content": "My first textual runbook in Azure Automation | Microsoft Azure",
+      "pos": [
+        27,
+        89
+      ]
+    },
+    {
+      "content": "Tutorial that walks you through the creation, testing, and publishing of a simple textual runbook using PowerShell Workflow.",
+      "pos": [
+        108,
+        232
+      ]
+    },
+    {
+      "content": "Several concepts are covered such as authenticating to Azure resources and input parameters.",
+      "pos": [
+        234,
+        326
+      ]
+    },
+    {
+      "content": "My first textual runbook",
+      "pos": [
+        629,
+        653
+      ]
+    },
+    {
+      "content": "[AZURE.SELECTOR]",
+      "pos": [
+        657,
+        673
+      ]
+    },
+    {
+      "content": "Graphical",
+      "pos": [
+        677,
+        686
+      ]
+    },
+    {
+      "content": "Textual",
+      "pos": [
+        730,
+        737
+      ]
+    },
+    {
+      "content": "This tutorial walks you through the creation of a <bpt id=\"p1\">[</bpt>textual runbook<ept id=\"p1\">](automation-powershell-workflow.md)</ept> in Azure Automation.",
+      "pos": [
+        777,
+        900
+      ]
+    },
+    {
+      "content": "We'll start with a simple runbook that we'll test and publish while we explain how to track the status of the runbook job.",
+      "pos": [
+        902,
+        1024
+      ]
+    },
+    {
+      "content": "Then we'll modify the runbook to actually manage Azure resources, in this case starting an Azure virtual machine.",
+      "pos": [
+        1026,
+        1139
+      ]
+    },
+    {
+      "content": "We'll then make the runbook more robust by adding runbook parameters.",
+      "pos": [
+        1141,
+        1210
+      ]
+    },
+    {
+      "content": "Prerequisites",
+      "pos": [
+        1217,
+        1230
+      ]
+    },
+    {
+      "content": "To complete this tutorial, you will need the following.",
+      "pos": [
+        1232,
+        1287
+      ]
+    },
+    {
+      "content": "Azure subscription.",
+      "pos": [
+        1291,
+        1310
+      ]
+    },
+    {
+      "content": "If you don't have one yet, you can <bpt id=\"p1\">[</bpt>activate your MSDN subscriber benefits<ept id=\"p1\">](http://azure.microsoft.com/pricing/member-offers/msdn-benefits-details/)</ept> or <ph id=\"ph1\">&lt;a href=\"/pricing/free-trial/\" target=\"_blank\"&gt;</ph><bpt id=\"p2\">[</bpt>sign up for a free trial<ept id=\"p2\">](http://azure.microsoft.com/pricing/free-trial/)</ept>.",
+      "pos": [
+        1311,
+        1585
+      ]
+    },
+    {
+      "pos": [
+        1588,
+        1656
+      ],
+      "content": "<bpt id=\"p1\">[</bpt>Automation account<ept id=\"p1\">](automation-configuring.md)</ept> to hold the runbook."
+    },
+    {
+      "content": "An Azure virtual machine.",
+      "pos": [
+        1659,
+        1684
+      ]
+    },
+    {
+      "content": "We will stop and start this machine so it should not be production.",
+      "pos": [
+        1686,
+        1753
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt>Azure Active Directory user and Automation Credential asset<ept id=\"p1\">](automation-configuring.md)</ept> to authenticate to Azure resources.",
+      "pos": [
+        1756,
+        1880
+      ]
+    },
+    {
+      "content": "This user must have permission to start and stop the virtual machine.",
+      "pos": [
+        1882,
+        1951
+      ]
+    },
+    {
+      "content": "Step 1 - Create new runbook",
+      "pos": [
+        1956,
+        1983
+      ]
+    },
+    {
+      "pos": [
+        1985,
+        2062
+      ],
+      "content": "We'll start by creating a simple runbook that outputs the text <bpt id=\"p1\">*</bpt>Hello World<ept id=\"p1\">*</ept>."
+    },
+    {
+      "content": "In the Azure Preview Portal, open your Automation account.",
+      "pos": [
+        2067,
+        2125
+      ]
+    },
+    {
+      "content": "The Automation account page gives you a quick view of the resources in this account.",
+      "pos": [
+        2128,
+        2212
+      ]
+    },
+    {
+      "content": "You should already have some Assets.",
+      "pos": [
+        2214,
+        2250
+      ]
+    },
+    {
+      "content": "Most of those are the modules that are automatically included in a new Automation account.",
+      "pos": [
+        2252,
+        2342
+      ]
+    },
+    {
+      "content": "You should also have the Credential asset that's mentioned in the <bpt id=\"p1\">[</bpt>prerequisites<ept id=\"p1\">](#prerequisites)</ept>.",
+      "pos": [
+        2344,
+        2442
+      ]
+    },
+    {
+      "content": "Click on the <bpt id=\"p1\">**</bpt>Runbooks<ept id=\"p1\">**</ept> tile to open the list of runbooks.",
+      "pos": [
+        2446,
+        2506
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">![</ph>Runbooks control<ph id=\"ph2\">](media/automation-first-runbook-textual/runbooks-control.png)</ph>",
+      "pos": [
+        2511,
+        2591
+      ]
+    },
+    {
+      "pos": [
+        2595,
+        2694
+      ],
+      "content": "Create a new runbook by clicking on the <bpt id=\"p1\">**</bpt>Add a runbook<ept id=\"p1\">**</ept> button and then <bpt id=\"p2\">**</bpt>Create a new runbook<ept id=\"p2\">**</ept>."
+    },
+    {
+      "pos": [
+        2698,
+        2749
+      ],
+      "content": "Give the runbook the name <bpt id=\"p1\">*</bpt>MyFirstRunbook-Textual<ept id=\"p1\">*</ept>."
+    },
+    {
+      "content": "In this case, we're going to create a <bpt id=\"p1\">[</bpt>textual runbook<ept id=\"p1\">](automation-powershell-workflow.md)</ept> based on PowerShell Workflow so select <bpt id=\"p2\">**</bpt>Powershell Workflow<ept id=\"p2\">**</ept> for <bpt id=\"p3\">**</bpt>Runbook type<ept id=\"p3\">**</ept>.",
+      "pos": [
+        2753,
+        2928
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">![</ph>New runbook<ph id=\"ph2\">](media/automation-first-runbook-textual/new-runbook.png)</ph>",
+      "pos": [
+        2933,
+        3003
+      ]
+    },
+    {
+      "pos": [
+        3007,
+        3074
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>Create<ept id=\"p1\">**</ept> to create the runbook and open the textual editor."
+    },
+    {
+      "content": "Step 2 - Add code to the runbook",
+      "pos": [
+        3079,
+        3111
+      ]
+    },
+    {
+      "content": "You can either type code directly into the runbook, or you can select cmdlets, runbooks, and assets from the Library control and have them added to the runbook with any related parameters.",
+      "pos": [
+        3113,
+        3301
+      ]
+    },
+    {
+      "content": "For this walkthrough, we'll type directly into the runbook.",
+      "pos": [
+        3303,
+        3362
+      ]
+    },
+    {
+      "content": "Our runbook is currently empty with only the required <bpt id=\"p1\">*</bpt>workflow<ept id=\"p1\">*</ept> keyword, the name of our runbook, and the braces that will encase the entire workflow.",
+      "pos": [
+        3367,
+        3518
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">![</ph>Runbooks control<ph id=\"ph2\">](media/automation-first-runbook-textual/empty-runbook.png)</ph>",
+      "pos": [
+        3524,
+        3601
+      ]
+    },
+    {
+      "content": "Type <bpt id=\"p1\">*</bpt>Write-Output \"Hello World.\"<ept id=\"p1\">*</ept> between the braces.",
+      "pos": [
+        3605,
+        3659
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">![</ph>Hello world<ph id=\"ph2\">](media/automation-first-runbook-textual/hello-world.png)</ph>",
+      "pos": [
+        3665,
+        3735
+      ]
+    },
+    {
+      "content": "Save the runbook by clicking <bpt id=\"p1\">**</bpt>Save<ept id=\"p1\">**</ept>.",
+      "pos": [
+        3741,
+        3779
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">![</ph>Save runbook<ph id=\"ph2\">](media/automation-first-runbook-textual/runbook-edit-toolbar-save.png)</ph>",
+      "pos": [
+        3784,
+        3869
+      ]
+    },
+    {
+      "content": "Step 3 - Test the runbook",
+      "pos": [
+        3874,
+        3899
+      ]
+    },
+    {
+      "content": "Before we publish the runbook to make it available in production, we want to test it to make sure that it works properly.",
+      "pos": [
+        3901,
+        4022
+      ]
+    },
+    {
+      "content": "When you test a runbook, you run its <bpt id=\"p1\">**</bpt>Draft<ept id=\"p1\">**</ept> version and view its output interactively.",
+      "pos": [
+        4024,
+        4113
+      ]
+    },
+    {
+      "content": "Click <bpt id=\"p1\">**</bpt>Test pane<ept id=\"p1\">**</ept> to open the Test pane.",
+      "pos": [
+        4121,
+        4163
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">![</ph>Test pane<ph id=\"ph2\">](media/automation-first-runbook-textual/runbook-edit-toolbar-test-pane.png)</ph>",
+      "pos": [
+        4168,
+        4255
+      ]
+    },
+    {
+      "content": "Click <bpt id=\"p1\">**</bpt>Start<ept id=\"p1\">**</ept> to start the test.",
+      "pos": [
+        4259,
+        4293
+      ]
+    },
+    {
+      "content": "This should be the only enabled option.",
+      "pos": [
+        4295,
+        4334
+      ]
+    },
+    {
+      "content": "A <bpt id=\"p1\">[</bpt>runbook job<ept id=\"p1\">](automation-runbook-execution)</ept> is created and its status displayed.",
+      "pos": [
+        4338,
+        4420
+      ]
+    },
+    {
+      "content": "The job status will start as <bpt id=\"p1\">*</bpt>Queued<ept id=\"p1\">*</ept> indicating that it is waiting for a runbook worker in the cloud to come available.",
+      "pos": [
+        4423,
+        4543
+      ]
+    },
+    {
+      "content": "It will then move to <bpt id=\"p1\">*</bpt>Starting<ept id=\"p1\">*</ept>  when a worker claims the job, and then <bpt id=\"p2\">*</bpt>Running<ept id=\"p2\">*</ept> when the runbook actually starts running.",
+      "pos": [
+        4545,
+        4668
+      ]
+    },
+    {
+      "content": "When the runbook job completes, its output is displayed.",
+      "pos": [
+        4674,
+        4730
+      ]
+    },
+    {
+      "content": "In our case, we should see <bpt id=\"p1\">*</bpt>Hello World<ept id=\"p1\">*</ept>.",
+      "pos": [
+        4732,
+        4773
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">![</ph>Hello World<ph id=\"ph2\">](media/automation-first-runbook-textual/test-output-hello-world.png)</ph>",
+      "pos": [
+        4778,
+        4860
+      ]
+    },
+    {
+      "content": "Close the Test pane to return to the canvas.",
+      "pos": [
+        4864,
+        4908
+      ]
+    },
+    {
+      "content": "Step 4 - Publish and start the runbook",
+      "pos": [
+        4913,
+        4951
+      ]
+    },
+    {
+      "content": "The runbook that we just created is still in Draft mode.",
+      "pos": [
+        4953,
+        5009
+      ]
+    },
+    {
+      "content": "We need to publish it before we can run it in production.",
+      "pos": [
+        5010,
+        5067
+      ]
+    },
+    {
+      "content": "When you publish a runbook, you overwrite the existing Published version with the Draft version.",
+      "pos": [
+        5069,
+        5165
+      ]
+    },
+    {
+      "content": "In our case, we don't have a Published version yet because we just created the runbook.",
+      "pos": [
+        5167,
+        5254
+      ]
+    },
+    {
+      "content": "Click <bpt id=\"p1\">**</bpt>Publish<ept id=\"p1\">**</ept> to publish the runbook and then <bpt id=\"p2\">**</bpt>Yes<ept id=\"p2\">**</ept> when prompted.",
+      "pos": [
+        5260,
+        5332
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">![</ph>Publish<ph id=\"ph2\">](media/automation-first-runbook-textual/runbook-edit-toolbar-publish.png)</ph>",
+      "pos": [
+        5337,
+        5420
+      ]
+    },
+    {
+      "pos": [
+        5424,
+        5547
+      ],
+      "content": "If you scroll left to view the runbook in the <bpt id=\"p1\">**</bpt>Runbooks<ept id=\"p1\">**</ept> pane now, it will show an <bpt id=\"p2\">**</bpt>Authoring Status<ept id=\"p2\">**</ept> of <bpt id=\"p3\">**</bpt>Published<ept id=\"p3\">**</ept>."
+    },
+    {
+      "content": "Scroll back to the right to view the pane for <bpt id=\"p1\">**</bpt>MyFirstRunbook-Textual<ept id=\"p1\">**</ept>.",
+      "pos": [
+        5551,
+        5624
+      ]
+    },
+    {
+      "content": "The options across the top allow us to start the runbook, schedule it to start at some time in the future, or create a <bpt id=\"p1\">[</bpt>webhook<ept id=\"p1\">](automation-webhooks.md)</ept> so it can be started through an HTTP call.",
+      "pos": [
+        5627,
+        5822
+      ]
+    },
+    {
+      "content": "We just want to start the runbook so click <bpt id=\"p1\">**</bpt>Start<ept id=\"p1\">**</ept> and then <bpt id=\"p2\">**</bpt>Yes<ept id=\"p2\">**</ept> when prompted.",
+      "pos": [
+        5827,
+        5911
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">![</ph>Start runbook<ph id=\"ph2\">](media/automation-first-runbook-textual/runbook-toolbar-start.png)</ph>",
+      "pos": [
+        5916,
+        5998
+      ]
+    },
+    {
+      "content": "A job pane is opened for the runbook job that we just created.",
+      "pos": [
+        6002,
+        6064
+      ]
+    },
+    {
+      "content": "We can close this pane, but in this case we'll leave it open so we can watch the job's progress.",
+      "pos": [
+        6066,
+        6162
+      ]
+    },
+    {
+      "content": "The job status is shown in <bpt id=\"p1\">**</bpt>Job Summary<ept id=\"p1\">**</ept> and matches the statuses that we saw when we tested the runbook.",
+      "pos": [
+        6167,
+        6274
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">![</ph>Job Summary<ph id=\"ph2\">](media/automation-first-runbook-textual/job-pane-summary.png)</ph>",
+      "pos": [
+        6279,
+        6354
+      ]
+    },
+    {
+      "content": "Once the runbook status shows <bpt id=\"p1\">*</bpt>Completed<ept id=\"p1\">*</ept>, click <bpt id=\"p2\">**</bpt>Output<ept id=\"p2\">**</ept>.",
+      "pos": [
+        6359,
+        6419
+      ]
+    },
+    {
+      "content": "The <bpt id=\"p1\">**</bpt>Output<ept id=\"p1\">**</ept> pane is opened, and we can see our <bpt id=\"p2\">*</bpt>Hello World<ept id=\"p2\">*</ept>.",
+      "pos": [
+        6421,
+        6485
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">![</ph>Job Summary<ph id=\"ph2\">](media/automation-first-runbook-textual/job-pane-output.png)</ph>",
+      "pos": [
+        6490,
+        6564
+      ]
+    },
+    {
+      "content": "Close the Output pane.",
+      "pos": [
+        6571,
+        6593
+      ]
+    },
+    {
+      "content": "Click <bpt id=\"p1\">**</bpt>Streams<ept id=\"p1\">**</ept> to open the Streams pane for the runbook job.",
+      "pos": [
+        6598,
+        6661
+      ]
+    },
+    {
+      "content": "We should only see <bpt id=\"p1\">*</bpt>Hello World<ept id=\"p1\">*</ept> in the output stream, but this can show other streams for a runbook job such as Verbose and Error if the runbook writes to them.",
+      "pos": [
+        6663,
+        6824
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">![</ph>Job Summary<ph id=\"ph2\">](media/automation-first-runbook-textual/job-pane-streams.png)</ph>",
+      "pos": [
+        6829,
+        6904
+      ]
+    },
+    {
+      "content": "Close the Streams pane and the Job pane to return to the MyFirstRunbook pane.",
+      "pos": [
+        6909,
+        6986
+      ]
+    },
+    {
+      "content": "Click <bpt id=\"p1\">**</bpt>Jobs<ept id=\"p1\">**</ept> to open the Jobs pane for this runbook.",
+      "pos": [
+        6991,
+        7045
+      ]
+    },
+    {
+      "content": "This lists all of the jobs created by this runbook.",
+      "pos": [
+        7047,
+        7098
+      ]
+    },
+    {
+      "content": "We should only see one job listed since we only ran the job once.",
+      "pos": [
+        7100,
+        7165
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">![</ph>Jobs<ph id=\"ph2\">](media/automation-first-runbook-textual/runbook-control-jobs.png)</ph>",
+      "pos": [
+        7170,
+        7242
+      ]
+    },
+    {
+      "content": "You can click on this job to open the same Job pane that we viewed when we started the runbook.",
+      "pos": [
+        7247,
+        7342
+      ]
+    },
+    {
+      "content": "This allows you to go back in time and view the details of any job that was created for a particular runbook.",
+      "pos": [
+        7344,
+        7453
+      ]
+    },
+    {
+      "content": "Step 5 - Add authentication to manage Azure resources",
+      "pos": [
+        7458,
+        7511
+      ]
+    },
+    {
+      "content": "We've tested and published our runbook, but so far it doesn't do anything useful.",
+      "pos": [
+        7513,
+        7594
+      ]
+    },
+    {
+      "content": "We want to have it manage Azure resources.",
+      "pos": [
+        7596,
+        7638
+      ]
+    },
+    {
+      "content": "It won't be able to do that though unless we have it authenticate using the credentials that are referred to in the <bpt id=\"p1\">[</bpt>prerequisites<ept id=\"p1\">](#prerequisites)</ept>.",
+      "pos": [
+        7640,
+        7788
+      ]
+    },
+    {
+      "content": "We do that with the <bpt id=\"p1\">**</bpt>Add-AzureAccount<ept id=\"p1\">**</ept> cmdlet.",
+      "pos": [
+        7790,
+        7838
+      ]
+    },
+    {
+      "content": "Open the textual editor by clicking <bpt id=\"p1\">**</bpt>Edit<ept id=\"p1\">**</ept> on the MyFirstRunbook-Textual pane.",
+      "pos": [
+        7844,
+        7924
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">![</ph>Edit runbook<ph id=\"ph2\">](media/automation-first-runbook-textual/runbook-toolbar-edit.png)</ph>",
+      "pos": [
+        7929,
+        8009
+      ]
+    },
+    {
+      "pos": [
+        8015,
+        8090
+      ],
+      "content": "We don't need the <bpt id=\"p1\">**</bpt>Write-Output<ept id=\"p1\">**</ept> line anymore, so go ahead and delete it."
+    },
+    {
+      "content": "Position the cursor on a blank line between the braces.",
+      "pos": [
+        8095,
+        8150
+      ]
+    },
+    {
+      "pos": [
+        8155,
+        8222
+      ],
+      "content": "In the Library control, expand <bpt id=\"p1\">**</bpt>Assets<ept id=\"p1\">**</ept> and then <bpt id=\"p2\">**</bpt>Credentials<ept id=\"p2\">**</ept>."
+    },
+    {
+      "content": "Right click your credential and click <bpt id=\"p1\">**</bpt>Add to canvas<ept id=\"p1\">**</ept>.",
+      "pos": [
+        8227,
+        8283
+      ]
+    },
+    {
+      "content": "This adds a <bpt id=\"p1\">**</bpt>Get-AutomationPSCredential<ept id=\"p1\">**</ept> activity for your credential.",
+      "pos": [
+        8285,
+        8357
+      ]
+    },
+    {
+      "pos": [
+        8362,
+        8466
+      ],
+      "content": "In front of <bpt id=\"p1\">**</bpt>Get-AutomationPSCredential<ept id=\"p1\">**</ept>, type <bpt id=\"p2\">*</bpt>$Credential =<ept id=\"p2\">*</ept> to assign the credential to a variable."
+    },
+    {
+      "content": "On the next line, type <bpt id=\"p1\">*</bpt>Add-AzureAccount -Credential $Credential<ept id=\"p1\">*</ept>.",
+      "pos": [
+        8472,
+        8538
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">![</ph>Authenticate<ph id=\"ph2\">](media/automation-first-runbook-textual/authentication.png)</ph>",
+      "pos": [
+        8544,
+        8618
+      ]
+    },
+    {
+      "pos": [
+        8623,
+        8675
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>Test pane<ept id=\"p1\">**</ept> so that we can test the runbook."
+    },
+    {
+      "content": "Click <bpt id=\"p1\">**</bpt>Start<ept id=\"p1\">**</ept> to start the test.",
+      "pos": [
+        8680,
+        8714
+      ]
+    },
+    {
+      "content": "Once it completes, you should receive output similar to the following that returns the information for the user in the credential.",
+      "pos": [
+        8716,
+        8846
+      ]
+    },
+    {
+      "content": "This confirms that the credential is valid.",
+      "pos": [
+        8848,
+        8891
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">![</ph>Authenticate<ph id=\"ph2\">](media/automation-first-runbook-textual/authentication-test.png)</ph>",
+      "pos": [
+        8896,
+        8975
+      ]
+    },
+    {
+      "content": "Step 6 - Add code to start a virtual machine",
+      "pos": [
+        8981,
+        9025
+      ]
+    },
+    {
+      "content": "Now that our runbook is authenticating to our Azure subscription, we can manage resources.",
+      "pos": [
+        9027,
+        9117
+      ]
+    },
+    {
+      "content": "We'll add a command to start a virtual machine.",
+      "pos": [
+        9119,
+        9166
+      ]
+    },
+    {
+      "content": "You can pick any virtual machine in your Azure subscription, and for now we'll be hardcoding that name into the cmdlet.",
+      "pos": [
+        9168,
+        9287
+      ]
+    },
+    {
+      "content": "After <bpt id=\"p1\">*</bpt>Add-AzureAccount<ept id=\"p1\">*</ept>, type <bpt id=\"p2\">*</bpt>Start-AzureVM -Name 'VMName' -ServiceName 'VMServiceName'<ept id=\"p2\">*</ept> providing the name and service name of the virtual machine to start.",
+      "pos": [
+        9294,
+        9453
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">![</ph>Authenticate<ph id=\"ph2\">](media/automation-first-runbook-textual/start-azurevm.png)</ph>",
+      "pos": [
+        9459,
+        9532
+      ]
+    },
+    {
+      "pos": [
+        9537,
+        9606
+      ],
+      "content": "Save the runbook and then click <bpt id=\"p1\">**</bpt>Test pane<ept id=\"p1\">**</ept> so that we can test it."
+    },
+    {
+      "content": "Click <bpt id=\"p1\">**</bpt>Start<ept id=\"p1\">**</ept> to start the test.",
+      "pos": [
+        9611,
+        9645
+      ]
+    },
+    {
+      "content": "Once it completes, check that the virtual machine was started.",
+      "pos": [
+        9647,
+        9709
+      ]
+    },
+    {
+      "content": "Step 7 - Add an input parameter to the runbook",
+      "pos": [
+        9715,
+        9761
+      ]
+    },
+    {
+      "content": "Our runbook currently starts the virtual machine that we hardcoded in the runbook, but it would be more useful if we could specify the virtual machine when the runbook is started.",
+      "pos": [
+        9763,
+        9942
+      ]
+    },
+    {
+      "content": "We will now add input parameters to the runbook to provide that functionality.",
+      "pos": [
+        9944,
+        10022
+      ]
+    },
+    {
+      "content": "Add parameters for <bpt id=\"p1\">*</bpt>VMName<ept id=\"p1\">*</ept> and <bpt id=\"p2\">*</bpt>VMServiceName<ept id=\"p2\">*</ept> to the runbook and use these variables with the <bpt id=\"p3\">**</bpt>Start-AzureVM<ept id=\"p3\">**</ept> cmdlet as in the following image.",
+      "pos": [
+        10027,
+        10174
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">![</ph>Authenticate<ph id=\"ph2\">](media/automation-first-runbook-textual/params.png)</ph>",
+      "pos": [
+        10180,
+        10246
+      ]
+    },
+    {
+      "content": "Save the runbook and open the Test pane.",
+      "pos": [
+        10251,
+        10291
+      ]
+    },
+    {
+      "content": "Note that you can now provide values for the two input variables that will be used in the test.",
+      "pos": [
+        10293,
+        10388
+      ]
+    },
+    {
+      "content": "Close the Test pane.",
+      "pos": [
+        10395,
+        10415
+      ]
+    },
+    {
+      "pos": [
+        10421,
+        10481
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>Publish<ept id=\"p1\">**</ept> to publish the new version of the runbook."
+    },
+    {
+      "content": "Stop the virtual machine that you started in the previous step.",
+      "pos": [
+        10487,
+        10550
+      ]
+    },
+    {
+      "content": "Click <bpt id=\"p1\">**</bpt>Start<ept id=\"p1\">**</ept> to start the runbook.",
+      "pos": [
+        10556,
+        10593
+      ]
+    },
+    {
+      "content": "Type in the <bpt id=\"p1\">**</bpt>VMName<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>VMServiceName<ept id=\"p2\">**</ept> for the virtual machine that you're going to start.",
+      "pos": [
+        10595,
+        10691
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">![</ph>Start Runbook<ph id=\"ph2\">](media/automation-first-runbook-textual/start-runbook-input-params.png)</ph>",
+      "pos": [
+        10696,
+        10783
+      ]
+    },
+    {
+      "content": "When the runbook completes, check that the virtual machine was started.",
+      "pos": [
+        10791,
+        10862
+      ]
+    },
+    {
+      "content": "Related articles",
+      "pos": [
+        10868,
+        10884
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt>My first graphical runbook<ept id=\"p1\">](automation-first-runbook-graphical.md)</ept>",
+      "pos": [
+        10888,
+        10955
+      ]
+    },
+    {
+      "content": "test",
+      "pos": [
+        10956,
+        10960
+      ]
+    }
+  ],
+  "content": "<properties\n    pageTitle=\"My first textual runbook in Azure Automation | Microsoft Azure\"\n    description=\"Tutorial that walks you through the creation, testing, and publishing of a simple textual runbook using PowerShell Workflow.  Several concepts are covered such as authenticating to Azure resources and input parameters.\"\n    services=\"automation\"\n    documentationCenter=\"\"\n    authors=\"bwren\"\n    manager=\"stevenka\"\n    editor=\"\"/>\n\n<tags\n    ms.service=\"automation\"\n    ms.workload=\"tbd\"\n    ms.tgt_pltfrm=\"na\"\n    ms.devlang=\"na\"\n    ms.topic=\"get-started-article\" \n    ms.date=\"08/18/2015\"\n    ms.author=\"bwren\"/>\n\n\n# My first textual runbook\n\n> [AZURE.SELECTOR]\n- [Graphical](automation-first-runbook-graphical.md)\n- [Textual](automation-first-runbook-textual.md)\n\nThis tutorial walks you through the creation of a [textual runbook](automation-powershell-workflow.md) in Azure Automation.  We'll start with a simple runbook that we'll test and publish while we explain how to track the status of the runbook job.  Then we'll modify the runbook to actually manage Azure resources, in this case starting an Azure virtual machine.  We'll then make the runbook more robust by adding runbook parameters.  \n\n## Prerequisites\n\nTo complete this tutorial, you will need the following.\n\n- Azure subscription. If you don't have one yet, you can [activate your MSDN subscriber benefits](http://azure.microsoft.com/pricing/member-offers/msdn-benefits-details/) or <a href=\"/pricing/free-trial/\" target=\"_blank\">[sign up for a free trial](http://azure.microsoft.com/pricing/free-trial/).\n- [Automation account](automation-configuring.md) to hold the runbook.\n- An Azure virtual machine.  We will stop and start this machine so it should not be production.\n- [Azure Active Directory user and Automation Credential asset](automation-configuring.md) to authenticate to Azure resources.  This user must have permission to start and stop the virtual machine.\n\n## Step 1 - Create new runbook\n\nWe'll start by creating a simple runbook that outputs the text *Hello World*.\n\n1. In the Azure Preview Portal, open your Automation account.  \nThe Automation account page gives you a quick view of the resources in this account.  You should already have some Assets.  Most of those are the modules that are automatically included in a new Automation account.  You should also have the Credential asset that's mentioned in the [prerequisites](#prerequisites).\n2. Click on the **Runbooks** tile to open the list of runbooks.<br>\n![Runbooks control](media/automation-first-runbook-textual/runbooks-control.png)\n2. Create a new runbook by clicking on the **Add a runbook** button and then **Create a new runbook**.\n3. Give the runbook the name *MyFirstRunbook-Textual*.\n4. In this case, we're going to create a [textual runbook](automation-powershell-workflow.md) based on PowerShell Workflow so select **Powershell Workflow** for **Runbook type**.<br>\n![New runbook](media/automation-first-runbook-textual/new-runbook.png)\n5. Click **Create** to create the runbook and open the textual editor.\n\n## Step 2 - Add code to the runbook\n\nYou can either type code directly into the runbook, or you can select cmdlets, runbooks, and assets from the Library control and have them added to the runbook with any related parameters.  For this walkthrough, we'll type directly into the runbook.\n\n1. Our runbook is currently empty with only the required *workflow* keyword, the name of our runbook, and the braces that will encase the entire workflow. <br>\n![Runbooks control](media/automation-first-runbook-textual/empty-runbook.png)\n2. Type *Write-Output \"Hello World.\"* between the braces. <br>\n![Hello world](media/automation-first-runbook-textual/hello-world.png)\n3.   Save the runbook by clicking **Save**.<br>\n![Save runbook](media/automation-first-runbook-textual/runbook-edit-toolbar-save.png)\n\n## Step 3 - Test the runbook\n\nBefore we publish the runbook to make it available in production, we want to test it to make sure that it works properly.  When you test a runbook, you run its **Draft** version and view its output interactively.  \n \n2. Click **Test pane** to open the Test pane.<br>\n![Test pane](media/automation-first-runbook-textual/runbook-edit-toolbar-test-pane.png)\n2. Click **Start** to start the test.  This should be the only enabled option.\n3. A [runbook job](automation-runbook-execution) is created and its status displayed.  \nThe job status will start as *Queued* indicating that it is waiting for a runbook worker in the cloud to come available.  It will then move to *Starting*  when a worker claims the job, and then *Running* when the runbook actually starts running.  \n4. When the runbook job completes, its output is displayed.  In our case, we should see *Hello World*.<br>\n![Hello World](media/automation-first-runbook-textual/test-output-hello-world.png)\n5. Close the Test pane to return to the canvas.\n\n## Step 4 - Publish and start the runbook\n\nThe runbook that we just created is still in Draft mode. We need to publish it before we can run it in production.  When you publish a runbook, you overwrite the existing Published version with the Draft version.  In our case, we don't have a Published version yet because we just created the runbook. \n\n1. Click **Publish** to publish the runbook and then **Yes** when prompted.<br>\n![Publish](media/automation-first-runbook-textual/runbook-edit-toolbar-publish.png)\n2. If you scroll left to view the runbook in the **Runbooks** pane now, it will show an **Authoring Status** of **Published**.\n3. Scroll back to the right to view the pane for **MyFirstRunbook-Textual**.  \nThe options across the top allow us to start the runbook, schedule it to start at some time in the future, or create a [webhook](automation-webhooks.md) so it can be started through an HTTP call. \n4. We just want to start the runbook so click **Start** and then **Yes** when prompted.<br>\n![Start runbook](media/automation-first-runbook-textual/runbook-toolbar-start.png)\n5. A job pane is opened for the runbook job that we just created.  We can close this pane, but in this case we'll leave it open so we can watch the job's progress.\n6.  The job status is shown in **Job Summary** and matches the statuses that we saw when we tested the runbook.<br>\n![Job Summary](media/automation-first-runbook-textual/job-pane-summary.png)\n7.  Once the runbook status shows *Completed*, click **Output**.  The **Output** pane is opened, and we can see our *Hello World*.<br>\n![Job Summary](media/automation-first-runbook-textual/job-pane-output.png)  \n8.  Close the Output pane.\n9.  Click **Streams** to open the Streams pane for the runbook job.  We should only see *Hello World* in the output stream, but this can show other streams for a runbook job such as Verbose and Error if the runbook writes to them.<br>\n![Job Summary](media/automation-first-runbook-textual/job-pane-streams.png) \n9. Close the Streams pane and the Job pane to return to the MyFirstRunbook pane.\n9.  Click **Jobs** to open the Jobs pane for this runbook.  This lists all of the jobs created by this runbook.  We should only see one job listed since we only ran the job once.<br>\n![Jobs](media/automation-first-runbook-textual/runbook-control-jobs.png) \n9. You can click on this job to open the same Job pane that we viewed when we started the runbook.  This allows you to go back in time and view the details of any job that was created for a particular runbook.\n\n## Step 5 - Add authentication to manage Azure resources\n\nWe've tested and published our runbook, but so far it doesn't do anything useful.  We want to have it manage Azure resources.  It won't be able to do that though unless we have it authenticate using the credentials that are referred to in the [prerequisites](#prerequisites).  We do that with the **Add-AzureAccount** cmdlet.\n\n1.  Open the textual editor by clicking **Edit** on the MyFirstRunbook-Textual pane.<br>\n![Edit runbook](media/automation-first-runbook-textual/runbook-toolbar-edit.png) \n2.  We don't need the **Write-Output** line anymore, so go ahead and delete it.\n3.  Position the cursor on a blank line between the braces.\n3.  In the Library control, expand **Assets** and then **Credentials**.\n4.  Right click your credential and click **Add to canvas**.  This adds a **Get-AutomationPSCredential** activity for your credential.\n5.  In front of **Get-AutomationPSCredential**, type *$Credential =* to assign the credential to a variable. \n3.  On the next line, type *Add-AzureAccount -Credential $Credential*. <br>\n![Authenticate](media/automation-first-runbook-textual/authentication.png) \n3. Click **Test pane** so that we can test the runbook.\n10. Click **Start** to start the test.  Once it completes, you should receive output similar to the following that returns the information for the user in the credential.  This confirms that the credential is valid.<br>\n![Authenticate](media/automation-first-runbook-textual/authentication-test.png) \n\n## Step 6 - Add code to start a virtual machine\n\nNow that our runbook is authenticating to our Azure subscription, we can manage resources.  We'll add a command to start a virtual machine.  You can pick any virtual machine in your Azure subscription, and for now we'll be hardcoding that name into the cmdlet. \n\n\n1. After *Add-AzureAccount*, type *Start-AzureVM -Name 'VMName' -ServiceName 'VMServiceName'* providing the name and service name of the virtual machine to start. <br>\n![Authenticate](media/automation-first-runbook-textual/start-azurevm.png) \n9. Save the runbook and then click **Test pane** so that we can test it.\n10. Click **Start** to start the test.  Once it completes, check that the virtual machine was started.\n\n\n## Step 7 - Add an input parameter to the runbook\n\nOur runbook currently starts the virtual machine that we hardcoded in the runbook, but it would be more useful if we could specify the virtual machine when the runbook is started.  We will now add input parameters to the runbook to provide that functionality.\n\n1. Add parameters for *VMName* and *VMServiceName* to the runbook and use these variables with the **Start-AzureVM** cmdlet as in the following image. <br>\n![Authenticate](media/automation-first-runbook-textual/params.png) \n9. Save the runbook and open the Test pane.  Note that you can now provide values for the two input variables that will be used in the test. \n11.  Close the Test pane.\n12.  Click **Publish** to publish the new version of the runbook.\n13.  Stop the virtual machine that you started in the previous step.\n13.  Click **Start** to start the runbook.  Type in the **VMName** and **VMServiceName** for the virtual machine that you're going to start.<br>\n![Start Runbook](media/automation-first-runbook-textual/start-runbook-input-params.png) \n\n14.  When the runbook completes, check that the virtual machine was started.\n\n\n## Related articles\n\n- [My first graphical runbook](automation-first-runbook-graphical.md)\ntest\n"
+}

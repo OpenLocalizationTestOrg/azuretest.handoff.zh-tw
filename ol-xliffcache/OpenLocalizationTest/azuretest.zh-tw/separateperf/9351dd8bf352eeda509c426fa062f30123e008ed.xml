@@ -1,0 +1,621 @@
+{
+  "nodes": [
+    {
+      "content": "Availability of Hadoop clusters in HDInsight | Microsoft Azure",
+      "pos": [
+        27,
+        89
+      ]
+    },
+    {
+      "content": "Linux-based HDInsight clusters improve reliability and availability by using an additional head node.",
+      "pos": [
+        108,
+        209
+      ]
+    },
+    {
+      "content": "Availability and reliability of Hadoop clusters in HDInsight",
+      "pos": [
+        544,
+        604
+      ]
+    },
+    {
+      "content": "A second head node is used by Linux-based Hadoop clusters deployed by Azure HDInsight.",
+      "pos": [
+        606,
+        692
+      ]
+    },
+    {
+      "content": "This increases the availability and reliability of Hadoop services and jobs running in Azure.",
+      "pos": [
+        693,
+        786
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> The steps used in this document are specific to Linux-based HDInsight clusters.",
+      "pos": [
+        790,
+        882
+      ]
+    },
+    {
+      "content": "If you are using a Windows-based cluster, see <bpt id=\"p1\">[</bpt>Availability and reliability of Windows-based Hadoop clusters in HDInsight<ept id=\"p1\">](hdinsight-high-availability.md)</ept> for Windows-specific information.",
+      "pos": [
+        883,
+        1071
+      ]
+    },
+    {
+      "content": "Understanding the head nodes",
+      "pos": [
+        1075,
+        1103
+      ]
+    },
+    {
+      "content": "Some implementations of Hadoop have a single head node that hosts services and components that manage the failure of data (worker) nodes smoothly.",
+      "pos": [
+        1105,
+        1251
+      ]
+    },
+    {
+      "content": "But any outages of master services running on the head node would cause the cluster to cease to work.",
+      "pos": [
+        1252,
+        1353
+      ]
+    },
+    {
+      "content": "HDInsight clusters provide a secondary head node, which allows master services and components to continue to run on on the secondary node in the event of a failure on the primary.",
+      "pos": [
+        1355,
+        1534
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.IMPORTANT]</ph> Both head nodes are active and running within the cluster simultaneously.",
+      "pos": [
+        1538,
+        1629
+      ]
+    },
+    {
+      "content": "Some services, such as HDFS or YARN, are only 'active' on one head node at any given time (and ‘standby’ on the other head node).",
+      "pos": [
+        1630,
+        1759
+      ]
+    },
+    {
+      "content": "Other services such as HiveServer2 or Hive MetaStore are active on both head nodes at the same time.",
+      "pos": [
+        1760,
+        1860
+      ]
+    },
+    {
+      "pos": [
+        1862,
+        2093
+      ],
+      "content": "<bpt id=\"p1\">[</bpt>ZooKeeper<ept id=\"p1\">](http://zookeeper.apache.org/ )</ept> nodes (ZKs) are used for leader election of master services on head nodes, and to insure that services, data (worker) nodes and gateways know which head node a master service is active on."
+    },
+    {
+      "content": "Accessing the head nodes",
+      "pos": [
+        2098,
+        2122
+      ]
+    },
+    {
+      "content": "In general, all access to the cluster through the public gateways (Ambari web and REST APIs,) is not effected by having multiple head nodes.",
+      "pos": [
+        2124,
+        2264
+      ]
+    },
+    {
+      "content": "The request is routed to the active head node and serviced as appropriate.",
+      "pos": [
+        2265,
+        2339
+      ]
+    },
+    {
+      "content": "When accessing the cluster using SSH, connecting through port 22 (the default for SSH,) will connect to headnode0; connecting through port 23 will connect to headnode1.",
+      "pos": [
+        2341,
+        2509
+      ]
+    },
+    {
+      "content": "Internal fully qualified domain names (FQDN)",
+      "pos": [
+        2515,
+        2559
+      ]
+    },
+    {
+      "content": "Nodes in an HDInsight cluster have an internal IP address and FQDN that can only be accessed from the cluster (such as an SSH session to the head node or a job running on the cluster.) When accessing services on the cluster using the internal FQDN or IP address, you should use Ambari to verify the IP or FQDN to use when accessing the service.",
+      "pos": [
+        2561,
+        2905
+      ]
+    },
+    {
+      "content": "For example, the Oozie service can only run on one head node, and using the <ph id=\"ph1\">`oozie`</ph> command from an SSH session requires the URL to the service.",
+      "pos": [
+        2907,
+        3051
+      ]
+    },
+    {
+      "content": "This can be retrieved from Ambari by using the following command:",
+      "pos": [
+        3052,
+        3117
+      ]
+    },
+    {
+      "pos": [
+        3291,
+        3406
+      ],
+      "content": "This will return a value similar to the following, which contains the internal URL to use with the <ph id=\"ph1\">`oozie`</ph> command:"
+    },
+    {
+      "content": "How to check on a service status",
+      "pos": [
+        3506,
+        3538
+      ]
+    },
+    {
+      "content": "Either the Ambari Web UI or the Ambari REST API can be used to check the status of services that run on the head node.",
+      "pos": [
+        3540,
+        3658
+      ]
+    },
+    {
+      "content": "Ambari REST API",
+      "pos": [
+        3663,
+        3678
+      ]
+    },
+    {
+      "content": "You can use the following command to check the state of a service through the Ambari REST API:",
+      "pos": [
+        3680,
+        3774
+      ]
+    },
+    {
+      "pos": [
+        3919,
+        3984
+      ],
+      "content": "Replace <bpt id=\"p1\">**</bpt>PASSWORD<ept id=\"p1\">**</ept> with the HTTP user (admin,) account password"
+    },
+    {
+      "pos": [
+        3988,
+        4040
+      ],
+      "content": "Replace <bpt id=\"p1\">**</bpt>CLUSTERNAME<ept id=\"p1\">**</ept> with the name of the cluster"
+    },
+    {
+      "pos": [
+        4044,
+        4119
+      ],
+      "content": "Replace <bpt id=\"p1\">**</bpt>SERVICENAME<ept id=\"p1\">**</ept> with the name of the service to check the status of"
+    },
+    {
+      "pos": [
+        4121,
+        4273
+      ],
+      "content": "For example, to check the status of the <bpt id=\"p1\">**</bpt>HDFS<ept id=\"p1\">**</ept> service on a cluster named <bpt id=\"p2\">**</bpt>mycluster<ept id=\"p2\">**</ept>, with a password of <bpt id=\"p3\">**</bpt>password<ept id=\"p3\">**</ept>, you would use the following:"
+    },
+    {
+      "content": "The response will be similar to the following:",
+      "pos": [
+        4405,
+        4451
+      ]
+    },
+    {
+      "pos": [
+        4741,
+        4813
+      ],
+      "content": "The URL tells us that the service is currently running on <bpt id=\"p1\">**</bpt>headnode0<ept id=\"p1\">**</ept>."
+    },
+    {
+      "pos": [
+        4815,
+        4888
+      ],
+      "content": "The state tells us that the service is currently running, or <bpt id=\"p1\">**</bpt>STARTED<ept id=\"p1\">**</ept>."
+    },
+    {
+      "content": "If you do not know what services are installed on the cluster, you can use the following to retrieve a list:",
+      "pos": [
+        4890,
+        4998
+      ]
+    },
+    {
+      "content": "Service components",
+      "pos": [
+        5108,
+        5126
+      ]
+    },
+    {
+      "content": "Services may contain components that you wish to check the status of individually.",
+      "pos": [
+        5128,
+        5210
+      ]
+    },
+    {
+      "content": "For example, HDFS contains the NameNode component.",
+      "pos": [
+        5211,
+        5261
+      ]
+    },
+    {
+      "content": "To view information on a component, the command would be:",
+      "pos": [
+        5262,
+        5319
+      ]
+    },
+    {
+      "content": "If you do not know what components are provided by a service, you can use the following to retrieve a list:",
+      "pos": [
+        5454,
+        5561
+      ]
+    },
+    {
+      "content": "Ambari Web UI",
+      "pos": [
+        5699,
+        5712
+      ]
+    },
+    {
+      "content": "The Ambari Web UI is viewable at https://CLUSTERNAME.azurehdinsight.net.",
+      "pos": [
+        5714,
+        5786
+      ]
+    },
+    {
+      "content": "Replace <bpt id=\"p1\">**</bpt>CLUSTERNAME<ept id=\"p1\">**</ept> with the name of your cluster.",
+      "pos": [
+        5787,
+        5841
+      ]
+    },
+    {
+      "content": "If prompted, enter the HTTP user credentials for your cluster.",
+      "pos": [
+        5842,
+        5904
+      ]
+    },
+    {
+      "content": "The default HTTP user name is <bpt id=\"p1\">**</bpt>admin<ept id=\"p1\">**</ept> and the password is the password you entered when creating the cluster.",
+      "pos": [
+        5905,
+        6016
+      ]
+    },
+    {
+      "content": "When you arrive on the Ambari page, the installed services will be listed on the left of the page.",
+      "pos": [
+        6018,
+        6116
+      ]
+    },
+    {
+      "content": "Installed services",
+      "pos": [
+        6120,
+        6138
+      ]
+    },
+    {
+      "content": "There are a series of icons that may appear next to a service to indicate status.",
+      "pos": [
+        6197,
+        6278
+      ]
+    },
+    {
+      "content": "Any alerts related to a service can be viewed using the <bpt id=\"p1\">**</bpt>Alerts<ept id=\"p1\">**</ept> link at the top of the page.",
+      "pos": [
+        6279,
+        6374
+      ]
+    },
+    {
+      "content": "You can select each service to view more information on it.",
+      "pos": [
+        6375,
+        6434
+      ]
+    },
+    {
+      "content": "While the service page provides information on the status and configuration of each service, it does not provide information on which head node the service is running on.",
+      "pos": [
+        6436,
+        6606
+      ]
+    },
+    {
+      "content": "To view this information, use the <bpt id=\"p1\">**</bpt>Hosts<ept id=\"p1\">**</ept> link at the top of the page.",
+      "pos": [
+        6607,
+        6679
+      ]
+    },
+    {
+      "content": "This will display hosts within the cluster, including the head nodes.",
+      "pos": [
+        6680,
+        6749
+      ]
+    },
+    {
+      "content": "hosts list",
+      "pos": [
+        6753,
+        6763
+      ]
+    },
+    {
+      "content": "Selecting the link for one of the head nodes will display the services and components running on that node.",
+      "pos": [
+        6819,
+        6926
+      ]
+    },
+    {
+      "content": "Component status",
+      "pos": [
+        6930,
+        6946
+      ]
+    },
+    {
+      "content": "How to access log files on the secondary head node",
+      "pos": [
+        7012,
+        7062
+      ]
+    },
+    {
+      "content": "SSH",
+      "pos": [
+        7067,
+        7070
+      ]
+    },
+    {
+      "content": "While connected to a head node through SSH, log files can be found under <bpt id=\"p1\">**</bpt>/var/log<ept id=\"p1\">**</ept>.",
+      "pos": [
+        7072,
+        7158
+      ]
+    },
+    {
+      "content": "For example, <bpt id=\"p1\">**</bpt>/var/log/hadoop-yarn/yarn<ept id=\"p1\">**</ept> contain logs for YARN.",
+      "pos": [
+        7159,
+        7224
+      ]
+    },
+    {
+      "content": "Each head node can have unique log entries, so you should check the logs on both.",
+      "pos": [
+        7226,
+        7307
+      ]
+    },
+    {
+      "content": "Ambari",
+      "pos": [
+        7312,
+        7318
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> Accessing log files through Ambari requires an SSH tunnel, as the web sites for the individual services are not exposed publicly on the Internet.",
+      "pos": [
+        7322,
+        7480
+      ]
+    },
+    {
+      "content": "For information on using an SSH tunnel, see one of the following:",
+      "pos": [
+        7481,
+        7546
+      ]
+    },
+    {
+      "content": "Use SSH with Linux-based Hadoop on HDInsight from Linux, Unix, or OS X",
+      "pos": [
+        7554,
+        7624
+      ]
+    },
+    {
+      "content": "Use SSH with Linux-based Hadoop on HDInsight from Windows",
+      "pos": [
+        7680,
+        7737
+      ]
+    },
+    {
+      "pos": [
+        7790,
+        7956
+      ],
+      "content": "From the Ambari Web UI, select the service you wish to view logs for (for example, YARN,) and then use <bpt id=\"p1\">**</bpt>Quick Links<ept id=\"p1\">**</ept> to select which head node to view the logs for."
+    },
+    {
+      "content": "Using quick links to view logs",
+      "pos": [
+        7960,
+        7990
+      ]
+    },
+    {
+      "content": "How to configure the size of the head node",
+      "pos": [
+        8052,
+        8094
+      ]
+    },
+    {
+      "content": "The size of the head node can only be selected during cluster creation.",
+      "pos": [
+        8099,
+        8170
+      ]
+    },
+    {
+      "content": "The default size for head nodes is <bpt id=\"p1\">**</bpt>A3<ept id=\"p1\">**</ept>, which provides 4 cores, 7GB memory, and 285GB of local storage.",
+      "pos": [
+        8171,
+        8277
+      ]
+    },
+    {
+      "content": "You can find a list of the different VM sizes available for HDInsight, including the core, memory, and local storage for each, on the <bpt id=\"p1\">[</bpt>HDInsight pricing page<ept id=\"p1\">](http://azure.microsoft.com/pricing/details/hdinsight/)</ept>.",
+      "pos": [
+        8278,
+        8492
+      ]
+    },
+    {
+      "content": "When creating a new cluster, you can specify the size of the nodes.",
+      "pos": [
+        8494,
+        8561
+      ]
+    },
+    {
+      "content": "The following provide information on how to specify the size using the <bpt id=\"p1\">[</bpt>Azure preview portal<ept id=\"p1\">][preview-portal]</ept>, <bpt id=\"p2\">[</bpt>Azure PowerShell<ept id=\"p2\">][azure-powershell]</ept>, and the <bpt id=\"p3\">[</bpt>Azure CLI<ept id=\"p3\">][azure-cli]</ept>:",
+      "pos": [
+        8562,
+        8742
+      ]
+    },
+    {
+      "pos": [
+        8746,
+        8919
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Azure preview portal<ept id=\"p1\">**</ept>: When creating a new cluster, you are given the option of setting the size (pricing tier,) of both the head and data (worker) nodes for the cluster:"
+    },
+    {
+      "content": "Image of cluster creation wizard with node size selection",
+      "pos": [
+        8927,
+        8984
+      ]
+    },
+    {
+      "pos": [
+        9049,
+        9196
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Azure CLI<ept id=\"p1\">**</ept>: When using the <ph id=\"ph1\">`azure hdinsight cluster create`</ph> command, you can set the size of the head node using the <ph id=\"ph2\">`--headNodeSize`</ph> parameter."
+    },
+    {
+      "pos": [
+        9200,
+        9349
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Azure PowerShell<ept id=\"p1\">**</ept>: When using the <ph id=\"ph1\">`New-AzureHDInsightCluster`</ph> cmdlet, you can set the size of the head node using the <ph id=\"ph2\">`-HeadNodeVMSize`</ph> parameter."
+    },
+    {
+      "content": "Next steps",
+      "pos": [
+        9353,
+        9363
+      ]
+    },
+    {
+      "content": "In this document you have learned how Azure HDInsight provides high availability for Hadoop.",
+      "pos": [
+        9365,
+        9457
+      ]
+    },
+    {
+      "content": "Use the following to learn more about things mentioned in this document.",
+      "pos": [
+        9458,
+        9530
+      ]
+    },
+    {
+      "content": "Ambari REST Reference",
+      "pos": [
+        9535,
+        9556
+      ]
+    },
+    {
+      "content": "Install and configure the Azure CLI",
+      "pos": [
+        9642,
+        9677
+      ]
+    },
+    {
+      "content": "Install and configure Azure PowerShell",
+      "pos": [
+        9700,
+        9738
+      ]
+    },
+    {
+      "content": "Manage HDInsight using Ambari",
+      "pos": [
+        9780,
+        9809
+      ]
+    },
+    {
+      "content": "Provision Linux-based HDInsight clusters",
+      "pos": [
+        9850,
+        9890
+      ]
+    },
+    {
+      "content": "test",
+      "pos": [
+        9939,
+        9943
+      ]
+    }
+  ],
+  "content": "<properties\n    pageTitle=\"Availability of Hadoop clusters in HDInsight | Microsoft Azure\"\n    description=\"Linux-based HDInsight clusters improve reliability and availability by using an additional head node.\"\n    services=\"hdinsight\"\n    editor=\"cgronlun\"\n    manager=\"paulettm\"\n    authors=\"Blackmist\"\n    documentationCenter=\"\"\n    tags=\"azure-portal\"/>\n\n<tags\n    ms.service=\"hdinsight\"\n    ms.workload=\"big-data\"\n    ms.tgt_pltfrm=\"na\"\n    ms.devlang=\"multiple\"\n    ms.topic=\"article\"\n    ms.date=\"09/02/2015\"\n    ms.author=\"larryfr\"/>\n\n#Availability and reliability of Hadoop clusters in HDInsight\n\nA second head node is used by Linux-based Hadoop clusters deployed by Azure HDInsight. This increases the availability and reliability of Hadoop services and jobs running in Azure.\n\n> [AZURE.NOTE] The steps used in this document are specific to Linux-based HDInsight clusters. If you are using a Windows-based cluster, see [Availability and reliability of Windows-based Hadoop clusters in HDInsight](hdinsight-high-availability.md) for Windows-specific information.\n\n##Understanding the head nodes\n\nSome implementations of Hadoop have a single head node that hosts services and components that manage the failure of data (worker) nodes smoothly. But any outages of master services running on the head node would cause the cluster to cease to work.\n\nHDInsight clusters provide a secondary head node, which allows master services and components to continue to run on on the secondary node in the event of a failure on the primary.\n\n> [AZURE.IMPORTANT] Both head nodes are active and running within the cluster simultaneously. Some services, such as HDFS or YARN, are only 'active' on one head node at any given time (and ‘standby’ on the other head node). Other services such as HiveServer2 or Hive MetaStore are active on both head nodes at the same time.\n\n[ZooKeeper](http://zookeeper.apache.org/ ) nodes (ZKs) are used for leader election of master services on head nodes, and to insure that services, data (worker) nodes and gateways know which head node a master service is active on.\n\n## Accessing the head nodes\n\nIn general, all access to the cluster through the public gateways (Ambari web and REST APIs,) is not effected by having multiple head nodes. The request is routed to the active head node and serviced as appropriate.\n\nWhen accessing the cluster using SSH, connecting through port 22 (the default for SSH,) will connect to headnode0; connecting through port 23 will connect to headnode1.\n\n### Internal fully qualified domain names (FQDN)\n\nNodes in an HDInsight cluster have an internal IP address and FQDN that can only be accessed from the cluster (such as an SSH session to the head node or a job running on the cluster.) When accessing services on the cluster using the internal FQDN or IP address, you should use Ambari to verify the IP or FQDN to use when accessing the service.\n\nFor example, the Oozie service can only run on one head node, and using the `oozie` command from an SSH session requires the URL to the service. This can be retrieved from Ambari by using the following command:\n\n    curl -u admin:PASSWORD \"https://CLUSTERNAME.azurehdinsight.net/api/v1/clusters/CLUSTERNAME/configurations?type=oozie-site&tag=TOPOLOGY_RESOLVED\" | grep oozie.base.url\n\nThis will return a value similar to the following, which contains the internal URL to use with the `oozie` command:\n\n    \"oozie.base.url\": \"http://headnode0.CLUSTERNAME-ssh.d9.internal.cloudapp.net:11000/oozie\"\n\n## How to check on a service status\n\nEither the Ambari Web UI or the Ambari REST API can be used to check the status of services that run on the head node.\n\n###Ambari REST API\n\nYou can use the following command to check the state of a service through the Ambari REST API:\n\n    curl -u admin:PASSWORD https://CLUSTERNAME.azurehdinsight.net/api/v1/clusters/CLUSTERNAME/services/SERVICENAME?fields=ServiceInfo/state\n\n* Replace **PASSWORD** with the HTTP user (admin,) account password\n\n* Replace **CLUSTERNAME** with the name of the cluster\n\n* Replace **SERVICENAME** with the name of the service to check the status of\n\nFor example, to check the status of the **HDFS** service on a cluster named **mycluster**, with a password of **password**, you would use the following:\n\n    curl -u admin:password https://mycluster.azurehdinsight.net/api/v1/clusters/mycluster/services/HDFS?fields=ServiceInfo/state\n\nThe response will be similar to the following:\n\n    {\n      \"href\" : \"http://headnode0.mycluster-ssh.j7.internal.cloudapp.net:8080/api/v1/clusters/mycluster/services/HDFS?fields=ServiceInfo/state\",\n      \"ServiceInfo\" : {\n        \"cluster_name\" : \"mycluster\",\n        \"service_name\" : \"HDFS\",\n        \"state\" : \"STARTED\"\n      }\n    }\n\nThe URL tells us that the service is currently running on **headnode0**.\n\nThe state tells us that the service is currently running, or **STARTED**.\n\nIf you do not know what services are installed on the cluster, you can use the following to retrieve a list:\n\n    curl -u admin:PASSWORD https://CLUSTERNAME.azurehdinsight.net/api/v1/clusters/CLUSTERNAME/services\n\n####Service components\n\nServices may contain components that you wish to check the status of individually. For example, HDFS contains the NameNode component. To view information on a component, the command would be:\n\n    curl -u admin:PASSWORD https://CLUSTERNAME.azurehdinsight.net/api/v1/clusters/CLUSTERNAME/services/SERVICE/components/component\n\nIf you do not know what components are provided by a service, you can use the following to retrieve a list:\n\n    curl -u admin:PASSWORD https://CLUSTERNAME.azurehdinsight.net/api/v1/clusters/CLUSTERNAME/services/SERVICE/components/component\n\n###Ambari Web UI\n\nThe Ambari Web UI is viewable at https://CLUSTERNAME.azurehdinsight.net. Replace **CLUSTERNAME** with the name of your cluster. If prompted, enter the HTTP user credentials for your cluster. The default HTTP user name is **admin** and the password is the password you entered when creating the cluster.\n\nWhen you arrive on the Ambari page, the installed services will be listed on the left of the page.\n\n![Installed services](./media/hdinsight-high-availability-linux/services.png)\n\nThere are a series of icons that may appear next to a service to indicate status. Any alerts related to a service can be viewed using the **Alerts** link at the top of the page. You can select each service to view more information on it.\n\nWhile the service page provides information on the status and configuration of each service, it does not provide information on which head node the service is running on. To view this information, use the **Hosts** link at the top of the page. This will display hosts within the cluster, including the head nodes.\n\n![hosts list](./media/hdinsight-high-availability-linux/hosts.png)\n\nSelecting the link for one of the head nodes will display the services and components running on that node.\n\n![Component status](./media/hdinsight-high-availability-linux/nodeservices.png)\n\n## How to access log files on the secondary head node\n\n###SSH\n\nWhile connected to a head node through SSH, log files can be found under **/var/log**. For example, **/var/log/hadoop-yarn/yarn** contain logs for YARN.\n\nEach head node can have unique log entries, so you should check the logs on both.\n\n###Ambari\n\n> [AZURE.NOTE] Accessing log files through Ambari requires an SSH tunnel, as the web sites for the individual services are not exposed publicly on the Internet. For information on using an SSH tunnel, see one of the following:\n>\n> * [Use SSH with Linux-based Hadoop on HDInsight from Linux, Unix, or OS X](hdinsight-hadoop-linux-use-ssh-unix.md#tunnel)\n>\n> * [Use SSH with Linux-based Hadoop on HDInsight from Windows](hdinsight-hadoop-linux-use-ssh-windows.md#tunnel)\n\nFrom the Ambari Web UI, select the service you wish to view logs for (for example, YARN,) and then use **Quick Links** to select which head node to view the logs for.\n\n![Using quick links to view logs](./media/hdinsight-high-availability-linux/viewlogs.png)\n\n## How to configure the size of the head node ##\n\nThe size of the head node can only be selected during cluster creation. The default size for head nodes is **A3**, which provides 4 cores, 7GB memory, and 285GB of local storage. You can find a list of the different VM sizes available for HDInsight, including the core, memory, and local storage for each, on the [HDInsight pricing page](http://azure.microsoft.com/pricing/details/hdinsight/).\n\nWhen creating a new cluster, you can specify the size of the nodes. The following provide information on how to specify the size using the [Azure preview portal][preview-portal], [Azure PowerShell][azure-powershell], and the [Azure CLI][azure-cli]:\n\n* **Azure preview portal**: When creating a new cluster, you are given the option of setting the size (pricing tier,) of both the head and data (worker) nodes for the cluster:\n\n    ![Image of cluster creation wizard with node size selection](./media/hdinsight-high-availability-linux/headnodesize.png)\n\n* **Azure CLI**: When using the `azure hdinsight cluster create` command, you can set the size of the head node using the `--headNodeSize` parameter.\n\n* **Azure PowerShell**: When using the `New-AzureHDInsightCluster` cmdlet, you can set the size of the head node using the `-HeadNodeVMSize` parameter.\n\n##Next steps\n\nIn this document you have learned how Azure HDInsight provides high availability for Hadoop. Use the following to learn more about things mentioned in this document.\n\n- [Ambari REST Reference](https://github.com/apache/ambari/blob/trunk/ambari-server/docs/api/v1/index.md)\n\n- [Install and configure the Azure CLI](../xplat-cli.md)\n\n- [Install and configure Azure PowerShell](../powershell-install-configure.md)\n\n- [Manage HDInsight using Ambari](hdinsight-hadoop-manage-ambari.md)\n\n- [Provision Linux-based HDInsight clusters](hdinsight-hadoop-provision-linux-clusters.md)\n\n[preview-portal]: https://portal.azure.com/\n[azure-powershell]: ../powershell-install-configure.md\n[azure-cli]: ../xplat-cli.md\ntest\n"
+}

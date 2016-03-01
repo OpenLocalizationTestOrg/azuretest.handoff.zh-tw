@@ -1,0 +1,194 @@
+{
+  "nodes": [
+    {
+      "content": "Temporary tables in SQL Data Warehouse | Microsoft Azure",
+      "pos": [
+        26,
+        82
+      ]
+    },
+    {
+      "content": "Tips for using temporary tables in Azure SQL Data Warehouse for developing solutions.",
+      "pos": [
+        100,
+        185
+      ]
+    },
+    {
+      "content": "Temporary tables in SQL Data Warehouse",
+      "pos": [
+        523,
+        561
+      ]
+    },
+    {
+      "content": "Temporary tables exist at the session level in SQL Data Warehouse.",
+      "pos": [
+        562,
+        628
+      ]
+    },
+    {
+      "content": "They are defined as local temporary tables and unlike SQL Server tables they can be accessed from anywhere inside the session.",
+      "pos": [
+        629,
+        755
+      ]
+    },
+    {
+      "content": "Temporary tables are very useful when processing data - especially during transformation where the intermediate results are transient.",
+      "pos": [
+        757,
+        891
+      ]
+    },
+    {
+      "content": "This article highlights some specific methods for leveraging temporary tables to help you modularize your code.",
+      "pos": [
+        893,
+        1004
+      ]
+    },
+    {
+      "content": "Modularizing code",
+      "pos": [
+        1010,
+        1027
+      ]
+    },
+    {
+      "content": "The fact that temporary tables can be seen anywhere in a user session can be exploited to help you modularize your application code.",
+      "pos": [
+        1029,
+        1161
+      ]
+    },
+    {
+      "content": "Lets make a working example.",
+      "pos": [
+        1163,
+        1191
+      ]
+    },
+    {
+      "content": "The stored procedure below generates the DDL required to update the statistics on every column in the database:",
+      "pos": [
+        1194,
+        1305
+      ]
+    },
+    {
+      "content": "Notice that nothing has actually been done with this data.",
+      "pos": [
+        3776,
+        3834
+      ]
+    },
+    {
+      "content": "The procedure has simply generated the DDL and stored it in a temporary table.",
+      "pos": [
+        3835,
+        3913
+      ]
+    },
+    {
+      "content": "However, it is possible in SQL Data Warehouse to use that temporary table outside of the procedure that created it.",
+      "pos": [
+        3915,
+        4030
+      ]
+    },
+    {
+      "content": "This is different to SQL Server.",
+      "pos": [
+        4031,
+        4063
+      ]
+    },
+    {
+      "content": "In fact the temporary table can be used <bpt id=\"p1\">**</bpt>anywhere<ept id=\"p1\">**</ept> inside the session.",
+      "pos": [
+        4064,
+        4136
+      ]
+    },
+    {
+      "content": "This can lead to more modular and manageable code.",
+      "pos": [
+        4138,
+        4188
+      ]
+    },
+    {
+      "content": "In some cases inline and multi-statement functions can also be replaced using this technique.",
+      "pos": [
+        4583,
+        4676
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> You can also extend this solution.",
+      "pos": [
+        4680,
+        4727
+      ]
+    },
+    {
+      "content": "If you only wanted to update a single table for example all you would need to do is just filter the #stats_ddl table",
+      "pos": [
+        4728,
+        4844
+      ]
+    },
+    {
+      "content": "Temporary table limitations",
+      "pos": [
+        4849,
+        4876
+      ]
+    },
+    {
+      "content": "SQL Data Warehouse does impose a couple of limitations when implementing temporary tables.",
+      "pos": [
+        4877,
+        4967
+      ]
+    },
+    {
+      "content": "The main limitations are:",
+      "pos": [
+        4969,
+        4994
+      ]
+    },
+    {
+      "content": "Global Temporary Tables are not supported",
+      "pos": [
+        4998,
+        5039
+      ]
+    },
+    {
+      "content": "Views cannot be created on temporary tables",
+      "pos": [
+        5042,
+        5085
+      ]
+    },
+    {
+      "content": "Next steps",
+      "pos": [
+        5091,
+        5101
+      ]
+    },
+    {
+      "pos": [
+        5102,
+        5158
+      ],
+      "content": "For more development tips, see <bpt id=\"p1\">[</bpt>development overview<ept id=\"p1\">][]</ept>."
+    }
+  ],
+  "content": "<properties\n   pageTitle=\"Temporary tables in SQL Data Warehouse | Microsoft Azure\"\n   description=\"Tips for using temporary tables in Azure SQL Data Warehouse for developing solutions.\"\n   services=\"sql-data-warehouse\"\n   documentationCenter=\"NA\"\n   authors=\"jrowlandjones\"\n   manager=\"barbkess\"\n   editor=\"\"/>\n\n<tags\n   ms.service=\"sql-data-warehouse\"\n   ms.devlang=\"NA\"\n   ms.topic=\"article\"\n   ms.tgt_pltfrm=\"NA\"\n   ms.workload=\"data-services\"\n   ms.date=\"06/22/2015\"\n   ms.author=\"JRJ@BigBangData.co.uk;barbkess\"/>\n\n# Temporary tables in SQL Data Warehouse\nTemporary tables exist at the session level in SQL Data Warehouse. They are defined as local temporary tables and unlike SQL Server tables they can be accessed from anywhere inside the session.\n\nTemporary tables are very useful when processing data - especially during transformation where the intermediate results are transient.\n\nThis article highlights some specific methods for leveraging temporary tables to help you modularize your code. \n\n## Modularizing code\n\nThe fact that temporary tables can be seen anywhere in a user session can be exploited to help you modularize your application code.\n\nLets make a working example. \n\nThe stored procedure below generates the DDL required to update the statistics on every column in the database:\n\n```\nCREATE PROCEDURE    [dbo].[prc_sqldw_update_stats]\n(   @update_type    tinyint -- 1 default 2 fullscan 3 sample 4 resample\n,   @sample_pct     tinyint\n)\nAS\n\nIF @update_type NOT IN (1,2,3,4)\nBEGIN;\n    THROW 151000,'Invalid value for @update_type parameter. Valid range 1 (default), 2 (fullscan), 3 (sample) or 4 (resample).',1;\nEND;\n\nIF @sample_pct IS NULL\nBEGIN;\n    SET @sample_pct = 20;\nEND;\n\nCREATE TABLE #stats_ddl\nWITH    (   DISTRIBUTION = HASH([seq_nmbr])\n        ,   LOCATION     = USER_DB\n        )\nWITH t1\nAS\n(\nSELECT\n        sm.[name]                                                               AS [schema_name]\n,       tb.[name]                                                               AS [table_name]\n,       st.[name]                                                               AS [stats_name]\n,       st.[has_filter]                                                         AS [stats_is_filtered]\n,       ROW_NUMBER()\n        OVER(ORDER BY (SELECT NULL))                                            AS [seq_nmbr]\n,                                QUOTENAME(sm.[name])+'.'+QUOTENAME(tb.[name])  AS [two_part_name]\n,       QUOTENAME(DB_NAME())+'.'+QUOTENAME(sm.[name])+'.'+QUOTENAME(tb.[name])  AS [three_part_name]\nFROM    sys.objects         AS ob\nJOIN    sys.stats           AS st   ON  ob.[object_id]      = st.[object_id]\nJOIN    sys.stats_columns   AS sc   ON  st.[stats_id]       = sc.[stats_id]\n                                    AND st.[object_id]      = sc.[object_id]\nJOIN    sys.columns         AS co   ON  sc.[column_id]      = co.[column_id]\n                                    AND sc.[object_id]      = co.[object_id]\nJOIN    sys.tables          AS tb   ON  co.[object_id]      = tb.[object_id]\nJOIN    sys.schemas         AS sm   ON  tb.[schema_id]      = sm.[schema_id]\nWHERE   1=1\nAND     st.[user_created]   = 1\nGROUP BY\n        sm.[name]\n,       tb.[name]\n,       st.[name]\n,       st.[filter_definition]\n,       st.[has_filter]\n)\nSELECT\n    CASE @update_type\n    WHEN 1\n    THEN 'UPDATE STATISTICS '+[two_part_name]+'('+[stats_name]+');'\n    WHEN 2\n    THEN 'UPDATE STATISTICS '+[two_part_name]+'('+[stats_name]+') WITH FULLSCAN;'\n    WHEN 3\n    THEN 'UPDATE STATISTICS '+[two_part_name]+'('+[stats_name]+') WITH SAMPLE '+CAST(@sample_pct AS VARCHAR(20))+' PERCENT;'\n    WHEN 4\n    THEN 'UPDATE STATISTICS '+[two_part_name]+'('+[stats_name]+') WITH RESAMPLE;'\n    END AS [update_stats_ddl]\n,   [seq_nmbr]\nFROM    t1\n;\n```\n\nNotice that nothing has actually been done with this data. The procedure has simply generated the DDL and stored it in a temporary table.\n\nHowever, it is possible in SQL Data Warehouse to use that temporary table outside of the procedure that created it. This is different to SQL Server. In fact the temporary table can be used **anywhere** inside the session.\n\nThis can lead to more modular and manageable code.\n\n```\nEXEC [dbo].[prc_sqldw_update_stats] @update_type = 1, @sample_pct = NULL;\n\nDECLARE @i INT              = 1\n,       @t INT              = (SELECT COUNT(*) FROM #stats_ddl)\n,       @s NVARCHAR(4000)   = N''\n\nWHILE @i <= @t\nBEGIN\n    SET @s=(SELECT update_stats_ddl FROM #stats_ddl WHERE seq_nmbr = @i);\n\n    PRINT @s\n    EXEC sp_executesql @s\n    SET @i+=1;\nEND\n\nDROP TABLE #stats_ddl;\n```\n\nIn some cases inline and multi-statement functions can also be replaced using this technique.\n\n> [AZURE.NOTE] You can also extend this solution. If you only wanted to update a single table for example all you would need to do is just filter the #stats_ddl table\n\n## Temporary table limitations\nSQL Data Warehouse does impose a couple of limitations when implementing temporary tables.\n\nThe main limitations are:\n\n- Global Temporary Tables are not supported\n- Views cannot be created on temporary tables\n\n\n## Next steps\nFor more development tips, see [development overview][].\n\n<!--Image references-->\n\n<!--Article references-->\n[development overview]: sql-data-warehouse-overview-develop.md\n\n<!--MSDN references-->\n\n<!--Other Web references-->"
+}

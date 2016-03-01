@@ -1,0 +1,1153 @@
+{
+  "nodes": [
+    {
+      "content": "Line of business application Phase 3 | Microsoft Azure",
+      "pos": [
+        28,
+        82
+      ]
+    },
+    {
+      "content": "Create the computers and the SQL Server cluster and enable Availability Groups in Phase 3 of the line of business application in Azure.",
+      "pos": [
+        102,
+        237
+      ]
+    },
+    {
+      "content": "Line of Business Application Workload Phase 3: Configure SQL Server infrastructure",
+      "pos": [
+        611,
+        693
+      ]
+    },
+    {
+      "content": "In this phase of deploying a a high-availability line of business application in Azure infrastructure services, you configure the two computers running SQL Server and the cluster majority node computer, and then combine them into a Windows Server cluster.",
+      "pos": [
+        695,
+        950
+      ]
+    },
+    {
+      "content": "You must complete this phase before moving on to <bpt id=\"p1\">[</bpt>Phase 4<ept id=\"p1\">](virtual-machines-workload-high-availability-LOB-application-phase4.md)</ept>.",
+      "pos": [
+        953,
+        1083
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt>Deploy a High-Availability Line of Business Application in Azure<ept id=\"p1\">](virtual-machines-workload-high-availability-LOB-application-overview.md)</ept> for all of the phases.",
+      "pos": [
+        1084,
+        1250
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> These instructions use a SQL Server image in the Azure image gallery and are charged ongoing costs for the use of the SQL Server license.",
+      "pos": [
+        1254,
+        1404
+      ]
+    },
+    {
+      "content": "It is also possible to create virtual machines in Azure and install your own SQL Server licenses, but those instructions are not included here.",
+      "pos": [
+        1405,
+        1548
+      ]
+    },
+    {
+      "content": "Create the SQL Server cluster virtual machines in Azure",
+      "pos": [
+        1553,
+        1608
+      ]
+    },
+    {
+      "content": "There are two virtual machines running SQL Server.",
+      "pos": [
+        1610,
+        1660
+      ]
+    },
+    {
+      "content": "One virtual machine contains the primary database replica of an Availability Group and the second virtual machine contains the secondary (backup) replica.",
+      "pos": [
+        1661,
+        1815
+      ]
+    },
+    {
+      "content": "The backup exists to support high-availability.",
+      "pos": [
+        1816,
+        1863
+      ]
+    },
+    {
+      "content": "An additional virtual machine is for the cluster majority node.",
+      "pos": [
+        1864,
+        1927
+      ]
+    },
+    {
+      "content": "Use the following block of PowerShell commands to create the virtual machines for the three servers.",
+      "pos": [
+        1929,
+        2029
+      ]
+    },
+    {
+      "content": "Specify the values for the variables, removing the &lt; and &gt; characters.",
+      "pos": [
+        2030,
+        2100
+      ]
+    },
+    {
+      "content": "Note that this PowerShell command set uses values from the following tables:",
+      "pos": [
+        2101,
+        2177
+      ]
+    },
+    {
+      "content": "Table M, for your virtual machines",
+      "pos": [
+        2181,
+        2215
+      ]
+    },
+    {
+      "content": "Table V, for your virtual network settings",
+      "pos": [
+        2218,
+        2260
+      ]
+    },
+    {
+      "content": "Table S, for your subnet",
+      "pos": [
+        2263,
+        2287
+      ]
+    },
+    {
+      "content": "Table ST, for your storage accounts",
+      "pos": [
+        2290,
+        2325
+      ]
+    },
+    {
+      "content": "Table A, for your availability sets",
+      "pos": [
+        2328,
+        2363
+      ]
+    },
+    {
+      "pos": [
+        2365,
+        2592
+      ],
+      "content": "Recall that you defined Table M in <bpt id=\"p1\">[</bpt>Phase 2<ept id=\"p1\">](virtual-machines-workload-high-availability-LOB-application-phase2.md)</ept> and Tables V, S, ST, and A in <bpt id=\"p2\">[</bpt>Phase 1<ept id=\"p2\">](virtual-machines-workload-high-availability-LOB-application-phase1.md)</ept>."
+    },
+    {
+      "content": "When you have supplied all the proper values, run the resulting block at the Azure PowerShell prompt.",
+      "pos": [
+        2594,
+        2695
+      ]
+    },
+    {
+      "content": "Configure the computers running SQL Server",
+      "pos": [
+        7731,
+        7773
+      ]
+    },
+    {
+      "content": "For each virtual machine running SQL Server, use the remote desktop client of your choice and create a remote desktop connection to the first domain controller virtual machine.",
+      "pos": [
+        7775,
+        7951
+      ]
+    },
+    {
+      "content": "Use its intranet DNS or computer name and the credentials of the local administrator account.",
+      "pos": [
+        7952,
+        8045
+      ]
+    },
+    {
+      "content": "For each virtual machine running SQL Server, join them to the appropriate AD DS domain with these commands at the Windows PowerShell prompt.",
+      "pos": [
+        8047,
+        8187
+      ]
+    },
+    {
+      "content": "Note that you must supply domain account credentials after entering the Add-Computer command.",
+      "pos": [
+        8318,
+        8411
+      ]
+    },
+    {
+      "content": "After they restart, reconnect to them using an account that has local administrator privileges.",
+      "pos": [
+        8413,
+        8508
+      ]
+    },
+    {
+      "content": "Use the following procedure twice, once for each virtual machine running SQL Server, to add the extra data disk and create folders on the new volume.",
+      "pos": [
+        8511,
+        8660
+      ]
+    },
+    {
+      "content": "To initialize an empty disk and add folders",
+      "pos": [
+        8666,
+        8709
+      ]
+    },
+    {
+      "pos": [
+        8714,
+        8812
+      ],
+      "content": "In the left pane of Server Manager, click <bpt id=\"p1\">**</bpt>File and Storage Services<ept id=\"p1\">**</ept>, and then click <bpt id=\"p2\">**</bpt>Disks<ept id=\"p2\">**</ept>."
+    },
+    {
+      "pos": [
+        8816,
+        8923
+      ],
+      "content": "In the contents pane, in the <bpt id=\"p1\">**</bpt>Disks<ept id=\"p1\">**</ept> group, click disk <bpt id=\"p2\">**</bpt>2<ept id=\"p2\">**</ept> (with the <bpt id=\"p3\">**</bpt>Partition<ept id=\"p3\">**</ept> set to <bpt id=\"p4\">**</bpt>Unknown<ept id=\"p4\">**</ept>)."
+    },
+    {
+      "pos": [
+        8927,
+        8974
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>Tasks<ept id=\"p1\">**</ept>, and then click <bpt id=\"p2\">**</bpt>New Volume<ept id=\"p2\">**</ept>."
+    },
+    {
+      "pos": [
+        8978,
+        9048
+      ],
+      "content": "On the Before you begin page of the New Volume Wizard, click <bpt id=\"p1\">**</bpt>Next<ept id=\"p1\">**</ept>."
+    },
+    {
+      "content": "On the Select the server and disk page, click <bpt id=\"p1\">**</bpt>Disk 2<ept id=\"p1\">**</ept>, and then click <bpt id=\"p2\">**</bpt>Next<ept id=\"p2\">**</ept>.",
+      "pos": [
+        9052,
+        9134
+      ]
+    },
+    {
+      "content": "When prompted, click <bpt id=\"p1\">**</bpt>OK<ept id=\"p1\">**</ept>.",
+      "pos": [
+        9135,
+        9163
+      ]
+    },
+    {
+      "pos": [
+        9167,
+        9226
+      ],
+      "content": "On the Specify the size of the volume page, click <bpt id=\"p1\">**</bpt>Next<ept id=\"p1\">**</ept>."
+    },
+    {
+      "pos": [
+        9230,
+        9293
+      ],
+      "content": "On the Assign to a drive letter or folder page, click <bpt id=\"p1\">**</bpt>Next<ept id=\"p1\">**</ept>."
+    },
+    {
+      "pos": [
+        9297,
+        9353
+      ],
+      "content": "On the Select file system settings page, click <bpt id=\"p1\">**</bpt>Next<ept id=\"p1\">**</ept>."
+    },
+    {
+      "pos": [
+        9357,
+        9406
+      ],
+      "content": "On the Confirm selections page, click <bpt id=\"p1\">**</bpt>Create<ept id=\"p1\">**</ept>."
+    },
+    {
+      "pos": [
+        9411,
+        9442
+      ],
+      "content": "When complete, click <bpt id=\"p1\">**</bpt>Close<ept id=\"p1\">**</ept>."
+    },
+    {
+      "content": "Run the following commands from a Windows PowerShell prompt:",
+      "pos": [
+        9447,
+        9507
+      ]
+    },
+    {
+      "content": "md f:\\Data",
+      "pos": [
+        9514,
+        9524
+      ]
+    },
+    {
+      "content": "md f:\\Log",
+      "pos": [
+        9531,
+        9540
+      ]
+    },
+    {
+      "content": "md f:\\Backup",
+      "pos": [
+        9547,
+        9559
+      ]
+    },
+    {
+      "content": "Use the following procedure twice, once for each virtual machine running SQL Server, to configure them to use the F: drive for new databases and for accounts and permissions.",
+      "pos": [
+        9561,
+        9735
+      ]
+    },
+    {
+      "pos": [
+        9740,
+        9835
+      ],
+      "content": "On the Start screen, type <bpt id=\"p1\">**</bpt>SQL Studio<ept id=\"p1\">**</ept>, and then click <bpt id=\"p2\">**</bpt>SQL Server 2014 Management Studio<ept id=\"p2\">**</ept>."
+    },
+    {
+      "pos": [
+        9839,
+        9883
+      ],
+      "content": "In <bpt id=\"p1\">**</bpt>Connect to Server<ept id=\"p1\">**</ept>, click <bpt id=\"p2\">**</bpt>Connect<ept id=\"p2\">**</ept>."
+    },
+    {
+      "pos": [
+        9887,
+        10005
+      ],
+      "content": "In the left pane, right-click the top node—the default instance named after the machine—and then click <bpt id=\"p1\">**</bpt>Properties<ept id=\"p1\">**</ept>."
+    },
+    {
+      "pos": [
+        10010,
+        10064
+      ],
+      "content": "In <bpt id=\"p1\">**</bpt>Server Properties<ept id=\"p1\">**</ept>, click <bpt id=\"p2\">**</bpt>Database Settings<ept id=\"p2\">**</ept>."
+    },
+    {
+      "pos": [
+        10069,
+        10129
+      ],
+      "content": "In <bpt id=\"p1\">**</bpt>Database default locations<ept id=\"p1\">**</ept>, set the following values:"
+    },
+    {
+      "pos": [
+        10137,
+        10179
+      ],
+      "content": "For <bpt id=\"p1\">**</bpt>Data<ept id=\"p1\">**</ept>, set the path to <bpt id=\"p2\">**</bpt>f:\\Data<ept id=\"p2\">**</ept>."
+    },
+    {
+      "pos": [
+        10186,
+        10226
+      ],
+      "content": "For <bpt id=\"p1\">**</bpt>Log<ept id=\"p1\">**</ept>, set the path to <bpt id=\"p2\">**</bpt>f:\\Log<ept id=\"p2\">**</ept>."
+    },
+    {
+      "pos": [
+        10233,
+        10279
+      ],
+      "content": "For <bpt id=\"p1\">**</bpt>Backup<ept id=\"p1\">**</ept>, set the path to <bpt id=\"p2\">**</bpt>f:\\Backup<ept id=\"p2\">**</ept>."
+    },
+    {
+      "content": "Only new databases use these locations.",
+      "pos": [
+        10286,
+        10325
+      ]
+    },
+    {
+      "pos": [
+        10330,
+        10363
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>OK<ept id=\"p1\">**</ept> to close the window."
+    },
+    {
+      "pos": [
+        10368,
+        10417
+      ],
+      "content": "In the left pane, expand the <bpt id=\"p1\">**</bpt>Security folder<ept id=\"p1\">**</ept>."
+    },
+    {
+      "pos": [
+        10422,
+        10475
+      ],
+      "content": "Right-click <bpt id=\"p1\">**</bpt>Logins<ept id=\"p1\">**</ept>, and then click <bpt id=\"p2\">**</bpt>New login<ept id=\"p2\">**</ept>."
+    },
+    {
+      "pos": [
+        10480,
+        10697
+      ],
+      "content": "In <bpt id=\"p1\">**</bpt>Login name<ept id=\"p1\">**</ept>, type <bpt id=\"p2\">*</bpt>domain<ept id=\"p2\">*</ept>\\sqladmin in (in which <bpt id=\"p3\">*</bpt>domain<ept id=\"p3\">*</ept> is the name of the domain in which the sqladmin account was created in <bpt id=\"p4\">[</bpt>Phase 2<ept id=\"p4\">](virtual-machines-workload-high-availability-LOB-application-phase2.md)</ept>)."
+    },
+    {
+      "pos": [
+        10703,
+        10794
+      ],
+      "content": "Under <bpt id=\"p1\">**</bpt>Select a page<ept id=\"p1\">**</ept>, click <bpt id=\"p2\">**</bpt>Server Roles<ept id=\"p2\">**</ept>, click <bpt id=\"p3\">**</bpt>sysadmin<ept id=\"p3\">**</ept>, and then click <bpt id=\"p4\">**</bpt>OK<ept id=\"p4\">**</ept>."
+    },
+    {
+      "content": "Close SQL Server 2014 Management Studio.",
+      "pos": [
+        10799,
+        10839
+      ]
+    },
+    {
+      "content": "Use the following procedure twice, once for each SQL server, to allow remote desktop connections using the sqladmin account.",
+      "pos": [
+        10841,
+        10965
+      ]
+    },
+    {
+      "pos": [
+        10971,
+        11047
+      ],
+      "content": "On the Start screen, right-click <bpt id=\"p1\">**</bpt>This PC<ept id=\"p1\">**</ept>, and then click <bpt id=\"p2\">**</bpt>Properties<ept id=\"p2\">**</ept>."
+    },
+    {
+      "pos": [
+        11052,
+        11104
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>System<ept id=\"p1\">**</ept> window, click <bpt id=\"p2\">**</bpt>Remote Settings<ept id=\"p2\">**</ept>."
+    },
+    {
+      "pos": [
+        11109,
+        11191
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Remote Desktop<ept id=\"p1\">**</ept> section, click <bpt id=\"p2\">**</bpt>Select Users<ept id=\"p2\">**</ept>, and then click <bpt id=\"p3\">**</bpt>Add<ept id=\"p3\">**</ept>."
+    },
+    {
+      "pos": [
+        11196,
+        11299
+      ],
+      "content": "In <bpt id=\"p1\">**</bpt>Enter the object names to select<ept id=\"p1\">**</ept>, type [domain]<bpt id=\"p2\">**</bpt>\\sqladmin<ept id=\"p2\">**</ept>, and then click <bpt id=\"p3\">**</bpt>OK<ept id=\"p3\">**</ept> three times."
+    },
+    {
+      "content": "The SQL Server service requires a port that clients use to access the database server.",
+      "pos": [
+        11301,
+        11387
+      ]
+    },
+    {
+      "content": "It also needs ports to connect with the SQL Server Management Studio and to manage the high-availability group.",
+      "pos": [
+        11388,
+        11499
+      ]
+    },
+    {
+      "content": "Next, run the following command at an administrator-level Windows PowerShell prompt twice, once for each SQL Server virtual machine, to add a firewall rule that allows this type of inbound traffic.",
+      "pos": [
+        11500,
+        11697
+      ]
+    },
+    {
+      "content": "For each of the SQL Server virtual machines, sign out as the local administrator.",
+      "pos": [
+        11850,
+        11931
+      ]
+    },
+    {
+      "content": "For information about optimizing SQL Server performance in Azure, see <bpt id=\"p1\">[</bpt>Performance Best Practices for SQL Server in Azure Virtual Machines<ept id=\"p1\">](virtual-machines-sql-server-performance-best-practices.md)</ept>.",
+      "pos": [
+        11934,
+        12133
+      ]
+    },
+    {
+      "content": "You can also disable Geo Redundant Storage (GRS) for the line of business application storage account and use storage spaces to optimize IOPs.",
+      "pos": [
+        12134,
+        12276
+      ]
+    },
+    {
+      "content": "Configure the cluster majority node server",
+      "pos": [
+        12281,
+        12323
+      ]
+    },
+    {
+      "content": "Use the remote desktop client of your choice and create a remote desktop connection to the cluster majority node server virtual machine.",
+      "pos": [
+        12325,
+        12461
+      ]
+    },
+    {
+      "content": "Use its intranet DNS or computer name and the credentials of the local administrator account.",
+      "pos": [
+        12462,
+        12555
+      ]
+    },
+    {
+      "content": "Join the cluster majority node server to the appropriate AD DS domain with these commands at the Windows PowerShell prompt.",
+      "pos": [
+        12557,
+        12680
+      ]
+    },
+    {
+      "pos": [
+        12811,
+        12906
+      ],
+      "content": "Note that you must supply domain account credentials when running the <bpt id=\"p1\">**</bpt>Add-Computer<ept id=\"p1\">**</ept> command."
+    },
+    {
+      "content": "After it restarts, reconnect with an account that has local administrator privileges.",
+      "pos": [
+        12908,
+        12993
+      ]
+    },
+    {
+      "content": "Create the Windows Server Failover Clustering cluster",
+      "pos": [
+        12998,
+        13051
+      ]
+    },
+    {
+      "content": "SQL Server AlwaysOn Availability Groups rely on the Windows Server Failover Clustering (WSFC) feature of Windows Server.",
+      "pos": [
+        13053,
+        13173
+      ]
+    },
+    {
+      "content": "The feature allows several machines to participate as a group in a cluster.",
+      "pos": [
+        13174,
+        13249
+      ]
+    },
+    {
+      "content": "When one machine fails, a second machine is ready to take its place.",
+      "pos": [
+        13250,
+        13318
+      ]
+    },
+    {
+      "content": "Therefore the first task is to enable the Failover Clustering feature on all of the participating machines, which include:",
+      "pos": [
+        13319,
+        13441
+      ]
+    },
+    {
+      "content": "The primary virtual machine running SQL Server",
+      "pos": [
+        13445,
+        13491
+      ]
+    },
+    {
+      "content": "The secondary virtual machine running SQL Server",
+      "pos": [
+        13494,
+        13542
+      ]
+    },
+    {
+      "content": "The cluster majority node",
+      "pos": [
+        13545,
+        13570
+      ]
+    },
+    {
+      "content": "The failover cluster requires at least three virtual machines.",
+      "pos": [
+        13572,
+        13634
+      ]
+    },
+    {
+      "content": "Two machines host SQL Server, in which the secondary virtual machine is a synchronous secondary replica, ensuring zero data loss if the primary machine fails.",
+      "pos": [
+        13635,
+        13793
+      ]
+    },
+    {
+      "content": "The third virtual machine does not need to host SQL Server.",
+      "pos": [
+        13794,
+        13853
+      ]
+    },
+    {
+      "content": "The cluster majority node functions as a quorum witness in the WSFC.",
+      "pos": [
+        13854,
+        13922
+      ]
+    },
+    {
+      "content": "Because the WSFC cluster relies on a quorum to monitor health, there must always be a majority to ensure that the WSFC cluster is online.",
+      "pos": [
+        13923,
+        14060
+      ]
+    },
+    {
+      "content": "If only two machines are in a cluster, and one fails, there can be no majority when only one out of two fails.",
+      "pos": [
+        14061,
+        14171
+      ]
+    },
+    {
+      "content": "For more information, see <bpt id=\"p1\">[</bpt>WSFC Quorum Modes and Voting Configuration (SQL Server)<ept id=\"p1\">](http://msdn.microsoft.com/library/hh270280.aspx)</ept>.",
+      "pos": [
+        14172,
+        14305
+      ]
+    },
+    {
+      "content": "For both SQL Server virtual machines and for the cluster majority node, run the following command at an administrator-level Windows PowerShell prompt:",
+      "pos": [
+        14307,
+        14457
+      ]
+    },
+    {
+      "content": "Due to current non-RFC-compliant behavior by DHCP in Azure, creation of a Windows Server Failover Cluster (WSFC) cluster can fail.",
+      "pos": [
+        14531,
+        14661
+      ]
+    },
+    {
+      "content": "For details, search for \"WSFC cluster behavior in Azure networking\" in High Availability and Disaster Recovery for SQL Server in Azure Virtual Machines.",
+      "pos": [
+        14662,
+        14814
+      ]
+    },
+    {
+      "content": "However, there is a workaround.",
+      "pos": [
+        14815,
+        14846
+      ]
+    },
+    {
+      "content": "Use the following steps to create the cluster.",
+      "pos": [
+        14847,
+        14893
+      ]
+    },
+    {
+      "pos": [
+        14899,
+        15066
+      ],
+      "content": "Log on to the primary SQL Server virtual machine with the sqladmin account created in <bpt id=\"p1\">[</bpt>Phase 2<ept id=\"p1\">](virtual-machines-workload-high-availability-LOB-application-phase2.md)</ept>."
+    },
+    {
+      "pos": [
+        15071,
+        15157
+      ],
+      "content": "From the Start screen, type <bpt id=\"p1\">**</bpt>Failover<ept id=\"p1\">**</ept>, and then click <bpt id=\"p2\">**</bpt>Failover Cluster Manager<ept id=\"p2\">**</ept>."
+    },
+    {
+      "pos": [
+        15162,
+        15256
+      ],
+      "content": "In the left pane, right-click <bpt id=\"p1\">**</bpt>Failover Cluster Manager<ept id=\"p1\">**</ept>, and then click <bpt id=\"p2\">**</bpt>Create Cluster<ept id=\"p2\">**</ept>."
+    },
+    {
+      "pos": [
+        15261,
+        15310
+      ],
+      "content": "On the <bpt id=\"p1\">**</bpt>Before You Begin<ept id=\"p1\">**</ept> page, click <bpt id=\"p2\">**</bpt>Next<ept id=\"p2\">**</ept>."
+    },
+    {
+      "pos": [
+        15315,
+        15435
+      ],
+      "content": "On the <bpt id=\"p1\">**</bpt>Select Servers<ept id=\"p1\">**</ept> page, type the name of the primary SQL Server machine, click <bpt id=\"p2\">**</bpt>Add<ept id=\"p2\">**</ept>, and then click <bpt id=\"p3\">**</bpt>Next<ept id=\"p3\">**</ept>."
+    },
+    {
+      "pos": [
+        15440,
+        15678
+      ],
+      "content": "On the <bpt id=\"p1\">**</bpt>Validation Warning<ept id=\"p1\">**</ept> page, click <bpt id=\"p2\">**</bpt>No, I do not require support from Microsoft for this cluster, and therefore do not want to run the validation tests. When I click Next, continue creating the cluster.<ept id=\"p2\">**</ept>, and then click <bpt id=\"p3\">**</bpt>Next<ept id=\"p3\">**</ept>."
+    },
+    {
+      "pos": [
+        15683,
+        15833
+      ],
+      "content": "On the <bpt id=\"p1\">**</bpt>Access Point for Administering the Cluster<ept id=\"p1\">**</ept> page, in the <bpt id=\"p2\">**</bpt>Cluster Nam<ept id=\"p2\">**</ept>e text box, type the name for your cluster, and then click <bpt id=\"p3\">**</bpt>Next<ept id=\"p3\">**</ept>."
+    },
+    {
+      "pos": [
+        15838,
+        15909
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Confirmation<ept id=\"p1\">**</ept> page, click <bpt id=\"p2\">**</bpt>Next<ept id=\"p2\">**</ept> to begin cluster creation."
+    },
+    {
+      "pos": [
+        15915,
+        15957
+      ],
+      "content": "On the <bpt id=\"p1\">**</bpt>Summary<ept id=\"p1\">**</ept> page, click <bpt id=\"p2\">**</bpt>Finish<ept id=\"p2\">**</ept>."
+    },
+    {
+      "content": "In the left pane, click your new cluster.",
+      "pos": [
+        15962,
+        16003
+      ]
+    },
+    {
+      "content": "In the <bpt id=\"p1\">**</bpt>Cluster Core Resources<ept id=\"p1\">**</ept> section of the contents pane, open your server cluster name.",
+      "pos": [
+        16004,
+        16098
+      ]
+    },
+    {
+      "content": "The <bpt id=\"p1\">**</bpt>IP Address<ept id=\"p1\">**</ept> resource appears in the <bpt id=\"p2\">**</bpt>Failed<ept id=\"p2\">**</ept> state.",
+      "pos": [
+        16099,
+        16159
+      ]
+    },
+    {
+      "content": "The IP address resource cannot be brought online because the cluster is assigned the same IP address as that of the machine itself.",
+      "pos": [
+        16160,
+        16291
+      ]
+    },
+    {
+      "content": "The result is a duplicate address.",
+      "pos": [
+        16292,
+        16326
+      ]
+    },
+    {
+      "pos": [
+        16332,
+        16410
+      ],
+      "content": "Right-click the failed <bpt id=\"p1\">**</bpt>IP Address<ept id=\"p1\">**</ept> resource, and then click <bpt id=\"p2\">**</bpt>Properties<ept id=\"p2\">**</ept>."
+    },
+    {
+      "pos": [
+        16415,
+        16488
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>IP Address Properties<ept id=\"p1\">**</ept> dialog box, click <bpt id=\"p2\">**</bpt>Static IP Address<ept id=\"p2\">**</ept>."
+    },
+    {
+      "pos": [
+        16493,
+        16618
+      ],
+      "content": "Type an unused IP in the address range corresponding to the subnet on which the SQL server is located, and then click <bpt id=\"p1\">**</bpt>OK<ept id=\"p1\">**</ept>."
+    },
+    {
+      "content": "Right-click the failed IP Address resource, and then click <bpt id=\"p1\">**</bpt>Bring Online<ept id=\"p1\">**</ept>.",
+      "pos": [
+        16623,
+        16699
+      ]
+    },
+    {
+      "content": "Wait until both resources are online.",
+      "pos": [
+        16700,
+        16737
+      ]
+    },
+    {
+      "content": "When the cluster name resource comes online, it updates the domain controller with a new Active Directory (AD) computer account.",
+      "pos": [
+        16738,
+        16866
+      ]
+    },
+    {
+      "content": "This AD account is later used to run the availability group clustered service.",
+      "pos": [
+        16867,
+        16945
+      ]
+    },
+    {
+      "content": "Now that the AD account is created, bring the cluster name offline.",
+      "pos": [
+        16950,
+        17017
+      ]
+    },
+    {
+      "content": "Right-click the cluster name in <bpt id=\"p1\">**</bpt>Cluster Core Resources<ept id=\"p1\">**</ept>, and then click <bpt id=\"p2\">**</bpt>Take Offline<ept id=\"p2\">**</ept>.",
+      "pos": [
+        17018,
+        17110
+      ]
+    },
+    {
+      "content": "To remove the cluster IP address, right-click <bpt id=\"p1\">**</bpt>IP Address<ept id=\"p1\">**</ept>, click <bpt id=\"p2\">**</bpt>Remove<ept id=\"p2\">**</ept>, and then click <bpt id=\"p3\">**</bpt>Yes<ept id=\"p3\">**</ept> when prompted.",
+      "pos": [
+        17115,
+        17232
+      ]
+    },
+    {
+      "content": "The cluster resource can no longer come online because it depends on the IP address resource.",
+      "pos": [
+        17233,
+        17326
+      ]
+    },
+    {
+      "content": "However, an availability group does not depend on the cluster name or IP address in order to work properly.",
+      "pos": [
+        17327,
+        17434
+      ]
+    },
+    {
+      "content": "So the cluster name can be left offline.",
+      "pos": [
+        17435,
+        17475
+      ]
+    },
+    {
+      "pos": [
+        17480,
+        17599
+      ],
+      "content": "To add the remaining nodes to the cluster, right-click your cluster name in the left pane, and then click <bpt id=\"p1\">**</bpt>Add Node<ept id=\"p1\">**</ept>."
+    },
+    {
+      "pos": [
+        17604,
+        17653
+      ],
+      "content": "On the <bpt id=\"p1\">**</bpt>Before You Begin<ept id=\"p1\">**</ept> page, click <bpt id=\"p2\">**</bpt>Next<ept id=\"p2\">**</ept>."
+    },
+    {
+      "content": "On the <bpt id=\"p1\">**</bpt>Select Servers<ept id=\"p1\">**</ept> page, type the name and then click <bpt id=\"p2\">**</bpt>Add<ept id=\"p2\">**</ept> to add both the secondary SQL server and cluster majority node to the cluster.",
+      "pos": [
+        17659,
+        17806
+      ]
+    },
+    {
+      "content": "After adding the two computers, click <bpt id=\"p1\">**</bpt>Next<ept id=\"p1\">**</ept>.",
+      "pos": [
+        17807,
+        17854
+      ]
+    },
+    {
+      "content": "If a machine cannot be added, and the error message is \"the Remote Registry is not running,\" do the following.",
+      "pos": [
+        17855,
+        17965
+      ]
+    },
+    {
+      "content": "Log on to the machine, open the Services snap-in (services.msc), and enable the Remote Registry.",
+      "pos": [
+        17966,
+        18062
+      ]
+    },
+    {
+      "content": "For more information, see <bpt id=\"p1\">[</bpt>Unable to connect to Remote Registry service<ept id=\"p1\">](http://technet.microsoft.com/library/bb266998.aspx)</ept>.",
+      "pos": [
+        18063,
+        18188
+      ]
+    },
+    {
+      "pos": [
+        18194,
+        18432
+      ],
+      "content": "On the <bpt id=\"p1\">**</bpt>Validation Warning<ept id=\"p1\">**</ept> page, click <bpt id=\"p2\">**</bpt>No, I do not require support from Microsoft for this cluster, and therefore do not want to run the validation tests. When I click Next, continue creating the cluster.<ept id=\"p2\">**</ept>, and then click <bpt id=\"p3\">**</bpt>Next<ept id=\"p3\">**</ept>."
+    },
+    {
+      "pos": [
+        18438,
+        18483
+      ],
+      "content": "On the <bpt id=\"p1\">**</bpt>Confirmation<ept id=\"p1\">**</ept> page, click <bpt id=\"p2\">**</bpt>Next<ept id=\"p2\">**</ept>."
+    },
+    {
+      "pos": [
+        18488,
+        18530
+      ],
+      "content": "On the <bpt id=\"p1\">**</bpt>Summary<ept id=\"p1\">**</ept> page, click <bpt id=\"p2\">**</bpt>Finish<ept id=\"p2\">**</ept>."
+    },
+    {
+      "content": "In the left pane, click <bpt id=\"p1\">**</bpt>Nodes<ept id=\"p1\">**</ept>.",
+      "pos": [
+        18535,
+        18569
+      ]
+    },
+    {
+      "content": "You should see all three computers listed.",
+      "pos": [
+        18570,
+        18612
+      ]
+    },
+    {
+      "content": "Enable AlwaysOn Availability Groups",
+      "pos": [
+        18617,
+        18652
+      ]
+    },
+    {
+      "content": "The next step is to enable AlwaysOn Availability Groups using the SQL Server Configuration Manager.",
+      "pos": [
+        18654,
+        18753
+      ]
+    },
+    {
+      "content": "Note that an availability group in SQL Server differs from an Azure availability set.",
+      "pos": [
+        18754,
+        18839
+      ]
+    },
+    {
+      "content": "An availability group contains databases that are highly-available and recoverable.",
+      "pos": [
+        18840,
+        18923
+      ]
+    },
+    {
+      "content": "An Azure availability set allocates virtual machines to different fault domains.",
+      "pos": [
+        18924,
+        19004
+      ]
+    },
+    {
+      "content": "For more information about fault domains, see <bpt id=\"p1\">[</bpt>Manage the Availability of Virtual Machines<ept id=\"p1\">](virtual-machines-manage-availability.md)</ept>.",
+      "pos": [
+        19005,
+        19138
+      ]
+    },
+    {
+      "content": "Use these steps to enable AlwaysOn Availability Groups on SQL Server.",
+      "pos": [
+        19141,
+        19210
+      ]
+    },
+    {
+      "pos": [
+        19216,
+        19383
+      ],
+      "content": "Log on to the primary SQL Server virtual machine with the sqladmin account created in <bpt id=\"p1\">[</bpt>Phase 2<ept id=\"p1\">](virtual-machines-workload-high-availability-LOB-application-phase2.md)</ept>."
+    },
+    {
+      "pos": [
+        19388,
+        19496
+      ],
+      "content": "On the Start screen, type <bpt id=\"p1\">**</bpt>SQL Server Configuration<ept id=\"p1\">**</ept>, and then click <bpt id=\"p2\">**</bpt>SQL Server Configuration Manager<ept id=\"p2\">**</ept>."
+    },
+    {
+      "pos": [
+        19501,
+        19549
+      ],
+      "content": "In the left pane, click <bpt id=\"p1\">**</bpt>SQL Server Services<ept id=\"p1\">**</ept>."
+    },
+    {
+      "pos": [
+        19554,
+        19618
+      ],
+      "content": "In the contents pane, double-click <bpt id=\"p1\">**</bpt>SQL Server (MSSQLSERVER)<ept id=\"p1\">**</ept>."
+    },
+    {
+      "content": "In <bpt id=\"p1\">**</bpt>SQL Server (MSSQLSERVER) Properties<ept id=\"p1\">**</ept>, click the <bpt id=\"p2\">**</bpt>AlwaysOn High Availability<ept id=\"p2\">**</ept> tab, select <bpt id=\"p3\">**</bpt>Enable AlwaysOn Availability Group<ept id=\"p3\">**</ept>s, click <bpt id=\"p4\">**</bpt>Apply<ept id=\"p4\">**</ept>, and then click <bpt id=\"p5\">**</bpt>OK<ept id=\"p5\">**</ept> when prompted.",
+      "pos": [
+        19623,
+        19814
+      ]
+    },
+    {
+      "content": "Do not close the properties window yet.",
+      "pos": [
+        19815,
+        19854
+      ]
+    },
+    {
+      "content": "Click the virtual-machines-manage-availability tab, then type [Domain]<bpt id=\"p1\">**</bpt>\\sqlservice<ept id=\"p1\">**</ept> in <bpt id=\"p2\">**</bpt>Account Name<ept id=\"p2\">**</ept>.",
+      "pos": [
+        19860,
+        19966
+      ]
+    },
+    {
+      "content": "Type the sqlservice account password in <bpt id=\"p1\">**</bpt>Password<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>Confirm password<ept id=\"p2\">**</ept>, and then click <bpt id=\"p3\">**</bpt>OK<ept id=\"p3\">**</ept>.",
+      "pos": [
+        19967,
+        20068
+      ]
+    },
+    {
+      "pos": [
+        20073,
+        20144
+      ],
+      "content": "In the message window, click <bpt id=\"p1\">**</bpt>Yes<ept id=\"p1\">**</ept> to restart the SQL Server service."
+    },
+    {
+      "content": "Log on to the secondary SQL Server virtual machine with the sqladmin account and repeat steps 2 through 7.",
+      "pos": [
+        20149,
+        20255
+      ]
+    },
+    {
+      "content": "This diagram shows the configuration resulting from the successful completion of this phase, with placeholder computer names.",
+      "pos": [
+        20258,
+        20383
+      ]
+    },
+    {
+      "content": "Next step",
+      "pos": [
+        20496,
+        20505
+      ]
+    },
+    {
+      "pos": [
+        20507,
+        20670
+      ],
+      "content": "To continue with the configuration of this workload, go to <bpt id=\"p1\">[</bpt>Phase 4: Configure Web Servers<ept id=\"p1\">](virtual-machines-workload-high-availability-LOB-application-phase4.md)</ept>."
+    },
+    {
+      "content": "Additional resources",
+      "pos": [
+        20675,
+        20695
+      ]
+    },
+    {
+      "content": "Deploy a high-availability line of business application in Azure",
+      "pos": [
+        20698,
+        20762
+      ]
+    },
+    {
+      "content": "Line of Business Applications architecture blueprint",
+      "pos": [
+        20839,
+        20891
+      ]
+    },
+    {
+      "content": "Set up a web-based LOB application in a hybrid cloud for testing",
+      "pos": [
+        20931,
+        20995
+      ]
+    },
+    {
+      "content": "Azure infrastructure services implementation guidelines",
+      "pos": [
+        21073,
+        21128
+      ]
+    },
+    {
+      "content": "Azure Infrastructure Services Workload: SharePoint Server 2013 farm",
+      "pos": [
+        21203,
+        21270
+      ]
+    }
+  ],
+  "content": "<properties \n    pageTitle=\"Line of business application Phase 3 | Microsoft Azure\" \n    description=\"Create the computers and the SQL Server cluster and enable Availability Groups in Phase 3 of the line of business application in Azure.\" \n    documentationCenter=\"\"\n    services=\"virtual-machines\" \n    authors=\"JoeDavies-MSFT\" \n    manager=\"timlt\" \n    editor=\"\"\n    tags=\"azure-resource-manager\"/>\n\n<tags \n    ms.service=\"virtual-machines\" \n    ms.workload=\"infrastructure-services\" \n    ms.tgt_pltfrm=\"na\" \n    ms.devlang=\"na\" \n    ms.topic=\"article\" \n    ms.date=\"08/11/2015\" \n    ms.author=\"josephd\"/>\n\n# Line of Business Application Workload Phase 3: Configure SQL Server infrastructure\n\nIn this phase of deploying a a high-availability line of business application in Azure infrastructure services, you configure the two computers running SQL Server and the cluster majority node computer, and then combine them into a Windows Server cluster. \n\nYou must complete this phase before moving on to [Phase 4](virtual-machines-workload-high-availability-LOB-application-phase4.md). See [Deploy a High-Availability Line of Business Application in Azure](virtual-machines-workload-high-availability-LOB-application-overview.md) for all of the phases.\n\n> [AZURE.NOTE] These instructions use a SQL Server image in the Azure image gallery and are charged ongoing costs for the use of the SQL Server license. It is also possible to create virtual machines in Azure and install your own SQL Server licenses, but those instructions are not included here.\n\n## Create the SQL Server cluster virtual machines in Azure\n\nThere are two virtual machines running SQL Server. One virtual machine contains the primary database replica of an Availability Group and the second virtual machine contains the secondary (backup) replica. The backup exists to support high-availability. An additional virtual machine is for the cluster majority node.\n\nUse the following block of PowerShell commands to create the virtual machines for the three servers. Specify the values for the variables, removing the < and > characters. Note that this PowerShell command set uses values from the following tables:\n\n- Table M, for your virtual machines\n- Table V, for your virtual network settings\n- Table S, for your subnet\n- Table ST, for your storage accounts\n- Table A, for your availability sets\n\nRecall that you defined Table M in [Phase 2](virtual-machines-workload-high-availability-LOB-application-phase2.md) and Tables V, S, ST, and A in [Phase 1](virtual-machines-workload-high-availability-LOB-application-phase1.md).\n\nWhen you have supplied all the proper values, run the resulting block at the Azure PowerShell prompt.\n\n    # Set up subscription and key variables\n    $subscr=\"<name of the Azure subscription>\"\n    Set-AzureSubscription -SubscriptionName $subscr\n    Switch-AzureMode AzureResourceManager\n    $rgName=\"<your resource group name>\"\n    $locName=\"<Azure location of your resource group>\"\n    # Change to the premium storage account\n    $saName=\"<Table ST – Item 1 – Storage account name column>\"\n    $vnetName=\"<Table V – Item 1 – Value column>\"\n    $avName=\"<Table A – Item 2 – Availability set name column>\"\n    \n    # Create the first SQL server\n    $vmName=\"<Table M – Item 3 - Virtual machine name column>\"\n    $vmSize=\"<Table M – Item 3 - Minimum size column>\"\n    $vnet=Get-AzurevirtualNetwork -Name $vnetName -ResourceGroupName $rgName\n    $nic=New-AzureNetworkInterface -Name ($vmName +\"-NIC\") -ResourceGroupName $rgName -Location $locName -SubnetId $vnet.Subnets[1].Id\n    $avSet=Get-AzureAvailabilitySet –Name $avName –ResourceGroupName $rgName \n    $vm=New-AzureVMConfig -VMName $vmName -VMSize $vmSize -AvailabilitySetId $avset.Id\n    \n    $diskSize=<size of the extra disk for SQL data in GB>\n    $diskLabel=\"<the label on the disk>\"\n    $storageAcc=Get-AzureStorageAccount -ResourceGroupName $rgName -Name $saName\n    $vhdURI=$storageAcc.PrimaryEndpoints.Blob.ToString() + \"vhds/\" + $vmName + \"-SQLDataDisk.vhd\"\n    Add-AzureVMDataDisk -VM $vm -Name $diskLabel -DiskSizeInGB $diskSize -VhdUri $vhdURI  -CreateOption empty\n    \n    $cred=Get-Credential -Message \"Type the name and password of the local administrator account for the first SQL Server computer.\" \n    $vm=Set-AzureVMOperatingSystem -VM $vm -Windows -ComputerName $vmName -Credential $cred -ProvisionVMAgent -EnableAutoUpdate\n    $vm=Set-AzureVMSourceImage -VM $vm -PublisherName MicrosoftSQLServer -Offer SQL2014-WS2012R2 -Skus Enterprise -Version \"latest\"\n    $vm=Add-AzureVMNetworkInterface -VM $vm -Id $nic.Id\n    $storageAcc=Get-AzureStorageAccount -ResourceGroupName $rgName -Name $saName\n    $osDiskUri=$storageAcc.PrimaryEndpoints.Blob.ToString() + \"vhds/\" + $vmName + \"-OSDisk.vhd\"\n    $vm=Set-AzureVMOSDisk -VM $vm -Name \"OSDisk\" -VhdUri $osDiskUri -CreateOption fromImage\n    New-AzureVM -ResourceGroupName $rgName -Location $locName -VM $vm\n    \n    # Create the second SQL Server virtual machine\n    $vmName=\"<Table M – Item 4 - Virtual machine name column>\"\n    $vmSize=\"<Table M – Item 4 - Minimum size column>\"\n    $nic=New-AzureNetworkInterface -Name ($vmName +\"-NIC\") -ResourceGroupName $rgName -Location $locName -SubnetId $vnet.Subnets[1].Id\n    $vm=New-AzureVMConfig -VMName $vmName -VMSize $vmSize -AvailabilitySetId $avset.Id\n    \n    $diskSize=<size of the extra disk for SQL data in GB>\n    $diskLabel=\"<the label on the disk>\"\n    $vhdURI=$storageAcc.PrimaryEndpoints.Blob.ToString() + \"vhds/\" + $vmName + \"-ADDSDisk.vhd\"\n    Add-AzureVMDataDisk -VM $vm -Name $diskLabel -DiskSizeInGB $diskSize -VhdUri $vhdURI  -CreateOption empty\n    \n    $cred=Get-Credential -Message \"Type the name and password of the local administrator account for the second SQL Server computer.\" \n    $vm=Set-AzureVMOperatingSystem -VM $vm -Windows -ComputerName $vmName -Credential $cred -ProvisionVMAgent -EnableAutoUpdate\n    $vm=Set-AzureVMSourceImage -VM $vm -PublisherName MicrosoftSQLServer -Offer SQL2014-WS2012R2 -Skus Enterprise -Version \"latest\"\n    $vm=Add-AzureVMNetworkInterface -VM $vm -Id $nic.Id\n    $storageAcc=Get-AzureStorageAccount -ResourceGroupName $rgName -Name $saName\n    $osDiskUri=$storageAcc.PrimaryEndpoints.Blob.ToString() + \"vhds/\" + $vmName + \"-OSDisk.vhd\"\n    $vm=Set-AzureVMOSDisk -VM $vm -Name \"OSDisk\" -VhdUri $osDiskUri -CreateOption fromImage\n    New-AzureVM -ResourceGroupName $rgName -Location $locName -VM $vm\n    \n    # Change to the standard storage account\n    $saName=\"<Table ST – Item 2 – Storage account name column>\"\n    \n    # Create the cluster majority node server\n    $vmName=\"<Table M – Item 5 - Virtual machine name column>\"\n    $vmSize=\"<Table M – Item 5 - Minimum size column>\"\n    $nic=New-AzureNetworkInterface -Name ($vmName +\"-NIC\") -ResourceGroupName $rgName -Location $locName -SubnetId $vnet.Subnets[1].Id\n    $vm=New-AzureVMConfig -VMName $vmName -VMSize $vmSize -AvailabilitySetId $avset.Id\n    $cred=Get-Credential -Message \"Type the name and password of the local administrator account for the cluster majority node server.\" \n    $vm=Set-AzureVMOperatingSystem -VM $vm -Windows -ComputerName $vmName -Credential $cred -ProvisionVMAgent -EnableAutoUpdate\n    $vm=Set-AzureVMSourceImage -VM $vm -PublisherName MicrosoftWindowsServer -Offer WindowsServer -Skus 2012-R2-Datacenter -Version \"latest\"\n    $vm=Add-AzureVMNetworkInterface -VM $vm -Id $nic.Id\n    $storageAcc=Get-AzureStorageAccount -ResourceGroupName $rgName -Name $saName\n    $osDiskUri=$storageAcc.PrimaryEndpoints.Blob.ToString() + \"vhds/\" + $vmName + \"-OSDisk.vhd\"\n    $vm=Set-AzureVMOSDisk -VM $vm -Name \"OSDisk\" -VhdUri $osDiskUri -CreateOption fromImage\n    New-AzureVM -ResourceGroupName $rgName -Location $locName -VM $vm\n\n## Configure the computers running SQL Server\n\nFor each virtual machine running SQL Server, use the remote desktop client of your choice and create a remote desktop connection to the first domain controller virtual machine. Use its intranet DNS or computer name and the credentials of the local administrator account.\n\nFor each virtual machine running SQL Server, join them to the appropriate AD DS domain with these commands at the Windows PowerShell prompt.\n\n    $domName=\"<AD DS domain name to join, such as corp.contoso.com>\"\n    Add-Computer -DomainName $domName\n    Restart-Computer\n\nNote that you must supply domain account credentials after entering the Add-Computer command.\n\nAfter they restart, reconnect to them using an account that has local administrator privileges.\n\n\nUse the following procedure twice, once for each virtual machine running SQL Server, to add the extra data disk and create folders on the new volume.\n\n### To initialize an empty disk and add folders\n\n1. In the left pane of Server Manager, click **File and Storage Services**, and then click **Disks**.\n2. In the contents pane, in the **Disks** group, click disk **2** (with the **Partition** set to **Unknown**).\n3. Click **Tasks**, and then click **New Volume**.\n4. On the Before you begin page of the New Volume Wizard, click **Next**.\n5. On the Select the server and disk page, click **Disk 2**, and then click **Next**. When prompted, click **OK**.\n6. On the Specify the size of the volume page, click **Next**.\n7. On the Assign to a drive letter or folder page, click **Next**.\n8. On the Select file system settings page, click **Next**.\n9. On the Confirm selections page, click **Create**.\n10. When complete, click **Close**.\n11. Run the following commands from a Windows PowerShell prompt:\n    - md f:\\Data\n    - md f:\\Log\n    - md f:\\Backup\n\nUse the following procedure twice, once for each virtual machine running SQL Server, to configure them to use the F: drive for new databases and for accounts and permissions.\n\n1. On the Start screen, type **SQL Studio**, and then click **SQL Server 2014 Management Studio**.\n2. In **Connect to Server**, click **Connect**.\n3. In the left pane, right-click the top node—the default instance named after the machine—and then click **Properties**.\n4.  In **Server Properties**, click **Database Settings**.\n5.  In **Database default locations**, set the following values: \n    - For **Data**, set the path to **f:\\Data**.\n    - For **Log**, set the path to **f:\\Log**.\n    - For **Backup**, set the path to **f:\\Backup**.\n    - Only new databases use these locations.\n6.  Click **OK** to close the window.\n7.  In the left pane, expand the **Security folder**.\n8.  Right-click **Logins**, and then click **New login**.\n9.  In **Login name**, type *domain*\\sqladmin in (in which *domain* is the name of the domain in which the sqladmin account was created in [Phase 2](virtual-machines-workload-high-availability-LOB-application-phase2.md)). \n10. Under **Select a page**, click **Server Roles**, click **sysadmin**, and then click **OK**.\n11. Close SQL Server 2014 Management Studio.\n\nUse the following procedure twice, once for each SQL server, to allow remote desktop connections using the sqladmin account.\n\n1.  On the Start screen, right-click **This PC**, and then click **Properties**.\n2.  In the **System** window, click **Remote Settings**.\n3.  In the **Remote Desktop** section, click **Select Users**, and then click **Add**.\n4.  In **Enter the object names to select**, type [domain]**\\sqladmin**, and then click **OK** three times.\n\nThe SQL Server service requires a port that clients use to access the database server. It also needs ports to connect with the SQL Server Management Studio and to manage the high-availability group. Next, run the following command at an administrator-level Windows PowerShell prompt twice, once for each SQL Server virtual machine, to add a firewall rule that allows this type of inbound traffic.\n\n    New-NetFirewallRule -DisplayName \"SQL Server ports 1433, 4234, and 5022\" -Direction Inbound –Protocol TCP –LocalPort 1433,1434,5022 -Action Allow\n\nFor each of the SQL Server virtual machines, sign out as the local administrator. \n\nFor information about optimizing SQL Server performance in Azure, see [Performance Best Practices for SQL Server in Azure Virtual Machines](virtual-machines-sql-server-performance-best-practices.md). You can also disable Geo Redundant Storage (GRS) for the line of business application storage account and use storage spaces to optimize IOPs.\n\n## Configure the cluster majority node server\n\nUse the remote desktop client of your choice and create a remote desktop connection to the cluster majority node server virtual machine. Use its intranet DNS or computer name and the credentials of the local administrator account.\n\nJoin the cluster majority node server to the appropriate AD DS domain with these commands at the Windows PowerShell prompt.\n\n    $domName=\"<AD DS domain name to join, such as corp.contoso.com>\"\n    Add-Computer -DomainName $domName\n    Restart-Computer\n\nNote that you must supply domain account credentials when running the **Add-Computer** command.\n\nAfter it restarts, reconnect with an account that has local administrator privileges.\n\n## Create the Windows Server Failover Clustering cluster\n\nSQL Server AlwaysOn Availability Groups rely on the Windows Server Failover Clustering (WSFC) feature of Windows Server. The feature allows several machines to participate as a group in a cluster. When one machine fails, a second machine is ready to take its place. Therefore the first task is to enable the Failover Clustering feature on all of the participating machines, which include:\n\n- The primary virtual machine running SQL Server\n- The secondary virtual machine running SQL Server\n- The cluster majority node\n\nThe failover cluster requires at least three virtual machines. Two machines host SQL Server, in which the secondary virtual machine is a synchronous secondary replica, ensuring zero data loss if the primary machine fails. The third virtual machine does not need to host SQL Server. The cluster majority node functions as a quorum witness in the WSFC. Because the WSFC cluster relies on a quorum to monitor health, there must always be a majority to ensure that the WSFC cluster is online. If only two machines are in a cluster, and one fails, there can be no majority when only one out of two fails. For more information, see [WSFC Quorum Modes and Voting Configuration (SQL Server)](http://msdn.microsoft.com/library/hh270280.aspx).\n\nFor both SQL Server virtual machines and for the cluster majority node, run the following command at an administrator-level Windows PowerShell prompt:\n\n    Install-WindowsFeature Failover-Clustering -IncludeManagementTools\n\nDue to current non-RFC-compliant behavior by DHCP in Azure, creation of a Windows Server Failover Cluster (WSFC) cluster can fail. For details, search for \"WSFC cluster behavior in Azure networking\" in High Availability and Disaster Recovery for SQL Server in Azure Virtual Machines. However, there is a workaround. Use the following steps to create the cluster.\n\n1.  Log on to the primary SQL Server virtual machine with the sqladmin account created in [Phase 2](virtual-machines-workload-high-availability-LOB-application-phase2.md).\n2.  From the Start screen, type **Failover**, and then click **Failover Cluster Manager**.\n3.  In the left pane, right-click **Failover Cluster Manager**, and then click **Create Cluster**.\n4.  On the **Before You Begin** page, click **Next**.\n5.  On the **Select Servers** page, type the name of the primary SQL Server machine, click **Add**, and then click **Next**.\n6.  On the **Validation Warning** page, click **No, I do not require support from Microsoft for this cluster, and therefore do not want to run the validation tests. When I click Next, continue creating the cluster.**, and then click **Next**.\n7.  On the **Access Point for Administering the Cluster** page, in the **Cluster Nam**e text box, type the name for your cluster, and then click **Next**.\n8.  In the **Confirmation** page, click **Next** to begin cluster creation. \n9.  On the **Summary** page, click **Finish**.\n10. In the left pane, click your new cluster. In the **Cluster Core Resources** section of the contents pane, open your server cluster name. The **IP Address** resource appears in the **Failed** state. The IP address resource cannot be brought online because the cluster is assigned the same IP address as that of the machine itself. The result is a duplicate address. \n11. Right-click the failed **IP Address** resource, and then click **Properties**.\n12. In the **IP Address Properties** dialog box, click **Static IP Address**.\n13. Type an unused IP in the address range corresponding to the subnet on which the SQL server is located, and then click **OK**.\n14. Right-click the failed IP Address resource, and then click **Bring Online**. Wait until both resources are online. When the cluster name resource comes online, it updates the domain controller with a new Active Directory (AD) computer account. This AD account is later used to run the availability group clustered service.\n15. Now that the AD account is created, bring the cluster name offline. Right-click the cluster name in **Cluster Core Resources**, and then click **Take Offline**.\n16. To remove the cluster IP address, right-click **IP Address**, click **Remove**, and then click **Yes** when prompted. The cluster resource can no longer come online because it depends on the IP address resource. However, an availability group does not depend on the cluster name or IP address in order to work properly. So the cluster name can be left offline.\n17. To add the remaining nodes to the cluster, right-click your cluster name in the left pane, and then click **Add Node**.\n18. On the **Before You Begin** page, click **Next**. \n19. On the **Select Servers** page, type the name and then click **Add** to add both the secondary SQL server and cluster majority node to the cluster. After adding the two computers, click **Next**.\nIf a machine cannot be added, and the error message is \"the Remote Registry is not running,\" do the following. Log on to the machine, open the Services snap-in (services.msc), and enable the Remote Registry. For more information, see [Unable to connect to Remote Registry service](http://technet.microsoft.com/library/bb266998.aspx). \n20. On the **Validation Warning** page, click **No, I do not require support from Microsoft for this cluster, and therefore do not want to run the validation tests. When I click Next, continue creating the cluster.**, and then click **Next**. \n21. On the **Confirmation** page, click **Next**.\n22. On the **Summary** page, click **Finish**.\n23. In the left pane, click **Nodes**. You should see all three computers listed.\n\n## Enable AlwaysOn Availability Groups\n\nThe next step is to enable AlwaysOn Availability Groups using the SQL Server Configuration Manager. Note that an availability group in SQL Server differs from an Azure availability set. An availability group contains databases that are highly-available and recoverable. An Azure availability set allocates virtual machines to different fault domains. For more information about fault domains, see [Manage the Availability of Virtual Machines](virtual-machines-manage-availability.md). \n\nUse these steps to enable AlwaysOn Availability Groups on SQL Server.\n\n1.  Log on to the primary SQL Server virtual machine with the sqladmin account created in [Phase 2](virtual-machines-workload-high-availability-LOB-application-phase2.md).\n2.  On the Start screen, type **SQL Server Configuration**, and then click **SQL Server Configuration Manager**.\n3.  In the left pane, click **SQL Server Services**.\n4.  In the contents pane, double-click **SQL Server (MSSQLSERVER)**.\n5.  In **SQL Server (MSSQLSERVER) Properties**, click the **AlwaysOn High Availability** tab, select **Enable AlwaysOn Availability Group**s, click **Apply**, and then click **OK** when prompted. Do not close the properties window yet. \n6.  Click the virtual-machines-manage-availability tab, then type [Domain]**\\sqlservice** in **Account Name**. Type the sqlservice account password in **Password** and **Confirm password**, and then click **OK**.\n7.  In the message window, click **Yes** to restart the SQL Server service.\n8.  Log on to the secondary SQL Server virtual machine with the sqladmin account and repeat steps 2 through 7. \n\nThis diagram shows the configuration resulting from the successful completion of this phase, with placeholder computer names.\n\n![](./media/virtual-machines-workload-high-availability-LOB-application-phase3/workload-lobapp-phase3.png)\n\n## Next step\n\nTo continue with the configuration of this workload, go to [Phase 4: Configure Web Servers](virtual-machines-workload-high-availability-LOB-application-phase4.md).\n\n## Additional resources\n\n[Deploy a high-availability line of business application in Azure](virtual-machines-workload-high-availability-LOB-application-overview.md)\n\n[Line of Business Applications architecture blueprint](http://msdn.microsoft.com/dn630664)\n\n[Set up a web-based LOB application in a hybrid cloud for testing](../virtual-network/virtual-networks-setup-lobapp-hybrid-cloud-testing.md)\n\n[Azure infrastructure services implementation guidelines](virtual-machines-infrastructure-services-implementation-guidelines.md)\n\n[Azure Infrastructure Services Workload: SharePoint Server 2013 farm](virtual-machines-workload-intranet-sharepoint-farm.md)\n\n"
+}

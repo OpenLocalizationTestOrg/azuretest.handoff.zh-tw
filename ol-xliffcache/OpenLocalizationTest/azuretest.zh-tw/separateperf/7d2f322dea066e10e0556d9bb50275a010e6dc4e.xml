@@ -1,0 +1,360 @@
+{
+  "nodes": [
+    {
+      "content": "Working with Node.js Modules",
+      "pos": [
+        23,
+        51
+      ]
+    },
+    {
+      "content": "Learn how to work with Node.js modules when using Azure Web Sites or Cloud Services.",
+      "pos": [
+        66,
+        150
+      ]
+    },
+    {
+      "content": "Using Node.js Modules with Azure applications",
+      "pos": [
+        407,
+        452
+      ]
+    },
+    {
+      "content": "This document provides guidance on using Node.js modules with applications hosted on Azure.",
+      "pos": [
+        454,
+        545
+      ]
+    },
+    {
+      "content": "It provides guidance on ensuring that your application uses a specific version of module as well as using native modules with Azure.",
+      "pos": [
+        546,
+        678
+      ]
+    },
+    {
+      "pos": [
+        680,
+        858
+      ],
+      "content": "If you are already familiar with using Node.js modules, <bpt id=\"p1\">**</bpt>package.json<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>npm-shrinkwrap.json<ept id=\"p2\">**</ept> files, the following is a quick summary of what is discussed in this article:"
+    },
+    {
+      "pos": [
+        862,
+        994
+      ],
+      "content": "Azure Webites understand <bpt id=\"p1\">**</bpt>package.json<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>npm-shrinkwrap.json<ept id=\"p2\">**</ept> files and can install modules based on entries in these files."
+    },
+    {
+      "pos": [
+        997,
+        1170
+      ],
+      "content": "Azure Cloud Services expect all modules to be installed on the development environment, and the <bpt id=\"p1\">**</bpt>node\\_modules<ept id=\"p1\">**</ept> directory to be included as part of the deployment package."
+    },
+    {
+      "pos": [
+        1174,
+        1354
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> Azure Virtual Machines are not discussed in this article, as the deployment experience in a VM will be dependent on the operating system hosted by the Virtual Machine."
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> It is possible to enable support for installing modules using <bpt id=\"p1\">**</bpt>package.json<ept id=\"p1\">**</ept> or <bpt id=\"p2\">**</bpt>npm-shrinkwrap.json<ept id=\"p2\">**</ept> files on Azure, however this requires customization of the default scripts used by Cloud Service projects.",
+      "pos": [
+        1358,
+        1583
+      ]
+    },
+    {
+      "content": "For an example of how to accomplish this, see <bpt id=\"p1\">[</bpt>Azure Startup task to run npm install to avoid deploying node modules<ept id=\"p1\">](http://nodeblog.azurewebsites.net/startup-task-to-run-npm-in-azure)</ept>",
+      "pos": [
+        1584,
+        1769
+      ]
+    },
+    {
+      "content": "Node.js Modules",
+      "pos": [
+        1773,
+        1788
+      ]
+    },
+    {
+      "content": "Modules are loadable JavaScript packages that provide specific functionality for your application.",
+      "pos": [
+        1790,
+        1888
+      ]
+    },
+    {
+      "content": "A module is usually installed using the <bpt id=\"p1\">**</bpt>npm<ept id=\"p1\">**</ept> command-line tool, however some (such as the http module) are provided as part of the core Node.js package.",
+      "pos": [
+        1889,
+        2044
+      ]
+    },
+    {
+      "content": "When modules are installed, they are stored in the <bpt id=\"p1\">**</bpt>node\\_modules<ept id=\"p1\">**</ept> directory at the root of your application directory structure.",
+      "pos": [
+        2046,
+        2177
+      ]
+    },
+    {
+      "content": "Each module within the <bpt id=\"p1\">**</bpt>node\\_modules<ept id=\"p1\">**</ept> directory maintains its own <bpt id=\"p2\">**</bpt>node\\_modules<ept id=\"p2\">**</ept> directory that contains any modules that it depend on, and this repeats again for every module all the way down the dependency chain.",
+      "pos": [
+        2178,
+        2398
+      ]
+    },
+    {
+      "content": "This allows each module installed to have its own version requirements for the modules it depends on, however it can result in quite a large directory structure.",
+      "pos": [
+        2399,
+        2560
+      ]
+    },
+    {
+      "pos": [
+        2562,
+        2872
+      ],
+      "content": "When deploying the <bpt id=\"p1\">**</bpt>node\\_modules<ept id=\"p1\">**</ept> directory as part of your application, it will increase the size of the deployment compared to using a <bpt id=\"p2\">**</bpt>package.json<ept id=\"p2\">**</ept> or <bpt id=\"p3\">**</bpt>npm-shrinkwrap.json<ept id=\"p3\">**</ept> file; however, it does guarantee that the version of the modules used in production are the same as those used in development."
+    },
+    {
+      "content": "Native Modules",
+      "pos": [
+        2877,
+        2891
+      ]
+    },
+    {
+      "content": "While most modules are simply plain-text JavaScript files, some modules are platform-specific binary images.",
+      "pos": [
+        2893,
+        3001
+      ]
+    },
+    {
+      "content": "These modules are compiled at install time, usually by using Python and node-gyp.",
+      "pos": [
+        3002,
+        3083
+      ]
+    },
+    {
+      "content": "Since Azure Cloud Services rely on the <bpt id=\"p1\">**</bpt>node\\_modules<ept id=\"p1\">**</ept> folder being deployed as part of the application, any native module included as part of the installed modules should work in a cloud service as long as it was installed and compiled on a Windows development system.",
+      "pos": [
+        3084,
+        3355
+      ]
+    },
+    {
+      "content": "Azure Websites does not support all native modules and might fail at compiling those with very specific prerequisites.",
+      "pos": [
+        3357,
+        3475
+      ]
+    },
+    {
+      "content": "While some popular modules like MongoDB have optional native dependencies and work just fine without them, two workarounds proved successful with almost all native modules available today:",
+      "pos": [
+        3476,
+        3664
+      ]
+    },
+    {
+      "content": "Run <bpt id=\"p1\">**</bpt>npm install<ept id=\"p1\">**</ept> on a Windows machine that has all the native module's prerequisites installed.",
+      "pos": [
+        3668,
+        3766
+      ]
+    },
+    {
+      "content": "Then, deploy the created <bpt id=\"p1\">**</bpt>node\\_modules<ept id=\"p1\">**</ept> folder as part of the application to Azure Websites.",
+      "pos": [
+        3767,
+        3862
+      ]
+    },
+    {
+      "content": "Azure Websites can be configured to execute custom bash or shell scripts during deployment, giving you the opportunity to execute custom commands and precisely configure the way <bpt id=\"p1\">**</bpt>npm install<ept id=\"p1\">**</ept> is being run.",
+      "pos": [
+        3865,
+        4072
+      ]
+    },
+    {
+      "content": "For a video showing how to do this, see <bpt id=\"p1\">[</bpt><ept id=\"p1\">Custom Website Deployment Scripts with Kudu]</ept>.",
+      "pos": [
+        4073,
+        4159
+      ]
+    },
+    {
+      "content": "Using a package.json file",
+      "pos": [
+        4164,
+        4189
+      ]
+    },
+    {
+      "content": "The <bpt id=\"p1\">**</bpt>package.json<ept id=\"p1\">**</ept> file is a way to specify the top level dependencies your application requires so that the hosting platform can install the dependencies, rather than requiring you to include the <bpt id=\"p2\">**</bpt>node\\_packages<ept id=\"p2\">**</ept> folder as part of the deployment.",
+      "pos": [
+        4191,
+        4442
+      ]
+    },
+    {
+      "content": "After the application has been deployed, the <bpt id=\"p1\">**</bpt>npm install<ept id=\"p1\">**</ept> command is used to parse the <bpt id=\"p2\">**</bpt>package.json<ept id=\"p2\">**</ept> file and install all the dependencies listed.",
+      "pos": [
+        4443,
+        4595
+      ]
+    },
+    {
+      "content": "During development, you can use the <bpt id=\"p1\">**</bpt>--save<ept id=\"p1\">**</ept>, <bpt id=\"p2\">**</bpt>--save-dev<ept id=\"p2\">**</ept>, or <bpt id=\"p3\">**</bpt>--save-optional<ept id=\"p3\">**</ept> parameters when installing modules to add an entry for the module to your <bpt id=\"p4\">**</bpt>package.json<ept id=\"p4\">**</ept> file automatically.",
+      "pos": [
+        4597,
+        4794
+      ]
+    },
+    {
+      "content": "For more information, see <bpt id=\"p1\">[</bpt>npm-install<ept id=\"p1\">](https://npmjs.org/doc/install.html)</ept>.",
+      "pos": [
+        4795,
+        4871
+      ]
+    },
+    {
+      "content": "One potential problem with the <bpt id=\"p1\">**</bpt>package.json<ept id=\"p1\">**</ept> file is that it only specifies the version for top level dependencies.",
+      "pos": [
+        4873,
+        4991
+      ]
+    },
+    {
+      "content": "Each module installed may or may not specify the version of the modules it depends on, and so it is possible that you may end up with a different dependency chain than the one used in development.",
+      "pos": [
+        4992,
+        5188
+      ]
+    },
+    {
+      "pos": [
+        5192,
+        5391
+      ],
+      "content": "[AZURE.NOTE]\nWhen deploying to an Azure Webite, if your <b>package.json</b> file references a native module you will see an error similar to the following when publishing the application using Git:",
+      "leadings": [
+        "",
+        "> "
+      ],
+      "nodes": [
+        {
+          "content": "When deploying to an Azure Webite, if your <ph id=\"ph1\">&lt;b&gt;</ph>package.json<ph id=\"ph2\">&lt;/b&gt;</ph> file references a native module you will see an error similar to the following when publishing the application using Git:",
+          "pos": [
+            13,
+            197
+          ]
+        }
+      ]
+    },
+    {
+      "content": "Using a npm-shrinkwrap.json file",
+      "pos": [
+        5539,
+        5571
+      ]
+    },
+    {
+      "content": "The <bpt id=\"p1\">**</bpt>npm-shrinkwrap.json<ept id=\"p1\">**</ept> file is an attempt to address the module versioning limitations of the <bpt id=\"p2\">**</bpt>package.json<ept id=\"p2\">**</ept> file.",
+      "pos": [
+        5573,
+        5694
+      ]
+    },
+    {
+      "content": "While the <bpt id=\"p1\">**</bpt>package.json<ept id=\"p1\">**</ept> file only includes versions for the top level modules, the <bpt id=\"p2\">**</bpt>npm-shrinkwrap.json<ept id=\"p2\">**</ept> file contains the version requirements for the full module dependency chain.",
+      "pos": [
+        5695,
+        5881
+      ]
+    },
+    {
+      "content": "When your application is ready for production, you can lock-down version requirements and create an <bpt id=\"p1\">**</bpt>npm-shrinkwrap.json<ept id=\"p1\">**</ept> file by using the <bpt id=\"p2\">**</bpt>npm shrinkwrap<ept id=\"p2\">**</ept> command.",
+      "pos": [
+        5883,
+        6052
+      ]
+    },
+    {
+      "content": "This will use the versions currently installed in the <bpt id=\"p1\">**</bpt>node\\_modules<ept id=\"p1\">**</ept> folder, and record these to the <bpt id=\"p2\">**</bpt>npm-shrinkwrap.json<ept id=\"p2\">**</ept> file.",
+      "pos": [
+        6053,
+        6186
+      ]
+    },
+    {
+      "content": "After the application has been deployed to the hosting environment, the <bpt id=\"p1\">**</bpt>npm install<ept id=\"p1\">**</ept> command is used to parse the <bpt id=\"p2\">**</bpt>npm-shrinkwrap.json<ept id=\"p2\">**</ept> file and install all the dependencies listed.",
+      "pos": [
+        6187,
+        6373
+      ]
+    },
+    {
+      "content": "For more information, see <bpt id=\"p1\">[</bpt>npm-install<ept id=\"p1\">](https://npmjs.org/doc/install.html)</ept>.",
+      "pos": [
+        6374,
+        6450
+      ]
+    },
+    {
+      "pos": [
+        6454,
+        6659
+      ],
+      "content": "[AZURE.NOTE]\nWhen deploying to an Azure Webite, if your <b>npm-shrinkwrap.json</b> file references a native module you will see an error similar to the following when publishing the application using Git:",
+      "leadings": [
+        "",
+        ">"
+      ],
+      "nodes": [
+        {
+          "content": "When deploying to an Azure Webite, if your <ph id=\"ph1\">&lt;b&gt;</ph>npm-shrinkwrap.json<ph id=\"ph2\">&lt;/b&gt;</ph> file references a native module you will see an error similar to the following when publishing the application using Git:",
+          "pos": [
+            13,
+            204
+          ]
+        }
+      ]
+    },
+    {
+      "content": "Next Steps",
+      "pos": [
+        6806,
+        6816
+      ]
+    },
+    {
+      "pos": [
+        6818,
+        7032
+      ],
+      "content": "Now that you understand how to use Node.js modules with Azure, learn how to <bpt id=\"p1\">[</bpt><ept id=\"p1\">specify the Node.js version]</ept>, <bpt id=\"p2\">[</bpt><ept id=\"p2\">build and deploy a Node.js Web Site]</ept>, and <bpt id=\"p3\">[</bpt><ept id=\"p3\">How to use the Azure Command-Line Interface for Mac and Linux]</ept>."
+    },
+    {
+      "content": "test",
+      "pos": [
+        7666,
+        7670
+      ]
+    }
+  ],
+  "content": "<properties pageTitle=\"Working with Node.js Modules\" description=\"Learn how to work with Node.js modules when using Azure Web Sites or Cloud Services.\" services=\"\" documentationCenter=\"nodejs\" authors=\"MikeWasson\" manager=\"wpickett\" editor=\"mollybos\"/>\n\n<tags ms.service=\"multiple\" ms.workload=\"na\" ms.tgt_pltfrm=\"na\" ms.devlang=\"nodejs\" ms.topic=\"article\" ms.date=\"08/31/2015\" ms.author=\"mwasson\"/>\n\n\n\n\n\n# Using Node.js Modules with Azure applications\n\nThis document provides guidance on using Node.js modules with applications hosted on Azure. It provides guidance on ensuring that your application uses a specific version of module as well as using native modules with Azure.\n\nIf you are already familiar with using Node.js modules, **package.json** and **npm-shrinkwrap.json** files, the following is a quick summary of what is discussed in this article:\n\n* Azure Webites understand **package.json** and **npm-shrinkwrap.json** files and can install modules based on entries in these files.\n* Azure Cloud Services expect all modules to be installed on the development environment, and the **node\\_modules** directory to be included as part of the deployment package.\n\n> [AZURE.NOTE] Azure Virtual Machines are not discussed in this article, as the deployment experience in a VM will be dependent on the operating system hosted by the Virtual Machine.\n\n> [AZURE.NOTE] It is possible to enable support for installing modules using **package.json** or **npm-shrinkwrap.json** files on Azure, however this requires customization of the default scripts used by Cloud Service projects. For an example of how to accomplish this, see [Azure Startup task to run npm install to avoid deploying node modules](http://nodeblog.azurewebsites.net/startup-task-to-run-npm-in-azure)\n\n##Node.js Modules\n\nModules are loadable JavaScript packages that provide specific functionality for your application. A module is usually installed using the **npm** command-line tool, however some (such as the http module) are provided as part of the core Node.js package.\n\nWhen modules are installed, they are stored in the **node\\_modules** directory at the root of your application directory structure. Each module within the **node\\_modules** directory maintains its own **node\\_modules** directory that contains any modules that it depend on, and this repeats again for every module all the way down the dependency chain. This allows each module installed to have its own version requirements for the modules it depends on, however it can result in quite a large directory structure.\n\nWhen deploying the **node\\_modules** directory as part of your application, it will increase the size of the deployment compared to using a **package.json** or **npm-shrinkwrap.json** file; however, it does guarantee that the version of the modules used in production are the same as those used in development.\n\n###Native Modules\n\nWhile most modules are simply plain-text JavaScript files, some modules are platform-specific binary images. These modules are compiled at install time, usually by using Python and node-gyp. Since Azure Cloud Services rely on the **node\\_modules** folder being deployed as part of the application, any native module included as part of the installed modules should work in a cloud service as long as it was installed and compiled on a Windows development system.\n\nAzure Websites does not support all native modules and might fail at compiling those with very specific prerequisites. While some popular modules like MongoDB have optional native dependencies and work just fine without them, two workarounds proved successful with almost all native modules available today:\n\n* Run **npm install** on a Windows machine that has all the native module's prerequisites installed. Then, deploy the created **node\\_modules** folder as part of the application to Azure Websites.\n* Azure Websites can be configured to execute custom bash or shell scripts during deployment, giving you the opportunity to execute custom commands and precisely configure the way **npm install** is being run. For a video showing how to do this, see [Custom Website Deployment Scripts with Kudu].\n\n###Using a package.json file\n\nThe **package.json** file is a way to specify the top level dependencies your application requires so that the hosting platform can install the dependencies, rather than requiring you to include the **node\\_packages** folder as part of the deployment. After the application has been deployed, the **npm install** command is used to parse the **package.json** file and install all the dependencies listed.\n\nDuring development, you can use the **--save**, **--save-dev**, or **--save-optional** parameters when installing modules to add an entry for the module to your **package.json** file automatically. For more information, see [npm-install](https://npmjs.org/doc/install.html).\n\nOne potential problem with the **package.json** file is that it only specifies the version for top level dependencies. Each module installed may or may not specify the version of the modules it depends on, and so it is possible that you may end up with a different dependency chain than the one used in development.\n\n> [AZURE.NOTE]\n> When deploying to an Azure Webite, if your <b>package.json</b> file references a native module you will see an error similar to the following when publishing the application using Git:\n\n>       npm ERR! module-name@0.6.0 install: 'node-gyp configure build'\n\n>       npm ERR! 'cmd \"/c\" \"node-gyp configure build\"' failed with 1\n\n\n###Using a npm-shrinkwrap.json file\n\nThe **npm-shrinkwrap.json** file is an attempt to address the module versioning limitations of the **package.json** file. While the **package.json** file only includes versions for the top level modules, the **npm-shrinkwrap.json** file contains the version requirements for the full module dependency chain.\n\nWhen your application is ready for production, you can lock-down version requirements and create an **npm-shrinkwrap.json** file by using the **npm shrinkwrap** command. This will use the versions currently installed in the **node\\_modules** folder, and record these to the **npm-shrinkwrap.json** file. After the application has been deployed to the hosting environment, the **npm install** command is used to parse the **npm-shrinkwrap.json** file and install all the dependencies listed. For more information, see [npm-install](https://npmjs.org/doc/install.html).\n\n> [AZURE.NOTE]\n>When deploying to an Azure Webite, if your <b>npm-shrinkwrap.json</b> file references a native module you will see an error similar to the following when publishing the application using Git:\n\n>       npm ERR! module-name@0.6.0 install: 'node-gyp configure build'\n\n>       npm ERR! 'cmd \"/c\" \"node-gyp configure build\"' failed with 1\n\n\n##Next Steps\n\nNow that you understand how to use Node.js modules with Azure, learn how to [specify the Node.js version], [build and deploy a Node.js Web Site], and [How to use the Azure Command-Line Interface for Mac and Linux].\n\n[specify the Node.js version]: nodejs-specify-node-version-azure-apps.md\n[How to use the Azure Command-Line Interface for Mac and Linux]: xplat-cli.md\n[build and deploy a Node.js Web Site]: web-sites-nodejs-develop-deploy-mac.md\n[Node.js Web Application with Storage on MongoDB (MongoLab)]: store-mongolab-web-sites-nodejs-store-data-mongodb.md\n[Publishing with Git]: web-sites-publish-source-control.md\n[Build and deploy a Node.js application to an Azure Cloud Service]: cloud-services-nodejs-develop-deploy-app.md\n[Custom Website Deployment Scripts with Kudu]: /documentation/videos/custom-web-site-deployment-scripts-with-kudu/\n\ntest\n"
+}

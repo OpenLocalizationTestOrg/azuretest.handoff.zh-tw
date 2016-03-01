@@ -1,0 +1,971 @@
+{
+  "nodes": [
+    {
+      "content": "How to use Hudson with the Azure Blob service | Microsoft Azure",
+      "pos": [
+        28,
+        91
+      ]
+    },
+    {
+      "content": "Describes how to use Hudson with Azure Blob storage as a repository for build artifacts.",
+      "pos": [
+        111,
+        199
+      ]
+    },
+    {
+      "content": "Using Azure Storage with a Hudson Continuous Integration solution",
+      "pos": [
+        513,
+        578
+      ]
+    },
+    {
+      "pos": [
+        581,
+        632
+      ],
+      "content": "By <bpt id=\"p1\">[</bpt>Microsoft Open Technologies Inc.<ept id=\"p1\">][ms-open-tech]</ept>"
+    },
+    {
+      "content": "Overview",
+      "pos": [
+        638,
+        646
+      ]
+    },
+    {
+      "content": "The following information shows how to use the Azure Blob service as a repository of build artifacts created by a Hudson Continuous Integration (CI) solution, or as a source of downloadable files to be used in a build process.",
+      "pos": [
+        648,
+        874
+      ]
+    },
+    {
+      "content": "One of the scenarios where you would find this useful is when you're coding in an agile development environment (using Java or other languages), builds are running based on continuous integration, and you need a repository for your build artifacts, so that you could, for example, share them with other organization members, your customers, or maintain an archive.",
+      "pos": [
+        875,
+        1239
+      ]
+    },
+    {
+      "content": "Another scenario is when your build job itself requires other files, for example, dependencies to download as part of the build input.",
+      "pos": [
+        1241,
+        1375
+      ]
+    },
+    {
+      "content": "In this tutorial you will be using the Azure Storage Plugin for Hudson CI made available by Microsoft Open Technologies, Inc.",
+      "pos": [
+        1377,
+        1502
+      ]
+    },
+    {
+      "content": "Introduction to Hudson",
+      "pos": [
+        1507,
+        1529
+      ]
+    },
+    {
+      "content": "Hudson enables continuous integration of a software project by allowing developers to easily integrate their code changes and have builds produced automatically and frequently, thereby increasing the productivity of the developers.",
+      "pos": [
+        1533,
+        1764
+      ]
+    },
+    {
+      "content": "Builds are versioned, and build artifacts can be uploaded to various repositories.",
+      "pos": [
+        1765,
+        1847
+      ]
+    },
+    {
+      "content": "This topic will show how to use Azure blob storage as the repository of the build artifacts.",
+      "pos": [
+        1848,
+        1940
+      ]
+    },
+    {
+      "content": "It will also show how to download dependencies from Azure blob storage.",
+      "pos": [
+        1941,
+        2012
+      ]
+    },
+    {
+      "pos": [
+        2014,
+        2076
+      ],
+      "content": "More information about Hudson can be found at <bpt id=\"p1\">[</bpt>Meet Hudson<ept id=\"p1\">][]</ept>."
+    },
+    {
+      "content": "Benefits of using the Blob service",
+      "pos": [
+        2081,
+        2115
+      ]
+    },
+    {
+      "content": "Benefits of using the Blob service to host your agile development build artifacts include:",
+      "pos": [
+        2120,
+        2210
+      ]
+    },
+    {
+      "content": "High availability of your build artifacts and/or downloadable dependencies.",
+      "pos": [
+        2214,
+        2289
+      ]
+    },
+    {
+      "content": "Performance when your Hudson CI solution uploads your build artifacts.",
+      "pos": [
+        2292,
+        2362
+      ]
+    },
+    {
+      "content": "Performance when your customers and partners download your build artifacts.",
+      "pos": [
+        2365,
+        2440
+      ]
+    },
+    {
+      "content": "Control over user access policies, with a choice between anonymous access, expiration-based shared access signature access, private access, etc.",
+      "pos": [
+        2443,
+        2587
+      ]
+    },
+    {
+      "content": "Prequisites",
+      "pos": [
+        2592,
+        2603
+      ]
+    },
+    {
+      "content": "You will need the following to use the Blob service with your Hudson CI solution:",
+      "pos": [
+        2608,
+        2689
+      ]
+    },
+    {
+      "content": "A Hudson Continuous Integration solution.",
+      "pos": [
+        2693,
+        2734
+      ]
+    },
+    {
+      "content": "If you currently don't have a Hudson CI solution, you can run a Hudson CI solution using the following technique:",
+      "pos": [
+        2740,
+        2853
+      ]
+    },
+    {
+      "pos": [
+        2862,
+        2942
+      ],
+      "content": "On a Java-enabled machine, download the Hudson WAR from <bpt id=\"p1\">&lt;</bpt><ept id=\"p1\">http://hudson-ci.org/&gt;</ept>."
+    },
+    {
+      "content": "At a command prompt that is opened to the folder that contains the Hudson WAR, run the Hudson WAR.",
+      "pos": [
+        2950,
+        3048
+      ]
+    },
+    {
+      "content": "For example, if you have downloaded version 3.1.2:",
+      "pos": [
+        3049,
+        3099
+      ]
+    },
+    {
+      "content": "In your browser, open <ph id=\"ph1\">`http://localhost:8080/`</ph>.",
+      "pos": [
+        3146,
+        3193
+      ]
+    },
+    {
+      "content": "This will open the Hudson dashboard.",
+      "pos": [
+        3194,
+        3230
+      ]
+    },
+    {
+      "pos": [
+        3239,
+        3320
+      ],
+      "content": "Upon first use of Hudson, complete the initial setup at <ph id=\"ph1\">`http://localhost:8080/`</ph>."
+    },
+    {
+      "pos": [
+        3330,
+        3573
+      ],
+      "content": "After you complete the initial setup, cancel the running instance of the Hudson WAR, start the Hudson WAR again, and  re-open the Hudson dashboard, <ph id=\"ph1\">`http://localhost:8080/`</ph>, which you will use to install and configure the Azure Storage plugin."
+    },
+    {
+      "content": "While a typical Hudson CI solution would be set up to run as a service, running the Hudson war at the command line will be sufficient for this tutorial.",
+      "pos": [
+        3583,
+        3735
+      ]
+    },
+    {
+      "content": "An Azure account.",
+      "pos": [
+        3739,
+        3756
+      ]
+    },
+    {
+      "content": "You can sign up for an Azure account at <bpt id=\"p1\">&lt;</bpt><ept id=\"p1\">http://www.azure.com&gt;</ept>.",
+      "pos": [
+        3757,
+        3820
+      ]
+    },
+    {
+      "content": "An Azure storage account.",
+      "pos": [
+        3824,
+        3849
+      ]
+    },
+    {
+      "content": "If you don't already have a storage account, you can create one using the steps at <bpt id=\"p1\">[</bpt>How to Create a Storage Account<ept id=\"p1\">][]</ept>.",
+      "pos": [
+        3850,
+        3969
+      ]
+    },
+    {
+      "content": "Familiarity with the Hudson CI solution is recommended but not required, as the following content will use a basic example to show you the steps needed when using the Blob service as a repository for Hudson CI build artifacts.",
+      "pos": [
+        3973,
+        4199
+      ]
+    },
+    {
+      "content": "How to use the Blob service with Hudson CI",
+      "pos": [
+        4204,
+        4246
+      ]
+    },
+    {
+      "content": "To use the Blob service with Hudson, you'll need to install the Azure Storage plugin, configure the plugin to use your storage account, and then create a post-build action that uploads your build artifacts to your storage account.",
+      "pos": [
+        4251,
+        4481
+      ]
+    },
+    {
+      "content": "These steps are described in the following sections.",
+      "pos": [
+        4482,
+        4534
+      ]
+    },
+    {
+      "content": "How to install the Azure Storage plugin",
+      "pos": [
+        4539,
+        4578
+      ]
+    },
+    {
+      "pos": [
+        4586,
+        4639
+      ],
+      "content": "Within the Hudson dashboard, click <bpt id=\"p1\">**</bpt>Manage Hudson<ept id=\"p1\">**</ept>."
+    },
+    {
+      "pos": [
+        4643,
+        4699
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Manage Hudson<ept id=\"p1\">**</ept> page, click <bpt id=\"p2\">**</bpt>Manage Plugins<ept id=\"p2\">**</ept>."
+    },
+    {
+      "pos": [
+        4703,
+        4731
+      ],
+      "content": "Click the <bpt id=\"p1\">**</bpt>Available<ept id=\"p1\">**</ept> tab."
+    },
+    {
+      "pos": [
+        4735,
+        4752
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>Others<ept id=\"p1\">**</ept>."
+    },
+    {
+      "pos": [
+        4756,
+        4836
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Artifact Uploaders<ept id=\"p1\">**</ept> section, check <bpt id=\"p2\">**</bpt>Microsoft Azure Storage plugin<ept id=\"p2\">**</ept>."
+    },
+    {
+      "pos": [
+        4840,
+        4858
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>Install<ept id=\"p1\">**</ept>."
+    },
+    {
+      "content": "After the installation is complete, restart Hudson.",
+      "pos": [
+        4862,
+        4913
+      ]
+    },
+    {
+      "content": "How to configure the Azure Storage plugin to use your storage account",
+      "pos": [
+        4918,
+        4987
+      ]
+    },
+    {
+      "pos": [
+        4995,
+        5048
+      ],
+      "content": "Within the Hudson dashboard, click <bpt id=\"p1\">**</bpt>Manage Hudson<ept id=\"p1\">**</ept>."
+    },
+    {
+      "pos": [
+        5052,
+        5110
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Manage Hudson<ept id=\"p1\">**</ept> page, click <bpt id=\"p2\">**</bpt>Configure System<ept id=\"p2\">**</ept>."
+    },
+    {
+      "pos": [
+        5114,
+        5179
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Microsoft Azure Storage Account Configuration<ept id=\"p1\">**</ept> section:"
+    },
+    {
+      "pos": [
+        5187,
+        5298
+      ],
+      "content": "Enter your storage account name, which you can obtain from the Azure portal, <bpt id=\"p1\">&lt;</bpt><ept id=\"p1\">https://manage.windowsazure.com&gt;</ept>."
+    },
+    {
+      "content": "Enter your storage account key, also obtainable from the Azure portal.",
+      "pos": [
+        5306,
+        5376
+      ]
+    },
+    {
+      "content": "Use the default value for <bpt id=\"p1\">**</bpt>Blob Service Endpoint URL<ept id=\"p1\">**</ept> if you are using the public Azure cloud.",
+      "pos": [
+        5384,
+        5480
+      ]
+    },
+    {
+      "content": "If you are using a different Azure cloud, use the endpoint as specified in the Azure management portal for your storage account.",
+      "pos": [
+        5481,
+        5609
+      ]
+    },
+    {
+      "pos": [
+        5618,
+        5690
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>Validate storage credentials<ept id=\"p1\">**</ept> to validate your storage account."
+    },
+    {
+      "pos": [
+        5699,
+        5834
+      ],
+      "content": "[Optional] If you have additional storage accounts that you want made available to your Hudson CI, click <bpt id=\"p1\">**</bpt>Add more storage accounts<ept id=\"p1\">**</ept>."
+    },
+    {
+      "pos": [
+        5842,
+        5879
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>Save<ept id=\"p1\">**</ept> to save your settings."
+    },
+    {
+      "content": "How to create a post-build action that uploads your build artifacts to your storage account",
+      "pos": [
+        5884,
+        5975
+      ]
+    },
+    {
+      "content": "For instruction purposes, first we'll need to create a job that will create several files, and then add in the post-build action to upload the files to your storage account.",
+      "pos": [
+        5980,
+        6153
+      ]
+    },
+    {
+      "pos": [
+        6158,
+        6205
+      ],
+      "content": "Within the Hudson dashboard, click <bpt id=\"p1\">**</bpt>New Job<ept id=\"p1\">**</ept>."
+    },
+    {
+      "pos": [
+        6209,
+        6298
+      ],
+      "content": "Name the job <bpt id=\"p1\">**</bpt>MyJob<ept id=\"p1\">**</ept>, click <bpt id=\"p2\">**</bpt>Build a free-style software job<ept id=\"p2\">**</ept>, and then click <bpt id=\"p3\">**</bpt>OK<ept id=\"p3\">**</ept>."
+    },
+    {
+      "pos": [
+        6302,
+        6423
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Build<ept id=\"p1\">**</ept> section of the job configuration, click <bpt id=\"p2\">**</bpt>Add build step<ept id=\"p2\">**</ept> and choose <bpt id=\"p3\">**</bpt>Execute Windows batch command<ept id=\"p3\">**</ept>."
+    },
+    {
+      "pos": [
+        6427,
+        6470
+      ],
+      "content": "In <bpt id=\"p1\">**</bpt>Command<ept id=\"p1\">**</ept>, use the following commands:"
+    },
+    {
+      "pos": [
+        6621,
+        6744
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Post-build Actions<ept id=\"p1\">**</ept> section of the job configuration, click <bpt id=\"p2\">**</bpt>Upload artifacts to Microsoft Azure Blob storage<ept id=\"p2\">**</ept>."
+    },
+    {
+      "pos": [
+        6748,
+        6812
+      ],
+      "content": "For <bpt id=\"p1\">**</bpt>Storage Account Name<ept id=\"p1\">**</ept>, select the storage account to use."
+    },
+    {
+      "content": "For <bpt id=\"p1\">**</bpt>Container Name<ept id=\"p1\">**</ept>, specify the container name.",
+      "pos": [
+        6816,
+        6867
+      ]
+    },
+    {
+      "content": "(The container will be created if it does not already exist when the build artifacts are uploaded.) You can use environment variables, so for this example enter <bpt id=\"p1\">**</bpt>${JOB_NAME}<ept id=\"p1\">**</ept> as the container name.",
+      "pos": [
+        6868,
+        7067
+      ]
+    },
+    {
+      "content": "Tip",
+      "pos": [
+        7075,
+        7078
+      ]
+    },
+    {
+      "content": "Below the <bpt id=\"p1\">**</bpt>Command<ept id=\"p1\">**</ept> section where you entered a script for <bpt id=\"p2\">**</bpt>Execute Windows batch command<ept id=\"p2\">**</ept> is a link to the environment variables recognized by Hudson.",
+      "pos": [
+        7090,
+        7245
+      ]
+    },
+    {
+      "content": "Click that link to learn the environment variable names and descriptions.",
+      "pos": [
+        7246,
+        7319
+      ]
+    },
+    {
+      "content": "Note that environment variables that contain special characters, such as the <bpt id=\"p1\">**</bpt>BUILD_URL<ept id=\"p1\">**</ept> environment variable, are not allowed as a container name or common virtual path.",
+      "pos": [
+        7320,
+        7492
+      ]
+    },
+    {
+      "content": "Click <bpt id=\"p1\">**</bpt>Make new container public by default<ept id=\"p1\">**</ept> for this example.",
+      "pos": [
+        7497,
+        7561
+      ]
+    },
+    {
+      "content": "(If you want to use a private container, you'll need to create a shared access signature to allow access.",
+      "pos": [
+        7562,
+        7667
+      ]
+    },
+    {
+      "content": "That is beyond the scope of this topic.",
+      "pos": [
+        7668,
+        7707
+      ]
+    },
+    {
+      "content": "You can learn more about shared access signatures at <bpt id=\"p1\">[</bpt>Creating a Shared Access Signature<ept id=\"p1\">](http://go.microsoft.com/fwlink/?LinkId=279889)</ept>.)",
+      "pos": [
+        7708,
+        7846
+      ]
+    },
+    {
+      "pos": [
+        7850,
+        8071
+      ],
+      "content": "[Optional] Click <bpt id=\"p1\">**</bpt>Clean container before uploading<ept id=\"p1\">**</ept> if you want the container to be cleared of contents before build artifacts are uploaded (leave it unchecked if you do not want to clean the contents of the container)."
+    },
+    {
+      "pos": [
+        8076,
+        8134
+      ],
+      "content": "For <bpt id=\"p1\">**</bpt>List of Artifacts to upload<ept id=\"p1\">**</ept>, enter <bpt id=\"p2\">*</bpt><bpt id=\"p3\">*</bpt>text/<ept id=\"p3\">*</ept>.txt<ept id=\"p2\">*</ept>*."
+    },
+    {
+      "pos": [
+        8139,
+        8231
+      ],
+      "content": "For <bpt id=\"p1\">**</bpt>Common virtual path for uploaded artifacts<ept id=\"p1\">**</ept>, enter <bpt id=\"p2\">**</bpt>${BUILD\\_ID}/${BUILD\\_NUMBER}<ept id=\"p2\">**</ept>."
+    },
+    {
+      "pos": [
+        8236,
+        8273
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>Save<ept id=\"p1\">**</ept> to save your settings."
+    },
+    {
+      "content": "In the Hudson dashboard, click <bpt id=\"p1\">**</bpt>Build Now<ept id=\"p1\">**</ept> to run <bpt id=\"p2\">**</bpt>MyJob<ept id=\"p2\">**</ept>.",
+      "pos": [
+        8278,
+        8340
+      ]
+    },
+    {
+      "content": "Examine the console output for status.",
+      "pos": [
+        8341,
+        8379
+      ]
+    },
+    {
+      "content": "Status messages for Azure storage will be included in the console output when the post-build action starts to upload build artifacts.",
+      "pos": [
+        8380,
+        8513
+      ]
+    },
+    {
+      "content": "Upon successful completion of the job, you can examine the build artifacts by opening the public blob.",
+      "pos": [
+        8518,
+        8620
+      ]
+    },
+    {
+      "pos": [
+        8628,
+        8700
+      ],
+      "content": "Login to the Azure management portal, <bpt id=\"p1\">&lt;</bpt><ept id=\"p1\">https://manage.windowsazure.com&gt;</ept>."
+    },
+    {
+      "pos": [
+        8708,
+        8726
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>Storage<ept id=\"p1\">**</ept>."
+    },
+    {
+      "content": "Click the storage account name that you used for Hudson.",
+      "pos": [
+        8734,
+        8790
+      ]
+    },
+    {
+      "pos": [
+        8798,
+        8819
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>Containers<ept id=\"p1\">**</ept>."
+    },
+    {
+      "content": "Click the container named <bpt id=\"p1\">**</bpt>myjob<ept id=\"p1\">**</ept>, which is the lowercase version of the job name that you assigned when you created the Hudson job.",
+      "pos": [
+        8827,
+        8961
+      ]
+    },
+    {
+      "content": "Container names and blob names are lowercase (and case-sensitive) in Azure storage.",
+      "pos": [
+        8962,
+        9045
+      ]
+    },
+    {
+      "content": "Within the list of blobs for the container named <bpt id=\"p1\">**</bpt>myjob<ept id=\"p1\">**</ept> you should see <bpt id=\"p2\">**</bpt>hello.txt<ept id=\"p2\">**</ept> and <bpt id=\"p3\">**</bpt>date.txt<ept id=\"p3\">**</ept>.",
+      "pos": [
+        9046,
+        9151
+      ]
+    },
+    {
+      "content": "Copy the URL for either of these items and open it in your browser.",
+      "pos": [
+        9152,
+        9219
+      ]
+    },
+    {
+      "content": "You will see the text file that was uploaded as a build artifact.",
+      "pos": [
+        9220,
+        9285
+      ]
+    },
+    {
+      "content": "Only one post-build action that uploads artifacts to Azure blob storage can be created per job.",
+      "pos": [
+        9287,
+        9382
+      ]
+    },
+    {
+      "content": "Note that the single post-build action to upload artifacts to Azure blob storage can specify different files (including wildcards) and paths to files within <bpt id=\"p1\">**</bpt>List of Artifacts to upload<ept id=\"p1\">**</ept> using a semi-colon as a separator.",
+      "pos": [
+        9383,
+        9606
+      ]
+    },
+    {
+      "content": "For example, if your Hudson build produces JAR files and TXT files in your workspace's <bpt id=\"p1\">**</bpt>build<ept id=\"p1\">**</ept> folder, and you want to upload both to Azure blob storage, use the following for the <bpt id=\"p2\">**</bpt>List of Artifacts to upload<ept id=\"p2\">**</ept> value: <bpt id=\"p3\">**</bpt>build/\\*.jar;build/\\*.txt<ept id=\"p3\">**</ept>.",
+      "pos": [
+        9607,
+        9858
+      ]
+    },
+    {
+      "content": "You can also use double-colon syntax to specify a path to use within the blob name.",
+      "pos": [
+        9859,
+        9942
+      ]
+    },
+    {
+      "content": "For example, if you want the JARs to get uploaded using <bpt id=\"p1\">**</bpt>binaries<ept id=\"p1\">**</ept> in the blob path and the TXT files to get uploaded using <bpt id=\"p2\">**</bpt>notices<ept id=\"p2\">**</ept> in the blob path, use the following for the <bpt id=\"p3\">**</bpt>List of Artifacts to upload<ept id=\"p3\">**</ept> value: <bpt id=\"p4\">**</bpt>build/\\*.jar::binaries;build/\\*.txt::notices<ept id=\"p4\">**</ept>.",
+      "pos": [
+        9943,
+        10213
+      ]
+    },
+    {
+      "content": "How to create a build step that downloads from Azure blob storage",
+      "pos": [
+        10218,
+        10283
+      ]
+    },
+    {
+      "content": "The following steps show how to configure a build step to download items from Azure blob storage.",
+      "pos": [
+        10288,
+        10385
+      ]
+    },
+    {
+      "content": "This would be useful if you want to include items in your build, for example, JARs that you keep in Azure blob storage.",
+      "pos": [
+        10386,
+        10505
+      ]
+    },
+    {
+      "pos": [
+        10510,
+        10634
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Build<ept id=\"p1\">**</ept> section of the job configuration, click <bpt id=\"p2\">**</bpt>Add build step<ept id=\"p2\">**</ept> and choose <bpt id=\"p3\">**</bpt>Download from Azure Blob storage<ept id=\"p3\">**</ept>."
+    },
+    {
+      "pos": [
+        10638,
+        10702
+      ],
+      "content": "For <bpt id=\"p1\">**</bpt>Storage account name<ept id=\"p1\">**</ept>, select the storage account to use."
+    },
+    {
+      "content": "For <bpt id=\"p1\">**</bpt>Container name<ept id=\"p1\">**</ept>, specify the name of the container that has the blobs you want to download.",
+      "pos": [
+        10706,
+        10804
+      ]
+    },
+    {
+      "content": "You can use environment variables.",
+      "pos": [
+        10805,
+        10839
+      ]
+    },
+    {
+      "content": "For <bpt id=\"p1\">**</bpt>Blob name<ept id=\"p1\">**</ept>, specify the blob name.",
+      "pos": [
+        10843,
+        10884
+      ]
+    },
+    {
+      "content": "You can use environment variables.",
+      "pos": [
+        10885,
+        10919
+      ]
+    },
+    {
+      "content": "Also, you can use an asterisk, as a wildcard after you specify the initial letter(s) of the blob name.",
+      "pos": [
+        10920,
+        11022
+      ]
+    },
+    {
+      "content": "For example, <bpt id=\"p1\">**</bpt>project\\*<ept id=\"p1\">**</ept> would specify all blobs whose names start with <bpt id=\"p2\">**</bpt>project<ept id=\"p2\">**</ept>.",
+      "pos": [
+        11023,
+        11109
+      ]
+    },
+    {
+      "content": "[Optional] For <bpt id=\"p1\">**</bpt>Download path<ept id=\"p1\">**</ept>, specify the path on the Hudson machine where you want to download files from Azure blob storage.",
+      "pos": [
+        11113,
+        11243
+      ]
+    },
+    {
+      "content": "Environment variables can also be used.",
+      "pos": [
+        11244,
+        11283
+      ]
+    },
+    {
+      "content": "(If you do not provide a value for <bpt id=\"p1\">**</bpt>Download path<ept id=\"p1\">**</ept>, the files from Azure blob storage will be downloaded to the job's workspace.)",
+      "pos": [
+        11284,
+        11415
+      ]
+    },
+    {
+      "content": "If you have additional items you want to download from Azure blob storage, you can create additional build steps.",
+      "pos": [
+        11417,
+        11530
+      ]
+    },
+    {
+      "content": "After you run a build, you can check the build history console output, or look at your download location, to see whether the blobs you expected were successfully downloaded.",
+      "pos": [
+        11532,
+        11705
+      ]
+    },
+    {
+      "content": "Components used by the Blob service",
+      "pos": [
+        11711,
+        11746
+      ]
+    },
+    {
+      "content": "The following provides an overview of the Blob service components.",
+      "pos": [
+        11751,
+        11817
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Storage Account<ept id=\"p1\">**</ept>: All access to Azure Storage is done through a storage account.",
+      "pos": [
+        11821,
+        11904
+      ]
+    },
+    {
+      "content": "This is the highest level of the namespace for accessing blobs.",
+      "pos": [
+        11905,
+        11968
+      ]
+    },
+    {
+      "content": "An account can contain an unlimited number of containers, as long as their total size is under 100TB.",
+      "pos": [
+        11969,
+        12070
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Container<ept id=\"p1\">**</ept>: A container provides a grouping of a set of blobs.",
+      "pos": [
+        12073,
+        12138
+      ]
+    },
+    {
+      "content": "All blobs must be in a container.",
+      "pos": [
+        12139,
+        12172
+      ]
+    },
+    {
+      "content": "An account can contain an unlimited number of containers.",
+      "pos": [
+        12173,
+        12230
+      ]
+    },
+    {
+      "content": "A container can store an unlimited number of blobs.",
+      "pos": [
+        12231,
+        12282
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Blob<ept id=\"p1\">**</ept>: A file of any type and size.",
+      "pos": [
+        12285,
+        12323
+      ]
+    },
+    {
+      "content": "There are two types of blobs that can be stored in Azure Storage: block and page blobs.",
+      "pos": [
+        12324,
+        12411
+      ]
+    },
+    {
+      "content": "Most files are block blobs.",
+      "pos": [
+        12412,
+        12439
+      ]
+    },
+    {
+      "content": "A single block blob can be up to 200GB in size.",
+      "pos": [
+        12440,
+        12487
+      ]
+    },
+    {
+      "content": "This tutorial uses block blobs.",
+      "pos": [
+        12488,
+        12519
+      ]
+    },
+    {
+      "content": "Page blobs, another blob type, can be up to 1TB in size, and are more efficient when ranges of bytes in a file are modified frequently.",
+      "pos": [
+        12520,
+        12655
+      ]
+    },
+    {
+      "content": "For more information about blobs, see <bpt id=\"p1\">[</bpt>Understanding Block Blobs and Page Blobs<ept id=\"p1\">](http://msdn.microsoft.com/library/azure/ee691964.aspx)</ept>.",
+      "pos": [
+        12656,
+        12792
+      ]
+    },
+    {
+      "pos": [
+        12795,
+        12864
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>URL format<ept id=\"p1\">**</ept>: Blobs are addressable using the following URL format:"
+    },
+    {
+      "content": "(The format above applies to the public Azure cloud.",
+      "pos": [
+        12950,
+        13002
+      ]
+    },
+    {
+      "content": "If you are using a different Azure cloud, use the endpoint within the Azure management portal to determine your URL endpoint.)",
+      "pos": [
+        13003,
+        13129
+      ]
+    },
+    {
+      "content": "In the format above, <ph id=\"ph1\">`storageaccount`</ph> represents the name of your storage account, <ph id=\"ph2\">`container_name`</ph> represents the name of your container, and <ph id=\"ph3\">`blob_name`</ph> represents the name of your blob, respectively.",
+      "pos": [
+        13135,
+        13337
+      ]
+    },
+    {
+      "content": "Within the container name, you can have multiple paths, separated by a forward slash, <bpt id=\"p1\">**</bpt>/<ept id=\"p1\">**</ept>.",
+      "pos": [
+        13338,
+        13430
+      ]
+    },
+    {
+      "content": "The example container name in this tutorial was <bpt id=\"p1\">**</bpt>MyJob<ept id=\"p1\">**</ept>, and <bpt id=\"p2\">**</bpt>${BUILD\\_ID}/${BUILD\\_NUMBER}<ept id=\"p2\">**</ept> was used for the common virtual path, resulting in the blob having a URL of the following form:",
+      "pos": [
+        13431,
+        13623
+      ]
+    }
+  ],
+  "content": "<properties \n    pageTitle=\"How to use Hudson with the Azure Blob service | Microsoft Azure\" \n    description=\"Describes how to use Hudson with Azure Blob storage as a repository for build artifacts.\" \n    services=\"storage\" \n    documentationCenter=\"java\" \n    authors=\"rmcmurray\" \n    manager=\"wpickett\" \n    editor=\"jimbe\"/>\n\n<tags \n    ms.service=\"storage\" \n    ms.workload=\"storage\" \n    ms.tgt_pltfrm=\"na\" \n    ms.devlang=\"Java\" \n    ms.topic=\"article\" \n    ms.date=\"09/01/2015\" \n    ms.author=\"robmcm\"/>\n\n#Using Azure Storage with a Hudson Continuous Integration solution\n\n*By [Microsoft Open Technologies Inc.][ms-open-tech]*\n\n## Overview\n\nThe following information shows how to use the Azure Blob service as a repository of build artifacts created by a Hudson Continuous Integration (CI) solution, or as a source of downloadable files to be used in a build process. One of the scenarios where you would find this useful is when you're coding in an agile development environment (using Java or other languages), builds are running based on continuous integration, and you need a repository for your build artifacts, so that you could, for example, share them with other organization members, your customers, or maintain an archive.  Another scenario is when your build job itself requires other files, for example, dependencies to download as part of the build input.\n\nIn this tutorial you will be using the Azure Storage Plugin for Hudson CI made available by Microsoft Open Technologies, Inc.\n\n## Introduction to Hudson ##\nHudson enables continuous integration of a software project by allowing developers to easily integrate their code changes and have builds produced automatically and frequently, thereby increasing the productivity of the developers. Builds are versioned, and build artifacts can be uploaded to various repositories. This topic will show how to use Azure blob storage as the repository of the build artifacts. It will also show how to download dependencies from Azure blob storage.\n\nMore information about Hudson can be found at [Meet Hudson][].\n\n## Benefits of using the Blob service ##\n\nBenefits of using the Blob service to host your agile development build artifacts include:\n\n- High availability of your build artifacts and/or downloadable dependencies.\n- Performance when your Hudson CI solution uploads your build artifacts.\n- Performance when your customers and partners download your build artifacts.\n- Control over user access policies, with a choice between anonymous access, expiration-based shared access signature access, private access, etc.\n\n## Prequisites ##\n\nYou will need the following to use the Blob service with your Hudson CI solution:\n\n- A Hudson Continuous Integration solution.\n\n    If you currently don't have a Hudson CI solution, you can run a Hudson CI solution using the following technique:\n\n    1. On a Java-enabled machine, download the Hudson WAR from <http://hudson-ci.org/>.\n    2. At a command prompt that is opened to the folder that contains the Hudson WAR, run the Hudson WAR. For example, if you have downloaded version 3.1.2:\n\n        `java -jar hudson-3.1.2.war`\n\n    3. In your browser, open `http://localhost:8080/`. This will open the Hudson dashboard.\n\n    4. Upon first use of Hudson, complete the initial setup at `http://localhost:8080/`. \n\n    5. After you complete the initial setup, cancel the running instance of the Hudson WAR, start the Hudson WAR again, and  re-open the Hudson dashboard, `http://localhost:8080/`, which you will use to install and configure the Azure Storage plugin.\n\n        While a typical Hudson CI solution would be set up to run as a service, running the Hudson war at the command line will be sufficient for this tutorial.\n\n- An Azure account. You can sign up for an Azure account at <http://www.azure.com>.\n\n- An Azure storage account. If you don't already have a storage account, you can create one using the steps at [How to Create a Storage Account][].\n\n- Familiarity with the Hudson CI solution is recommended but not required, as the following content will use a basic example to show you the steps needed when using the Blob service as a repository for Hudson CI build artifacts.\n\n## How to use the Blob service with Hudson CI ##\n\nTo use the Blob service with Hudson, you'll need to install the Azure Storage plugin, configure the plugin to use your storage account, and then create a post-build action that uploads your build artifacts to your storage account. These steps are described in the following sections.\n\n## How to install the Azure Storage plugin ##\n\n1. Within the Hudson dashboard, click **Manage Hudson**.\n2. In the **Manage Hudson** page, click **Manage Plugins**.\n3. Click the **Available** tab.\n4. Click **Others**.\n5. In the **Artifact Uploaders** section, check **Microsoft Azure Storage plugin**.\n6. Click **Install**.\n7. After the installation is complete, restart Hudson.\n\n## How to configure the Azure Storage plugin to use your storage account ##\n\n1. Within the Hudson dashboard, click **Manage Hudson**.\n2. In the **Manage Hudson** page, click **Configure System**.\n3. In the **Microsoft Azure Storage Account Configuration** section:\n    1. Enter your storage account name, which you can obtain from the Azure portal, <https://manage.windowsazure.com>.\n    2. Enter your storage account key, also obtainable from the Azure portal.\n    3. Use the default value for **Blob Service Endpoint URL** if you are using the public Azure cloud. If you are using a different Azure cloud, use the endpoint as specified in the Azure management portal for your storage account. \n    4. Click **Validate storage credentials** to validate your storage account. \n    5. [Optional] If you have additional storage accounts that you want made available to your Hudson CI, click **Add more storage accounts**.\n    6. Click **Save** to save your settings.\n\n## How to create a post-build action that uploads your build artifacts to your storage account ##\n\nFor instruction purposes, first we'll need to create a job that will create several files, and then add in the post-build action to upload the files to your storage account.\n\n1. Within the Hudson dashboard, click **New Job**.\n2. Name the job **MyJob**, click **Build a free-style software job**, and then click **OK**.\n3. In the **Build** section of the job configuration, click **Add build step** and choose **Execute Windows batch command**.\n4. In **Command**, use the following commands:\n\n        md text\n        cd text\n        echo Hello Azure Storage from Hudson > hello.txt\n        date /t > date.txt\n        time /t >> date.txt\n \n5. In the **Post-build Actions** section of the job configuration, click **Upload artifacts to Microsoft Azure Blob storage**.\n6. For **Storage Account Name**, select the storage account to use.\n7. For **Container Name**, specify the container name. (The container will be created if it does not already exist when the build artifacts are uploaded.) You can use environment variables, so for this example enter **${JOB_NAME}** as the container name.\n\n    **Tip**\n    \n    Below the **Command** section where you entered a script for **Execute Windows batch command** is a link to the environment variables recognized by Hudson. Click that link to learn the environment variable names and descriptions. Note that environment variables that contain special characters, such as the **BUILD_URL** environment variable, are not allowed as a container name or common virtual path.\n\n8. Click **Make new container public by default** for this example. (If you want to use a private container, you'll need to create a shared access signature to allow access. That is beyond the scope of this topic. You can learn more about shared access signatures at [Creating a Shared Access Signature](http://go.microsoft.com/fwlink/?LinkId=279889).)\n9. [Optional] Click **Clean container before uploading** if you want the container to be cleared of contents before build artifacts are uploaded (leave it unchecked if you do not want to clean the contents of the container).\n10. For **List of Artifacts to upload**, enter **text/*.txt**.\n11. For **Common virtual path for uploaded artifacts**, enter **${BUILD\\_ID}/${BUILD\\_NUMBER}**.\n12. Click **Save** to save your settings.\n13. In the Hudson dashboard, click **Build Now** to run **MyJob**. Examine the console output for status. Status messages for Azure storage will be included in the console output when the post-build action starts to upload build artifacts.\n14. Upon successful completion of the job, you can examine the build artifacts by opening the public blob.\n    1. Login to the Azure management portal, <https://manage.windowsazure.com>.\n    2. Click **Storage**.\n    3. Click the storage account name that you used for Hudson.\n    4. Click **Containers**.\n    5. Click the container named **myjob**, which is the lowercase version of the job name that you assigned when you created the Hudson job. Container names and blob names are lowercase (and case-sensitive) in Azure storage. Within the list of blobs for the container named **myjob** you should see **hello.txt** and **date.txt**. Copy the URL for either of these items and open it in your browser. You will see the text file that was uploaded as a build artifact.\n\nOnly one post-build action that uploads artifacts to Azure blob storage can be created per job. Note that the single post-build action to upload artifacts to Azure blob storage can specify different files (including wildcards) and paths to files within **List of Artifacts to upload** using a semi-colon as a separator. For example, if your Hudson build produces JAR files and TXT files in your workspace's **build** folder, and you want to upload both to Azure blob storage, use the following for the **List of Artifacts to upload** value: **build/\\*.jar;build/\\*.txt**. You can also use double-colon syntax to specify a path to use within the blob name. For example, if you want the JARs to get uploaded using **binaries** in the blob path and the TXT files to get uploaded using **notices** in the blob path, use the following for the **List of Artifacts to upload** value: **build/\\*.jar::binaries;build/\\*.txt::notices**.\n\n## How to create a build step that downloads from Azure blob storage ##\n\nThe following steps show how to configure a build step to download items from Azure blob storage. This would be useful if you want to include items in your build, for example, JARs that you keep in Azure blob storage.\n\n1. In the **Build** section of the job configuration, click **Add build step** and choose **Download from Azure Blob storage**.\n2. For **Storage account name**, select the storage account to use.\n3. For **Container name**, specify the name of the container that has the blobs you want to download. You can use environment variables.\n4. For **Blob name**, specify the blob name. You can use environment variables. Also, you can use an asterisk, as a wildcard after you specify the initial letter(s) of the blob name. For example, **project\\*** would specify all blobs whose names start with **project**.\n5. [Optional] For **Download path**, specify the path on the Hudson machine where you want to download files from Azure blob storage. Environment variables can also be used. (If you do not provide a value for **Download path**, the files from Azure blob storage will be downloaded to the job's workspace.)\n\nIf you have additional items you want to download from Azure blob storage, you can create additional build steps.\n\nAfter you run a build, you can check the build history console output, or look at your download location, to see whether the blobs you expected were successfully downloaded. \n\n## Components used by the Blob service ##\n\nThe following provides an overview of the Blob service components.\n\n- **Storage Account**: All access to Azure Storage is done through a storage account. This is the highest level of the namespace for accessing blobs. An account can contain an unlimited number of containers, as long as their total size is under 100TB.\n- **Container**: A container provides a grouping of a set of blobs. All blobs must be in a container. An account can contain an unlimited number of containers. A container can store an unlimited number of blobs.\n- **Blob**: A file of any type and size. There are two types of blobs that can be stored in Azure Storage: block and page blobs. Most files are block blobs. A single block blob can be up to 200GB in size. This tutorial uses block blobs. Page blobs, another blob type, can be up to 1TB in size, and are more efficient when ranges of bytes in a file are modified frequently. For more information about blobs, see [Understanding Block Blobs and Page Blobs](http://msdn.microsoft.com/library/azure/ee691964.aspx).\n- **URL format**: Blobs are addressable using the following URL format:\n\n    `http://storageaccount.blob.core.windows.net/container_name/blob_name`\n    \n    (The format above applies to the public Azure cloud. If you are using a different Azure cloud, use the endpoint within the Azure management portal to determine your URL endpoint.)\n\n    In the format above, `storageaccount` represents the name of your storage account, `container_name` represents the name of your container, and `blob_name` represents the name of your blob, respectively. Within the container name, you can have multiple paths, separated by a forward slash, **/**. The example container name in this tutorial was **MyJob**, and **${BUILD\\_ID}/${BUILD\\_NUMBER}** was used for the common virtual path, resulting in the blob having a URL of the following form:\n\n    `http://example.blob.core.windows.net/myjob/2014-05-01_11-56-22/1/hello.txt`\n\n  [How to Create a Storage Account]: http://go.microsoft.com/fwlink/?LinkId=279823\n  [Meet Hudson]: http://wiki.eclipse.org/Hudson-ci/Meet_Hudson\n  [ms-open-tech]: http://msopentech.com\n\n "
+}

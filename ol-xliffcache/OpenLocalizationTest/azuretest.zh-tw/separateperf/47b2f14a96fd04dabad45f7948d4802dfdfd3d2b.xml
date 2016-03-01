@@ -1,0 +1,742 @@
+{
+  "nodes": [
+    {
+      "content": "Analyze flight delay data with Hadoop in HDInsight | Microsoft Azure",
+      "pos": [
+        28,
+        96
+      ]
+    },
+    {
+      "content": "Learn how to use one Windows PowerShell script to provision an HDInsight cluster, run a Hive job, run a Sqoop job, and delete the cluster.",
+      "pos": [
+        116,
+        254
+      ]
+    },
+    {
+      "content": "Analyze flight delay data by using Hive in HDInsight",
+      "pos": [
+        595,
+        647
+      ]
+    },
+    {
+      "content": "Learn how to analyze flight delay data using Hive on Linux-based HDInsight (preview) then export the data to Azure SQL Database using using Sqoop.",
+      "pos": [
+        649,
+        795
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> While individual pieces of this document can be used with Windows-based HDInsight clusters (Python and Hive for example,) many steps are specific to Linux-based clusters.",
+      "pos": [
+        799,
+        982
+      ]
+    },
+    {
+      "content": "For steps that will work with a Windows-based cluster, see <bpt id=\"p1\">[</bpt>Analyze flight delay data using Hive in HDInsight<ept id=\"p1\">](hdinsight-analyze-flight-delay-data.md)</ept>",
+      "pos": [
+        983,
+        1133
+      ]
+    },
+    {
+      "content": "Prerequisites",
+      "pos": [
+        1138,
+        1151
+      ]
+    },
+    {
+      "content": "Before you begin this tutorial, you must have the following:",
+      "pos": [
+        1153,
+        1213
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>An Azure subscription<ept id=\"p1\">**</ept>.",
+      "pos": [
+        1217,
+        1243
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt>Get Azure free trial<ept id=\"p1\">](http://azure.microsoft.com/documentation/videos/get-azure-free-trial-for-testing-hadoop-in-hdinsight/)</ept>.",
+      "pos": [
+        1244,
+        1374
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">__</bpt>An HDInsight cluster<ept id=\"p1\">__</ept>.",
+      "pos": [
+        1378,
+        1403
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt>Get started using Hadoop with Hive in HDInsight on Linux<ept id=\"p1\">](hdinsight-hadoop-linux-tutorial-get-started.md)</ept> for steps on creating a new Linux-based HDInsight cluster.",
+      "pos": [
+        1404,
+        1573
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">__</bpt>Azure SQL Database<ept id=\"p1\">__</ept>.",
+      "pos": [
+        1577,
+        1600
+      ]
+    },
+    {
+      "content": "You will use an Azure SQL database as a destination data store.",
+      "pos": [
+        1601,
+        1664
+      ]
+    },
+    {
+      "content": "If you do not have a SQL Database already, see <bpt id=\"p1\">[</bpt>How to create and configure an Azure SQL Database to create one<ept id=\"p1\">](../sql-database/sql-database-create-configure.md)</ept>",
+      "pos": [
+        1665,
+        1827
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">__</bpt>Azure CLI<ept id=\"p1\">__</ept>.",
+      "pos": [
+        1831,
+        1845
+      ]
+    },
+    {
+      "content": "If you have not installed the Azure CLI, see <bpt id=\"p1\">[</bpt>Install and Configure the Azure CLI<ept id=\"p1\">](../xplat-cli.md)</ept> for more steps.",
+      "pos": [
+        1846,
+        1961
+      ]
+    },
+    {
+      "content": "Download the flight data",
+      "pos": [
+        1966,
+        1990
+      ]
+    },
+    {
+      "pos": [
+        1995,
+        2108
+      ],
+      "content": "Browse to <bpt id=\"p1\">[</bpt>Research and Innovative Technology Administration, Bureau of Transportation Statistics<ept id=\"p1\">][rita-website]</ept>."
+    },
+    {
+      "content": "On the page, select the following values:",
+      "pos": [
+        2112,
+        2153
+      ]
+    },
+    {
+      "pos": [
+        2159,
+        2543
+      ],
+      "content": "| Name | Value |\n | Filter Year | 2013 |\n | Filter Period | January |\n | Fields | Year, FlightDate, UniqueCarrier, Carrier, FlightNum, OriginAirportID, Origin, OriginCityName, OriginState, DestAirportID, Dest, DestCityName, DestState, DepDelayMinutes, ArrDelay, ArrDelayMinutes, CarrierDelay, WeatherDelay, NASDelay, SecurityDelay, LateAircraftDelay. Clear all other fields |",
+      "leadings": [
+        "",
+        "   ",
+        "   ",
+        "   "
+      ],
+      "nodes": [
+        {
+          "content": "| Name | Value |",
+          "pos": [
+            0,
+            16
+          ]
+        },
+        {
+          "content": "| Filter Year | 2013 |",
+          "pos": [
+            18,
+            40
+          ]
+        },
+        {
+          "content": "| Filter Period | January |",
+          "pos": [
+            42,
+            69
+          ]
+        },
+        {
+          "content": "| Fields | Year, FlightDate, UniqueCarrier, Carrier, FlightNum, OriginAirportID, Origin, OriginCityName, OriginState, DestAirportID, Dest, DestCityName, DestState, DepDelayMinutes, ArrDelay, ArrDelayMinutes, CarrierDelay, WeatherDelay, NASDelay, SecurityDelay, LateAircraftDelay. Clear all other fields |",
+          "pos": [
+            71,
+            375
+          ],
+          "nodes": [
+            {
+              "content": "| Fields | Year, FlightDate, UniqueCarrier, Carrier, FlightNum, OriginAirportID, Origin, OriginCityName, OriginState, DestAirportID, Dest, DestCityName, DestState, DepDelayMinutes, ArrDelay, ArrDelayMinutes, CarrierDelay, WeatherDelay, NASDelay, SecurityDelay, LateAircraftDelay.",
+              "pos": [
+                0,
+                279
+              ]
+            },
+            {
+              "content": "Clear all other fields |",
+              "pos": [
+                280,
+                304
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pos": [
+        2548,
+        2567
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>Download<ept id=\"p1\">**</ept>."
+    },
+    {
+      "content": "Upload the data",
+      "pos": [
+        2572,
+        2587
+      ]
+    },
+    {
+      "content": "Use the following command to upload the zip file to the HDInsight cluster head node:",
+      "pos": [
+        2592,
+        2676
+      ]
+    },
+    {
+      "content": "Replace <bpt id=\"p1\">__</bpt>FILENAME<ept id=\"p1\">__</ept> with the name of the zip file.",
+      "pos": [
+        2753,
+        2804
+      ]
+    },
+    {
+      "content": "Replace <bpt id=\"p1\">__</bpt>USERNAME<ept id=\"p1\">__</ept> with the SSH login for the HDInsight cluster.",
+      "pos": [
+        2805,
+        2871
+      ]
+    },
+    {
+      "content": "Replace CLUSTERNAME with the name of the HDInsight cluster.",
+      "pos": [
+        2872,
+        2931
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> If you use a password to authenticate your SSH login, you will be prompted for the password.",
+      "pos": [
+        2943,
+        3048
+      ]
+    },
+    {
+      "content": "If you used a public key, you may need to use the <ph id=\"ph1\">`-i`</ph> parameter and specify the path to the matching private key.",
+      "pos": [
+        3049,
+        3163
+      ]
+    },
+    {
+      "content": "For example <ph id=\"ph1\">`scp -i ~/.ssh/id_rsa FILENAME.csv USERNAME@CLUSTERNAME-ssh.azurehdinsight.net:`</ph>.",
+      "pos": [
+        3164,
+        3257
+      ]
+    },
+    {
+      "content": "Once the upload has completed, connect to the cluster using SSH:",
+      "pos": [
+        3262,
+        3326
+      ]
+    },
+    {
+      "content": "For more information on using SSH with Linux-based HDInsight, see the following articles:",
+      "pos": [
+        3397,
+        3486
+      ]
+    },
+    {
+      "content": "Use SSH with Linux-based Hadoop on HDInsight from Linux, Unix, or OS X",
+      "pos": [
+        3499,
+        3569
+      ]
+    },
+    {
+      "content": "Use SSH with Linux-based Hadoop on HDInsight from Windows",
+      "pos": [
+        3619,
+        3676
+      ]
+    },
+    {
+      "content": "Once connected, use the following to unzip the .zip file:",
+      "pos": [
+        3726,
+        3783
+      ]
+    },
+    {
+      "content": "This will extract a .csv file that is roughly 60MB in size.",
+      "pos": [
+        3821,
+        3880
+      ]
+    },
+    {
+      "content": "Use the following to create a new directory on WASB (the distributed data store used by HDInsight,) and copy the file:",
+      "pos": [
+        3889,
+        4007
+      ]
+    },
+    {
+      "pos": [
+        4013,
+        4145
+      ],
+      "content": "hadoop fs -mkdir -p /tutorials/flightdelays/data\n hadoop fs -copyFromLocal FILENAME.csv /tutorials/flightdelays/data/FILENAME.csv",
+      "leadings": [
+        "",
+        "   "
+      ],
+      "nodes": [
+        {
+          "content": "hadoop fs -mkdir -p /tutorials/flightdelays/data",
+          "pos": [
+            0,
+            48
+          ]
+        },
+        {
+          "content": "hadoop fs -copyFromLocal FILENAME.csv /tutorials/flightdelays/data/FILENAME.csv",
+          "pos": [
+            50,
+            129
+          ]
+        }
+      ]
+    },
+    {
+      "content": "Create and run the HiveQL",
+      "pos": [
+        4153,
+        4178
+      ]
+    },
+    {
+      "pos": [
+        4180,
+        4272
+      ],
+      "content": "Use the following steps to import data from the CSV file into a Hive table named <bpt id=\"p1\">__</bpt>Delays<ept id=\"p1\">__</ept>."
+    },
+    {
+      "pos": [
+        4277,
+        4352
+      ],
+      "content": "Use the following to create and edit a new file named <bpt id=\"p1\">__</bpt>flightdelays.hql<ept id=\"p1\">__</ept>:"
+    },
+    {
+      "content": "Use the following as the contents of this file:",
+      "pos": [
+        4397,
+        4444
+      ]
+    },
+    {
+      "pos": [
+        6989,
+        7035
+      ],
+      "content": "Use <bpt id=\"p1\">__</bpt>Ctrl + X<ept id=\"p1\">__</ept>, then <bpt id=\"p2\">__</bpt>Y<ept id=\"p2\">__</ept> to save the file."
+    },
+    {
+      "pos": [
+        7040,
+        7110
+      ],
+      "content": "Use the following to start Hive and run the <bpt id=\"p1\">__</bpt>flightdelays.hql<ept id=\"p1\">__</ept> file:"
+    },
+    {
+      "pos": [
+        7158,
+        7211
+      ],
+      "content": "This will run the file, then return a <ph id=\"ph1\">`hive&gt;`</ph> prompt."
+    },
+    {
+      "pos": [
+        7216,
+        7324
+      ],
+      "content": "When you receive the <ph id=\"ph1\">`hive&gt;`</ph> prompt, use the following to retrieve data from the imported flight delay data."
+    },
+    {
+      "content": "This will retrieve a list of cities that experienced weather delays, along with the average delay time, and save it to <ph id=\"ph1\">`/tutorials/flightdelays/output`</ph>.",
+      "pos": [
+        7584,
+        7736
+      ]
+    },
+    {
+      "content": "Later, Sqoop will read the data from this location and export it to Azure SQL Database.",
+      "pos": [
+        7737,
+        7824
+      ]
+    },
+    {
+      "content": "Create a SQL Database",
+      "pos": [
+        7828,
+        7849
+      ]
+    },
+    {
+      "content": "Use the following steps to create an Azure SQL Database.",
+      "pos": [
+        7851,
+        7907
+      ]
+    },
+    {
+      "content": "This will be used to hold data exported from HDInsight through Sqoop.",
+      "pos": [
+        7908,
+        7977
+      ]
+    },
+    {
+      "content": "From your develoment environment where Azure CLI is installed, use the following command to create a new Azure SQL Database:",
+      "pos": [
+        7982,
+        8106
+      ]
+    },
+    {
+      "pos": [
+        8183,
+        8247
+      ],
+      "content": "For exmaple, <ph id=\"ph1\">`azure sql server create admin password \"West US\"`</ph>."
+    },
+    {
+      "content": "When the command completes, you will receive a response similar to the following:",
+      "pos": [
+        8253,
+        8334
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.IMPORTANT]</ph> Note the server name returned by this command.",
+      "pos": [
+        8508,
+        8572
+      ]
+    },
+    {
+      "content": "This is the short name of the SQL Database server that was created.",
+      "pos": [
+        8573,
+        8640
+      ]
+    },
+    {
+      "content": "The fully qualified domain name (FQDN) is <ph id=\"ph1\">`&lt;shortname&gt;.database.windows.net`</ph>.",
+      "pos": [
+        8641,
+        8718
+      ]
+    },
+    {
+      "pos": [
+        8723,
+        8817
+      ],
+      "content": "Use the following command to create a database named <bpt id=\"p1\">**</bpt>sqooptest<ept id=\"p1\">**</ept> on the SQL Database server:"
+    },
+    {
+      "content": "This will return an \"OK\" message when it completes.",
+      "pos": [
+        8914,
+        8965
+      ]
+    },
+    {
+      "pos": [
+        8973,
+        9164
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> If you receive an error indicating that you do not have access, you may need to add your client workstation's IP address to the SQL Database firewall using the following command:"
+    },
+    {
+      "content": "Create a SQL Database table",
+      "pos": [
+        9272,
+        9299
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> There are many ways to connect to SQL Database to create a table.",
+      "pos": [
+        9303,
+        9381
+      ]
+    },
+    {
+      "content": "The following steps use <bpt id=\"p1\">[</bpt>FreeTDS<ept id=\"p1\">](http://www.freetds.org/)</ept> from the HDInsight cluster.",
+      "pos": [
+        9382,
+        9468
+      ]
+    },
+    {
+      "content": "Use SSH to connect to the Linux-based HDInsight cluster, and run the following steps from the SSH session.",
+      "pos": [
+        9473,
+        9579
+      ]
+    },
+    {
+      "content": "Use the following command to install FreeTDS:",
+      "pos": [
+        9584,
+        9629
+      ]
+    },
+    {
+      "content": "Once FreeTDS has been installed, use the following command to connect to the SQL Database server you created previously:",
+      "pos": [
+        9701,
+        9821
+      ]
+    },
+    {
+      "content": "You will receive output similar to the following:",
+      "pos": [
+        9945,
+        9994
+      ]
+    },
+    {
+      "pos": [
+        10163,
+        10209
+      ],
+      "content": "At the <ph id=\"ph1\">`1&gt;`</ph> prompt, enter the following lines:"
+    },
+    {
+      "content": "When the <ph id=\"ph1\">`GO`</ph> statement is entered, the previous statements will be evaluated.",
+      "pos": [
+        10437,
+        10515
+      ]
+    },
+    {
+      "content": "This will create a new table named <bpt id=\"p1\">__</bpt>delays<ept id=\"p1\">__</ept>, with a clustered index (required by SQL Database.)",
+      "pos": [
+        10516,
+        10613
+      ]
+    },
+    {
+      "content": "Use the following to verify that the table has been created:",
+      "pos": [
+        10619,
+        10679
+      ]
+    },
+    {
+      "content": "You should see output similar to the following:",
+      "pos": [
+        10745,
+        10792
+      ]
+    },
+    {
+      "pos": [
+        10920,
+        10977
+      ],
+      "content": "Enter <ph id=\"ph1\">`exit`</ph> at the <ph id=\"ph2\">`1&gt;`</ph> prompt to exit the tsql utility."
+    },
+    {
+      "content": "Export data with Sqoop",
+      "pos": [
+        10985,
+        11007
+      ]
+    },
+    {
+      "content": "Use the following command to create a link to the SQL Server JDBC driver from the Sqoop lib directory.",
+      "pos": [
+        11012,
+        11114
+      ]
+    },
+    {
+      "content": "This allows Sqoop to use this driver to talk to SQL Database:",
+      "pos": [
+        11115,
+        11176
+      ]
+    },
+    {
+      "content": "Use the following command to verify that Sqoop can see your SQL Database:",
+      "pos": [
+        11290,
+        11363
+      ]
+    },
+    {
+      "content": "This should return a list of databases, including the sqooptest database that you created earlier.",
+      "pos": [
+        11516,
+        11614
+      ]
+    },
+    {
+      "content": "Use the following command to export data from hivesampletable to the mobiledata table:",
+      "pos": [
+        11619,
+        11705
+      ]
+    },
+    {
+      "content": "This instructs Sqoop to connect to SQL Database, to the sqooptest database, and export data from the wasb:///tutorials/flightdelays/output (where we stored the output of the hive query earlier,) to the delays table.",
+      "pos": [
+        11974,
+        12189
+      ]
+    },
+    {
+      "content": "After the command completes, use the following to connect to the database using TSQL:",
+      "pos": [
+        12194,
+        12279
+      ]
+    },
+    {
+      "content": "Once connected, use the following statements to verify that the data was exported to the mobiledata table:",
+      "pos": [
+        12403,
+        12509
+      ]
+    },
+    {
+      "content": "You should see a listing of data in the table.",
+      "pos": [
+        12560,
+        12606
+      ]
+    },
+    {
+      "content": "Type <ph id=\"ph1\">`exit`</ph> to exit the tsql utility.",
+      "pos": [
+        12607,
+        12644
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">&lt;a id=\"nextsteps\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph> Next steps",
+      "pos": [
+        12648,
+        12681
+      ]
+    },
+    {
+      "content": "Now you understand how to upload a file to Azure Blob storage, how to populate a Hive table by using the data from Azure Blob storage, how to run Hive queries, and how to use Sqoop to export data from HDFS to an Azure SQL database.",
+      "pos": [
+        12682,
+        12913
+      ]
+    },
+    {
+      "content": "To learn more, see the following articles:",
+      "pos": [
+        12914,
+        12956
+      ]
+    },
+    {
+      "content": "Getting started with HDInsight",
+      "pos": [
+        12961,
+        12991
+      ]
+    },
+    {
+      "content": "Use Hive with HDInsight",
+      "pos": [
+        13019,
+        13042
+      ]
+    },
+    {
+      "content": "Use Oozie with HDInsight",
+      "pos": [
+        13067,
+        13091
+      ]
+    },
+    {
+      "content": "Use Sqoop with HDInsight",
+      "pos": [
+        13117,
+        13141
+      ]
+    },
+    {
+      "content": "Use Pig with HDInsight",
+      "pos": [
+        13167,
+        13189
+      ]
+    },
+    {
+      "content": "Develop Java MapReduce programs for HDInsight",
+      "pos": [
+        13213,
+        13258
+      ]
+    },
+    {
+      "content": "Develop Python Hadoop streaming programs for HDInsight",
+      "pos": [
+        13292,
+        13346
+      ]
+    },
+    {
+      "content": "test",
+      "pos": [
+        14710,
+        14714
+      ]
+    }
+  ],
+  "content": "<properties \n    pageTitle=\"Analyze flight delay data with Hadoop in HDInsight | Microsoft Azure\" \n    description=\"Learn how to use one Windows PowerShell script to provision an HDInsight cluster, run a Hive job, run a Sqoop job, and delete the cluster.\" \n    services=\"hdinsight\" \n    documentationCenter=\"\" \n    authors=\"Blackmist\" \n    manager=\"paulettm\" \n    editor=\"cgronlun\"\n    tags=\"azure-portal\"/>\n\n<tags \n    ms.service=\"hdinsight\" \n    ms.workload=\"big-data\" \n    ms.tgt_pltfrm=\"na\" \n    ms.devlang=\"na\" \n    ms.topic=\"article\" \n    ms.date=\"08/04/2015\" \n    ms.author=\"larryfr\"/>\n\n#Analyze flight delay data by using Hive in HDInsight\n\nLearn how to analyze flight delay data using Hive on Linux-based HDInsight (preview) then export the data to Azure SQL Database using using Sqoop.\n\n> [AZURE.NOTE] While individual pieces of this document can be used with Windows-based HDInsight clusters (Python and Hive for example,) many steps are specific to Linux-based clusters. For steps that will work with a Windows-based cluster, see [Analyze flight delay data using Hive in HDInsight](hdinsight-analyze-flight-delay-data.md)\n\n###Prerequisites\n\nBefore you begin this tutorial, you must have the following:\n\n- **An Azure subscription**. See [Get Azure free trial](http://azure.microsoft.com/documentation/videos/get-azure-free-trial-for-testing-hadoop-in-hdinsight/).\n\n- __An HDInsight cluster__. See [Get started using Hadoop with Hive in HDInsight on Linux](hdinsight-hadoop-linux-tutorial-get-started.md) for steps on creating a new Linux-based HDInsight cluster.\n\n- __Azure SQL Database__. You will use an Azure SQL database as a destination data store. If you do not have a SQL Database already, see [How to create and configure an Azure SQL Database to create one](../sql-database/sql-database-create-configure.md)\n\n- __Azure CLI__. If you have not installed the Azure CLI, see [Install and Configure the Azure CLI](../xplat-cli.md) for more steps.\n\n\n##Download the flight data\n\n1. Browse to [Research and Innovative Technology Administration, Bureau of Transportation Statistics][rita-website].\n2. On the page, select the following values:\n\n    | Name | Value |\n    | Filter Year | 2013 |\n    | Filter Period | January |\n    | Fields | Year, FlightDate, UniqueCarrier, Carrier, FlightNum, OriginAirportID, Origin, OriginCityName, OriginState, DestAirportID, Dest, DestCityName, DestState, DepDelayMinutes, ArrDelay, ArrDelayMinutes, CarrierDelay, WeatherDelay, NASDelay, SecurityDelay, LateAircraftDelay. Clear all other fields |\n\n3. Click **Download**. \n\n##Upload the data\n\n1. Use the following command to upload the zip file to the HDInsight cluster head node:\n\n        scp FILENAME.csv USERNAME@CLUSTERNAME-ssh.azurehdinsight.net:\n\n    Replace __FILENAME__ with the name of the zip file. Replace __USERNAME__ with the SSH login for the HDInsight cluster. Replace CLUSTERNAME with the name of the HDInsight cluster.\n    \n    > [AZURE.NOTE] If you use a password to authenticate your SSH login, you will be prompted for the password. If you used a public key, you may need to use the `-i` parameter and specify the path to the matching private key. For example `scp -i ~/.ssh/id_rsa FILENAME.csv USERNAME@CLUSTERNAME-ssh.azurehdinsight.net:`.\n\n2. Once the upload has completed, connect to the cluster using SSH:\n\n        ssh USERNAME@CLUSTERNAME-ssh.azurehdinsight.net\n        \n    For more information on using SSH with Linux-based HDInsight, see the following articles:\n    \n    * [Use SSH with Linux-based Hadoop on HDInsight from Linux, Unix, or OS X](hdinsight-hadoop-linux-use-ssh-unix.md)\n\n    * [Use SSH with Linux-based Hadoop on HDInsight from Windows](hdinsight-hadoop-linux-use-ssh-windows)\n    \n3. Once connected, use the following to unzip the .zip file:\n\n        unzip FILENAME.zip\n    \n    This will extract a .csv file that is roughly 60MB in size.\n    \n4. Use the following to create a new directory on WASB (the distributed data store used by HDInsight,) and copy the file:\n\n    hadoop fs -mkdir -p /tutorials/flightdelays/data\n    hadoop fs -copyFromLocal FILENAME.csv /tutorials/flightdelays/data/FILENAME.csv\n    \n##Create and run the HiveQL\n\nUse the following steps to import data from the CSV file into a Hive table named __Delays__.\n\n1. Use the following to create and edit a new file named __flightdelays.hql__:\n\n        nano flightdelays.hql\n        \n    Use the following as the contents of this file:\n    \n        DROP TABLE delays_raw;\n        -- Creates an external table over the csv file\n        CREATE EXTERNAL TABLE delays_raw (\n            YEAR string,\n            FL_DATE string,\n            UNIQUE_CARRIER string,\n            CARRIER string,\n            FL_NUM string,\n            ORIGIN_AIRPORT_ID string,\n            ORIGIN string,\n            ORIGIN_CITY_NAME string,\n            ORIGIN_CITY_NAME_TEMP string,\n            ORIGIN_STATE_ABR string,\n            DEST_AIRPORT_ID string,\n            DEST string,\n            DEST_CITY_NAME string,\n            DEST_CITY_NAME_TEMP string,\n            DEST_STATE_ABR string,\n            DEP_DELAY_NEW float,\n            ARR_DELAY_NEW float,\n            CARRIER_DELAY float,\n            WEATHER_DELAY float,\n            NAS_DELAY float,\n            SECURITY_DELAY float,\n            LATE_AIRCRAFT_DELAY float)\n        -- The following lines describe the format and location of the file\n        ROW FORMAT DELIMITED FIELDS TERMINATED BY ','\n        LINES TERMINATED BY '\\n'\n        STORED AS TEXTFILE\n        LOCATION '/tutorials/flightdelays/data';\n        \n        -- Drop the delays table if it exists\n        DROP TABLE delays;\n        -- Create the delays table and populate it with data\n        -- pulled in from the CSV file (via the external table defined previously)\n        CREATE TABLE delays AS\n        SELECT YEAR AS year,\n            FL_DATE AS flight_date,\n            substring(UNIQUE_CARRIER, 2, length(UNIQUE_CARRIER) -1) AS unique_carrier,\n            substring(CARRIER, 2, length(CARRIER) -1) AS carrier,\n            substring(FL_NUM, 2, length(FL_NUM) -1) AS flight_num,\n            ORIGIN_AIRPORT_ID AS origin_airport_id,\n            substring(ORIGIN, 2, length(ORIGIN) -1) AS origin_airport_code,\n            substring(ORIGIN_CITY_NAME, 2) AS origin_city_name,\n            substring(ORIGIN_STATE_ABR, 2, length(ORIGIN_STATE_ABR) -1)  AS origin_state_abr,\n            DEST_AIRPORT_ID AS dest_airport_id,\n            substring(DEST, 2, length(DEST) -1) AS dest_airport_code,\n            substring(DEST_CITY_NAME,2) AS dest_city_name,\n            substring(DEST_STATE_ABR, 2, length(DEST_STATE_ABR) -1) AS dest_state_abr,\n            DEP_DELAY_NEW AS dep_delay_new,\n            ARR_DELAY_NEW AS arr_delay_new,\n            CARRIER_DELAY AS carrier_delay,\n            WEATHER_DELAY AS weather_delay,\n            NAS_DELAY AS nas_delay,\n            SECURITY_DELAY AS security_delay,\n            LATE_AIRCRAFT_DELAY AS late_aircraft_delay\n        FROM delays_raw;\n        \n2. Use __Ctrl + X__, then __Y__ to save the file.\n\n3. Use the following to start Hive and run the __flightdelays.hql__ file:\n\n        hive -i flightdelays.hql\n        \n    This will run the file, then return a `hive>` prompt.\n\n4. When you receive the `hive>` prompt, use the following to retrieve data from the imported flight delay data.\n\n        INSERT OVERWRITE DIRECTORY '/tutorials/flightdelays/output'\n        SELECT regexp_replace(origin_city_name, '''', ''),\n            avg(weather_delay)\n        FROM delays\n        WHERE weather_delay IS NOT NULL\n        GROUP BY origin_city_name;\n\n    This will retrieve a list of cities that experienced weather delays, along with the average delay time, and save it to `/tutorials/flightdelays/output`. Later, Sqoop will read the data from this location and export it to Azure SQL Database.\n\n##Create a SQL Database\n\nUse the following steps to create an Azure SQL Database. This will be used to hold data exported from HDInsight through Sqoop.\n\n1. From your develoment environment where Azure CLI is installed, use the following command to create a new Azure SQL Database:\n\n        azure sql server create <adminLogin> <adminPassword> <region>\n\n    For exmaple, `azure sql server create admin password \"West US\"`.\n\n    When the command completes, you will receive a response similar to the following:\n\n        info:    Executing command sql server create\n        + Creating SQL Server\n        data:    Server Name i1qwc540ts\n        info:    sql server create command OK\n\n> [AZURE.IMPORTANT] Note the server name returned by this command. This is the short name of the SQL Database server that was created. The fully qualified domain name (FQDN) is `<shortname>.database.windows.net`.\n\n2. Use the following command to create a database named **sqooptest** on the SQL Database server:\n\n        azure sql db create [options] <serverName> sqooptest <adminLogin> <adminPassword>\n\n    This will return an \"OK\" message when it completes.\n\n    > [AZURE.NOTE] If you receive an error indicating that you do not have access, you may need to add your client workstation's IP address to the SQL Database firewall using the following command:\n    >\n    > `sql firewallrule create [options] <serverName> <ruleName> <startIPAddress> <endIPAddress>`\n\n##Create a SQL Database table\n\n> [AZURE.NOTE] There are many ways to connect to SQL Database to create a table. The following steps use [FreeTDS](http://www.freetds.org/) from the HDInsight cluster.\n\n1. Use SSH to connect to the Linux-based HDInsight cluster, and run the following steps from the SSH session.\n\n3. Use the following command to install FreeTDS:\n\n        sudo apt-get --assume-yes install freetds-dev freetds-bin\n\n4. Once FreeTDS has been installed, use the following command to connect to the SQL Database server you created previously:\n\n        TDSVER=8.0 tsql -H <serverName>.database.windows.net -U <adminLogin> -P <adminPassword> -p 1433 -D sqooptest\n\n    You will receive output similar to the following:\n\n        locale is \"en_US.UTF-8\"\n        locale charset is \"UTF-8\"\n        using default charset \"UTF-8\"\n        Default database being set to sqooptest\n        1>\n\n5. At the `1>` prompt, enter the following lines:\n\n        CREATE TABLE [dbo].[delays](\n        [origin_city_name] [nvarchar](50) NOT NULL,\n        [weather_delay] float,\n        CONSTRAINT [PK_delays] PRIMARY KEY CLUSTERED   \n        ([origin_city_name] ASC))\n        GO\n\n    When the `GO` statement is entered, the previous statements will be evaluated. This will create a new table named __delays__, with a clustered index (required by SQL Database.)\n\n    Use the following to verify that the table has been created:\n\n        SELECT * FROM information_schema.tables\n        GO\n\n    You should see output similar to the following:\n\n        TABLE_CATALOG   TABLE_SCHEMA    TABLE_NAME      TABLE_TYPE\n        sqooptest       dbo     delays      BASE TABLE\n\n8. Enter `exit` at the `1>` prompt to exit the tsql utility.\n    \n##Export data with Sqoop\n\n1. Use the following command to create a link to the SQL Server JDBC driver from the Sqoop lib directory. This allows Sqoop to use this driver to talk to SQL Database:\n\n        sudo ln /usr/share/java/sqljdbc_4.1/enu/sqljdbc4.jar /usr/hdp/current/sqoop-client/lib/sqljdbc4.jar\n\n2. Use the following command to verify that Sqoop can see your SQL Database:\n\n        sqoop list-databases --connect jdbc:sqlserver://<serverName>.database.windows.net:1433 --username <adminLogin> --password <adminPassword>\n\n    This should return a list of databases, including the sqooptest database that you created earlier.\n\n3. Use the following command to export data from hivesampletable to the mobiledata table:\n\n        sqoop export --connect 'jdbc:sqlserver://<serverName>.database.windows.net:1433;database=sqooptest' --username <adminLogin> --password <adminPassword> --table 'delays' --export-dir 'wasb:///tutorials/flightdelays/output' --fields-terminated-by '\\t' -m 1\n\n    This instructs Sqoop to connect to SQL Database, to the sqooptest database, and export data from the wasb:///tutorials/flightdelays/output (where we stored the output of the hive query earlier,) to the delays table.\n\n4. After the command completes, use the following to connect to the database using TSQL:\n\n        TDSVER=8.0 tsql -H <serverName>.database.windows.net -U <adminLogin> -P <adminPassword> -p 1433 -D sqooptest\n\n    Once connected, use the following statements to verify that the data was exported to the mobiledata table:\n    \n        SELECT * FROM delays\n        GO\n\n    You should see a listing of data in the table. Type `exit` to exit the tsql utility.\n\n##<a id=\"nextsteps\"></a> Next steps\nNow you understand how to upload a file to Azure Blob storage, how to populate a Hive table by using the data from Azure Blob storage, how to run Hive queries, and how to use Sqoop to export data from HDFS to an Azure SQL database. To learn more, see the following articles:\n\n* [Getting started with HDInsight][hdinsight-get-started]\n* [Use Hive with HDInsight][hdinsight-use-hive]\n* [Use Oozie with HDInsight][hdinsight-use-oozie]\n* [Use Sqoop with HDInsight][hdinsight-use-sqoop]\n* [Use Pig with HDInsight][hdinsight-use-pig]\n* [Develop Java MapReduce programs for HDInsight][hdinsight-develop-mapreduce]\n* [Develop Python Hadoop streaming programs for HDInsight][hdinsight-develop-streaming]\n\n\n\n[azure-purchase-options]: http://azure.microsoft.com/pricing/purchase-options/\n[azure-member-offers]: http://azure.microsoft.com/pricing/member-offers/\n[azure-free-trial]: http://azure.microsoft.com/pricing/free-trial/\n\n\n[rita-website]: http://www.transtats.bts.gov/DL_SelectFields.asp?Table_ID=236&DB_Short_Name=On-Time\n[cindygross-hive-tables]: http://blogs.msdn.com/b/cindygross/archive/2013/02/06/hdinsight-hive-internal-and-external-tables-intro.aspx\n[powershell-install-configure]: ../install-configure-powershell.md\n\n[hdinsight-use-oozie]: hdinsight-use-oozie-linux-mac.md\n[hdinsight-use-hive]: hdinsight-use-hive.md\n[hdinsight-provision]: hdinsight-provision-clusters.md\n[hdinsight-storage]: hdinsight-hadoop-use-blob-storage.md\n[hdinsight-upload-data]: hdinsight-upload-data.md\n[hdinsight-get-started]: hdinsight-hadoop-linux-tutorial-get-started.md\n[hdinsight-use-sqoop]: hdinsight-use-sqoop-mac-linux.md\n[hdinsight-use-pig]: hdinsight-use-pig.md\n[hdinsight-develop-streaming]: hdinsight-hadoop-streaming-python.md\n[hdinsight-develop-mapreduce]: hdinsight-develop-deploy-java-mapreduce-linux.md\n\n[hadoop-hiveql]: https://cwiki.apache.org/confluence/display/Hive/LanguageManual+DDL\n\n[technetwiki-hive-error]: http://social.technet.microsoft.com/wiki/contents/articles/23047.hdinsight-hive-error-unable-to-rename.aspx\n\n\n \ntest\n"
+}

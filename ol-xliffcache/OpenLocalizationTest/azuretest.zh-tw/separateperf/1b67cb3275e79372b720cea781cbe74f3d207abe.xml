@@ -1,0 +1,551 @@
+{
+  "nodes": [
+    {
+      "content": "Configuring ExpressRoute through an Exchange Provider",
+      "pos": [
+        26,
+        79
+      ]
+    },
+    {
+      "content": "This tutorial walks you through setting up ExpressRoute through exchange providers (EXPs).",
+      "pos": [
+        97,
+        187
+      ]
+    },
+    {
+      "content": "Configure an ExpressRoute connection through an Exchange Provider",
+      "pos": [
+        502,
+        567
+      ]
+    },
+    {
+      "content": "To configure your ExpressRoute connection through an exchange provider, you’ll need to complete multiple steps in the proper order.",
+      "pos": [
+        569,
+        700
+      ]
+    },
+    {
+      "content": "These instructions will help you do the following:",
+      "pos": [
+        701,
+        751
+      ]
+    },
+    {
+      "content": "Create and Manage ExpressRoute circuits",
+      "pos": [
+        755,
+        794
+      ]
+    },
+    {
+      "content": "Configure BGP peering for ExpressRoute circuits",
+      "pos": [
+        797,
+        844
+      ]
+    },
+    {
+      "content": "Link a Virtual Network to the ExpressRoute circuit",
+      "pos": [
+        847,
+        897
+      ]
+    },
+    {
+      "content": "Configuration prerequisites",
+      "pos": [
+        903,
+        930
+      ]
+    },
+    {
+      "content": "Before you begin configuration, verify that you have met the following prerequisites:",
+      "pos": [
+        933,
+        1018
+      ]
+    },
+    {
+      "content": "Azure subscription",
+      "pos": [
+        1022,
+        1040
+      ]
+    },
+    {
+      "content": "Latest version of Azure PowerShell",
+      "pos": [
+        1043,
+        1077
+      ]
+    },
+    {
+      "content": "The following Virtual Network requirements:",
+      "pos": [
+        1080,
+        1123
+      ]
+    },
+    {
+      "content": "A set of IP address prefixes to be used in virtual networks in Azure",
+      "pos": [
+        1130,
+        1198
+      ]
+    },
+    {
+      "content": "A set of IP prefixes on-premises (can contain public IP addresses)",
+      "pos": [
+        1205,
+        1271
+      ]
+    },
+    {
+      "content": "The Virtual Network Gateway must be created with a /28 subnet.",
+      "pos": [
+        1278,
+        1340
+      ]
+    },
+    {
+      "content": "Additional set of IP prefixes (/28) that is outside of the virtual network.",
+      "pos": [
+        1347,
+        1422
+      ]
+    },
+    {
+      "content": "This will be used for configuring BGP peering.",
+      "pos": [
+        1423,
+        1469
+      ]
+    },
+    {
+      "content": "AS number for your network.",
+      "pos": [
+        1476,
+        1503
+      ]
+    },
+    {
+      "content": "For more information about AS numbers, see <bpt id=\"p1\">[</bpt>Autonomous System (AS) Numbers<ept id=\"p1\">](http://www.iana.org/assignments/as-numbers/as-numbers.xhtml)</ept>.",
+      "pos": [
+        1504,
+        1641
+      ]
+    },
+    {
+      "content": "MD5 hash if you need an authenticated BGP session",
+      "pos": [
+        1648,
+        1697
+      ]
+    },
+    {
+      "content": "VLAN IDs on which traffic will be sent.",
+      "pos": [
+        1704,
+        1743
+      ]
+    },
+    {
+      "content": "You will need 2 VLAN IDs for each circuit: one for virtual networks and the other for services hosted on public IP addresses.",
+      "pos": [
+        1744,
+        1869
+      ]
+    },
+    {
+      "pos": [
+        1876,
+        1987
+      ],
+      "content": "<bpt id=\"p1\">[</bpt>Autonomous System (AS) Numbers<ept id=\"p1\">](http://www.iana.org/assignments/as-numbers/as-numbers.xhtml)</ept> for your network."
+    },
+    {
+      "content": "Two 1 Gbps / 10 Gbps cross-connects to the Exchange provider’s Ethernet Exchange.",
+      "pos": [
+        1994,
+        2075
+      ]
+    },
+    {
+      "content": "A pair of routers capable of supporting BGP for routing",
+      "pos": [
+        2082,
+        2137
+      ]
+    },
+    {
+      "content": "Deployment workflow",
+      "pos": [
+        2143,
+        2162
+      ]
+    },
+    {
+      "content": "Configuring settings using PowerShell",
+      "pos": [
+        2256,
+        2293
+      ]
+    },
+    {
+      "content": "Windows PowerShell is a powerful scripting environment that you can use to control and automate the deployment and management of your workloads in Azure.",
+      "pos": [
+        2295,
+        2448
+      ]
+    },
+    {
+      "content": "For more information please refer to the PowerShell documentation in <bpt id=\"p1\">[</bpt>MSDN<ept id=\"p1\">](https://msdn.microsoft.com/library/windowsazure/jj156055.aspx)</ept>.",
+      "pos": [
+        2449,
+        2588
+      ]
+    },
+    {
+      "content": "Import the PowerShell module for ExpressRoute.",
+      "pos": [
+        2595,
+        2641
+      ]
+    },
+    {
+      "content": "Get the list of providers, locations, and bandwidths supported.",
+      "pos": [
+        2899,
+        2962
+      ]
+    },
+    {
+      "content": "Before creating a circuit you will need a list of service providers, supported locations, and bandwidth options for each location.",
+      "pos": [
+        2970,
+        3100
+      ]
+    },
+    {
+      "content": "The following PowerShell cmdlet returns this information which you’ll use in later steps.",
+      "pos": [
+        3101,
+        3190
+      ]
+    },
+    {
+      "content": "Create a Dedicated Circuit",
+      "pos": [
+        5256,
+        5282
+      ]
+    },
+    {
+      "content": "The example below shows how to create a 200 Mbps ExpressRoute circuit through Equinix Silicon Valley.",
+      "pos": [
+        5290,
+        5391
+      ]
+    },
+    {
+      "content": "If you are using a different provider and different settings, substitute that information when making your request.",
+      "pos": [
+        5392,
+        5507
+      ]
+    },
+    {
+      "content": "Below is an example request for a new service key:",
+      "pos": [
+        5513,
+        5563
+      ]
+    },
+    {
+      "content": "The response will be something similar to the example below:",
+      "pos": [
+        5945,
+        6005
+      ]
+    },
+    {
+      "content": "You can retrieve this information at any time using the Get-AzureCircuit cmdlet.",
+      "pos": [
+        6411,
+        6491
+      ]
+    },
+    {
+      "content": "Making the call without any parameters will list all circuits.",
+      "pos": [
+        6492,
+        6554
+      ]
+    },
+    {
+      "content": "Your Service Key will be listed in the ServiceKey field.",
+      "pos": [
+        6555,
+        6611
+      ]
+    },
+    {
+      "content": "Send the Service Key to your exchange provider.",
+      "pos": [
+        7062,
+        7109
+      ]
+    },
+    {
+      "content": "Your exchange provider will use the Service Key to enable their end of the connection.",
+      "pos": [
+        7117,
+        7203
+      ]
+    },
+    {
+      "content": "You will have to provide the connectivity provider with additional information to enable connectivity.",
+      "pos": [
+        7204,
+        7306
+      ]
+    },
+    {
+      "content": "Periodically check the status and the state of the circuit key.",
+      "pos": [
+        7313,
+        7376
+      ]
+    },
+    {
+      "content": "This will allow you to know when your provider has enabled your circuit.",
+      "pos": [
+        7384,
+        7456
+      ]
+    },
+    {
+      "content": "Once the circuit has been enabled, the <bpt id=\"p1\">*</bpt>ServiceProviderProvisioningState<ept id=\"p1\">*</ept> will display as <bpt id=\"p2\">*</bpt>Provisioned<ept id=\"p2\">*</ept> as shown in the example below.",
+      "pos": [
+        7457,
+        7591
+      ]
+    },
+    {
+      "content": "Configure routing for virtual network.",
+      "pos": [
+        8038,
+        8076
+      ]
+    },
+    {
+      "content": "We use BGP sessions to exchange routes and also make sure that we have high availability.",
+      "pos": [
+        8084,
+        8173
+      ]
+    },
+    {
+      "content": "Use the example below to create a BGP session for your circuit.",
+      "pos": [
+        8174,
+        8237
+      ]
+    },
+    {
+      "content": "Substitute your own values when creating your session.",
+      "pos": [
+        8238,
+        8292
+      ]
+    },
+    {
+      "content": "You can get routing information for a circuit using Get-AzureBGPPeering by providing the service key.",
+      "pos": [
+        9165,
+        9266
+      ]
+    },
+    {
+      "content": "You can also update the BGP settings using Set-AzureBGPPeering.",
+      "pos": [
+        9267,
+        9330
+      ]
+    },
+    {
+      "content": "The BGP session will not come up when this command is run.",
+      "pos": [
+        9331,
+        9389
+      ]
+    },
+    {
+      "content": "The circuit must be linked with at least one VNet to get the BGP session up.",
+      "pos": [
+        9390,
+        9466
+      ]
+    },
+    {
+      "content": "The response below will provide you with the information that you will need for the next steps.",
+      "pos": [
+        9472,
+        9567
+      ]
+    },
+    {
+      "content": "Use the peer ASN to configure BGP on your router’s VRFs.",
+      "pos": [
+        9568,
+        9624
+      ]
+    },
+    {
+      "content": "Configure routing for services hosted on public IP addresses.",
+      "pos": [
+        10137,
+        10198
+      ]
+    },
+    {
+      "content": "We use BGP sessions to exchange routes and also make sure that we have high availability.",
+      "pos": [
+        10206,
+        10295
+      ]
+    },
+    {
+      "content": "Use the example below to create a BGP session for your circuit.",
+      "pos": [
+        10296,
+        10359
+      ]
+    },
+    {
+      "content": "Substitute your own values when creating your session.",
+      "pos": [
+        10360,
+        10414
+      ]
+    },
+    {
+      "content": "You can get routing information for a circuit using Get-AzureBGPPeering by providing the service key.",
+      "pos": [
+        11303,
+        11404
+      ]
+    },
+    {
+      "content": "You can also update the BGP settings using Set-AzureBGPPeering.",
+      "pos": [
+        11405,
+        11468
+      ]
+    },
+    {
+      "content": "The BGP session will not come up when this command is run.",
+      "pos": [
+        11469,
+        11527
+      ]
+    },
+    {
+      "content": "The circuit must be linked with at least one VNet to get the BGP session up.",
+      "pos": [
+        11528,
+        11604
+      ]
+    },
+    {
+      "content": "The response below will provide you with the information that you will need for the next steps.",
+      "pos": [
+        11610,
+        11705
+      ]
+    },
+    {
+      "content": "Use the peer ASN to configure BGP on your router’s VRFs.",
+      "pos": [
+        11706,
+        11762
+      ]
+    },
+    {
+      "content": "Configure your virtual network and gateway.",
+      "pos": [
+        12275,
+        12318
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt>Configure a Virtual Network and Gateway for ExpressRoute<ept id=\"p1\">](expressroute-configuring-vnet-gateway.md)</ept>.",
+      "pos": [
+        12326,
+        12431
+      ]
+    },
+    {
+      "content": "Note that the gateway subnet must be /28 in order to work with an ExpressRoute connection.",
+      "pos": [
+        12432,
+        12522
+      ]
+    },
+    {
+      "content": "Link your network to a circuit.",
+      "pos": [
+        12529,
+        12560
+      ]
+    },
+    {
+      "content": "Proceed with the following instructions only after you have confirmed that your circuit has moved to the following state and status:",
+      "pos": [
+        12563,
+        12695
+      ]
+    },
+    {
+      "content": "ServiceProviderProvisioningState: Provisioned",
+      "pos": [
+        12702,
+        12747
+      ]
+    },
+    {
+      "content": "Status: Enabled",
+      "pos": [
+        12754,
+        12769
+      ]
+    },
+    {
+      "content": "Next Steps",
+      "pos": [
+        12899,
+        12909
+      ]
+    },
+    {
+      "pos": [
+        12913,
+        13003
+      ],
+      "content": "For more information about ExpressRoute, see the <bpt id=\"p1\">[</bpt>ExpressRoute FAQ<ept id=\"p1\">](expressroute-faqs.md)</ept>."
+    },
+    {
+      "content": "test",
+      "pos": [
+        13005,
+        13009
+      ]
+    }
+  ],
+  "content": "<properties\n   pageTitle=\"Configuring ExpressRoute through an Exchange Provider\"\n   description=\"This tutorial walks you through setting up ExpressRoute through exchange providers (EXPs).\"\n   documentationCenter=\"na\"\n   services=\"expressroute\"\n   authors=\"cherylmc\"\n   manager=\"carolz\"\n   editor=\"tysonn\" />\n<tags\n   ms.service=\"expressroute\"\n   ms.devlang=\"na\"\n   ms.topic=\"article\" \n   ms.tgt_pltfrm=\"na\"\n   ms.workload=\"infrastructure-services\"\n   ms.date=\"07/28/2015\"\n   ms.author=\"cherylmc\"/>\n\n#  Configure an ExpressRoute connection through an Exchange Provider\n\nTo configure your ExpressRoute connection through an exchange provider, you’ll need to complete multiple steps in the proper order. These instructions will help you do the following:\n\n- Create and Manage ExpressRoute circuits\n- Configure BGP peering for ExpressRoute circuits\n- Link a Virtual Network to the ExpressRoute circuit\n\n##  Configuration prerequisites\n\n\nBefore you begin configuration, verify that you have met the following prerequisites:\n\n- Azure subscription\n- Latest version of Azure PowerShell\n- The following Virtual Network requirements:\n    - A set of IP address prefixes to be used in virtual networks in Azure\n    - A set of IP prefixes on-premises (can contain public IP addresses)\n    - The Virtual Network Gateway must be created with a /28 subnet.\n    - Additional set of IP prefixes (/28) that is outside of the virtual network. This will be used for configuring BGP peering.\n    - AS number for your network. For more information about AS numbers, see [Autonomous System (AS) Numbers](http://www.iana.org/assignments/as-numbers/as-numbers.xhtml).\n    - MD5 hash if you need an authenticated BGP session\n    - VLAN IDs on which traffic will be sent. You will need 2 VLAN IDs for each circuit: one for virtual networks and the other for services hosted on public IP addresses.\n    - [Autonomous System (AS) Numbers](http://www.iana.org/assignments/as-numbers/as-numbers.xhtml) for your network.\n    - Two 1 Gbps / 10 Gbps cross-connects to the Exchange provider’s Ethernet Exchange.\n    - A pair of routers capable of supporting BGP for routing\n\n##  Deployment workflow\n\n\n![](./media/expressroute-configuring-exps/expressroute-exp-connectivity-workflow.png)\n\n##  Configuring settings using PowerShell\n\nWindows PowerShell is a powerful scripting environment that you can use to control and automate the deployment and management of your workloads in Azure. For more information please refer to the PowerShell documentation in [MSDN](https://msdn.microsoft.com/library/windowsazure/jj156055.aspx).\n\n1. **Import the PowerShell module for ExpressRoute.**\n\n        Import-Module 'C:\\Program Files (x86)\\Microsoft SDKs\\Azure\\PowerShell\\ServiceManagement\\Azure\\Azure.psd1'\n        Import-Module 'C:\\Program Files (x86)\\Microsoft SDKs\\Azure\\PowerShell\\ServiceManagement\\Azure\\ExpressRoute\\ExpressRoute.psd1'\n\n2. **Get the list of providers, locations, and bandwidths supported.**\n\n    Before creating a circuit you will need a list of service providers, supported locations, and bandwidth options for each location. The following PowerShell cmdlet returns this information which you’ll use in later steps.\n\n        PS C:\\> Get-AzureDedicatedCircuitServiceProvider\n        **The information returned will look similar to the example below:**\n\n\n        Name                 DedicatedCircuitLocations      DedicatedCircuitBandwidths\n        ----                 -------------------------      --------------------------\n        AT&T                 Silicon Valley,Washington DC   10Mbps:10, 50Mbps:50, 100Mbps:100, 500Mbps:500, 1Gbps:1000\n        British Telecom      London,Amsterdam               10Mbps:10, 50Mbps:50, 100Mbps:100, 500Mbps:500, 1Gbps:1000\n        Equinix              Amsterdam,Atlanta,Chicago,Dall 200Mbps:200, 500Mbps:500, 1Gbps:1000, 10Gbps:10000\n                             as,New York,Seattle,Silicon\n                             Valley,Washington\n                             DC,London,Hong\n                             Kong,Singapore,Sydney,Tokyo\n        IIJ                  Tokyo                          10Mbps:10, 50Mbps:50, 100Mbps:100, 500Mbps:500, 1Gbps:1000\n        Level 3              London,Silicon                 200Mbps:200, 500Mbps:500, 1Gbps:1000\n        Communications -     Valley,Washington DC\n        Exchange\n        Level 3              London,Silicon                 10Mbps:10, 50Mbps:50, 100Mbps:100, 500Mbps:500, 1Gbps:1000\n        Communications -     Valley,Washington DC\n        IPVPN\n        Orange               Amsterdam,London               10Mbps:10, 50Mbps:50, 100Mbps:100, 500Mbps:500, 1Gbps:1000\n        SingTel Domestic     Singapore                      10Mbps:10, 50Mbps:50, 100Mbps:100, 500Mbps:500, 1Gbps:1000\n        SingTel              Singapore                      10Mbps:10, 50Mbps:50, 100Mbps:100, 500Mbps:500, 1Gbps:1000\n        International\n        TeleCity Group       Amsterdam,London               200Mbps:200, 500Mbps:500, 1Gbps:1000, 10Gbps:10000\n        Telstra Corporation  Sydney                         10Mbps:10, 50Mbps:50, 100Mbps:100, 500Mbps:500, 1Gbps:1000\n        Verizon              Silicon Valley,Washington DC   10Mbps:10, 50Mbps:50, 100Mbps:100, 500Mbps:500, 1Gbps:1000\n\n3. **Create a Dedicated Circuit**\n\n    The example below shows how to create a 200 Mbps ExpressRoute circuit through Equinix Silicon Valley. If you are using a different provider and different settings, substitute that information when making your request.\n\n    Below is an example request for a new service key:\n\n        #Creating a new circuit\n        $Bandwidth = 200\n        $CircuitName = \"EquinixSVTest\"\n        $ServiceProvider = \"Equinix\"\n        $Location = \"Silicon Valley\"\n\n        New-AzureDedicatedCircuit -CircuitName $CircuitName -ServiceProviderName $ServiceProvider -Bandwidth $Bandwidth -Location $Location\n\n        #Getting service key\n        Get-AzureDedicatedCircuit\n\n    The response will be something similar to the example below:\n\n        Bandwidth                        : 200\n        CircuitName                      : EquinixSVTest\n        Location                         : Silicon Valley\n        ServiceKey                       : *********************************\n        ServiceProviderName              : equinix\n        ServiceProviderProvisioningState : NotProvisioned\n        Status                           : Enabled\n\n    You can retrieve this information at any time using the Get-AzureCircuit cmdlet. Making the call without any parameters will list all circuits. Your Service Key will be listed in the ServiceKey field.\n\n        PS C:\\> Get-AzureDedicatedCircuit\n\n        Bandwidth                        : 200\n        CircuitName                      : EquinixSVTest\n        Location                         : Silicon Valley\n        ServiceKey                       : *********************************\n        ServiceProviderName              : equinix\n        ServiceProviderProvisioningState : NotProvisioned\n        Status                           : Enabled\n\n\n4. **Send the Service Key to your exchange provider.**\n\n    Your exchange provider will use the Service Key to enable their end of the connection. You will have to provide the connectivity provider with additional information to enable connectivity.\n\n5. **Periodically check the status and the state of the circuit key.**\n\n    This will allow you to know when your provider has enabled your circuit. Once the circuit has been enabled, the *ServiceProviderProvisioningState* will display as *Provisioned* as shown in the example below.\n\n        PS C:\\> Get-AzureDedicatedCircuit\n\n        Bandwidth                        : 200\n        CircuitName                      : EquinixSVTest\n        Location                         : Silicon Valley\n        ServiceKey                       : *********************************\n        ServiceProviderName              : equinix\n        ServiceProviderProvisioningState : Provisioned\n        Status                           : Enabled\n\n6. **Configure routing for virtual network.**\n\n    We use BGP sessions to exchange routes and also make sure that we have high availability. Use the example below to create a BGP session for your circuit. Substitute your own values when creating your session.\n\n        #Setting up a bgp session\n        $ServiceKey = \"<your key>\"\n        $PriSN = \"<subnet/30 you use IP #1 and Azure uses IP #2>\"\n        $SecSN = \"<subnet/30 use IP #1 and Azure uses IP #2>\"\n        $ASN = <your ASN>\n        $VLAN = <your vlan ID>\n\n        #Create a new bgp peering session\n        New-AzureBGPPeering -ServiceKey $ServiceKey -PrimaryPeerSubnet $PriSN -SecondaryPeerSubnet $SecSN -PeerAsn $ASN VlanId $VLAN –AccessType Private\n        #Get BGP parameters and Azure ASN\n        Get-AzureBGPPeering -ServiceKey $ServiceKey –AccessType Private\n        #Update BGP peering config\n        Set-AzureBGPPeering  -ServiceKey $ServiceKey -PrimaryPeerSubnet $PriSN -SecondaryPeerSubnet $SecSN -PeerAsn $ASN -VlanId $VLAN –AccessType Private\n        #Removing BGP peering config\n        Remove-AzureBGPPeering -ServiceKey $ServiceKey –AccessType Private\n\n    You can get routing information for a circuit using Get-AzureBGPPeering by providing the service key. You can also update the BGP settings using Set-AzureBGPPeering. The BGP session will not come up when this command is run. The circuit must be linked with at least one VNet to get the BGP session up.\n\n    The response below will provide you with the information that you will need for the next steps. Use the peer ASN to configure BGP on your router’s VRFs.\n\n        PS C:\\> New-AzureBGPPeering -ServiceKey $ServiceKey -PrimaryPeerSubnet $PriSN -SecondaryPeerSubnet $SecSN -PeerAsn $ASN -VlanId $VLAN –AccessType Private\n\n        AzureAsn            : 12076\n        PeerAsn             : 65001\n        PrimaryAzurePort    : EQIX-SJC-06GMR-CIS-1-PRI-A\n        PrimaryPeerSubnet   : 10.0.1.0/30\n        SecondaryAzurePort  : EQIX-SJC-06GMR-CIS-2-SEC-A\n        SecondaryPeerSubnet : 10.0.2.0/30\n        State               : Enabled\n        VlanId              : 100\n\n7. **Configure routing for services hosted on public IP addresses.**\n\n    We use BGP sessions to exchange routes and also make sure that we have high availability. Use the example below to create a BGP session for your circuit. Substitute your own values when creating your session.\n\n        #Setting up a bgp session\n        $ServiceKey = \"<your key>\"\n        $PriSN = \"<subnet/30 subnet you use IP #1 and Azure uses IP #2>\"\n        $SecSN = \"< subnet/30 subnet you use IP #1 and Azure uses IP #2>\"\n        $ASN = <your ASN>\n        $VLAN = <your vlan ID>\n\n        #Create a new bgp peering session\n        New-AzureBGPPeering -ServiceKey $ServiceKey -PrimaryPeerSubnet $PriSN -SecondaryPeerSubnet $SecSN -PeerAsn $ASN -VlanId $VLAN –AccessType Public\n        #Get BGP parameters and Azure ASN\n        Get-AzureBGPPeering -ServiceKey $ServiceKey –AccessType Public\n        #Update BGP peering config\n        Set-AzureBGPPeering  -ServiceKey $ServiceKey -PrimaryPeerSubnet $PriSN -SecondaryPeerSubnet $SecSN -PeerAsn $ASN -VlanId $VLAN –AccessType Public\n        #Removing BGP peering config\n        Remove-AzureBGPPeering -ServiceKey $ServiceKey –AccessType Public\n\n    You can get routing information for a circuit using Get-AzureBGPPeering by providing the service key. You can also update the BGP settings using Set-AzureBGPPeering. The BGP session will not come up when this command is run. The circuit must be linked with at least one VNet to get the BGP session up.\n\n    The response below will provide you with the information that you will need for the next steps. Use the peer ASN to configure BGP on your router’s VRFs.\n\n        PS C:\\> New-AzureBGPPeering -ServiceKey $ServiceKey -PrimaryPeerSubnet $PriSN -SecondaryPeerSubnet $SecSN -PeerAsn $ASN -VlanId $VLAN –AccessType Private\n\n        AzureAsn            : 12076\n        PeerAsn             : 65001\n        PrimaryAzurePort    : EQIX-SJC-06GMR-CIS-1-PRI-A\n        PrimaryPeerSubnet   : 10.0.1.8/30\n        SecondaryAzurePort  : EQIX-SJC-06GMR-CIS-2-SEC-A\n        SecondaryPeerSubnet : 10.0.2.8/30\n        State               : Enabled\n        VlanId              : 101\n\n8. **Configure your virtual network and gateway.**\n\n    See [Configure a Virtual Network and Gateway for ExpressRoute](expressroute-configuring-vnet-gateway.md). Note that the gateway subnet must be /28 in order to work with an ExpressRoute connection.\n\n9. **Link your network to a circuit.** Proceed with the following instructions only after you have confirmed that your circuit has moved to the following state and status:\n    - ServiceProviderProvisioningState: Provisioned\n    - Status: Enabled\n\n            PS C:\\> $Vnet = \"MyTestVNet\"\n            New-AzureDedicatedCircuitLink -ServiceKey $ServiceKey -VNetName $Vnet\n \n## Next Steps\n\n- For more information about ExpressRoute, see the [ExpressRoute FAQ](expressroute-faqs.md).\n\ntest\n"
+}

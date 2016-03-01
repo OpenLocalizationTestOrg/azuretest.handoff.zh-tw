@@ -1,0 +1,533 @@
+{
+  "nodes": [
+    {
+      "content": "Attach a disk to a virtual machine running Linux in Azure",
+      "pos": [
+        27,
+        84
+      ]
+    },
+    {
+      "content": "Learn how to attach a data disk to an Azure virtual machine and initialize it so it's ready for use.",
+      "pos": [
+        103,
+        203
+      ]
+    },
+    {
+      "content": "How to Attach a Data Disk to a Linux Virtual Machine",
+      "pos": [
+        573,
+        625
+      ]
+    },
+    {
+      "content": "You can attach both empty disks and disks that contain data.",
+      "pos": [
+        627,
+        687
+      ]
+    },
+    {
+      "content": "In both cases, the disks are actually .vhd files that reside in an Azure storage account.",
+      "pos": [
+        688,
+        777
+      ]
+    },
+    {
+      "content": "Also in both cases, after you attach the disk, you'll need to initialize it so it's ready for use.",
+      "pos": [
+        778,
+        876
+      ]
+    },
+    {
+      "content": "This article refers to virtual machines created using the classic deployment model.",
+      "pos": [
+        877,
+        960
+      ]
+    },
+    {
+      "pos": [
+        964,
+        1707
+      ],
+      "content": "[AZURE.NOTE] It's a best practice to use one or more separate disks to store a virtual machine's data. When you create an Azure virtual machine, it has an operating system disk and a temporary disk. **Do not use the temporary disk to store data.** As the name implies, it provides temporary storage only. It offers no redundancy or backup because it doesn't reside in Azure storage.\nThe temporary disk is typically managed by the Azure Linux Agent and automatically mounted to **/mnt/resource** (or **/mnt** on Ubuntu images). On the other hand, a data disk might be named by the Linux kernel something like `/dev/sdc`, and you'll need to partition, format, and mount this resource. See the [Azure Linux Agent User Guide][Agent] for details.",
+      "leadings": [
+        "",
+        "> "
+      ],
+      "nodes": [
+        {
+          "content": "[AZURE.NOTE] It's a best practice to use one or more separate disks to store a virtual machine's data. When you create an Azure virtual machine, it has an operating system disk and a temporary disk. **Do not use the temporary disk to store data.** As the name implies, it provides temporary storage only. It offers no redundancy or backup because it doesn't reside in Azure storage.",
+          "pos": [
+            0,
+            382
+          ],
+          "nodes": [
+            {
+              "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> It's a best practice to use one or more separate disks to store a virtual machine's data.",
+              "pos": [
+                0,
+                102
+              ]
+            },
+            {
+              "content": "When you create an Azure virtual machine, it has an operating system disk and a temporary disk.",
+              "pos": [
+                103,
+                198
+              ]
+            },
+            {
+              "content": "Do not use the temporary disk to store data.",
+              "pos": [
+                201,
+                245
+              ]
+            },
+            {
+              "content": "As the name implies, it provides temporary storage only.",
+              "pos": [
+                248,
+                304
+              ]
+            },
+            {
+              "content": "It offers no redundancy or backup because it doesn't reside in Azure storage.",
+              "pos": [
+                305,
+                382
+              ]
+            }
+          ]
+        },
+        {
+          "content": "The temporary disk is typically managed by the Azure Linux Agent and automatically mounted to **/mnt/resource** (or **/mnt** on Ubuntu images). On the other hand, a data disk might be named by the Linux kernel something like `/dev/sdc`, and you'll need to partition, format, and mount this resource. See the [Azure Linux Agent User Guide][Agent] for details.",
+          "pos": [
+            383,
+            741
+          ],
+          "nodes": [
+            {
+              "content": "The temporary disk is typically managed by the Azure Linux Agent and automatically mounted to <bpt id=\"p1\">**</bpt>/mnt/resource<ept id=\"p1\">**</ept> (or <bpt id=\"p2\">**</bpt>/mnt<ept id=\"p2\">**</ept> on Ubuntu images).",
+              "pos": [
+                0,
+                143
+              ]
+            },
+            {
+              "content": "On the other hand, a data disk might be named by the Linux kernel something like <ph id=\"ph1\">`/dev/sdc`</ph>, and you'll need to partition, format, and mount this resource.",
+              "pos": [
+                144,
+                299
+              ]
+            },
+            {
+              "content": "See the [Azure Linux Agent User Guide][Agent] for details.",
+              "pos": [
+                300,
+                358
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "content": "How to: Initialize a new data disk in Linux",
+      "pos": [
+        1806,
+        1849
+      ]
+    },
+    {
+      "content": "Connect to the virtual machine.",
+      "pos": [
+        1854,
+        1885
+      ]
+    },
+    {
+      "content": "For instructions, see [How to log on to a virtual machine running Linux][Logon].",
+      "pos": [
+        1886,
+        1966
+      ]
+    },
+    {
+      "content": "Next you need to find the device identifier for the data disk to initialize.",
+      "pos": [
+        1973,
+        2049
+      ]
+    },
+    {
+      "content": "There are two ways to do that:",
+      "pos": [
+        2050,
+        2080
+      ]
+    },
+    {
+      "content": "a) In the SSH window, type the following command, and then enter the password for the account that you created to manage the virtual machine:",
+      "pos": [
+        2086,
+        2227
+      ]
+    },
+    {
+      "pos": [
+        2280,
+        2434
+      ],
+      "content": "For recent Ubuntu distributions, you may need to use <ph id=\"ph1\">`sudo grep SCSI /var/log/syslog`</ph> because logging to <ph id=\"ph2\">`/var/log/messages`</ph> might be disabled by default."
+    },
+    {
+      "content": "You can find the identifier of the last data disk that was added in the messages that are displayed.",
+      "pos": [
+        2440,
+        2540
+      ]
+    },
+    {
+      "content": "Get the disk messages",
+      "pos": [
+        2548,
+        2569
+      ]
+    },
+    {
+      "content": "OR",
+      "pos": [
+        2644,
+        2646
+      ]
+    },
+    {
+      "content": "b) Use the <ph id=\"ph1\">`lsscsi`</ph> command to find out the device id.",
+      "pos": [
+        2652,
+        2706
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">`lsscsi`</ph> can be installed by either <ph id=\"ph2\">`yum install lsscsi`</ph> (on Red Hat based distributions) or <ph id=\"ph3\">`apt-get install lsscsi`</ph> (on Debian based distributions).",
+      "pos": [
+        2707,
+        2857
+      ]
+    },
+    {
+      "content": "You can find the disk you are looking for by its <bpt id=\"p1\">_</bpt>lun<ept id=\"p1\">_</ept> or <bpt id=\"p2\">**</bpt>logical unit number<ept id=\"p2\">**</ept>.",
+      "pos": [
+        2858,
+        2940
+      ]
+    },
+    {
+      "content": "For example, the <bpt id=\"p1\">_</bpt>lun<ept id=\"p1\">_</ept> for the disks you attached can be easily seen from <ph id=\"ph1\">`azure vm disk list &lt;virtual-machine&gt;`</ph> as:",
+      "pos": [
+        2941,
+        3057
+      ]
+    },
+    {
+      "pos": [
+        3651,
+        3728
+      ],
+      "content": "Compare this with the output of <ph id=\"ph1\">`lsscsi`</ph> for the same sample virtual machine:"
+    },
+    {
+      "content": "The last number in the tuple in each row is the <bpt id=\"p1\">_</bpt>lun<ept id=\"p1\">_</ept>.",
+      "pos": [
+        4223,
+        4277
+      ]
+    },
+    {
+      "content": "See <ph id=\"ph1\">`man lsscsi`</ph> for more information.",
+      "pos": [
+        4278,
+        4316
+      ]
+    },
+    {
+      "content": "In the SSH window, type the following command to create a new device, and then enter the account password:",
+      "pos": [
+        4321,
+        4427
+      ]
+    },
+    {
+      "pos": [
+        4464,
+        4591
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> In this example you may need to use <ph id=\"ph2\">`sudo -i`</ph> on some distributions if /sbin or /usr/sbin are not in your <ph id=\"ph3\">`$PATH`</ph>."
+    },
+    {
+      "pos": [
+        4597,
+        4649
+      ],
+      "content": "When prompted, type <bpt id=\"p1\">**</bpt>n<ept id=\"p1\">**</ept> to create a new partition."
+    },
+    {
+      "pos": [
+        4750,
+        4929
+      ],
+      "content": "When prompted, type <bpt id=\"p1\">**</bpt>p<ept id=\"p1\">**</ept> to make the partition the primary partition, type <bpt id=\"p2\">**</bpt>1<ept id=\"p2\">**</ept> to make it the first partition, and then type enter to accept the default value for the cylinder."
+    },
+    {
+      "pos": [
+        5030,
+        5101
+      ],
+      "content": "Type <bpt id=\"p1\">**</bpt>p<ept id=\"p1\">**</ept> to see the details about the disk that is being partitioned."
+    },
+    {
+      "pos": [
+        5203,
+        5249
+      ],
+      "content": "Type <bpt id=\"p1\">**</bpt>w<ept id=\"p1\">**</ept> to write the settings for the disk."
+    },
+    {
+      "content": "Make the file system on the new partition.",
+      "pos": [
+        5351,
+        5393
+      ]
+    },
+    {
+      "content": "As an example, type the following command and then enter the account password:",
+      "pos": [
+        5394,
+        5472
+      ]
+    },
+    {
+      "content": "Create file system",
+      "pos": [
+        5519,
+        5537
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> Note that SUSE Linux Enterprise 11 systems only support read-only access for ext4 file systems.",
+      "pos": [
+        5615,
+        5723
+      ]
+    },
+    {
+      "content": "For these systems it is recommended to format the new file system as ext3 rather than ext4.",
+      "pos": [
+        5725,
+        5816
+      ]
+    },
+    {
+      "content": "Make a directory to mount the new file system.",
+      "pos": [
+        5822,
+        5868
+      ]
+    },
+    {
+      "content": "As an example, type the following command  and then enter the account password:",
+      "pos": [
+        5869,
+        5948
+      ]
+    },
+    {
+      "content": "Type the following command to mount the drive:",
+      "pos": [
+        5988,
+        6034
+      ]
+    },
+    {
+      "pos": [
+        6083,
+        6135
+      ],
+      "content": "The data disk is now ready to use as <bpt id=\"p1\">**</bpt>/datadrive<ept id=\"p1\">**</ept>."
+    },
+    {
+      "content": "Add the new drive to /etc/fstab:",
+      "pos": [
+        6142,
+        6174
+      ]
+    },
+    {
+      "content": "To ensure the drive is re-mounted automatically after a reboot it must be added to the /etc/fstab file.",
+      "pos": [
+        6180,
+        6283
+      ]
+    },
+    {
+      "content": "In addition, it is highly recommended that the UUID (Universally Unique IDentifier) is used in /etc/fstab to refer to the drive rather than just the device name (i.e. /dev/sdc1).",
+      "pos": [
+        6284,
+        6462
+      ]
+    },
+    {
+      "content": "To find the UUID of the new drive you can use the <bpt id=\"p1\">**</bpt>blkid<ept id=\"p1\">**</ept> utility:",
+      "pos": [
+        6463,
+        6531
+      ]
+    },
+    {
+      "content": "The output will look similar to the following:",
+      "pos": [
+        6562,
+        6608
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> Improperly editing the <bpt id=\"p1\">**</bpt>/etc/fstab<ept id=\"p1\">**</ept> file could result in an unbootable system.",
+      "pos": [
+        6842,
+        6935
+      ]
+    },
+    {
+      "content": "If unsure, please refer to the distribution's documentation for information on how to properly edit this file.",
+      "pos": [
+        6936,
+        7046
+      ]
+    },
+    {
+      "content": "It is also recommended that a backup of the /etc/fstab file is created before editing.",
+      "pos": [
+        7047,
+        7133
+      ]
+    },
+    {
+      "content": "Next, open the <bpt id=\"p1\">**</bpt>/etc/fstab<ept id=\"p1\">**</ept> file in a text editor.",
+      "pos": [
+        7139,
+        7191
+      ]
+    },
+    {
+      "content": "Note that /etc/fstab is a system file, so you will need to use <ph id=\"ph1\">`sudo`</ph> to edit this file, for example:",
+      "pos": [
+        7192,
+        7293
+      ]
+    },
+    {
+      "content": "In this example we will use the UUID value for the new <bpt id=\"p1\">**</bpt>/dev/sdc1<ept id=\"p1\">**</ept> device that was created in the previous steps, and the mountpoint <bpt id=\"p2\">**</bpt>/datadrive<ept id=\"p2\">**</ept>.",
+      "pos": [
+        7329,
+        7479
+      ]
+    },
+    {
+      "content": "Add the following line to the end of the <bpt id=\"p1\">**</bpt>/etc/fstab<ept id=\"p1\">**</ept> file:",
+      "pos": [
+        7480,
+        7541
+      ]
+    },
+    {
+      "content": "Or, on systems based on SUSE Linux you may need to use a slightly different format:",
+      "pos": [
+        7637,
+        7720
+      ]
+    },
+    {
+      "content": "You can now test that the file system is mounted properly by simply unmounting and then re-mounting the file system, i.e.",
+      "pos": [
+        7820,
+        7941
+      ]
+    },
+    {
+      "content": "using the example mount point <ph id=\"ph1\">`/datadrive`</ph> created in the earlier steps:",
+      "pos": [
+        7942,
+        8014
+      ]
+    },
+    {
+      "content": "If the <ph id=\"ph1\">`mount`</ph> command produces an error, check the /etc/fstab file for correct syntax.",
+      "pos": [
+        8086,
+        8173
+      ]
+    },
+    {
+      "content": "If additional data drives or partitions are created you will need to enter them into /etc/fstab separately as well.",
+      "pos": [
+        8174,
+        8289
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> Subsequently removing a data disk without editing fstab could cause the VM to fail to boot.",
+      "pos": [
+        8293,
+        8397
+      ]
+    },
+    {
+      "content": "If this is a common occurrence, most distributions provide either the <ph id=\"ph1\">`nofail`</ph> and/or <ph id=\"ph2\">`nobootwait`</ph> fstab options that will allow a system to boot even if the disk fails to mount at boot time.",
+      "pos": [
+        8398,
+        8589
+      ]
+    },
+    {
+      "content": "Please consult your distribution's documentation for more information on these parameters.",
+      "pos": [
+        8590,
+        8680
+      ]
+    },
+    {
+      "content": "Additional Resources",
+      "pos": [
+        8685,
+        8705
+      ]
+    },
+    {
+      "content": "[How to log on to a virtual machine running Linux][Logon]",
+      "pos": [
+        8706,
+        8763
+      ]
+    },
+    {
+      "content": "How to detach a disk from a Linux virtual machine",
+      "pos": [
+        8766,
+        8815
+      ]
+    },
+    {
+      "content": "Using the Azure CLI with the Service Management API",
+      "pos": [
+        8866,
+        8917
+      ]
+    }
+  ],
+  "content": "<properties\n    pageTitle=\"Attach a disk to a virtual machine running Linux in Azure\"\n    description=\"Learn how to attach a data disk to an Azure virtual machine and initialize it so it's ready for use.\"\n    services=\"virtual-machines\"\n    documentationCenter=\"\"\n    authors=\"dsk-2015\"\n    manager=\"timlt\"\n    editor=\"tysonn\"\n    tags=\"azure-service-management\"/>\n\n<tags\n    ms.service=\"virtual-machines\"\n    ms.workload=\"infrastructure-services\"\n    ms.tgt_pltfrm=\"vm-linux\"\n    ms.devlang=\"na\"\n    ms.topic=\"article\"\n    ms.date=\"08/11/2015\"\n    ms.author=\"dkshir\"/>\n\n# How to Attach a Data Disk to a Linux Virtual Machine\n\nYou can attach both empty disks and disks that contain data. In both cases, the disks are actually .vhd files that reside in an Azure storage account. Also in both cases, after you attach the disk, you'll need to initialize it so it's ready for use. This article refers to virtual machines created using the classic deployment model.\n\n> [AZURE.NOTE] It's a best practice to use one or more separate disks to store a virtual machine's data. When you create an Azure virtual machine, it has an operating system disk and a temporary disk. **Do not use the temporary disk to store data.** As the name implies, it provides temporary storage only. It offers no redundancy or backup because it doesn't reside in Azure storage.\n> The temporary disk is typically managed by the Azure Linux Agent and automatically mounted to **/mnt/resource** (or **/mnt** on Ubuntu images). On the other hand, a data disk might be named by the Linux kernel something like `/dev/sdc`, and you'll need to partition, format, and mount this resource. See the [Azure Linux Agent User Guide][Agent] for details.\n\n[AZURE.INCLUDE [howto-attach-disk-windows-linux](../../includes/howto-attach-disk-linux.md)]\n\n## How to: Initialize a new data disk in Linux\n\n1. Connect to the virtual machine. For instructions, see [How to log on to a virtual machine running Linux][Logon].\n\n\n\n2. Next you need to find the device identifier for the data disk to initialize. There are two ways to do that:\n\n    a) In the SSH window, type the following command, and then enter the password for the account that you created to manage the virtual machine:\n\n            $sudo grep SCSI /var/log/messages\n\n    For recent Ubuntu distributions, you may need to use `sudo grep SCSI /var/log/syslog` because logging to `/var/log/messages` might be disabled by default.\n\n    You can find the identifier of the last data disk that was added in the messages that are displayed.\n\n    ![Get the disk messages](./media/virtual-machines-linux-how-to-attach-disk/DiskMessages.png)\n\n    OR\n\n    b) Use the `lsscsi` command to find out the device id. `lsscsi` can be installed by either `yum install lsscsi` (on Red Hat based distributions) or `apt-get install lsscsi` (on Debian based distributions). You can find the disk you are looking for by its _lun_ or **logical unit number**. For example, the _lun_ for the disks you attached can be easily seen from `azure vm disk list <virtual-machine>` as:\n\n            ~$ azure vm disk list ubuntuVMasm\n            info:    Executing command vm disk list\n            + Fetching disk images\n            + Getting virtual machines\n            + Getting VM disks\n            data:    Lun  Size(GB)  Blob-Name                         OS\n            data:    ---  --------  --------------------------------  -----\n            data:         30        ubuntuVMasm-2645b8030676c8f8.vhd  Linux\n            data:    1    10        test.VHD\n            data:    2    30        ubuntuVMasm-76f7ee1ef0f6dddc.vhd\n            info:    vm disk list command OK\n\n    Compare this with the output of `lsscsi` for the same sample virtual machine:\n\n            adminuser@ubuntuVMasm:~$ lsscsi\n            [1:0:0:0]    cd/dvd  Msft     Virtual CD/ROM   1.0   /dev/sr0\n            [2:0:0:0]    disk    Msft     Virtual Disk     1.0   /dev/sda\n            [3:0:1:0]    disk    Msft     Virtual Disk     1.0   /dev/sdb\n            [5:0:0:0]    disk    Msft     Virtual Disk     1.0   /dev/sdc\n            [5:0:0:1]    disk    Msft     Virtual Disk     1.0   /dev/sdd\n            [5:0:0:2]    disk    Msft     Virtual Disk     1.0   /dev/sde\n\n    The last number in the tuple in each row is the _lun_. See `man lsscsi` for more information.\n\n3. In the SSH window, type the following command to create a new device, and then enter the account password:\n\n        $sudo fdisk /dev/sdc\n\n    >[AZURE.NOTE] In this example you may need to use `sudo -i` on some distributions if /sbin or /usr/sbin are not in your `$PATH`.\n\n\n4. When prompted, type **n** to create a new partition.\n\n\n    ![Create new device](./media/virtual-machines-linux-how-to-attach-disk/DiskPartition.png)\n\n5. When prompted, type **p** to make the partition the primary partition, type **1** to make it the first partition, and then type enter to accept the default value for the cylinder.\n\n\n    ![Create partition](./media/virtual-machines-linux-how-to-attach-disk/DiskCylinder.png)\n\n\n\n6. Type **p** to see the details about the disk that is being partitioned.\n\n\n    ![List disk information](./media/virtual-machines-linux-how-to-attach-disk/DiskInfo.png)\n\n\n\n7. Type **w** to write the settings for the disk.\n\n\n    ![Write the disk changes](./media/virtual-machines-linux-how-to-attach-disk/DiskWrite.png)\n\n8. Make the file system on the new partition. As an example, type the following command and then enter the account password:\n\n        # sudo mkfs -t ext4 /dev/sdc1\n\n    ![Create file system](./media/virtual-machines-linux-how-to-attach-disk/DiskFileSystem.png)\n\n    >[AZURE.NOTE] Note that SUSE Linux Enterprise 11 systems only support read-only access for ext4 file systems.  For these systems it is recommended to format the new file system as ext3 rather than ext4.\n\n\n9. Make a directory to mount the new file system. As an example, type the following command  and then enter the account password:\n\n        # sudo mkdir /datadrive\n\n\n10. Type the following command to mount the drive:\n\n        # sudo mount /dev/sdc1 /datadrive\n\n    The data disk is now ready to use as **/datadrive**.\n\n\n11. Add the new drive to /etc/fstab:\n\n    To ensure the drive is re-mounted automatically after a reboot it must be added to the /etc/fstab file. In addition, it is highly recommended that the UUID (Universally Unique IDentifier) is used in /etc/fstab to refer to the drive rather than just the device name (i.e. /dev/sdc1). To find the UUID of the new drive you can use the **blkid** utility:\n\n        # sudo -i blkid\n\n    The output will look similar to the following:\n\n        /dev/sda1: UUID=\"11111111-1b1b-1c1c-1d1d-1e1e1e1e1e1e\" TYPE=\"ext4\"\n        /dev/sdb1: UUID=\"22222222-2b2b-2c2c-2d2d-2e2e2e2e2e2e\" TYPE=\"ext4\"\n        /dev/sdc1: UUID=\"33333333-3b3b-3c3c-3d3d-3e3e3e3e3e3e\" TYPE=\"ext4\"\n\n\n    >[AZURE.NOTE] Improperly editing the **/etc/fstab** file could result in an unbootable system. If unsure, please refer to the distribution's documentation for information on how to properly edit this file. It is also recommended that a backup of the /etc/fstab file is created before editing.\n\n    Next, open the **/etc/fstab** file in a text editor. Note that /etc/fstab is a system file, so you will need to use `sudo` to edit this file, for example:\n\n        # sudo vi /etc/fstab\n\n    In this example we will use the UUID value for the new **/dev/sdc1** device that was created in the previous steps, and the mountpoint **/datadrive**. Add the following line to the end of the **/etc/fstab** file:\n\n        UUID=33333333-3b3b-3c3c-3d3d-3e3e3e3e3e3e   /datadrive   ext4   defaults   1   2\n\n    Or, on systems based on SUSE Linux you may need to use a slightly different format:\n\n        /dev/disk/by-uuid/33333333-3b3b-3c3c-3d3d-3e3e3e3e3e3e   /   ext3   defaults   1   2\n\n    You can now test that the file system is mounted properly by simply unmounting and then re-mounting the file system, i.e. using the example mount point `/datadrive` created in the earlier steps:\n\n        # sudo umount /datadrive\n        # sudo mount /datadrive\n\n    If the `mount` command produces an error, check the /etc/fstab file for correct syntax. If additional data drives or partitions are created you will need to enter them into /etc/fstab separately as well.\n\n\n>[AZURE.NOTE] Subsequently removing a data disk without editing fstab could cause the VM to fail to boot. If this is a common occurrence, most distributions provide either the `nofail` and/or `nobootwait` fstab options that will allow a system to boot even if the disk fails to mount at boot time. Please consult your distribution's documentation for more information on these parameters.\n\n## Additional Resources\n[How to log on to a virtual machine running Linux][Logon]\n\n[How to detach a disk from a Linux virtual machine ](virtual-machines-linux-how-to-detach-disk.md)\n\n[Using the Azure CLI with the Service Management API](virtual-machines-command-line-tools.md)\n\n<!--Link references-->\n[Agent]: virtual-machines-linux-agent-user-guide.md\n[Logon]: virtual-machines-linux-how-to-log-on.md\n"
+}

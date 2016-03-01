@@ -1,0 +1,1623 @@
+{
+  "nodes": [
+    {
+      "content": "Analyze sensor data with Apache Storm and HBase | Microsoft Azure",
+      "pos": [
+        26,
+        91
+      ]
+    },
+    {
+      "content": "Learn how to connect to Apache Storm with a virtual network.",
+      "pos": [
+        109,
+        169
+      ]
+    },
+    {
+      "content": "Use Storm with HBase to process sensor data from an event hub and visualize it with D3.js.",
+      "pos": [
+        170,
+        260
+      ]
+    },
+    {
+      "content": "Analyze sensor data with Apache Storm, Event Hub, and HBase in HDInsight (Hadoop)",
+      "pos": [
+        556,
+        637
+      ]
+    },
+    {
+      "content": "Learn how to use Apache Storm on HDInsight to process sensor data from Azure Event Hub, and visualize it by using D3.js.",
+      "pos": [
+        639,
+        759
+      ]
+    },
+    {
+      "content": "This document also describes how to use an Azure virtual network to connect Storm on HDInsight with HBase on HDInsight, and store data from the topology into HBase.",
+      "pos": [
+        760,
+        924
+      ]
+    },
+    {
+      "content": "Prerequisites",
+      "pos": [
+        929,
+        942
+      ]
+    },
+    {
+      "content": "An Azure subscription.",
+      "pos": [
+        946,
+        968
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt>Get Azure free trial<ept id=\"p1\">](http://azure.microsoft.com/documentation/videos/get-azure-free-trial-for-testing-hadoop-in-hdinsight/)</ept>.",
+      "pos": [
+        969,
+        1099
+      ]
+    },
+    {
+      "pos": [
+        1103,
+        1180
+      ],
+      "content": "An <bpt id=\"p1\">[</bpt>Apache Storm on HDInsight cluster<ept id=\"p1\">](../hdinsight-storm-getting-started.md)</ept>"
+    },
+    {
+      "pos": [
+        1184,
+        1279
+      ],
+      "content": "<bpt id=\"p1\">[</bpt>Node.js<ept id=\"p1\">](http://nodejs.org/)</ept>: Used for the web dashboard and to send sensor data to Event Hub."
+    },
+    {
+      "content": "Java and the JDK 1.7",
+      "pos": [
+        1284,
+        1304
+      ]
+    },
+    {
+      "content": "Maven",
+      "pos": [
+        1378,
+        1383
+      ]
+    },
+    {
+      "content": "Git",
+      "pos": [
+        1433,
+        1436
+      ]
+    },
+    {
+      "pos": [
+        1462,
+        1595
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> Java, the JDK, Maven, and Git are also available through the <bpt id=\"p1\">[</bpt>Chocolatey NuGet<ept id=\"p1\">](http://chocolatey.org/)</ept> package manager."
+    },
+    {
+      "content": "Architecture",
+      "pos": [
+        1600,
+        1612
+      ]
+    },
+    {
+      "content": "architecture diagram",
+      "pos": [
+        1616,
+        1636
+      ]
+    },
+    {
+      "content": "This example consists of the following components:",
+      "pos": [
+        1709,
+        1759
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Azure Event Hub<ept id=\"p1\">**</ept>: Provides data that is collected from sensors.",
+      "pos": [
+        1763,
+        1829
+      ]
+    },
+    {
+      "content": "For this example, an application is provided that generates fake data.",
+      "pos": [
+        1830,
+        1900
+      ]
+    },
+    {
+      "pos": [
+        1904,
+        1981
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Storm on HDInsight<ept id=\"p1\">**</ept>: Provides real-time processing of data from Event Hub."
+    },
+    {
+      "pos": [
+        1985,
+        2059
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>HBase on HDInsight<ept id=\"p1\">**</ept> (optional): Provides a persistent NoSQL data store."
+    },
+    {
+      "pos": [
+        2063,
+        2227
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Azure Virtual Network service<ept id=\"p1\">**</ept> (optional, required if using HBase): Enables secure communications between the Storm on HDInsight and HBase on HDInsight clusters."
+    },
+    {
+      "pos": [
+        2231,
+        2305
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Dashboard website<ept id=\"p1\">**</ept>: An example dashboard that charts data in real time."
+    },
+    {
+      "content": "The website is implemented in Node.js, so it can run on any client operating system for testing, or it can be deployed to Azure Websites.",
+      "pos": [
+        2313,
+        2450
+      ]
+    },
+    {
+      "pos": [
+        2458,
+        2568
+      ],
+      "content": "<bpt id=\"p1\">[</bpt>Socket.io<ept id=\"p1\">](http://socket.io/)</ept> is used for real-time communication between the Storm topology and the website."
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> This is an implementation detail.",
+      "pos": [
+        2580,
+        2626
+      ]
+    },
+    {
+      "content": "You can use any communications framework, such as raw WebSockets or SignalR.",
+      "pos": [
+        2627,
+        2703
+      ]
+    },
+    {
+      "pos": [
+        2711,
+        2791
+      ],
+      "content": "<bpt id=\"p1\">[</bpt>D3.js<ept id=\"p1\">](http://d3js.org/)</ept> is used to graph the data that is sent to the website."
+    },
+    {
+      "content": "The topology reads data from Event Hub by using the <bpt id=\"p1\">**</bpt>com.microsoft.eventhubs.spout.EventHubSpout<ept id=\"p1\">**</ept> class, which is provided in the Storm on HDInsight cluster.",
+      "pos": [
+        2793,
+        2952
+      ]
+    },
+    {
+      "content": "Communication with the website is accomplished by using <bpt id=\"p1\">[</bpt>socket.io-client.java<ept id=\"p1\">](https://github.com/nkzawa/socket.io-client.java)</ept>.",
+      "pos": [
+        2953,
+        3082
+      ]
+    },
+    {
+      "pos": [
+        3084,
+        3327
+      ],
+      "content": "Optionally, communication with HBase is accomplished by using the <bpt id=\"p1\">[</bpt>org.apache.storm.hbase.bolt.HBaseBolt<ept id=\"p1\">](https://storm.apache.org/javadoc/apidocs/org/apache/storm/hbase/bolt/class-use/HBaseBolt.html)</ept> class, which is provided as part of Storm."
+    },
+    {
+      "content": "The following is a diagram of the topology.",
+      "pos": [
+        3329,
+        3372
+      ]
+    },
+    {
+      "content": "topology diagram",
+      "pos": [
+        3376,
+        3392
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> This is a very simplified view of the topology.",
+      "pos": [
+        3462,
+        3522
+      ]
+    },
+    {
+      "content": "At run time, an instance of each component is created for each partition for the Event Hub that is being read.",
+      "pos": [
+        3523,
+        3633
+      ]
+    },
+    {
+      "content": "These instances are distributed across the nodes in the cluster, and data is routed between them as follows:",
+      "pos": [
+        3634,
+        3742
+      ]
+    },
+    {
+      "content": "Data from the spout to the parser is load balanced.",
+      "pos": [
+        3749,
+        3800
+      ]
+    },
+    {
+      "content": "Data from the parser to the Dashboard and HBase (if used) is grouped by Device ID, so that messages from the same device always flow to the same component.",
+      "pos": [
+        3805,
+        3960
+      ]
+    },
+    {
+      "content": "Components",
+      "pos": [
+        3966,
+        3976
+      ]
+    },
+    {
+      "pos": [
+        3980,
+        4129
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>EventHub Spout<ept id=\"p1\">**</ept>: The spout is provided as part of the <bpt id=\"p2\">[</bpt>HDInsight Storm Examples<ept id=\"p2\">](https://github.com/hdinsight/hdinsight-storm-examples)</ept> on GitHub."
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>ParserBolt.java<ept id=\"p1\">**</ept>: The data that is emitted by the spout is raw JSON, and occasionally more than one event is emitted at a time.",
+      "pos": [
+        4133,
+        4263
+      ]
+    },
+    {
+      "content": "This bolt demonstrates how to read the data emitted by the spout, and emit it to a new stream as a tuple that contains multiple fields.",
+      "pos": [
+        4264,
+        4399
+      ]
+    },
+    {
+      "pos": [
+        4403,
+        4541
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>DashboardBolt.java<ept id=\"p1\">**</ept>: This demonstrates how to use the Socket.io client library for Java to send data in real time to the web dashboard."
+    },
+    {
+      "content": "Prepare your environment",
+      "pos": [
+        4546,
+        4570
+      ]
+    },
+    {
+      "content": "Before you use this example, you must create an Azure Event Hub, which the Storm topology reads.",
+      "pos": [
+        4572,
+        4668
+      ]
+    },
+    {
+      "content": "You must also create a Storm on HDInsight topology because the component used to read data from Event Hub is only available in the cluster.",
+      "pos": [
+        4669,
+        4808
+      ]
+    },
+    {
+      "pos": [
+        4812,
+        4885
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> Eventually the Event Hub spout will be available from Maven."
+    },
+    {
+      "content": "Configure Event Hub",
+      "pos": [
+        4891,
+        4910
+      ]
+    },
+    {
+      "content": "Event Hub is the data source for this example.",
+      "pos": [
+        4912,
+        4958
+      ]
+    },
+    {
+      "content": "Use the following steps to create a new Event Hub.",
+      "pos": [
+        4959,
+        5009
+      ]
+    },
+    {
+      "pos": [
+        5014,
+        5129
+      ],
+      "content": "From the <bpt id=\"p1\">[</bpt>Azure portal<ept id=\"p1\">](https://manage.windowsazure.com)</ept>, select <bpt id=\"p2\">**</bpt>NEW | Service Bus | Event Hub | Custom Create<ept id=\"p2\">**</ept>."
+    },
+    {
+      "content": "In the <bpt id=\"p1\">**</bpt>Add a new Event Hub<ept id=\"p1\">**</ept> dialog box, enter an <bpt id=\"p2\">**</bpt>Event Hub Name<ept id=\"p2\">**</ept>, select the <bpt id=\"p3\">**</bpt>Region<ept id=\"p3\">**</ept> to create the hub in, and then create a new namespace or select an existing one.",
+      "pos": [
+        5134,
+        5308
+      ]
+    },
+    {
+      "content": "Finally, click the arrow to continue.",
+      "pos": [
+        5309,
+        5346
+      ]
+    },
+    {
+      "content": "In the <bpt id=\"p1\">**</bpt>Configure Event Hub<ept id=\"p1\">**</ept> dialog box, enter the <bpt id=\"p2\">**</bpt>Partition count<ept id=\"p2\">**</ept> and <bpt id=\"p3\">**</bpt>Message Retention<ept id=\"p3\">**</ept> values.",
+      "pos": [
+        5351,
+        5457
+      ]
+    },
+    {
+      "content": "For this example, use a partition count of 10 and a message retention of 1.",
+      "pos": [
+        5458,
+        5533
+      ]
+    },
+    {
+      "content": "When the event hub has been created, select the namespace, then select <bpt id=\"p1\">**</bpt>Event Hubs<ept id=\"p1\">**</ept>.",
+      "pos": [
+        5538,
+        5624
+      ]
+    },
+    {
+      "content": "Finally, select the event hub that you created earlier.",
+      "pos": [
+        5625,
+        5680
+      ]
+    },
+    {
+      "pos": [
+        5685,
+        5778
+      ],
+      "content": "Select <bpt id=\"p1\">**</bpt>Configure<ept id=\"p1\">**</ept>, then create two new access policies by using the following information."
+    },
+    {
+      "pos": [
+        5784,
+        5937
+      ],
+      "content": "<table>\n <tr><th>Name</th><th>Permissions</th></tr>\n <tr><td>Devices</td><td>Send</td></tr>\n <tr><td>Storm</td><td>Listen</td></tr>\n </table>",
+      "leadings": [
+        "",
+        "   ",
+        "   ",
+        "   ",
+        "   "
+      ],
+      "nodes": [
+        {
+          "content": "Name",
+          "pos": [
+            17,
+            21
+          ]
+        },
+        {
+          "content": "Permissions",
+          "pos": [
+            30,
+            41
+          ]
+        },
+        {
+          "content": "Devices",
+          "pos": [
+            61,
+            68
+          ]
+        },
+        {
+          "content": "Send",
+          "pos": [
+            77,
+            81
+          ]
+        },
+        {
+          "content": "Storm",
+          "pos": [
+            101,
+            106
+          ]
+        },
+        {
+          "content": "Listen",
+          "pos": [
+            115,
+            121
+          ]
+        }
+      ]
+    },
+    {
+      "content": "After creating permissions, select the <bpt id=\"p1\">**</bpt>Save<ept id=\"p1\">**</ept> icon at the bottom of the page.",
+      "pos": [
+        5943,
+        6022
+      ]
+    },
+    {
+      "content": "This creates the shared access policies that will be used to send messages to and read messages from this hub.",
+      "pos": [
+        6023,
+        6133
+      ]
+    },
+    {
+      "content": "After saving the policies, use the <bpt id=\"p1\">**</bpt>Shared access key generator<ept id=\"p1\">**</ept> at the bottom of the page to retrieve the key for the <bpt id=\"p2\">**</bpt>devices<ept id=\"p2\">**</ept> and <bpt id=\"p3\">**</bpt>storm<ept id=\"p3\">**</ept> policies.",
+      "pos": [
+        6138,
+        6294
+      ]
+    },
+    {
+      "content": "Save these because you will use them later.",
+      "pos": [
+        6295,
+        6338
+      ]
+    },
+    {
+      "content": "Create the Storm on HDInsight cluster",
+      "pos": [
+        6344,
+        6381
+      ]
+    },
+    {
+      "pos": [
+        6386,
+        6450
+      ],
+      "content": "Sign in to the <bpt id=\"p1\">[</bpt>Azure portal<ept id=\"p1\">](https://manage.windowsazure.com/)</ept>."
+    },
+    {
+      "pos": [
+        6455,
+        6554
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>HDInsight<ept id=\"p1\">**</ept> in the left pane, and then click <bpt id=\"p2\">**</bpt>+NEW<ept id=\"p2\">**</ept> in the lower-left corner of the page."
+    },
+    {
+      "pos": [
+        6559,
+        6633
+      ],
+      "content": "Click the HDInsight icon in the second column, and then select <bpt id=\"p1\">**</bpt>Custom<ept id=\"p1\">**</ept>."
+    },
+    {
+      "content": "On the <bpt id=\"p1\">**</bpt>Cluster Details<ept id=\"p1\">**</ept> page, enter the name of the new cluster, and select <bpt id=\"p2\">**</bpt>Storm<ept id=\"p2\">**</ept> for the <bpt id=\"p3\">**</bpt>Cluster Type<ept id=\"p3\">**</ept>.",
+      "pos": [
+        6638,
+        6752
+      ]
+    },
+    {
+      "content": "Click the arrow to continue.",
+      "pos": [
+        6753,
+        6781
+      ]
+    },
+    {
+      "pos": [
+        6786,
+        6851
+      ],
+      "content": "Enter 1 for the number of <bpt id=\"p1\">**</bpt>Data Nodes<ept id=\"p1\">**</ept> to use for this cluster."
+    },
+    {
+      "pos": [
+        6859,
+        7022
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> To minimize the cost for the cluster used for this article, reduce the <bpt id=\"p1\">**</bpt>Cluster Size<ept id=\"p1\">**</ept> to 1, and delete the cluster after you have finished using it."
+    },
+    {
+      "pos": [
+        7027,
+        7120
+      ],
+      "content": "Enter the administrator <bpt id=\"p1\">**</bpt>User Name<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>Password<ept id=\"p2\">**</ept>, and then click the arrow to continue."
+    },
+    {
+      "content": "For <bpt id=\"p1\">**</bpt>Storage Account<ept id=\"p1\">**</ept>, select <bpt id=\"p2\">**</bpt>Create New Storage<ept id=\"p2\">**</ept> or select an existing storage account.",
+      "pos": [
+        7125,
+        7218
+      ]
+    },
+    {
+      "content": "Select or enter the <bpt id=\"p1\">**</bpt>Account Name<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>Default container<ept id=\"p2\">**</ept> to use.",
+      "pos": [
+        7219,
+        7289
+      ]
+    },
+    {
+      "content": "Select the check mark icon in the lower-left corner to create the Storm cluster.",
+      "pos": [
+        7290,
+        7370
+      ]
+    },
+    {
+      "content": "Download and install the EventHubSpout",
+      "pos": [
+        7375,
+        7413
+      ]
+    },
+    {
+      "content": "Download the <bpt id=\"p1\">[</bpt>HDInsight Storm Examples project<ept id=\"p1\">](https://github.com/hdinsight/hdinsight-storm-examples/)</ept>.",
+      "pos": [
+        7418,
+        7522
+      ]
+    },
+    {
+      "content": "Once downloaded, find the <bpt id=\"p1\">**</bpt>lib/eventhubs/eventhubs-storm-spout-0.9-jar-with-dependencies.jar<ept id=\"p1\">**</ept> file.",
+      "pos": [
+        7523,
+        7624
+      ]
+    },
+    {
+      "content": "From the command prompt, use the following command to install the <bpt id=\"p1\">**</bpt>eventhubs-storm-spout-0.9-jar-with-dependencies.jar<ept id=\"p1\">**</ept> file into the local Maven store.",
+      "pos": [
+        7629,
+        7783
+      ]
+    },
+    {
+      "content": "This will allow you to easily add it as a reference in the Storm project in a later step.",
+      "pos": [
+        7784,
+        7873
+      ]
+    },
+    {
+      "content": "Download and configure the project",
+      "pos": [
+        8077,
+        8111
+      ]
+    },
+    {
+      "content": "Use the following to download the project from GitHub.",
+      "pos": [
+        8113,
+        8167
+      ]
+    },
+    {
+      "content": "After the command completes, you will have the following directory structure:",
+      "pos": [
+        8240,
+        8317
+      ]
+    },
+    {
+      "pos": [
+        8648,
+        8780
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> This document does not go in to full details of the code included in this sample; however, the code is fully commented."
+    },
+    {
+      "content": "Open the <bpt id=\"p1\">**</bpt>Config.properties<ept id=\"p1\">**</ept> file and add the information you previously used when creating the Event Hub.",
+      "pos": [
+        8782,
+        8890
+      ]
+    },
+    {
+      "content": "Save the file after you add this information.",
+      "pos": [
+        8891,
+        8936
+      ]
+    },
+    {
+      "content": "Compile and test locally",
+      "pos": [
+        9424,
+        9448
+      ]
+    },
+    {
+      "content": "Before testing, you must start the dashboard to view the output of the topology and generate data to store in Event Hub.",
+      "pos": [
+        9450,
+        9570
+      ]
+    },
+    {
+      "content": "Start the web application",
+      "pos": [
+        9576,
+        9601
+      ]
+    },
+    {
+      "pos": [
+        9606,
+        9806
+      ],
+      "content": "Open a new command prompt or terminal, and change directories to the <bpt id=\"p1\">**</bpt>hdinsight-eventhub-example/dashboard<ept id=\"p1\">**</ept>, then use the following command to install the dependencies needed by the web application:"
+    },
+    {
+      "content": "Use the following command to start the web application:",
+      "pos": [
+        9832,
+        9887
+      ]
+    },
+    {
+      "content": "You should see a message similar to the following:",
+      "pos": [
+        9917,
+        9967
+      ]
+    },
+    {
+      "content": "Open a web browser and enter <bpt id=\"p1\">**</bpt>http://localhost:3000/<ept id=\"p1\">**</ept> as the address.",
+      "pos": [
+        10011,
+        10082
+      ]
+    },
+    {
+      "content": "You should see a page similar to the following:",
+      "pos": [
+        10083,
+        10130
+      ]
+    },
+    {
+      "content": "web dashboard",
+      "pos": [
+        10138,
+        10151
+      ]
+    },
+    {
+      "content": "Leave this command prompt or terminal open.",
+      "pos": [
+        10223,
+        10266
+      ]
+    },
+    {
+      "content": "After testing, use Ctrl-C to stop the web server.",
+      "pos": [
+        10267,
+        10316
+      ]
+    },
+    {
+      "content": "Start generating data",
+      "pos": [
+        10322,
+        10343
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> The steps in this section use Node.js so that they can be run on any platform.",
+      "pos": [
+        10347,
+        10438
+      ]
+    },
+    {
+      "content": "For other language examples, see the <bpt id=\"p1\">**</bpt>SendEvents<ept id=\"p1\">**</ept> directory.",
+      "pos": [
+        10439,
+        10501
+      ]
+    },
+    {
+      "pos": [
+        10507,
+        10707
+      ],
+      "content": "Open a new command prompt or terminal, and change directories to <bpt id=\"p1\">**</bpt>hdinsight-eventhub-example/SendEvents/nodejs<ept id=\"p1\">**</ept>, then use the following command to install the dependencies needed by the application:"
+    },
+    {
+      "pos": [
+        10733,
+        10830
+      ],
+      "content": "Open the <bpt id=\"p1\">**</bpt>app.js<ept id=\"p1\">**</ept> file in a text editor and add the Event Hub information you obtained earlier:"
+    },
+    {
+      "content": "Use the following command to insert new entries in Event Hub:",
+      "pos": [
+        11119,
+        11180
+      ]
+    },
+    {
+      "content": "You should see several lines of output that contain the data sent to Event Hub.",
+      "pos": [
+        11207,
+        11286
+      ]
+    },
+    {
+      "content": "These will appear similar to the following:",
+      "pos": [
+        11287,
+        11330
+      ]
+    },
+    {
+      "content": "Start the topology",
+      "pos": [
+        12145,
+        12163
+      ]
+    },
+    {
+      "content": "Start the topology locally by using the following command:",
+      "pos": [
+        12168,
+        12226
+      ]
+    },
+    {
+      "content": "mvn compile exec:java -Dstorm.topology=com.microsoft.examples.Temperature",
+      "pos": [
+        12232,
+        12305
+      ]
+    },
+    {
+      "content": "This will start the topology, read files from Event Hub, and send them to the dashboard running in Azure Websites.",
+      "pos": [
+        12311,
+        12425
+      ]
+    },
+    {
+      "content": "You should see lines appear in the web dashboard, similar to the following:",
+      "pos": [
+        12426,
+        12501
+      ]
+    },
+    {
+      "content": "dashboard with data",
+      "pos": [
+        12509,
+        12528
+      ]
+    },
+    {
+      "content": "While the dashboard is running, use the <ph id=\"ph1\">`node app.js`</ph> command from the previous steps to send new data to the dashboard.",
+      "pos": [
+        12598,
+        12718
+      ]
+    },
+    {
+      "content": "Because the temperature values are randomly generated, the graph should update to show the new values.",
+      "pos": [
+        12719,
+        12821
+      ]
+    },
+    {
+      "content": "After verifying that this works, stop the topology by typing Ctrl+C.",
+      "pos": [
+        12826,
+        12894
+      ]
+    },
+    {
+      "content": "To stop the SendEvent app, select the window and press any key.",
+      "pos": [
+        12895,
+        12958
+      ]
+    },
+    {
+      "content": "You can use Ctrl+C to stop the web server also.",
+      "pos": [
+        12959,
+        13006
+      ]
+    },
+    {
+      "content": "Package and deploy the topology to HDInsight",
+      "pos": [
+        13011,
+        13055
+      ]
+    },
+    {
+      "content": "In your development environment, use the following steps to run the Temperature topology on your HDInsight Storm cluster.",
+      "pos": [
+        13057,
+        13178
+      ]
+    },
+    {
+      "content": "Publish the website dashboard",
+      "pos": [
+        13184,
+        13213
+      ]
+    },
+    {
+      "content": "To deploy the dashboard to an Azure Website, follow the steps in <bpt id=\"p1\">[</bpt>Build and deploy a Node.js website to Azure<ept id=\"p1\">](../web-sites-nodejs-develop-deploy-mac.md)</ept>.",
+      "pos": [
+        13218,
+        13372
+      ]
+    },
+    {
+      "content": "Note the URL of the website, which will be similar to <bpt id=\"p1\">**</bpt>mywebsite.azurewebsites.net<ept id=\"p1\">**</ept>.",
+      "pos": [
+        13373,
+        13459
+      ]
+    },
+    {
+      "content": "When the website is created, go to the site in the Azure portal and select the <bpt id=\"p1\">**</bpt>Configure<ept id=\"p1\">**</ept> tab.",
+      "pos": [
+        13464,
+        13561
+      ]
+    },
+    {
+      "content": "Enable <bpt id=\"p1\">**</bpt>Web Sockets<ept id=\"p1\">**</ept>, and then click <bpt id=\"p2\">**</bpt>Save<ept id=\"p2\">**</ept> at the bottom of the page.",
+      "pos": [
+        13562,
+        13636
+      ]
+    },
+    {
+      "pos": [
+        13641,
+        13835
+      ],
+      "content": "Open <bpt id=\"p1\">**</bpt>hdinsight-eventhub-example\\TemperatureMonitor\\src\\main\\java\\com\\microsoft\\examples\\bolts\\DashboardBolt.java<ept id=\"p1\">**</ept> and change the following line to point to the URL of the published dashboard:"
+    },
+    {
+      "pos": [
+        13907,
+        13944
+      ],
+      "content": "Save the <bpt id=\"p1\">**</bpt>DashboardBolt.java<ept id=\"p1\">**</ept> file."
+    },
+    {
+      "content": "Package and deploy the topology",
+      "pos": [
+        13950,
+        13981
+      ]
+    },
+    {
+      "content": "Use the following command to create a JAR package from your project:",
+      "pos": [
+        13986,
+        14054
+      ]
+    },
+    {
+      "pos": [
+        14081,
+        14195
+      ],
+      "content": "This will create a file named <bpt id=\"p1\">**</bpt>TemperatureMonitor-1.0-SNAPSHOT.jar<ept id=\"p1\">**</ept> in the <bpt id=\"p2\">**</bpt>target<ept id=\"p2\">**</ept> directory of your project."
+    },
+    {
+      "pos": [
+        14200,
+        14402
+      ],
+      "content": "Follow the steps in <bpt id=\"p1\">[</bpt>Deploy and manage Storm topologies<ept id=\"p1\">](hdinsight-storm-deploy-monitor-topology.md)</ept> to upload and start the topology on your Storm on HDInsight cluster by using the <bpt id=\"p2\">**</bpt>Storm Dashboard<ept id=\"p2\">**</ept>."
+    },
+    {
+      "content": "After the topology has started, open a browser to the website you published on Azure, then use the <ph id=\"ph1\">`node app.js`</ph> command to send data to Event Hub.",
+      "pos": [
+        14407,
+        14554
+      ]
+    },
+    {
+      "content": "You should see the web dashboard update to display the information.",
+      "pos": [
+        14555,
+        14622
+      ]
+    },
+    {
+      "content": "dashboard",
+      "pos": [
+        14630,
+        14639
+      ]
+    },
+    {
+      "content": "Optional: Use HBase",
+      "pos": [
+        14709,
+        14728
+      ]
+    },
+    {
+      "content": "To use Storm and HBase together, you must create an Azure virtual network and then create a Storm and HBase cluster within the network.",
+      "pos": [
+        14730,
+        14865
+      ]
+    },
+    {
+      "content": "Create an Azure virtual network (optional)",
+      "pos": [
+        14871,
+        14913
+      ]
+    },
+    {
+      "content": "If you plan to use HBase with this example, you must create an Azure virtual network that will contain a Storm on HDInsight cluster and an HBase on HDInsight cluster.",
+      "pos": [
+        14915,
+        15081
+      ]
+    },
+    {
+      "pos": [
+        15086,
+        15149
+      ],
+      "content": "Sign in to the <bpt id=\"p1\">[</bpt>Azure portal<ept id=\"p1\">](https://manage.windowsazure.com)</ept>."
+    },
+    {
+      "pos": [
+        15154,
+        15260
+      ],
+      "content": "On the bottom of the page, click <bpt id=\"p1\">**</bpt>+NEW<ept id=\"p1\">**</ept> &gt; <bpt id=\"p2\">**</bpt>Network Services<ept id=\"p2\">**</ept> &gt; <bpt id=\"p3\">**</bpt>Virtual Network<ept id=\"p3\">**</ept> &gt; <bpt id=\"p4\">**</bpt>Quick Create<ept id=\"p4\">**</ept>."
+    },
+    {
+      "content": "Type or select the following values:",
+      "pos": [
+        15265,
+        15301
+      ]
+    },
+    {
+      "pos": [
+        15309,
+        15352
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Name<ept id=\"p1\">**</ept>: The name of your virtual network."
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Address space<ept id=\"p1\">**</ept>: Choose an address space for the virtual network that is large enough to provide addresses for all nodes in the cluster.",
+      "pos": [
+        15360,
+        15498
+      ]
+    },
+    {
+      "content": "Otherwise, the provision will fail.",
+      "pos": [
+        15499,
+        15534
+      ]
+    },
+    {
+      "pos": [
+        15542,
+        15613
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Maximum VM count<ept id=\"p1\">**</ept>: Choose one of the maximum virtual machine counts."
+    },
+    {
+      "pos": [
+        15621,
+        15707
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Location<ept id=\"p1\">**</ept>: The location must be the same as the HBase cluster that you will create."
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>DNS server<ept id=\"p1\">**</ept>: This article uses the internal DNS server provided by Azure; therefore, you can choose <bpt id=\"p2\">**</bpt>None<ept id=\"p2\">**</ept>.",
+      "pos": [
+        15715,
+        15827
+      ]
+    },
+    {
+      "content": "More advanced networking configurations with custom DNS servers are also supported.",
+      "pos": [
+        15828,
+        15911
+      ]
+    },
+    {
+      "content": "For the detailed guidance, see <bpt id=\"p1\">[</bpt>Name Resolution (DNS)<ept id=\"p1\">](../virtual-network/virtual-networks-name-resolution-for-vms-and-role-instances.md)</ept>.",
+      "pos": [
+        15912,
+        16050
+      ]
+    },
+    {
+      "content": "Click <bpt id=\"p1\">**</bpt>Create a Virtual Network<ept id=\"p1\">**</ept>.",
+      "pos": [
+        16055,
+        16090
+      ]
+    },
+    {
+      "content": "The new virtual network name will appear in the list.",
+      "pos": [
+        16091,
+        16144
+      ]
+    },
+    {
+      "content": "Wait until the Status column shows <bpt id=\"p1\">**</bpt>Created<ept id=\"p1\">**</ept>.",
+      "pos": [
+        16145,
+        16192
+      ]
+    },
+    {
+      "content": "In the main pane, click the virtual network you just created.",
+      "pos": [
+        16197,
+        16258
+      ]
+    },
+    {
+      "pos": [
+        16263,
+        16307
+      ],
+      "content": "On the top of the page, click <bpt id=\"p1\">**</bpt>DASHBOARD<ept id=\"p1\">**</ept>."
+    },
+    {
+      "content": "Under <bpt id=\"p1\">**</bpt>quick glance<ept id=\"p1\">**</ept>, make a note of <bpt id=\"p2\">**</bpt>VIRTUAL NETWORK ID<ept id=\"p2\">**</ept>.",
+      "pos": [
+        16312,
+        16374
+      ]
+    },
+    {
+      "content": "You will need it when provisioning the Storm and HBase clusters.",
+      "pos": [
+        16375,
+        16439
+      ]
+    },
+    {
+      "pos": [
+        16444,
+        16488
+      ],
+      "content": "At the top of the page, click <bpt id=\"p1\">**</bpt>CONFIGURE<ept id=\"p1\">**</ept>."
+    },
+    {
+      "content": "At the bottom of the page, the default subnet name is <bpt id=\"p1\">**</bpt>Subnet-1<ept id=\"p1\">**</ept>.",
+      "pos": [
+        16493,
+        16560
+      ]
+    },
+    {
+      "content": "Use the <bpt id=\"p1\">**</bpt>add subnet<ept id=\"p1\">**</ept> button to add <bpt id=\"p2\">**</bpt>Subnet-2<ept id=\"p2\">**</ept>.",
+      "pos": [
+        16561,
+        16611
+      ]
+    },
+    {
+      "content": "These subnets will house the Storm and HBase clusters.",
+      "pos": [
+        16612,
+        16666
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> In this article, we will be using clusters with only one node.",
+      "pos": [
+        16674,
+        16749
+      ]
+    },
+    {
+      "content": "If you are creating multinode clusters, you must verify the <bpt id=\"p1\">**</bpt>CIDR(ADDRESS COUNT)<ept id=\"p1\">**</ept> for the subnet that will be used for the cluster.",
+      "pos": [
+        16750,
+        16883
+      ]
+    },
+    {
+      "content": "The address count must be greater than the number of worker nodes plus seven (Gateway: 2, Headnode: 2, Zookeeper: 3).",
+      "pos": [
+        16884,
+        17001
+      ]
+    },
+    {
+      "content": "For example, if you need a 10 node HBase cluster, the address count for the subnet must be greater than 17 (10+7).",
+      "pos": [
+        17002,
+        17116
+      ]
+    },
+    {
+      "content": "Otherwise, the deployment will fail.",
+      "pos": [
+        17117,
+        17153
+      ]
+    },
+    {
+      "content": "It is highly recommended to designate a single subnet for one cluster.",
+      "pos": [
+        17166,
+        17236
+      ]
+    },
+    {
+      "pos": [
+        17242,
+        17283
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>Save<ept id=\"p1\">**</ept> at the bottom of the page."
+    },
+    {
+      "content": "Create a Storm and HBase cluster on the virtual network",
+      "pos": [
+        17289,
+        17344
+      ]
+    },
+    {
+      "pos": [
+        17349,
+        17413
+      ],
+      "content": "Sign in to the <bpt id=\"p1\">[</bpt>Azure Portal<ept id=\"p1\">](https://manage.windowsazure.com/)</ept>."
+    },
+    {
+      "pos": [
+        17418,
+        17517
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>HDInsight<ept id=\"p1\">**</ept> in the left pane, and then click <bpt id=\"p2\">**</bpt>+NEW<ept id=\"p2\">**</ept> in the lower-left corner of the page."
+    },
+    {
+      "pos": [
+        17522,
+        17596
+      ],
+      "content": "Click the HDInsight icon in the second column, and then select <bpt id=\"p1\">**</bpt>Custom<ept id=\"p1\">**</ept>."
+    },
+    {
+      "content": "On the <bpt id=\"p1\">**</bpt>Cluster Details<ept id=\"p1\">**</ept> page, enter the name of the new cluster, and select <bpt id=\"p2\">**</bpt>Storm<ept id=\"p2\">**</ept> for the <bpt id=\"p3\">**</bpt>Cluster Type<ept id=\"p3\">**</ept>.",
+      "pos": [
+        17601,
+        17715
+      ]
+    },
+    {
+      "content": "Click the arrow to continue.",
+      "pos": [
+        17716,
+        17744
+      ]
+    },
+    {
+      "content": "Enter 1 for the number of <bpt id=\"p1\">**</bpt>Data Nodes<ept id=\"p1\">**</ept> to use for this cluster.",
+      "pos": [
+        17749,
+        17814
+      ]
+    },
+    {
+      "content": "For <bpt id=\"p1\">**</bpt>Region/Virtual Network<ept id=\"p1\">**</ept>, select the Azure virtual network that you created earlier.",
+      "pos": [
+        17815,
+        17905
+      ]
+    },
+    {
+      "content": "For <bpt id=\"p1\">**</bpt>Virtual Network Subnets<ept id=\"p1\">**</ept>, select <bpt id=\"p2\">**</bpt>Subnet-1<ept id=\"p2\">**</ept>.",
+      "pos": [
+        17906,
+        17959
+      ]
+    },
+    {
+      "pos": [
+        17967,
+        18130
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> To minimize the cost for the cluster used for this article, reduce the <bpt id=\"p1\">**</bpt>Cluster Size<ept id=\"p1\">**</ept> to 1, and delete the cluster after you have finished using it."
+    },
+    {
+      "pos": [
+        18135,
+        18224
+      ],
+      "content": "Enter the administrator <bpt id=\"p1\">**</bpt>User Name<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>Password<ept id=\"p2\">**</ept>, then click the arrow to continue."
+    },
+    {
+      "content": "For <bpt id=\"p1\">**</bpt>Storage Account<ept id=\"p1\">**</ept>, select <bpt id=\"p2\">**</bpt>Create New Storage<ept id=\"p2\">**</ept> or select an existing storage account.",
+      "pos": [
+        18229,
+        18322
+      ]
+    },
+    {
+      "content": "Select or enter the <bpt id=\"p1\">**</bpt>Account Name<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>Default container<ept id=\"p2\">**</ept> to use.",
+      "pos": [
+        18323,
+        18393
+      ]
+    },
+    {
+      "content": "Select the check mark icon in the lower-left corner to create the Storm cluster.",
+      "pos": [
+        18394,
+        18474
+      ]
+    },
+    {
+      "content": "Repeat these steps to create a new <bpt id=\"p1\">**</bpt>HBase<ept id=\"p1\">**</ept> cluster.",
+      "pos": [
+        18479,
+        18532
+      ]
+    },
+    {
+      "content": "The following are the key differences:",
+      "pos": [
+        18533,
+        18571
+      ]
+    },
+    {
+      "pos": [
+        18579,
+        18613
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Cluster Type<ept id=\"p1\">**</ept>: Select <bpt id=\"p2\">**</bpt>HBase<ept id=\"p2\">**</ept>"
+    },
+    {
+      "pos": [
+        18621,
+        18669
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Virtual Network Subnets<ept id=\"p1\">**</ept>: Select <bpt id=\"p2\">**</bpt>Subnet-2<ept id=\"p2\">**</ept>"
+    },
+    {
+      "pos": [
+        18677,
+        18775
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Storage Account<ept id=\"p1\">**</ept>: You should use a different container than the one used for the Storm cluster."
+    },
+    {
+      "content": "Discover the HBase DNS suffix",
+      "pos": [
+        18781,
+        18810
+      ]
+    },
+    {
+      "content": "To write to HBase from the Storm cluster, you must use the fully qualified domain name (FQDN) for the HBase cluster.",
+      "pos": [
+        18812,
+        18928
+      ]
+    },
+    {
+      "content": "Use the following command to discover this information:",
+      "pos": [
+        18929,
+        18984
+      ]
+    },
+    {
+      "content": "In the JSON data returned, find the <bpt id=\"p1\">**</bpt>\"host_name\"<ept id=\"p1\">**</ept> entry.",
+      "pos": [
+        19154,
+        19212
+      ]
+    },
+    {
+      "content": "This will contain the FQDN for the nodes in the cluster, for example:",
+      "pos": [
+        19213,
+        19282
+      ]
+    },
+    {
+      "pos": [
+        19362,
+        19487
+      ],
+      "content": "The portion of the domain name beginning with the cluster name is the DNS suffix, for example, <bpt id=\"p1\">**</bpt>mycluster.b1.cloudapp.net<ept id=\"p1\">**</ept>."
+    },
+    {
+      "content": "Enable the HBase bolt",
+      "pos": [
+        19493,
+        19514
+      ]
+    },
+    {
+      "content": "Open <bpt id=\"p1\">**</bpt>hdinsight-eventhub-example\\TemperatureMonitor\\conf\\hbase-site.xml<ept id=\"p1\">**</ept> and replace the <ph id=\"ph1\">`suffix`</ph> entries in the following line with the DNS suffix obtained previously for the HBase cluster.",
+      "pos": [
+        19519,
+        19711
+      ]
+    },
+    {
+      "content": "Save the file after you make these changes.",
+      "pos": [
+        19712,
+        19755
+      ]
+    },
+    {
+      "content": "This will be used by the HBase bolt to communicate with the HBase cluster.",
+      "pos": [
+        19839,
+        19913
+      ]
+    },
+    {
+      "content": "Open *<bpt id=\"p1\">*</bpt>hdinsight-eventhub-example\\TemperatureMonitor\\src\\main\\java\\com\\microsoft\\examples\\bolts\\*<ept id=\"p1\">*</ept> in a text editor, and uncomment the following lines by removing the <ph id=\"ph1\">`//`</ph> from the beginning.",
+      "pos": [
+        19918,
+        20109
+      ]
+    },
+    {
+      "content": "Save the file after you make this change.",
+      "pos": [
+        20110,
+        20151
+      ]
+    },
+    {
+      "content": "This enables the HBase bolt.",
+      "pos": [
+        20418,
+        20446
+      ]
+    },
+    {
+      "pos": [
+        20454,
+        20583
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> You should only enable the HBase bolt when you are deploying to the Storm cluster, not when you are testing locally."
+    },
+    {
+      "content": "HBase and Storm data",
+      "pos": [
+        20589,
+        20609
+      ]
+    },
+    {
+      "content": "Before running the topology, you must prepare HBase to accept the data.",
+      "pos": [
+        20611,
+        20682
+      ]
+    },
+    {
+      "content": "Use Remote Desktop to connect to the HBase cluster.",
+      "pos": [
+        20687,
+        20738
+      ]
+    },
+    {
+      "content": "From the desktop, start the HDInsight command-line and enter the following commands:",
+      "pos": [
+        20743,
+        20827
+      ]
+    },
+    {
+      "pos": [
+        20833,
+        20868
+      ],
+      "content": "cd %HBASE_HOME%\n bin\\hbase shell",
+      "leadings": [
+        "",
+        "   "
+      ],
+      "nodes": [
+        {
+          "content": "cd %HBASE_HOME%",
+          "pos": [
+            0,
+            15
+          ]
+        },
+        {
+          "content": "bin\\hbase shell",
+          "pos": [
+            17,
+            32
+          ]
+        }
+      ]
+    },
+    {
+      "content": "From the HBase shell, enter the following command to create a table to store the sensor data:",
+      "pos": [
+        20873,
+        20966
+      ]
+    },
+    {
+      "content": "create 'SensorData', 'cf'",
+      "pos": [
+        20972,
+        20997
+      ]
+    },
+    {
+      "content": "Verify that the table contains no data by entering the following command:",
+      "pos": [
+        21002,
+        21075
+      ]
+    },
+    {
+      "content": "scan 'SensorData'",
+      "pos": [
+        21081,
+        21098
+      ]
+    },
+    {
+      "pos": [
+        21100,
+        21270
+      ],
+      "content": "When you have started the topology on the Storm cluster and processed data, you can use the <ph id=\"ph1\">`scan 'SensorData'`</ph> command again to verify that data was inserted into HBase."
+    },
+    {
+      "content": "Next steps",
+      "pos": [
+        21276,
+        21286
+      ]
+    },
+    {
+      "content": "You have now learned how to use Storm to read data from Event Hub and display information from Storm on an external dashboard by using SignalR and D3.js.",
+      "pos": [
+        21288,
+        21441
+      ]
+    },
+    {
+      "content": "If you used the optional steps, you also learned how to configure HDInsight in a virtual network and how to communicate between a Storm topology and HBase by using the HBase bolt.",
+      "pos": [
+        21442,
+        21621
+      ]
+    },
+    {
+      "content": "For more examples of Storm topologies with HDinsight, see:",
+      "pos": [
+        21625,
+        21683
+      ]
+    },
+    {
+      "content": "Example topologies for Storm on HDInsight",
+      "pos": [
+        21692,
+        21733
+      ]
+    },
+    {
+      "pos": [
+        21775,
+        21882
+      ],
+      "content": "For more information about Apache Storm, see the  <bpt id=\"p1\">[</bpt>Apache Storm<ept id=\"p1\">](https://storm.incubator.apache.org/)</ept> site."
+    },
+    {
+      "pos": [
+        21886,
+        22002
+      ],
+      "content": "For more information about HBase on HDInsight, see the <bpt id=\"p1\">[</bpt>HBase with HDInsight Overview<ept id=\"p1\">](hdinsight-hbase-overview.md)</ept>."
+    },
+    {
+      "pos": [
+        22006,
+        22088
+      ],
+      "content": "For more information about Socket.io, see the <bpt id=\"p1\">[</bpt>socket.io<ept id=\"p1\">](http://socket.io/)</ept> site."
+    },
+    {
+      "pos": [
+        22092,
+        22180
+      ],
+      "content": "For more information about D3.js, see <bpt id=\"p1\">[</bpt>D3.js - Data Driven Documents<ept id=\"p1\">](http://d3js.org/)</ept>."
+    },
+    {
+      "pos": [
+        22184,
+        22337
+      ],
+      "content": "For information about creating topologies in Java, see <bpt id=\"p1\">[</bpt>Develop Java topologies for Apache Storm on HDInsight<ept id=\"p1\">](hdinsight-storm-develop-java-topology.md)</ept>."
+    },
+    {
+      "pos": [
+        22341,
+        22528
+      ],
+      "content": "For information about creating topologies in .NET, see <bpt id=\"p1\">[</bpt>Develop C# topologies for Apache Storm on HDInsight using Visual Studio<ept id=\"p1\">](hdinsight-storm-develop-csharp-visual-studio-topology.md)</ept>."
+    },
+    {
+      "content": "test",
+      "pos": [
+        22580,
+        22584
+      ]
+    }
+  ],
+  "content": "<properties\n   pageTitle=\"Analyze sensor data with Apache Storm and HBase | Microsoft Azure\"\n   description=\"Learn how to connect to Apache Storm with a virtual network. Use Storm with HBase to process sensor data from an event hub and visualize it with D3.js.\"\n   services=\"hdinsight\"\n   documentationCenter=\"\"\n   authors=\"Blackmist\"\n   manager=\"paulettm\"\n   editor=\"cgronlun\"/>\n\n<tags\n   ms.service=\"hdinsight\"\n   ms.devlang=\"java\"\n   ms.topic=\"article\"\n   ms.tgt_pltfrm=\"na\"\n   ms.workload=\"big-data\"\n   ms.date=\"07/06/2015\"\n   ms.author=\"larryfr\"/>\n\n# Analyze sensor data with Apache Storm, Event Hub, and HBase in HDInsight (Hadoop)\n\nLearn how to use Apache Storm on HDInsight to process sensor data from Azure Event Hub, and visualize it by using D3.js. This document also describes how to use an Azure virtual network to connect Storm on HDInsight with HBase on HDInsight, and store data from the topology into HBase.\n\n## Prerequisites\n\n* An Azure subscription. See [Get Azure free trial](http://azure.microsoft.com/documentation/videos/get-azure-free-trial-for-testing-hadoop-in-hdinsight/).\n\n* An [Apache Storm on HDInsight cluster](../hdinsight-storm-getting-started.md)\n\n* [Node.js](http://nodejs.org/): Used for the web dashboard and to send sensor data to Event Hub.\n\n* [Java and the JDK 1.7](http://www.oracle.com/technetwork/java/javase/downloads/index.html)\n\n* [Maven](http://maven.apache.org/what-is-maven.html)\n\n* [Git](http://git-scm.com/)\n\n> [AZURE.NOTE] Java, the JDK, Maven, and Git are also available through the [Chocolatey NuGet](http://chocolatey.org/) package manager.\n\n## Architecture\n\n![architecture diagram](./media/hdinsight-storm-sensor-data-analysis/devicesarchitecture.png)\n\nThis example consists of the following components:\n\n* **Azure Event Hub**: Provides data that is collected from sensors. For this example, an application is provided that generates fake data.\n\n* **Storm on HDInsight**: Provides real-time processing of data from Event Hub.\n\n* **HBase on HDInsight** (optional): Provides a persistent NoSQL data store.\n\n* **Azure Virtual Network service** (optional, required if using HBase): Enables secure communications between the Storm on HDInsight and HBase on HDInsight clusters.\n\n* **Dashboard website**: An example dashboard that charts data in real time.\n\n    * The website is implemented in Node.js, so it can run on any client operating system for testing, or it can be deployed to Azure Websites.\n\n    * [Socket.io](http://socket.io/) is used for real-time communication between the Storm topology and the website.\n\n        > [AZURE.NOTE] This is an implementation detail. You can use any communications framework, such as raw WebSockets or SignalR.\n\n    * [D3.js](http://d3js.org/) is used to graph the data that is sent to the website.\n\nThe topology reads data from Event Hub by using the **com.microsoft.eventhubs.spout.EventHubSpout** class, which is provided in the Storm on HDInsight cluster. Communication with the website is accomplished by using [socket.io-client.java](https://github.com/nkzawa/socket.io-client.java).\n\nOptionally, communication with HBase is accomplished by using the [org.apache.storm.hbase.bolt.HBaseBolt](https://storm.apache.org/javadoc/apidocs/org/apache/storm/hbase/bolt/class-use/HBaseBolt.html) class, which is provided as part of Storm.\n\nThe following is a diagram of the topology.\n\n![topology diagram](./media/hdinsight-storm-sensor-data-analysis/sensoranalysis.png)\n\n> [AZURE.NOTE] This is a very simplified view of the topology. At run time, an instance of each component is created for each partition for the Event Hub that is being read. These instances are distributed across the nodes in the cluster, and data is routed between them as follows:\n>\n> * Data from the spout to the parser is load balanced.\n> * Data from the parser to the Dashboard and HBase (if used) is grouped by Device ID, so that messages from the same device always flow to the same component.\n\n### Components\n\n* **EventHub Spout**: The spout is provided as part of the [HDInsight Storm Examples](https://github.com/hdinsight/hdinsight-storm-examples) on GitHub.\n\n* **ParserBolt.java**: The data that is emitted by the spout is raw JSON, and occasionally more than one event is emitted at a time. This bolt demonstrates how to read the data emitted by the spout, and emit it to a new stream as a tuple that contains multiple fields.\n\n* **DashboardBolt.java**: This demonstrates how to use the Socket.io client library for Java to send data in real time to the web dashboard.\n\n## Prepare your environment\n\nBefore you use this example, you must create an Azure Event Hub, which the Storm topology reads. You must also create a Storm on HDInsight topology because the component used to read data from Event Hub is only available in the cluster.\n\n> [AZURE.NOTE] Eventually the Event Hub spout will be available from Maven.\n\n### Configure Event Hub\n\nEvent Hub is the data source for this example. Use the following steps to create a new Event Hub.\n\n1. From the [Azure portal](https://manage.windowsazure.com), select **NEW | Service Bus | Event Hub | Custom Create**.\n\n2. In the **Add a new Event Hub** dialog box, enter an **Event Hub Name**, select the **Region** to create the hub in, and then create a new namespace or select an existing one. Finally, click the arrow to continue.\n\n2. In the **Configure Event Hub** dialog box, enter the **Partition count** and **Message Retention** values. For this example, use a partition count of 10 and a message retention of 1.\n\n3. When the event hub has been created, select the namespace, then select **Event Hubs**. Finally, select the event hub that you created earlier.\n\n4. Select **Configure**, then create two new access policies by using the following information.\n\n    <table>\n    <tr><th>Name</th><th>Permissions</th></tr>\n    <tr><td>Devices</td><td>Send</td></tr>\n    <tr><td>Storm</td><td>Listen</td></tr>\n    </table>\n\n    After creating permissions, select the **Save** icon at the bottom of the page. This creates the shared access policies that will be used to send messages to and read messages from this hub.\n\n5. After saving the policies, use the **Shared access key generator** at the bottom of the page to retrieve the key for the **devices** and **storm** policies. Save these because you will use them later.\n\n### Create the Storm on HDInsight cluster\n\n1. Sign in to the [Azure portal](https://manage.windowsazure.com/).\n\n2. Click **HDInsight** in the left pane, and then click **+NEW** in the lower-left corner of the page.\n\n3. Click the HDInsight icon in the second column, and then select **Custom**.\n\n4. On the **Cluster Details** page, enter the name of the new cluster, and select **Storm** for the **Cluster Type**. Click the arrow to continue.\n\n5. Enter 1 for the number of **Data Nodes** to use for this cluster.\n\n    > [AZURE.NOTE] To minimize the cost for the cluster used for this article, reduce the **Cluster Size** to 1, and delete the cluster after you have finished using it.\n\n6. Enter the administrator **User Name** and **Password**, and then click the arrow to continue.\n\n4. For **Storage Account**, select **Create New Storage** or select an existing storage account. Select or enter the **Account Name** and **Default container** to use. Select the check mark icon in the lower-left corner to create the Storm cluster.\n\n## Download and install the EventHubSpout\n\n1. Download the [HDInsight Storm Examples project](https://github.com/hdinsight/hdinsight-storm-examples/). Once downloaded, find the **lib/eventhubs/eventhubs-storm-spout-0.9-jar-with-dependencies.jar** file.\n\n2. From the command prompt, use the following command to install the **eventhubs-storm-spout-0.9-jar-with-dependencies.jar** file into the local Maven store. This will allow you to easily add it as a reference in the Storm project in a later step.\n\n        mvn install:install-file -Dfile=target/eventhubs-storm-spout-0.9-jar-with-dependencies.jar -DgroupId=com.microsoft.eventhubs -DartifactId=eventhubs-storm-spout -Dversion=0.9 -Dpackaging=jar\n\n## Download and configure the project\n\nUse the following to download the project from GitHub.\n\n    git clone https://github.com/Blackmist/hdinsight-eventhub-example\n\nAfter the command completes, you will have the following directory structure:\n\n    hdinsight-eventhub-example/\n        TemperatureMonitor/ - this is the Java topology\n            conf/\n                Config.properties\n                hbase-site.xml\n            src/\n            test/\n            dashboard/ - this is the node.js web dashboard\n            SendEvents/ - utilities to send fake sensor data\n\n> [AZURE.NOTE] This document does not go in to full details of the code included in this sample; however, the code is fully commented.\n\nOpen the **Config.properties** file and add the information you previously used when creating the Event Hub. Save the file after you add this information.\n\n    eventhubspout.username = storm\n\n    eventhubspout.password = <the key of the 'storm' policy>\n\n    eventhubspout.namespace = <the event hub namespace>\n\n    eventhubspout.entitypath = <the event hub name>\n\n    eventhubspout.partitions.count = <the number of partitions for the event hub>\n\n    ## if not provided, will use storm's zookeeper settings\n    ## zookeeper.connectionstring=localhost:2181\n\n    eventhubspout.checkpoint.interval = 10\n\n    eventhub.receiver.credits = 1024\n\n## Compile and test locally\n\nBefore testing, you must start the dashboard to view the output of the topology and generate data to store in Event Hub.\n\n### Start the web application\n\n1. Open a new command prompt or terminal, and change directories to the **hdinsight-eventhub-example/dashboard**, then use the following command to install the dependencies needed by the web application:\n\n        npm install\n\n2. Use the following command to start the web application:\n\n        node server.js\n\n    You should see a message similar to the following:\n\n        Server listening at port 3000\n\n2. Open a web browser and enter **http://localhost:3000/** as the address. You should see a page similar to the following:\n\n    ![web dashboard](./media/hdinsight-storm-sensor-data-analysis/emptydashboard.png)\n\n    Leave this command prompt or terminal open. After testing, use Ctrl-C to stop the web server.\n\n### Start generating data\n\n> [AZURE.NOTE] The steps in this section use Node.js so that they can be run on any platform. For other language examples, see the **SendEvents** directory.\n\n\n1. Open a new command prompt or terminal, and change directories to **hdinsight-eventhub-example/SendEvents/nodejs**, then use the following command to install the dependencies needed by the application:\n\n        npm install\n\n2. Open the **app.js** file in a text editor and add the Event Hub information you obtained earlier:\n\n        // ServiceBus Namespace\n        var namespace = 'servicebusnamespace';\n        // Event Hub Name\n        var hubname ='eventhubname';\n        // Shared access Policy name and key (from Event Hub configuration)\n        var my_key_name = 'devices';\n        var my_key = 'key';\n\n2. Use the following command to insert new entries in Event Hub:\n\n        node app.js\n\n    You should see several lines of output that contain the data sent to Event Hub. These will appear similar to the following:\n\n        {\"TimeStamp\":\"2015-02-10T14:43.05.00320Z\",\"DeviceId\":0,\"Temperature\":7}\n        {\"TimeStamp\":\"2015-02-10T14:43.05.00320Z\",\"DeviceId\":1,\"Temperature\":39}\n        {\"TimeStamp\":\"2015-02-10T14:43.05.00320Z\",\"DeviceId\":2,\"Temperature\":86}\n        {\"TimeStamp\":\"2015-02-10T14:43.05.00320Z\",\"DeviceId\":3,\"Temperature\":29}\n        {\"TimeStamp\":\"2015-02-10T14:43.05.00320Z\",\"DeviceId\":4,\"Temperature\":30}\n        {\"TimeStamp\":\"2015-02-10T14:43.05.00320Z\",\"DeviceId\":5,\"Temperature\":5}\n        {\"TimeStamp\":\"2015-02-10T14:43.05.00320Z\",\"DeviceId\":6,\"Temperature\":24}\n        {\"TimeStamp\":\"2015-02-10T14:43.05.00320Z\",\"DeviceId\":7,\"Temperature\":40}\n        {\"TimeStamp\":\"2015-02-10T14:43.05.00320Z\",\"DeviceId\":8,\"Temperature\":43}\n        {\"TimeStamp\":\"2015-02-10T14:43.05.00320Z\",\"DeviceId\":9,\"Temperature\":84}\n\n### Start the topology\n\n2. Start the topology locally by using the following command:\n\n    mvn compile exec:java -Dstorm.topology=com.microsoft.examples.Temperature\n\n    This will start the topology, read files from Event Hub, and send them to the dashboard running in Azure Websites. You should see lines appear in the web dashboard, similar to the following:\n\n    ![dashboard with data](./media/hdinsight-storm-sensor-data-analysis/datadashboard.png)\n\n3. While the dashboard is running, use the `node app.js` command from the previous steps to send new data to the dashboard. Because the temperature values are randomly generated, the graph should update to show the new values.\n\n3. After verifying that this works, stop the topology by typing Ctrl+C. To stop the SendEvent app, select the window and press any key. You can use Ctrl+C to stop the web server also.\n\n## Package and deploy the topology to HDInsight\n\nIn your development environment, use the following steps to run the Temperature topology on your HDInsight Storm cluster.\n\n### Publish the website dashboard\n\n1. To deploy the dashboard to an Azure Website, follow the steps in [Build and deploy a Node.js website to Azure](../web-sites-nodejs-develop-deploy-mac.md). Note the URL of the website, which will be similar to **mywebsite.azurewebsites.net**.\n\n2. When the website is created, go to the site in the Azure portal and select the **Configure** tab. Enable **Web Sockets**, and then click **Save** at the bottom of the page.\n\n2. Open **hdinsight-eventhub-example\\TemperatureMonitor\\src\\main\\java\\com\\microsoft\\examples\\bolts\\DashboardBolt.java** and change the following line to point to the URL of the published dashboard:\n\n        socket = IO.socket(\"http://mywebsite.azurewebsites.net\");\n\n3. Save the **DashboardBolt.java** file.\n\n### Package and deploy the topology\n\n1. Use the following command to create a JAR package from your project:\n\n        mvn package\n\n    This will create a file named **TemperatureMonitor-1.0-SNAPSHOT.jar** in the **target** directory of your project.\n\n2. Follow the steps in [Deploy and manage Storm topologies](hdinsight-storm-deploy-monitor-topology.md) to upload and start the topology on your Storm on HDInsight cluster by using the **Storm Dashboard**.\n\n3. After the topology has started, open a browser to the website you published on Azure, then use the `node app.js` command to send data to Event Hub. You should see the web dashboard update to display the information.\n\n    ![dashboard](./media/hdinsight-storm-sensor-data-analysis/datadashboard.png)\n\n## Optional: Use HBase\n\nTo use Storm and HBase together, you must create an Azure virtual network and then create a Storm and HBase cluster within the network.\n\n### Create an Azure virtual network (optional)\n\nIf you plan to use HBase with this example, you must create an Azure virtual network that will contain a Storm on HDInsight cluster and an HBase on HDInsight cluster.\n\n1. Sign in to the [Azure portal](https://manage.windowsazure.com).\n\n2. On the bottom of the page, click **+NEW** > **Network Services** > **Virtual Network** > **Quick Create**.\n\n3. Type or select the following values:\n\n    - **Name**: The name of your virtual network.\n\n    - **Address space**: Choose an address space for the virtual network that is large enough to provide addresses for all nodes in the cluster. Otherwise, the provision will fail.\n\n    - **Maximum VM count**: Choose one of the maximum virtual machine counts.\n\n    - **Location**: The location must be the same as the HBase cluster that you will create.\n\n    - **DNS server**: This article uses the internal DNS server provided by Azure; therefore, you can choose **None**. More advanced networking configurations with custom DNS servers are also supported. For the detailed guidance, see [Name Resolution (DNS)](../virtual-network/virtual-networks-name-resolution-for-vms-and-role-instances.md).\n\n4. Click **Create a Virtual Network**. The new virtual network name will appear in the list. Wait until the Status column shows **Created**.\n\n5. In the main pane, click the virtual network you just created.\n\n6. On the top of the page, click **DASHBOARD**.\n\n7. Under **quick glance**, make a note of **VIRTUAL NETWORK ID**. You will need it when provisioning the Storm and HBase clusters.\n\n8. At the top of the page, click **CONFIGURE**.\n\n9. At the bottom of the page, the default subnet name is **Subnet-1**. Use the **add subnet** button to add **Subnet-2**. These subnets will house the Storm and HBase clusters.\n\n    > [AZURE.NOTE] In this article, we will be using clusters with only one node. If you are creating multinode clusters, you must verify the **CIDR(ADDRESS COUNT)** for the subnet that will be used for the cluster. The address count must be greater than the number of worker nodes plus seven (Gateway: 2, Headnode: 2, Zookeeper: 3). For example, if you need a 10 node HBase cluster, the address count for the subnet must be greater than 17 (10+7). Otherwise, the deployment will fail.\n    >\n    > It is highly recommended to designate a single subnet for one cluster.\n\n11. Click **Save** at the bottom of the page.\n\n### Create a Storm and HBase cluster on the virtual network\n\n1. Sign in to the [Azure Portal](https://manage.windowsazure.com/).\n\n2. Click **HDInsight** in the left pane, and then click **+NEW** in the lower-left corner of the page.\n\n3. Click the HDInsight icon in the second column, and then select **Custom**.\n\n4. On the **Cluster Details** page, enter the name of the new cluster, and select **Storm** for the **Cluster Type**. Click the arrow to continue.\n\n5. Enter 1 for the number of **Data Nodes** to use for this cluster. For **Region/Virtual Network**, select the Azure virtual network that you created earlier. For **Virtual Network Subnets**, select **Subnet-1**.\n\n    > [AZURE.NOTE] To minimize the cost for the cluster used for this article, reduce the **Cluster Size** to 1, and delete the cluster after you have finished using it.\n\n6. Enter the administrator **User Name** and **Password**, then click the arrow to continue.\n\n4. For **Storage Account**, select **Create New Storage** or select an existing storage account. Select or enter the **Account Name** and **Default container** to use. Select the check mark icon in the lower-left corner to create the Storm cluster.\n\n5. Repeat these steps to create a new **HBase** cluster. The following are the key differences:\n\n    * **Cluster Type**: Select **HBase**\n\n    * **Virtual Network Subnets**: Select **Subnet-2**\n\n    * **Storage Account**: You should use a different container than the one used for the Storm cluster.\n\n### Discover the HBase DNS suffix\n\nTo write to HBase from the Storm cluster, you must use the fully qualified domain name (FQDN) for the HBase cluster. Use the following command to discover this information:\n\n    curl -u <username>:<password> -k https://<clustername>.azurehdinsight.net/ambari/api/v1/clusters/<clustername>.azurehdinsight.net/services/hbase/components/hbrest\n\nIn the JSON data returned, find the **\"host_name\"** entry. This will contain the FQDN for the nodes in the cluster, for example:\n\n    ...\n    \"host_name\": \"wordkernode0.<clustername>.b1.cloudapp.net\n    ...\n\nThe portion of the domain name beginning with the cluster name is the DNS suffix, for example, **mycluster.b1.cloudapp.net**.\n\n### Enable the HBase bolt\n\n1. Open **hdinsight-eventhub-example\\TemperatureMonitor\\conf\\hbase-site.xml** and replace the `suffix` entries in the following line with the DNS suffix obtained previously for the HBase cluster. Save the file after you make these changes.\n\n        <value>zookeeper0.suffix,zookeeper1.suffix,zookeeper2.suffix</value>\n\n    This will be used by the HBase bolt to communicate with the HBase cluster.\n\n1. Open **hdinsight-eventhub-example\\TemperatureMonitor\\src\\main\\java\\com\\microsoft\\examples\\bolts\\** in a text editor, and uncomment the following lines by removing the `//` from the beginning. Save the file after you make this change.\n\n        topologyBuilder.setBolt(\"HBase\", new HBaseBolt(\"SensorData\", mapper).withConfigKey(\"hbase.conf\"), spoutConfig.getPartitionCount())\n          .fieldsGrouping(\"Parser\", \"hbasestream\", new Fields(\"deviceid\")).setNumTasks(spoutConfig.getPartitionCount());\n\n    This enables the HBase bolt.\n\n    > [AZURE.NOTE] You should only enable the HBase bolt when you are deploying to the Storm cluster, not when you are testing locally.\n\n### HBase and Storm data\n\nBefore running the topology, you must prepare HBase to accept the data.\n\n1. Use Remote Desktop to connect to the HBase cluster.\n\n2. From the desktop, start the HDInsight command-line and enter the following commands:\n\n    cd %HBASE_HOME%\n    bin\\hbase shell\n\n3. From the HBase shell, enter the following command to create a table to store the sensor data:\n\n    create 'SensorData', 'cf'\n\n4. Verify that the table contains no data by entering the following command:\n\n    scan 'SensorData'\n\nWhen you have started the topology on the Storm cluster and processed data, you can use the `scan 'SensorData'` command again to verify that data was inserted into HBase.\n\n\n## Next steps\n\nYou have now learned how to use Storm to read data from Event Hub and display information from Storm on an external dashboard by using SignalR and D3.js. If you used the optional steps, you also learned how to configure HDInsight in a virtual network and how to communicate between a Storm topology and HBase by using the HBase bolt.\n\n* For more examples of Storm topologies with HDinsight, see:\n\n    * [Example topologies for Storm on HDInsight](hdinsight-storm-example-topology.md)\n\n* For more information about Apache Storm, see the  [Apache Storm](https://storm.incubator.apache.org/) site.\n\n* For more information about HBase on HDInsight, see the [HBase with HDInsight Overview](hdinsight-hbase-overview.md).\n\n* For more information about Socket.io, see the [socket.io](http://socket.io/) site.\n\n* For more information about D3.js, see [D3.js - Data Driven Documents](http://d3js.org/).\n\n* For information about creating topologies in Java, see [Develop Java topologies for Apache Storm on HDInsight](hdinsight-storm-develop-java-topology.md).\n\n* For information about creating topologies in .NET, see [Develop C# topologies for Apache Storm on HDInsight using Visual Studio](hdinsight-storm-develop-csharp-visual-studio-topology.md).\n\n[azure-portal]: https://manage.windowsazure.com/\n\ntest\n"
+}

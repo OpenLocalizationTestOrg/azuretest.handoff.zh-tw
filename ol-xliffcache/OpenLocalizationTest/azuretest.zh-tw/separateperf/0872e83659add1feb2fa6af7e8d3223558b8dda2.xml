@@ -1,0 +1,26 @@
+{
+  "nodes": [
+    {
+      "content": "In the backend's Visual Studio project, open <bpt id=\"p1\">**</bpt>Controllers<ept id=\"p1\">**</ept> &gt; <bpt id=\"p2\">**</bpt>TodoItemController.cs<ept id=\"p2\">**</ept>.",
+      "pos": [
+        3,
+        92
+      ]
+    },
+    {
+      "content": "At the top of the file, add the following <ph id=\"ph1\">`using`</ph> statement:",
+      "pos": [
+        93,
+        153
+      ]
+    },
+    {
+      "pos": [
+        262,
+        320
+      ],
+      "content": "Replace the <ph id=\"ph1\">`PostTodoItem`</ph> method with the following code:"
+    }
+  ],
+  "content": "1. In the backend's Visual Studio project, open **Controllers** > **TodoItemController.cs**. At the top of the file, add the following `using` statement:\n\n\n        using Microsoft.Azure.Mobile.Server.Config;\n        using Microsoft.Azure.NotificationHubs;\n\n\n\n2. Replace the `PostTodoItem` method with the following code:  \n\n      \n        public async Task<IHttpActionResult> PostTodoItem(TodoItem item)\n        {\n            TodoItem current = await InsertAsync(item);\n            // Get the settings for the server project.\n            HttpConfiguration config = this.Configuration;\n\n            MobileAppSettingsDictionary settings = \n                this.Configuration.GetMobileAppSettingsProvider().GetMobileAppSettings();\n\n            // Get the Notification Hubs credentials for the Mobile App.\n            string notificationHubName = settings.NotificationHubName;\n            string notificationHubConnection = settings\n                .Connections[MobileAppSettingsKeys.NotificationHubConnectionString].ConnectionString;\n\n            // Create a new Notification Hub client.\n            NotificationHubClient hub = NotificationHubClient\n            .CreateClientFromConnectionString(notificationHubConnection, notificationHubName);\n\n            // iOS payload\n            var appleNotificationPayload = \"{\\\"aps\\\":{\\\"alert\\\":\\\"\" + item.Text + \"\\\"}}\";\n\n            try\n            {\n                // Send the push notification and log the results.\n                var result = await hub.SendAppleNativeNotificationAsync(appleNotificationPayload);\n\n                // Write the success result to the logs.\n                config.Services.GetTraceWriter().Info(result.State.ToString());\n            }\n            catch (System.Exception ex)\n            {\n                // Write the failure result to the logs.\n                config.Services.GetTraceWriter()\n                    .Error(ex.Message, null, \"Push.SendAsync Error\");\n            }\n            return CreatedAtRoute(\"Tables\", new { id = current.Id }, current);\n        }\n\n"
+}

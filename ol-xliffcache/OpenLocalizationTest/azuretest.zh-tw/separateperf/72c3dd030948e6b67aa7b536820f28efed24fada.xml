@@ -1,0 +1,782 @@
+{
+  "nodes": [
+    {
+      "content": "Deploy a 3-node Deis cluster on Azure",
+      "pos": [
+        26,
+        63
+      ]
+    },
+    {
+      "content": "This article describes how to create a 3-node Deis cluster on Azure using an Azure Resource Manager template",
+      "pos": [
+        81,
+        189
+      ]
+    },
+    {
+      "content": "Deploy a 3-node Deis cluster",
+      "pos": [
+        510,
+        538
+      ]
+    },
+    {
+      "content": "This article walks you through provisioning a <bpt id=\"p1\">[</bpt>Deis<ept id=\"p1\">](http://deis.io/)</ept> cluster on Azure.",
+      "pos": [
+        540,
+        627
+      ]
+    },
+    {
+      "content": "It covers all the steps from creating the necessary certificates to deploying and scaling a sample <bpt id=\"p1\">**</bpt>Go<ept id=\"p1\">**</ept> application on the newly provisioned cluster.",
+      "pos": [
+        628,
+        779
+      ]
+    },
+    {
+      "content": "The following diagram shows the architecture of the deployed system.",
+      "pos": [
+        781,
+        849
+      ]
+    },
+    {
+      "content": "A system administrator manages the cluster using Deis tools such as <bpt id=\"p1\">**</bpt>deis<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>deisctl<ept id=\"p2\">**</ept>.",
+      "pos": [
+        850,
+        943
+      ]
+    },
+    {
+      "content": "Connections are established through an Azure load balancer, which forwards the connections to one of the member nodes on the cluster.",
+      "pos": [
+        944,
+        1077
+      ]
+    },
+    {
+      "content": "The clients access deployed applications through the load balancer as well.",
+      "pos": [
+        1078,
+        1153
+      ]
+    },
+    {
+      "content": "In this case, the load balancer forwards the traffic to a Deis router mesh, which further routs traffic to corresponding Docker containers hosted on the cluster.",
+      "pos": [
+        1154,
+        1315
+      ]
+    },
+    {
+      "content": "Architecture diagram of deployed Desis cluster",
+      "pos": [
+        1321,
+        1367
+      ]
+    },
+    {
+      "content": "In order to run through the following steps, you'll need:",
+      "pos": [
+        1433,
+        1490
+      ]
+    },
+    {
+      "content": "An active Azure subscription.",
+      "pos": [
+        1495,
+        1524
+      ]
+    },
+    {
+      "content": "If you don't have one, you can get a free trail on <bpt id=\"p1\">[</bpt>azure.com<ept id=\"p1\">](https://azure.microsoft.com)</ept>.",
+      "pos": [
+        1525,
+        1617
+      ]
+    },
+    {
+      "content": "A work or school id to use Azure resource groups.",
+      "pos": [
+        1621,
+        1670
+      ]
+    },
+    {
+      "content": "If you have a personal account and log in with a Microsoft id, you need to <bpt id=\"p1\">[</bpt>create a work id from your personal one<ept id=\"p1\">](resource-group-create-work-id-from-personal.md)</ept>.",
+      "pos": [
+        1671,
+        1836
+      ]
+    },
+    {
+      "pos": [
+        1840,
+        2020
+      ],
+      "content": "Either -- depending on your client operating system -- the <bpt id=\"p1\">[</bpt>Azure PowerShell<ept id=\"p1\">](powershell-install-configure.md)</ept> or the <bpt id=\"p2\">[</bpt>Azure CLI for Mac, Linux, and Windows<ept id=\"p2\">](xplat-cli-install.md)</ept>."
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt>OpenSSL<ept id=\"p1\">](https://www.openssl.org/)</ept>.",
+      "pos": [
+        2024,
+        2060
+      ]
+    },
+    {
+      "content": "OpenSSL is used to generate the necessary certificates.",
+      "pos": [
+        2061,
+        2116
+      ]
+    },
+    {
+      "pos": [
+        2120,
+        2174
+      ],
+      "content": "A Git client such as <bpt id=\"p1\">[</bpt>Git Bash<ept id=\"p1\">](https://git-scm.com/)</ept>."
+    },
+    {
+      "content": "To test the sample application, you'll also need a DNS server.",
+      "pos": [
+        2178,
+        2240
+      ]
+    },
+    {
+      "content": "You can use any DNS servers or services that support wildcard A records.",
+      "pos": [
+        2241,
+        2313
+      ]
+    },
+    {
+      "content": "A computer to run Deis client tools.",
+      "pos": [
+        2317,
+        2353
+      ]
+    },
+    {
+      "content": "You can use either a local machine or a virtual machine.",
+      "pos": [
+        2354,
+        2410
+      ]
+    },
+    {
+      "content": "You can run these tools on almost any Linux distribution, but the following instructions use Ubuntu.",
+      "pos": [
+        2411,
+        2511
+      ]
+    },
+    {
+      "content": "Provision the cluster",
+      "pos": [
+        2516,
+        2537
+      ]
+    },
+    {
+      "content": "In this section, you'll use an <bpt id=\"p1\">[</bpt>Azure Resource Manager<ept id=\"p1\">](../resource-group-overview.md)</ept> template from the open source repository <bpt id=\"p2\">[</bpt>azure-quickstart-templates<ept id=\"p2\">](https://github.com/Azure/azure-quickstart-templates)</ept>.",
+      "pos": [
+        2539,
+        2749
+      ]
+    },
+    {
+      "content": "First, you'll copy down the template.",
+      "pos": [
+        2750,
+        2787
+      ]
+    },
+    {
+      "content": "Then, you'll create a new SSH key pair for authentication.",
+      "pos": [
+        2788,
+        2846
+      ]
+    },
+    {
+      "content": "And then, you'll configure a new identifier for you cluster.",
+      "pos": [
+        2847,
+        2907
+      ]
+    },
+    {
+      "content": "And finally, you'll use either the Shell script or the PowerShell script to provision the cluster.",
+      "pos": [
+        2908,
+        3006
+      ]
+    },
+    {
+      "pos": [
+        3011,
+        3140
+      ],
+      "content": "Clone the repository: <bpt id=\"p1\">[</bpt>https://github.com/Azure/azure-quickstart-templates<ept id=\"p1\">](https://github.com/Azure/azure-quickstart-templates)</ept>."
+    },
+    {
+      "content": "Go to the template folder:",
+      "pos": [
+        3216,
+        3242
+      ]
+    },
+    {
+      "content": "Create a new SSH key pair using ssh-keygen:",
+      "pos": [
+        3306,
+        3349
+      ]
+    },
+    {
+      "content": "Generate a certificate using the above private key:",
+      "pos": [
+        3418,
+        3469
+      ]
+    },
+    {
+      "pos": [
+        3578,
+        3707
+      ],
+      "content": "Go to <bpt id=\"p1\">[</bpt>https://discovery.etcd.io/new<ept id=\"p1\">](https://discovery.etcd.io/new)</ept> to generate a new cluster token, which looks something like:"
+    },
+    {
+      "content": "Each CoreOS cluster needs to have a unique token from this free service.",
+      "pos": [
+        3783,
+        3855
+      ]
+    },
+    {
+      "content": "Please see <bpt id=\"p1\">[</bpt>CoreOS documentation<ept id=\"p1\">](https://coreos.com/docs/cluster-management/setup/cluster-discovery/)</ept> for more details.",
+      "pos": [
+        3856,
+        3976
+      ]
+    },
+    {
+      "pos": [
+        3981,
+        4083
+      ],
+      "content": "Modify the <bpt id=\"p1\">**</bpt>cloud-config.yaml<ept id=\"p1\">**</ept> file to replace the existing  <bpt id=\"p2\">**</bpt>discovery<ept id=\"p2\">**</ept> token with the new token:"
+    },
+    {
+      "content": "Modify the <bpt id=\"p1\">**</bpt>azuredeploy-parameters.json<ept id=\"p1\">**</ept> file: Open the certificate you created in step 4 in a text editor.",
+      "pos": [
+        4425,
+        4534
+      ]
+    },
+    {
+      "content": "Copy all text between <ph id=\"ph1\">`----BEGIN CERTIFICATE-----`</ph> and <ph id=\"ph2\">`-----END CERTIFICATE-----`</ph> into the <bpt id=\"p1\">**</bpt>sshKeyData<ept id=\"p1\">**</ept> parameter (you'll need to remove all newline characters).",
+      "pos": [
+        4535,
+        4699
+      ]
+    },
+    {
+      "content": "Modify the <bpt id=\"p1\">**</bpt>newStorageAccountName<ept id=\"p1\">**</ept> parameter.",
+      "pos": [
+        4704,
+        4751
+      ]
+    },
+    {
+      "content": "This is the storage account for VM OS disks.",
+      "pos": [
+        4752,
+        4796
+      ]
+    },
+    {
+      "content": "This account name has to be globally unique.",
+      "pos": [
+        4797,
+        4841
+      ]
+    },
+    {
+      "content": "Modify the <bpt id=\"p1\">**</bpt>publicDomainName<ept id=\"p1\">**</ept> parameter.",
+      "pos": [
+        4846,
+        4888
+      ]
+    },
+    {
+      "content": "This will become part of the DNS name associated with the load balancer public IP.",
+      "pos": [
+        4889,
+        4971
+      ]
+    },
+    {
+      "content": "The final FQDN will have the format of <bpt id=\"p1\">_</bpt>[value of this parameter]<ept id=\"p1\">_</ept>.<bpt id=\"p2\">_</bpt>[region]<ept id=\"p2\">_</ept>.cloudapp.azure.com.",
+      "pos": [
+        4972,
+        5069
+      ]
+    },
+    {
+      "content": "For example, if you specify the name as deishbai32, and the resource group is deployed to the West US region, then the final FQDN to your load balancer will be deishbai32.westus.cloudapp.azure.com.",
+      "pos": [
+        5070,
+        5267
+      ]
+    },
+    {
+      "content": "Save the parameter file.",
+      "pos": [
+        5273,
+        5297
+      ]
+    },
+    {
+      "content": "And then you can provision the cluster using Azure PowerShell:",
+      "pos": [
+        5298,
+        5360
+      ]
+    },
+    {
+      "content": "or Azure CLI:",
+      "pos": [
+        5587,
+        5600
+      ]
+    },
+    {
+      "content": "Once the resource group is provisioned, you can see all the resources in the group on Azure Portal.",
+      "pos": [
+        5760,
+        5859
+      ]
+    },
+    {
+      "content": "As shown in the following screenshot, the resource group contains a virtual network with three VMs, which are joined to the same availability set.",
+      "pos": [
+        5860,
+        6006
+      ]
+    },
+    {
+      "content": "The group also contains a load balancer, which has an associated public IP.",
+      "pos": [
+        6007,
+        6082
+      ]
+    },
+    {
+      "content": "The provisioned resource group on Azure portal",
+      "pos": [
+        6088,
+        6134
+      ]
+    },
+    {
+      "content": "Install the client",
+      "pos": [
+        6196,
+        6214
+      ]
+    },
+    {
+      "content": "You need <bpt id=\"p1\">**</bpt>deisctl<ept id=\"p1\">**</ept> to control your Deis cluster.",
+      "pos": [
+        6216,
+        6266
+      ]
+    },
+    {
+      "content": "Although deisctl is automatically installed in all the cluster nodes, it's a good practice to use deisctl on a separate administrative machine.",
+      "pos": [
+        6267,
+        6410
+      ]
+    },
+    {
+      "content": "Furthermore, because all nodes are configured with only private IP addresses, you'll need to use SSH tunneling through the load balancer, which has a public IP, to connect to the node machines.",
+      "pos": [
+        6411,
+        6604
+      ]
+    },
+    {
+      "content": "The following are the steps of setting up deisctl on a separate Ubuntu physical or virtual machine.",
+      "pos": [
+        6605,
+        6704
+      ]
+    },
+    {
+      "content": "Install deisctl:mkdir deis",
+      "pos": [
+        6709,
+        6735
+      ]
+    },
+    {
+      "content": "Add your private key to ssh agent:",
+      "pos": [
+        6879,
+        6913
+      ]
+    },
+    {
+      "content": "Configure deisctl:",
+      "pos": [
+        7030,
+        7048
+      ]
+    },
+    {
+      "content": "The template defines inbound NAT rules that map 2223 to instance 1, 2224 to instance 2, and 2225 to instance 3.",
+      "pos": [
+        7119,
+        7230
+      ]
+    },
+    {
+      "content": "This provides redundancy for using the deisctl tool.",
+      "pos": [
+        7231,
+        7283
+      ]
+    },
+    {
+      "content": "You can examine these rules on Azure Portal:",
+      "pos": [
+        7284,
+        7328
+      ]
+    },
+    {
+      "content": "NAT rules on the load balancer",
+      "pos": [
+        7332,
+        7362
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> Currently the template only supports 3-node clusters.",
+      "pos": [
+        7418,
+        7484
+      ]
+    },
+    {
+      "content": "This is because of a limitation in Azure Resource Manager template NAT rule definition, which doesn’t support loop syntax.",
+      "pos": [
+        7485,
+        7607
+      ]
+    },
+    {
+      "content": "Install and start the Deis platform",
+      "pos": [
+        7612,
+        7647
+      ]
+    },
+    {
+      "content": "Now you can use deisctl to install and start the Deis platform:",
+      "pos": [
+        7649,
+        7712
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> Starting the platform takes a while (as much as 10 minutes).",
+      "pos": [
+        7903,
+        7976
+      ]
+    },
+    {
+      "content": "Especially, starting the builder service can take a long time.",
+      "pos": [
+        7977,
+        8039
+      ]
+    },
+    {
+      "content": "And sometimes it takes a few tries to succeed: If the operation seems to hang, try typing <ph id=\"ph1\">`ctrl+c`</ph> to break execution of the command and retry.",
+      "pos": [
+        8040,
+        8183
+      ]
+    },
+    {
+      "pos": [
+        8185,
+        8250
+      ],
+      "content": "You can use <ph id=\"ph1\">`deisctl list`</ph> to verify if all services are running:"
+    },
+    {
+      "content": "Congratulations!",
+      "pos": [
+        10842,
+        10858
+      ]
+    },
+    {
+      "content": "Now you've got a running Deis clsuter on Azure!",
+      "pos": [
+        10859,
+        10906
+      ]
+    },
+    {
+      "content": "Next, let's deploy a sample Go application to see the cluster in action.",
+      "pos": [
+        10907,
+        10979
+      ]
+    },
+    {
+      "content": "Deploy and scale a Hello World application",
+      "pos": [
+        10984,
+        11026
+      ]
+    },
+    {
+      "content": "The following steps show how to deploy a \"Hello World\" Go application to the cluster.",
+      "pos": [
+        11028,
+        11113
+      ]
+    },
+    {
+      "content": "The steps are based on <bpt id=\"p1\">[</bpt>Deis documentation<ept id=\"p1\">](http://docs.deis.io/en/latest/using_deis/using-dockerfiles/#using-dockerfiles)</ept>.",
+      "pos": [
+        11114,
+        11237
+      ]
+    },
+    {
+      "content": "For the routing mesh to work properly, you’ll need to have a wildcard A record for your domain pointing to the public IP of the load balancer.",
+      "pos": [
+        11242,
+        11384
+      ]
+    },
+    {
+      "content": "The following screenshot shows the A record for a sample domain registration on GoDaddy:",
+      "pos": [
+        11385,
+        11473
+      ]
+    },
+    {
+      "content": "Godaddy A record",
+      "pos": [
+        11481,
+        11497
+      ]
+    },
+    {
+      "content": "Install deis:",
+      "pos": [
+        11558,
+        11571
+      ]
+    },
+    {
+      "content": "Create a new SSH key, and then add the public key to GitHub (of course, you can also reuse your existing keys).",
+      "pos": [
+        11723,
+        11834
+      ]
+    },
+    {
+      "content": "To create a new SSH key pair, use:",
+      "pos": [
+        11835,
+        11869
+      ]
+    },
+    {
+      "content": "Add id_rsa.pub, or the public key of your choice, to GitHub.",
+      "pos": [
+        11974,
+        12034
+      ]
+    },
+    {
+      "content": "You can do this by using the Add SSH key button in your SSH keys configuration screen:",
+      "pos": [
+        12035,
+        12121
+      ]
+    },
+    {
+      "content": "Github key",
+      "pos": [
+        12127,
+        12137
+      ]
+    },
+    {
+      "content": "Register a new user:",
+      "pos": [
+        12200,
+        12220
+      ]
+    },
+    {
+      "content": "Add the SSH key:",
+      "pos": [
+        12279,
+        12295
+      ]
+    },
+    {
+      "content": "Create an application.",
+      "pos": [
+        12366,
+        12388
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">\n8.</ph> The git push will trigger Docker images to be built and deployed, which will take a few minutes.",
+      "pos": [
+        12523,
+        12623
+      ]
+    },
+    {
+      "content": "From my experience, occasionally, Step 10 (Pushing image to private repository) may hang.",
+      "pos": [
+        12624,
+        12713
+      ]
+    },
+    {
+      "content": "When this happens, you can stop the process, remove the application using `deis apps:destroy –a",
+      "pos": [
+        12714,
+        12809
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">` to remove the application and try again. You can use `</ph>deis apps:list` to find out the name of your application.",
+      "pos": [
+        12828,
+        12941
+      ]
+    },
+    {
+      "content": "If everything works out, you should see something like the following at the end of command outputs:",
+      "pos": [
+        12942,
+        13041
+      ]
+    },
+    {
+      "content": "Verify if the application is working:",
+      "pos": [
+        13370,
+        13407
+      ]
+    },
+    {
+      "content": "You should see:",
+      "pos": [
+        13472,
+        13487
+      ]
+    },
+    {
+      "content": "Scale the application to 3 instances:",
+      "pos": [
+        13674,
+        13711
+      ]
+    },
+    {
+      "content": "Optionally, you can use deis info to examine details of your application.",
+      "pos": [
+        13748,
+        13821
+      ]
+    },
+    {
+      "content": "The following outputs are from my application deployment:",
+      "pos": [
+        13822,
+        13879
+      ]
+    },
+    {
+      "content": "Next Steps",
+      "pos": [
+        14465,
+        14475
+      ]
+    },
+    {
+      "content": "This article walked you through all the steps to provision a new Deis cluster on Azure using an Azure Resource Manager template.",
+      "pos": [
+        14477,
+        14605
+      ]
+    },
+    {
+      "content": "The template supports redundancy in tooling connections as well as load balancing for deployed applications.",
+      "pos": [
+        14606,
+        14714
+      ]
+    },
+    {
+      "content": "The template also avoids using public IPs on member nodes, which saves precious public IP resources and provides a more secured environment to host applications.",
+      "pos": [
+        14715,
+        14876
+      ]
+    },
+    {
+      "content": "To learn more, see the following articles:",
+      "pos": [
+        14877,
+        14919
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt>Azure Resource Manager Overview<ept id=\"p1\">] [resource-group-overview]</ept>",
+      "pos": [
+        14921,
+        14980
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt>How to use the Azure CLI<ept id=\"p1\">] [azure-command-line-tools]</ept>",
+      "pos": [
+        14983,
+        15036
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt>Using Azure PowerShell with Azure Resource Manager<ept id=\"p1\">] [powershell-azure-resource-manager]</ept>",
+      "pos": [
+        15039,
+        15127
+      ]
+    }
+  ],
+  "content": "<properties\n   pageTitle=\"Deploy a 3-node Deis cluster on Azure\"\n   description=\"This article describes how to create a 3-node Deis cluster on Azure using an Azure Resource Manager template\"\n   services=\"virtual-machines\"\n   documentationCenter=\"\"\n   authors=\"HaishiBai\"\n   manager=\"larar\"\n   editor=\"\"/>\n\n<tags\n   ms.service=\"virtual-machines\"\n   ms.devlang=\"multiple\"\n   ms.topic=\"article\"\n   ms.tgt_pltfrm=\"vm-linux\"\n   ms.workload=\"infrastructure-services\"\n   ms.date=\"06/24/2015\"\n   ms.author=\"hbai\"/>\n\n# Deploy a 3-node Deis cluster\n\nThis article walks you through provisioning a [Deis](http://deis.io/) cluster on Azure. It covers all the steps from creating the necessary certificates to deploying and scaling a sample **Go** application on the newly provisioned cluster.\n\nThe following diagram shows the architecture of the deployed system. A system administrator manages the cluster using Deis tools such as **deis** and **deisctl**. Connections are established through an Azure load balancer, which forwards the connections to one of the member nodes on the cluster. The clients access deployed applications through the load balancer as well. In this case, the load balancer forwards the traffic to a Deis router mesh, which further routs traffic to corresponding Docker containers hosted on the cluster.\n\n  ![Architecture diagram of deployed Desis cluster](media/virtual-machines-deis-cluster/architecture-overview.png)\n\nIn order to run through the following steps, you'll need:\n\n * An active Azure subscription. If you don't have one, you can get a free trail on [azure.com](https://azure.microsoft.com).\n * A work or school id to use Azure resource groups. If you have a personal account and log in with a Microsoft id, you need to [create a work id from your personal one](resource-group-create-work-id-from-personal.md).\n * Either -- depending on your client operating system -- the [Azure PowerShell](powershell-install-configure.md) or the [Azure CLI for Mac, Linux, and Windows](xplat-cli-install.md).\n * [OpenSSL](https://www.openssl.org/). OpenSSL is used to generate the necessary certificates.\n * A Git client such as [Git Bash](https://git-scm.com/).\n * To test the sample application, you'll also need a DNS server. You can use any DNS servers or services that support wildcard A records.\n * A computer to run Deis client tools. You can use either a local machine or a virtual machine. You can run these tools on almost any Linux distribution, but the following instructions use Ubuntu.\n\n## Provision the cluster\n\nIn this section, you'll use an [Azure Resource Manager](../resource-group-overview.md) template from the open source repository [azure-quickstart-templates](https://github.com/Azure/azure-quickstart-templates). First, you'll copy down the template. Then, you'll create a new SSH key pair for authentication. And then, you'll configure a new identifier for you cluster. And finally, you'll use either the Shell script or the PowerShell script to provision the cluster.\n\n1. Clone the repository: [https://github.com/Azure/azure-quickstart-templates](https://github.com/Azure/azure-quickstart-templates).\n\n        git clone https://github.com/Azure/azure-quickstart-templates\n\n2. Go to the template folder:\n\n        cd azure-quickstart-templates\\deis-cluster-coreos\n\n3. Create a new SSH key pair using ssh-keygen:\n\n        ssh-keygen -t rsa -b 4096 -c \"[your_email@domain.com]\"\n\n4. Generate a certificate using the above private key:\n\n        openssl req -x509 -days 365 -new -key [your private key file] -out [cert file to be generated]\n\n5. Go to [https://discovery.etcd.io/new](https://discovery.etcd.io/new) to generate a new cluster token, which looks something like:\n\n        https://discovery.etcd.io/6a28e078895c5ec737174db2419bb2f3\n<br />\nEach CoreOS cluster needs to have a unique token from this free service. Please see [CoreOS documentation](https://coreos.com/docs/cluster-management/setup/cluster-discovery/) for more details.\n\n6. Modify the **cloud-config.yaml** file to replace the existing  **discovery** token with the new token:\n\n        #cloud-config\n        ---\n        coreos:\n          etcd:\n            # generate a new token for each unique cluster from https://discovery.etcd.io/new\n            # uncomment the following line and replace it with your discovery URL\n            discovery: https://discovery.etcd.io/3973057f670770a7628f917d58c2208a\n        ...\n\n7. Modify the **azuredeploy-parameters.json** file: Open the certificate you created in step 4 in a text editor. Copy all text between `----BEGIN CERTIFICATE-----` and `-----END CERTIFICATE-----` into the **sshKeyData** parameter (you'll need to remove all newline characters).\n\n8. Modify the **newStorageAccountName** parameter. This is the storage account for VM OS disks. This account name has to be globally unique.\n\n9. Modify the **publicDomainName** parameter. This will become part of the DNS name associated with the load balancer public IP. The final FQDN will have the format of _[value of this parameter]_._[region]_.cloudapp.azure.com. For example, if you specify the name as deishbai32, and the resource group is deployed to the West US region, then the final FQDN to your load balancer will be deishbai32.westus.cloudapp.azure.com.\n\n10. Save the parameter file. And then you can provision the cluster using Azure PowerShell:\n\n        .\\deploy-deis.ps1 -ResourceGroupName [resource group name] -ResourceGroupLocation \"West US\" -TemplateFile\n        .\\azuredeploy.json -ParametersFile .\\azuredeploy-parameters.json -CloudInitFile .\\cloud-config.yaml\n\n  or Azure CLI:\n\n        ./deploy-deis.sh -n \"[resource group name]\" -l \"West US\" -f ./azuredeploy.json -e ./azuredeploy-parameters.json\n        -c ./cloud-config.yaml  \n\n11. Once the resource group is provisioned, you can see all the resources in the group on Azure Portal. As shown in the following screenshot, the resource group contains a virtual network with three VMs, which are joined to the same availability set. The group also contains a load balancer, which has an associated public IP.\n\n  ![The provisioned resource group on Azure portal](media/virtual-machines-deis-cluster/resource-group.png)\n\n## Install the client\n\nYou need **deisctl** to control your Deis cluster. Although deisctl is automatically installed in all the cluster nodes, it's a good practice to use deisctl on a separate administrative machine. Furthermore, because all nodes are configured with only private IP addresses, you'll need to use SSH tunneling through the load balancer, which has a public IP, to connect to the node machines. The following are the steps of setting up deisctl on a separate Ubuntu physical or virtual machine.\n\n1. Install deisctl:mkdir deis\n\n        cd deis\n        curl -sSL http://deis.io/deisctl/install.sh | sh -s 1.6.1\n        sudo ln -fs $PWD/deisctl /usr/local/bin/deisctl\n\n2. Add your private key to ssh agent:\n\n        eval `ssh-agent -s`\n        ssh-add [path to the private key file, see step 1 in the previous section]\n\n3. Configure deisctl:\n\n        export DEISCTL_TUNNEL=[public ip of the load balancer]:2223\n\nThe template defines inbound NAT rules that map 2223 to instance 1, 2224 to instance 2, and 2225 to instance 3. This provides redundancy for using the deisctl tool. You can examine these rules on Azure Portal:\n\n![NAT rules on the load balancer](media/virtual-machines-deis-cluster/nat-rules.png)\n\n> [AZURE.NOTE] Currently the template only supports 3-node clusters. This is because of a limitation in Azure Resource Manager template NAT rule definition, which doesn’t support loop syntax.\n\n## Install and start the Deis platform\n\nNow you can use deisctl to install and start the Deis platform:\n\n    deisctl config platform set domain=[some domain]\n    deisctl config platform set sshPrivateKey=[path to the private key file]\n    deisctl install platform\n    deisctl start platform\n\n> [AZURE.NOTE] Starting the platform takes a while (as much as 10 minutes). Especially, starting the builder service can take a long time. And sometimes it takes a few tries to succeed: If the operation seems to hang, try typing `ctrl+c` to break execution of the command and retry.\n\nYou can use `deisctl list` to verify if all services are running:\n\n    deisctl list\n    UNIT                            MACHINE                 LOAD    ACTIVE          SUB\n    deis-builder.service            ebe3005e.../10.0.0.6    loaded  active          running\n    deis-controller.service         ebe3005e.../10.0.0.6    loaded  active          running\n    deis-database.service           9c79bbdd.../10.0.0.5    loaded  active          running\n    deis-logger.service             9c79bbdd.../10.0.0.5    loaded  active          running\n    deis-logspout.service           8d658d5a.../10.0.0.4    loaded  active          running\n    deis-logspout.service           9c79bbdd.../10.0.0.5    loaded  active          running\n    deis-logspout.service           ebe3005e.../10.0.0.6    loaded  active          running\n    deis-publisher.service          8d658d5a.../10.0.0.4    loaded  active          running\n    deis-publisher.service          9c79bbdd.../10.0.0.5    loaded  active          running\n    deis-publisher.service          ebe3005e.../10.0.0.6    loaded  active          running\n    deis-registry@1.service         ebe3005e.../10.0.0.6    loaded  active          running\n    deis-router@1.service           ebe3005e.../10.0.0.6    loaded  active          running\n    deis-router@2.service           8d658d5a.../10.0.0.4    loaded  active          running\n    deis-router@3.service           9c79bbdd.../10.0.0.5    loaded  active          running\n    deis-store-daemon.service       8d658d5a.../10.0.0.4    loaded  active          running\n    deis-store-daemon.service       9c79bbdd.../10.0.0.5    loaded  active          running\n    deis-store-daemon.service       ebe3005e.../10.0.0.6    loaded  active          running\n    deis-store-gateway@1.service    9c79bbdd.../10.0.0.5    loaded  active          running\n    deis-store-metadata.service     8d658d5a.../10.0.0.4    loaded  active          running\n    deis-store-metadata.service     9c79bbdd.../10.0.0.5    loaded  active          running\n    deis-store-metadata.service     ebe3005e.../10.0.0.6    loaded  active          running\n    deis-store-monitor.service      8d658d5a.../10.0.0.4    loaded  active          running\n    deis-store-monitor.service      9c79bbdd.../10.0.0.5    loaded  active          running\n    deis-store-monitor.service      ebe3005e.../10.0.0.6    loaded  active          running\n    deis-store-volume.service       8d658d5a.../10.0.0.4    loaded  active          running\n    deis-store-volume.service       9c79bbdd.../10.0.0.5    loaded  active          running\n    deis-store-volume.service       ebe3005e.../10.0.0.6    loaded  active          running\n\nCongratulations! Now you've got a running Deis clsuter on Azure! Next, let's deploy a sample Go application to see the cluster in action.\n\n## Deploy and scale a Hello World application\n\nThe following steps show how to deploy a \"Hello World\" Go application to the cluster. The steps are based on [Deis documentation](http://docs.deis.io/en/latest/using_deis/using-dockerfiles/#using-dockerfiles).\n\n1. For the routing mesh to work properly, you’ll need to have a wildcard A record for your domain pointing to the public IP of the load balancer. The following screenshot shows the A record for a sample domain registration on GoDaddy:\n\n    ![Godaddy A record](media/virtual-machines-deis-cluster/go-daddy.png)\n<p />\n2. Install deis:\n\n        mkdir deis\n        cd deis\n        curl -sSL http://deis.io/deis-cli/install.sh | sh\n        ln -fs $PWD/deis /usr/local/bin/deis\n        \n3. Create a new SSH key, and then add the public key to GitHub (of course, you can also reuse your existing keys). To create a new SSH key pair, use:\n\n        cd ~/.ssh\n        ssh-keygen (press [Enter]s to use default file names and empty passcode)\n\n4. Add id_rsa.pub, or the public key of your choice, to GitHub. You can do this by using the Add SSH key button in your SSH keys configuration screen:\n\n  ![Github key](media/virtual-machines-deis-cluster/github-key.png)\n<p />\n5. Register a new user:\n\n        deis register http://deis.[your domain]\n<p />\n6. Add the SSH key:\n\n        deis keys:add [path to your SSH public key]\n  <p />      \n7. Create an application.\n\n        git clone https://github.com/deis/helloworld.git\n        cd helloworld\n        deis create\n        git push deis master\n<p />\n8. The git push will trigger Docker images to be built and deployed, which will take a few minutes. From my experience, occasionally, Step 10 (Pushing image to private repository) may hang. When this happens, you can stop the process, remove the application using `deis apps:destroy –a <application name>` to remove the application and try again. You can use `deis apps:list` to find out the name of your application. If everything works out, you should see something like the following at the end of command outputs:\n\n        -----> Launching...\n               done, lambda-underdog:v2 deployed to Deis\n               http://lambda-underdog.artitrack.com\n               To learn more, use `deis help` or visit http://deis.io\n        To ssh://git@deis.artitrack.com:2222/lambda-underdog.git\n         * [new branch]      master -> master\n<p />\n9. Verify if the application is working:\n\n        curl -S http://[your application name].[your domain]\n  You should see:\n\n        Welcome to Deis!\n        See the documentation at http://docs.deis.io/ for more information.\n        (you can use geis apps:list to get the name of your application).\n<p />\n10. Scale the application to 3 instances:\n\n        deis scale cmd=3\n<p />\n11. Optionally, you can use deis info to examine details of your application. The following outputs are from my application deployment:\n\n        deis info\n        === lambda-underdog Application\n        {\n          \"updated\": \"2015-05-22T06:14:10UTC\",\n          \"uuid\": \"10c74ee7-b7ff-4786-967a-7e65af7eabc3\",\n          \"created\": \"2015-05-22T06:07:55UTC\",\n          \"url\": \"lambda-underdog.artitrack.com\",\n          \"owner\": \"haishi\",\n          \"id\": \"lambda-underdog\",\n          \"structure\": {\n            \"cmd\": 3\n          }\n        }\n\n        === lambda-underdog Processes\n        --- cmd:\n        cmd.1 up (v2)\n        cmd.2 up (v2)\n        cmd.3 up (v2)\n\n        === lambda-underdog Domains\n        No domains\n\n## Next Steps\n\nThis article walked you through all the steps to provision a new Deis cluster on Azure using an Azure Resource Manager template. The template supports redundancy in tooling connections as well as load balancing for deployed applications. The template also avoids using public IPs on member nodes, which saves precious public IP resources and provides a more secured environment to host applications. To learn more, see the following articles:\n\n[Azure Resource Manager Overview] [resource-group-overview]  \n[How to use the Azure CLI] [azure-command-line-tools]  \n[Using Azure PowerShell with Azure Resource Manager] [powershell-azure-resource-manager]  \n\n[azure-command-line-tools]: ../xplat-cli.md\n[resource-group-overview]: ../resource-group-overview.md\n[powershell-azure-resource-manager]: ../powershell-azure-resource-manager.md\n"
+}

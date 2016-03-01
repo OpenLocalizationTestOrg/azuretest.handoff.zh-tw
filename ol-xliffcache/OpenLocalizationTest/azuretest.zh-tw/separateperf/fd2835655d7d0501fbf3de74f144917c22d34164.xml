@@ -1,0 +1,572 @@
+{
+  "nodes": [
+    {
+      "content": "Service Fabric application model",
+      "pos": [
+        26,
+        58
+      ]
+    },
+    {
+      "content": "How to model an application in Service Fabric",
+      "pos": [
+        76,
+        121
+      ]
+    },
+    {
+      "content": "Model an application in Service Fabric",
+      "pos": [
+        428,
+        466
+      ]
+    },
+    {
+      "content": "This article provides an overview of the Service Fabric application model and describes how to define an application and service via manifest files and get the application packaged and ready for deployment.",
+      "pos": [
+        468,
+        674
+      ]
+    },
+    {
+      "content": "Understand the application model",
+      "pos": [
+        679,
+        711
+      ]
+    },
+    {
+      "content": "An application is a collection of constituent services that perform a certain function(s).",
+      "pos": [
+        713,
+        803
+      ]
+    },
+    {
+      "content": "A service performs a complete and standalone function (they can start and run independent of other services) and is composed of code, configuration, and data.",
+      "pos": [
+        804,
+        962
+      ]
+    },
+    {
+      "content": "For each service, code consists of the executable binaries, configuration consists of service settings that can be loaded at runtime, and data consists of arbitrary static data to be consumed by the service.",
+      "pos": [
+        963,
+        1170
+      ]
+    },
+    {
+      "content": "Each component in this hierarchical application model can be versioned and upgraded independently.",
+      "pos": [
+        1171,
+        1269
+      ]
+    },
+    {
+      "content": "![][1]",
+      "pos": [
+        1271,
+        1277
+      ]
+    },
+    {
+      "content": "An application type is a categorization of an application, consisting of a bundle of service types.",
+      "pos": [
+        1280,
+        1379
+      ]
+    },
+    {
+      "content": "A service type is a categorization of a service, which can have different settings and configurations but the core functionality remains the same.",
+      "pos": [
+        1380,
+        1526
+      ]
+    },
+    {
+      "content": "The instances of a service are the different service configuration variations of the same service type.",
+      "pos": [
+        1527,
+        1630
+      ]
+    },
+    {
+      "content": "Classes (or \"types\") of applications and services are described using XML files (application manifests and service manifests) that are the templates against which applications can be instantiated.",
+      "pos": [
+        1634,
+        1830
+      ]
+    },
+    {
+      "content": "The code for different application instances will run as separate processes even when hosted by the same Service Fabric node.",
+      "pos": [
+        1831,
+        1956
+      ]
+    },
+    {
+      "content": "Furthermore, the lifecycle of each application instance can be managed (i.e.",
+      "pos": [
+        1957,
+        2033
+      ]
+    },
+    {
+      "content": "upgraded) independently.",
+      "pos": [
+        2034,
+        2058
+      ]
+    },
+    {
+      "content": "The following diagram shows how application types are composed of service types, which in turn are composed of code, configuration, and packages.",
+      "pos": [
+        2059,
+        2204
+      ]
+    },
+    {
+      "content": "![Service Fabric ApplicationTypes and ServiceTypes][Image1]",
+      "pos": [
+        2206,
+        2265
+      ]
+    },
+    {
+      "content": "Two different manifest files are used to describe applications and services: the service manifest and application manifest, which are covered in detail in the ensuing sections.",
+      "pos": [
+        2267,
+        2443
+      ]
+    },
+    {
+      "content": "There can be one or more instances of a service type active in the cluster.",
+      "pos": [
+        2445,
+        2520
+      ]
+    },
+    {
+      "content": "For example, Stateful service instances, or replicas, achieve high reliability by replicating state between replicas located on different nodes in the cluster (essentially providing redundancy for the service to be available even if one node in a cluster fails).",
+      "pos": [
+        2521,
+        2783
+      ]
+    },
+    {
+      "content": "A <bpt id=\"p1\">[</bpt>partitioned service<ept id=\"p1\">](service-fabric-concepts-partitioning.md)</ept> further divides its state (and access patterns to that state) across nodes in the cluster.",
+      "pos": [
+        2784,
+        2939
+      ]
+    },
+    {
+      "content": "The following diagram shows the relationship between applications and service instances, partitions, and replicas.",
+      "pos": [
+        2941,
+        3055
+      ]
+    },
+    {
+      "content": "![Partitions and Replicas within a Service][Image2]",
+      "pos": [
+        3057,
+        3108
+      ]
+    },
+    {
+      "content": "Describe a service",
+      "pos": [
+        3114,
+        3132
+      ]
+    },
+    {
+      "content": "The service manifest declaratively defines the service type and version and specifies service metadata such as service type, health properties, load balancing metrics, and the service binaries and configuration files.",
+      "pos": [
+        3134,
+        3351
+      ]
+    },
+    {
+      "content": "Put another way, it describes the code, configuration, and data packages that compose a service package to support one or more service types.",
+      "pos": [
+        3353,
+        3494
+      ]
+    },
+    {
+      "content": "Here is a simple example service manifest:",
+      "pos": [
+        3495,
+        3537
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Version<ept id=\"p1\">**</ept> attributes are unstructured strings and not parsed by the system.",
+      "pos": [
+        4355,
+        4432
+      ]
+    },
+    {
+      "content": "These are used to version each component for upgrades.",
+      "pos": [
+        4433,
+        4487
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>ServiceTypes<ept id=\"p1\">**</ept> declares what service types are supported by the <bpt id=\"p2\">**</bpt>CodePackages<ept id=\"p2\">**</ept> in this manifest.",
+      "pos": [
+        4489,
+        4589
+      ]
+    },
+    {
+      "content": "When a service is instantiated against one of these service types, all code packages declared in this manifest are activated by running their entry points.",
+      "pos": [
+        4590,
+        4745
+      ]
+    },
+    {
+      "content": "The resulting processes are expected to register the supported service types at runtime.",
+      "pos": [
+        4746,
+        4834
+      ]
+    },
+    {
+      "content": "Note that service types are declared at the manifest level and not the code package level.",
+      "pos": [
+        4835,
+        4925
+      ]
+    },
+    {
+      "content": "So when there are multiple code packages, they are all activated whenever the system looks for any one of the declared service types.",
+      "pos": [
+        4926,
+        5059
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>SetupEntryPoint<ept id=\"p1\">**</ept> is a privileged entry point that runs with the same credentials as Service Fabric (typically the <bpt id=\"p2\">*</bpt>LocalSystem<ept id=\"p2\">*</ept> account) before any other entry point.",
+      "pos": [
+        5061,
+        5230
+      ]
+    },
+    {
+      "content": "The executable specified by <bpt id=\"p1\">**</bpt>EntryPoint<ept id=\"p1\">**</ept> is typically the long-running service host, so having a separate setup entry point avoids having to run the service host with high privileges for extended periods of time.",
+      "pos": [
+        5231,
+        5445
+      ]
+    },
+    {
+      "content": "The executable specified by <bpt id=\"p1\">**</bpt>EntryPoint<ept id=\"p1\">**</ept> is run after <bpt id=\"p2\">**</bpt>SetupEntryPoint<ept id=\"p2\">**</ept> exits successfully.",
+      "pos": [
+        5446,
+        5541
+      ]
+    },
+    {
+      "content": "The resulting process is monitored and re-started (beginning again with <bpt id=\"p1\">**</bpt>SetupEntryPoint<ept id=\"p1\">**</ept>) if it ever terminates or crashes.",
+      "pos": [
+        5542,
+        5668
+      ]
+    },
+    {
+      "pos": [
+        5670,
+        5813
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>DataPackage<ept id=\"p1\">**</ept> declares a folder named by the <bpt id=\"p2\">**</bpt>Name<ept id=\"p2\">**</ept> attribute that contains arbitrary static data to be consumed by the process at runtime."
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>ConfigPackage<ept id=\"p1\">**</ept> declares a folder named by the <bpt id=\"p2\">**</bpt>Name<ept id=\"p2\">**</ept> attribute that contains a <bpt id=\"p3\">*</bpt>Settings.xml<ept id=\"p3\">*</ept> file.",
+      "pos": [
+        5815,
+        5919
+      ]
+    },
+    {
+      "content": "This file contains sections of user-defined, key-value pair settings that the process can read back at runtime.",
+      "pos": [
+        5920,
+        6031
+      ]
+    },
+    {
+      "content": "During upgrade, if only the <bpt id=\"p1\">**</bpt>ConfigPackage<ept id=\"p1\">**</ept> <bpt id=\"p2\">**</bpt>version<ept id=\"p2\">**</ept> has changed, then the running process is not restarted.",
+      "pos": [
+        6032,
+        6145
+      ]
+    },
+    {
+      "content": "Instead, a callback notifies the process that configuration settings have changed so they can be reloaded dynamically.",
+      "pos": [
+        6146,
+        6264
+      ]
+    },
+    {
+      "content": "Here is an example <bpt id=\"p1\">*</bpt>Settings.xml<ept id=\"p1\">*</ept>  file:",
+      "pos": [
+        6265,
+        6305
+      ]
+    },
+    {
+      "pos": [
+        6642,
+        6780
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> A service manifest can contain multiple code, configuration, and data packages, each of which can be versioned independently."
+    },
+    {
+      "content": "Describe an application",
+      "pos": [
+        7064,
+        7087
+      ]
+    },
+    {
+      "content": "The application manifest declaratively describes the application type and version and specifies service composition metadata such as stable names, partitioning scheme, instance count/replication factor, security/isolation policy, placement constraints, configuration overrides, and constituent service types.",
+      "pos": [
+        7090,
+        7398
+      ]
+    },
+    {
+      "content": "The load balancing domains into which the application is placed are also described.",
+      "pos": [
+        7399,
+        7482
+      ]
+    },
+    {
+      "content": "Thus, an application manifest describes elements at the application level and references one or more service manifests to compose an application type.",
+      "pos": [
+        7483,
+        7633
+      ]
+    },
+    {
+      "content": "Here is a simple example application manifest:",
+      "pos": [
+        7634,
+        7680
+      ]
+    },
+    {
+      "content": "Like service manifests, <bpt id=\"p1\">**</bpt>Version<ept id=\"p1\">**</ept> attributes are unstructured strings and not parsed by the system.",
+      "pos": [
+        8447,
+        8548
+      ]
+    },
+    {
+      "content": "These are also used to version each component for upgrades.",
+      "pos": [
+        8549,
+        8608
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>ServiceManifestImport<ept id=\"p1\">**</ept> contains references to service manifests composing this application type.",
+      "pos": [
+        8610,
+        8709
+      ]
+    },
+    {
+      "content": "Imported service manifests determine what service types are valid within this application type.",
+      "pos": [
+        8710,
+        8805
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>DefaultServices<ept id=\"p1\">**</ept> declares service instances that are automatically created whenever an application is instantiated against this application type.",
+      "pos": [
+        8807,
+        8955
+      ]
+    },
+    {
+      "content": "Default services are just a convenience and behave like normal services in every respect after they have been created.",
+      "pos": [
+        8956,
+        9074
+      ]
+    },
+    {
+      "content": "They are upgraded along with any other services in the application instance and can be removed as well.",
+      "pos": [
+        9075,
+        9178
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> An application manifest can contain multiple service manifest imports and default services.",
+      "pos": [
+        9182,
+        9286
+      ]
+    },
+    {
+      "content": "Each service manifest import can be versioned independently.",
+      "pos": [
+        9287,
+        9347
+      ]
+    },
+    {
+      "content": "Package an application",
+      "pos": [
+        9586,
+        9608
+      ]
+    },
+    {
+      "content": "Package layout",
+      "pos": [
+        9614,
+        9628
+      ]
+    },
+    {
+      "content": "The application manifest, service manifest(s), and other necessary package files must be organized in a specific layout for deployment into a Service Fabric cluster.",
+      "pos": [
+        9630,
+        9795
+      ]
+    },
+    {
+      "content": "The example manifests in this article would need to be organized in the following directory structure:",
+      "pos": [
+        9796,
+        9898
+      ]
+    },
+    {
+      "content": "The folders are named to match the <bpt id=\"p1\">**</bpt>Name<ept id=\"p1\">**</ept> attributes of each corresponding element.",
+      "pos": [
+        10197,
+        10282
+      ]
+    },
+    {
+      "content": "For example, if the service manifest contained two code packages with names <bpt id=\"p1\">**</bpt>MyCodeA<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>MyCodeB<ept id=\"p2\">**</ept>, then there would need to be two folders with the same names containing the necessary binaries for each code package.",
+      "pos": [
+        10283,
+        10504
+      ]
+    },
+    {
+      "content": "Building a package using Visual Studio",
+      "pos": [
+        10510,
+        10548
+      ]
+    },
+    {
+      "content": "If you use Visual Studio 2015 to create your application, you can use the Package command to automatically create a package that matches the layout described above.",
+      "pos": [
+        10550,
+        10714
+      ]
+    },
+    {
+      "content": "To create a package, simply right click on the application project in Solution Explorer and choose the Package command, as shown below:",
+      "pos": [
+        10716,
+        10851
+      ]
+    },
+    {
+      "content": "![][2]",
+      "pos": [
+        10853,
+        10859
+      ]
+    },
+    {
+      "content": "When packaging is complete, you will find the location of the package in the Output window.",
+      "pos": [
+        10861,
+        10952
+      ]
+    },
+    {
+      "content": "Note that the packaging step occurs automatically when you deploy or debug your application in Visual Studio.",
+      "pos": [
+        10953,
+        11062
+      ]
+    },
+    {
+      "content": "Testing the package",
+      "pos": [
+        11068,
+        11087
+      ]
+    },
+    {
+      "content": "The package structure can be locally verified through PowerShell using the <bpt id=\"p1\">**</bpt>Test-ServiceFabricApplicationPackage<ept id=\"p1\">**</ept> command, which will check for manifest parsing issues and verify all references.",
+      "pos": [
+        11089,
+        11285
+      ]
+    },
+    {
+      "content": "Note that this command only verifies the structural correctness of the directories and files in the package - it will not verify any of the code or data package contents beyond checking that all necessary files are present:",
+      "pos": [
+        11286,
+        11509
+      ]
+    },
+    {
+      "content": "This error shows that the <bpt id=\"p1\">*</bpt>MySetup.bat<ept id=\"p1\">*</ept> file referenced in the service manifest <bpt id=\"p2\">**</bpt>SetupEntryPoint<ept id=\"p2\">**</ept> is missing from the code package.",
+      "pos": [
+        11830,
+        11963
+      ]
+    },
+    {
+      "content": "After adding the missing file, the application verification passes:",
+      "pos": [
+        11964,
+        12031
+      ]
+    },
+    {
+      "content": "Once the application is packaged correctly and passes verification, then it's ready for deployment.",
+      "pos": [
+        12441,
+        12540
+      ]
+    },
+    {
+      "content": "Next steps",
+      "pos": [
+        12545,
+        12555
+      ]
+    },
+    {
+      "content": "Deploy and remove applications",
+      "pos": [
+        12558,
+        12588
+      ]
+    }
+  ],
+  "content": "<properties\n   pageTitle=\"Service Fabric application model\"\n   description=\"How to model an application in Service Fabric\"\n   services=\"service-fabric\"\n   documentationCenter=\".net\"\n   authors=\"alexwun\"\n   manager=\"timlt\"\n   editor=\"mani-ramaswamy\"/>\n\n<tags\n   ms.service=\"service-fabric\"\n   ms.devlang=\"dotnet\"\n   ms.topic=\"article\"\n   ms.tgt_pltfrm=\"NA\"\n   ms.workload=\"NA\"\n   ms.date=\"07/22/2015\"\n   ms.author=\"alexwun\"/>\n\n# Model an application in Service Fabric\n\nThis article provides an overview of the Service Fabric application model and describes how to define an application and service via manifest files and get the application packaged and ready for deployment.\n\n## Understand the application model\n\nAn application is a collection of constituent services that perform a certain function(s). A service performs a complete and standalone function (they can start and run independent of other services) and is composed of code, configuration, and data. For each service, code consists of the executable binaries, configuration consists of service settings that can be loaded at runtime, and data consists of arbitrary static data to be consumed by the service. Each component in this hierarchical application model can be versioned and upgraded independently.\n\n![][1]\n\n\nAn application type is a categorization of an application, consisting of a bundle of service types. A service type is a categorization of a service, which can have different settings and configurations but the core functionality remains the same. The instances of a service are the different service configuration variations of the same service type.  \n\nClasses (or \"types\") of applications and services are described using XML files (application manifests and service manifests) that are the templates against which applications can be instantiated. The code for different application instances will run as separate processes even when hosted by the same Service Fabric node. Furthermore, the lifecycle of each application instance can be managed (i.e. upgraded) independently. The following diagram shows how application types are composed of service types, which in turn are composed of code, configuration, and packages.\n\n![Service Fabric ApplicationTypes and ServiceTypes][Image1]\n\nTwo different manifest files are used to describe applications and services: the service manifest and application manifest, which are covered in detail in the ensuing sections.\n\nThere can be one or more instances of a service type active in the cluster. For example, Stateful service instances, or replicas, achieve high reliability by replicating state between replicas located on different nodes in the cluster (essentially providing redundancy for the service to be available even if one node in a cluster fails). A [partitioned service](service-fabric-concepts-partitioning.md) further divides its state (and access patterns to that state) across nodes in the cluster.\n\nThe following diagram shows the relationship between applications and service instances, partitions, and replicas.\n\n![Partitions and Replicas within a Service][Image2]\n\n\n## Describe a service\n\nThe service manifest declaratively defines the service type and version and specifies service metadata such as service type, health properties, load balancing metrics, and the service binaries and configuration files.  Put another way, it describes the code, configuration, and data packages that compose a service package to support one or more service types. Here is a simple example service manifest:\n\n~~~\n<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n<ServiceManifest Name=\"MyServiceManifest\" Version=\"SvcManifestVersion1\" xmlns=\"http://schemas.microsoft.com/2011/01/fabric\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n  <Description>An example service manifest</Description>\n  <ServiceTypes>\n    <StatelessServiceType ServiceTypeName=\"MyServiceType\" />\n  </ServiceTypes>\n  <CodePackage Name=\"MyCode\" Version=\"CodeVersion1\">\n    <SetupEntryPoint>\n      <ExeHost>\n        <Program>MySetup.bat</Program>\n      </ExeHost>\n    </SetupEntryPoint>\n    <EntryPoint>\n      <ExeHost>\n        <Program>MyServiceHost.exe</Program>\n      </ExeHost>\n    </EntryPoint>\n  </CodePackage>\n  <ConfigPackage Name=\"MyConfig\" Version=\"ConfigVersion1\" />\n  <DataPackage Name=\"MyData\" Version=\"DataVersion1\" />\n</ServiceManifest>\n~~~\n\n**Version** attributes are unstructured strings and not parsed by the system. These are used to version each component for upgrades.\n\n**ServiceTypes** declares what service types are supported by the **CodePackages** in this manifest. When a service is instantiated against one of these service types, all code packages declared in this manifest are activated by running their entry points. The resulting processes are expected to register the supported service types at runtime. Note that service types are declared at the manifest level and not the code package level. So when there are multiple code packages, they are all activated whenever the system looks for any one of the declared service types.\n\n**SetupEntryPoint** is a privileged entry point that runs with the same credentials as Service Fabric (typically the *LocalSystem* account) before any other entry point. The executable specified by **EntryPoint** is typically the long-running service host, so having a separate setup entry point avoids having to run the service host with high privileges for extended periods of time. The executable specified by **EntryPoint** is run after **SetupEntryPoint** exits successfully. The resulting process is monitored and re-started (beginning again with **SetupEntryPoint**) if it ever terminates or crashes.\n\n**DataPackage** declares a folder named by the **Name** attribute that contains arbitrary static data to be consumed by the process at runtime.\n\n**ConfigPackage** declares a folder named by the **Name** attribute that contains a *Settings.xml* file. This file contains sections of user-defined, key-value pair settings that the process can read back at runtime. During upgrade, if only the **ConfigPackage** **version** has changed, then the running process is not restarted. Instead, a callback notifies the process that configuration settings have changed so they can be reloaded dynamically. Here is an example *Settings.xml*  file:\n\n~~~\n<Settings xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://schemas.microsoft.com/2011/01/fabric\">\n  <Section Name=\"MyConfigurationSecion\">\n    <Parameter Name=\"MySettingA\" Value=\"Foo\" />\n    <Parameter Name=\"MySettingB\" Value=\"Bar\" />\n  </Section>\n</Settings>\n~~~\n\n> [AZURE.NOTE] A service manifest can contain multiple code, configuration, and data packages, each of which can be versioned independently.\n\n<!--\nFor more information about other features supported by service manifests, refer to the following articles:\n\n*TODO: LoadMetrics, PlacementConstraints, ServicePlacementPolicies\n*TODO: Resources\n*TODO: Health properties\n*TODO: Trace filters\n*TODO: Configuration overrides\n-->\n\n## Describe an application\n\n\nThe application manifest declaratively describes the application type and version and specifies service composition metadata such as stable names, partitioning scheme, instance count/replication factor, security/isolation policy, placement constraints, configuration overrides, and constituent service types. The load balancing domains into which the application is placed are also described.\nThus, an application manifest describes elements at the application level and references one or more service manifests to compose an application type. Here is a simple example application manifest:\n\n~~~\n<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n<ApplicationManifest\n      ApplicationTypeName=\"MyApplicationType\"\n      ApplicationTypeVersion=\"AppManifestVersion1\"\n      xmlns=\"http://schemas.microsoft.com/2011/01/fabric\"\n      xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n  <Description>An example application manifest</Description>\n  <ServiceManifestImport>\n    <ServiceManifestRef ServiceManifestName=\"MyServiceManifest\" ServiceManifestVersion=\"SvcManifestVersion1\"/>\n  </ServiceManifestImport>\n  <DefaultServices>\n     <Service Name=\"MyService\">\n         <StatelessService ServiceTypeName=\"MyServiceType\" InstanceCount=\"1\">\n             <SingletonPartition/>\n         </StatelessService>\n     </Service>\n  </DefaultServices>\n</ApplicationManifest>\n~~~\n\nLike service manifests, **Version** attributes are unstructured strings and not parsed by the system. These are also used to version each component for upgrades.\n\n**ServiceManifestImport** contains references to service manifests composing this application type. Imported service manifests determine what service types are valid within this application type.\n\n**DefaultServices** declares service instances that are automatically created whenever an application is instantiated against this application type. Default services are just a convenience and behave like normal services in every respect after they have been created. They are upgraded along with any other services in the application instance and can be removed as well.\n\n> [AZURE.NOTE] An application manifest can contain multiple service manifest imports and default services. Each service manifest import can be versioned independently.\n\n<!--\nFor more information about other features supported by application manifests, refer to the following articles:\n\n*TODO: Application parameters\n*TODO: Security, Principals, RunAs, SecurityAccessPolicy\n*TODO: Service Templates\n-->\n\n## Package an application\n\n### Package layout\n\nThe application manifest, service manifest(s), and other necessary package files must be organized in a specific layout for deployment into a Service Fabric cluster. The example manifests in this article would need to be organized in the following directory structure:\n\n~~~\nPS D:\\temp> tree /f .\\MyApplicationType\n\nD:\\TEMP\\MYAPPLICATIONTYPE\n│   ApplicationManifest.xml\n│\n└───MyServiceManifest\n    │   ServiceManifest.xml\n    │\n    ├───MyCode\n    │       MyServiceHost.exe\n    │\n    ├───MyConfig\n    │       Settings.xml\n    │\n    └───MyData\n            init.dat\n~~~\n\nThe folders are named to match the **Name** attributes of each corresponding element. For example, if the service manifest contained two code packages with names **MyCodeA** and **MyCodeB**, then there would need to be two folders with the same names containing the necessary binaries for each code package.\n\n### Building a package using Visual Studio\n\nIf you use Visual Studio 2015 to create your application, you can use the Package command to automatically create a package that matches the layout described above.\n\nTo create a package, simply right click on the application project in Solution Explorer and choose the Package command, as shown below:\n\n![][2]\n\nWhen packaging is complete, you will find the location of the package in the Output window. Note that the packaging step occurs automatically when you deploy or debug your application in Visual Studio.\n\n### Testing the package\n\nThe package structure can be locally verified through PowerShell using the **Test-ServiceFabricApplicationPackage** command, which will check for manifest parsing issues and verify all references. Note that this command only verifies the structural correctness of the directories and files in the package - it will not verify any of the code or data package contents beyond checking that all necessary files are present:\n\n~~~\nPS D:\\temp> Test-ServiceFabricApplicationPackage .\\MyApplicationType\nFalse\nTest-ServiceFabricApplicationPackage : The EntryPoint MySetup.bat is not found.\nFileName: C:\\Users\\servicefabric\\AppData\\Local\\Temp\\TestApplicationPackage_7195781181\\nrri205a.e2h\\MyApplicationType\\MyServiceManifest\\ServiceManifest.xml\n~~~\n\nThis error shows that the *MySetup.bat* file referenced in the service manifest **SetupEntryPoint** is missing from the code package. After adding the missing file, the application verification passes:\n\n~~~\nPS D:\\temp> tree /f .\\MyApplicationType\n\nD:\\TEMP\\MYAPPLICATIONTYPE\n│   ApplicationManifest.xml\n│\n└───MyServiceManifest\n    │   ServiceManifest.xml\n    │\n    ├───MyCode\n    │       MyServiceHost.exe\n    │       MySetup.bat\n    │\n    ├───MyConfig\n    │       Settings.xml\n    │\n    └───MyData\n            init.dat\n\nPS D:\\temp> Test-ServiceFabricApplicationPackage .\\MyApplicationType\nTrue\nPS D:\\temp>\n~~~\n\nOnce the application is packaged correctly and passes verification, then it's ready for deployment.\n\n## Next steps\n\n[Deploy and remove applications][10]\n\n<!--Image references-->\n[1]: ./media/service-fabric-application-model/application-model.jpg\n[2]: ./media/service-fabric-application-model/vs-package-command.png\n[Image1]: media/service-fabric-application-model/Service1.jpg\n[Image2]: media/service-fabric-application-model/Service2.jpg\n\n<!--Link references--In actual articles, you only need a single period before the slash-->\n[10]: service-fabric-deploy-remove-applications.md\n"
+}

@@ -1,0 +1,355 @@
+{
+  "nodes": [
+    {
+      "content": "Azure Mobile Engagement Android SDK Integration",
+      "pos": [
+        28,
+        75
+      ]
+    },
+    {
+      "content": "Latest updates and procedures for Android SDK for Azure Mobile Engagement",
+      "pos": [
+        95,
+        168
+      ]
+    },
+    {
+      "content": "How to Integrate GCM with Mobile Engagement",
+      "pos": [
+        510,
+        553
+      ]
+    },
+    {
+      "pos": [
+        557,
+        710
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.IMPORTANT]</ph> You must follow the integration procedure described in the How to Integrate Engagement on Android document before following this guide."
+    },
+    {
+      "content": "This document is useful only if you integrated either the Reach module for any time campaign support.",
+      "pos": [
+        715,
+        816
+      ]
+    },
+    {
+      "content": "To integrate Reach campaigns in your application, please read first How to Integrate Engagement Reach on Android.",
+      "pos": [
+        817,
+        930
+      ]
+    },
+    {
+      "content": "Introduction",
+      "pos": [
+        934,
+        946
+      ]
+    },
+    {
+      "content": "Integrating GCM allows your application to be pushed even when it's not running.",
+      "pos": [
+        948,
+        1028
+      ]
+    },
+    {
+      "content": "No campaign data is actually sent via GCM, it's just a background signal telling the application to fetch the Engagement push.",
+      "pos": [
+        1030,
+        1156
+      ]
+    },
+    {
+      "content": "If the application is not running while receiving a GCM push, it triggers a connection to the Engagement servers to fetch the push, the Engagement connection remains active for about a minute in case the user launches the application in the response to the push.",
+      "pos": [
+        1157,
+        1419
+      ]
+    },
+    {
+      "pos": [
+        1421,
+        1530
+      ],
+      "content": "For your information, Engagement uses only <bpt id=\"p1\">[</bpt><ept id=\"p1\">Send-to-Sync]</ept> messages with the <ph id=\"ph1\">`engagement.tickle`</ph> collapse key."
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.IMPORTANT]</ph> Only devices running Android 2.2 or above, having Google Play installed and having Google background connection enabled can be woken up by GCM; however, you can integrate this code safely on older versions of the Android SDK and on devices that can't support GCM (it just uses intents).",
+      "pos": [
+        1534,
+        1838
+      ]
+    },
+    {
+      "content": "If the application cannot be woken up by GCM, the Engagement notification will be received the next time the application is launched.",
+      "pos": [
+        1839,
+        1972
+      ]
+    },
+    {
+      "pos": [
+        1977,
+        2219
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.WARNING]</ph> If your own client code manages C2DM registration identifiers while the Engagement SDK is configured to use GCM, a conflict on the registration identifiers occurs, use GCM in Engagement only if your own code does not use C2DM."
+    },
+    {
+      "content": "Sign up to GCM and enable GCM Service",
+      "pos": [
+        2223,
+        2260
+      ]
+    },
+    {
+      "content": "If not already done, you must enable the GCM Service on your Google account.",
+      "pos": [
+        2262,
+        2338
+      ]
+    },
+    {
+      "pos": [
+        2340,
+        2490
+      ],
+      "content": "At the time of writing this document (February 5th, 2014), you can follow the procedure at: <bpt id=\"p1\">[</bpt><bpt id=\"p2\">&lt;</bpt><ept id=\"p2\">http://developer.android.com/guide/google/gcm/gs.html&gt;</ept><ept id=\"p1\">]</ept>."
+    },
+    {
+      "content": "Follow that procedure just to enable GCM on your account.",
+      "pos": [
+        2492,
+        2549
+      ]
+    },
+    {
+      "content": "When you reach the <bpt id=\"p1\">**</bpt>Obtaining an API Key<ept id=\"p1\">**</ept> section, don't read it and go back to this page instead of following the Google procedure any further.",
+      "pos": [
+        2550,
+        2696
+      ]
+    },
+    {
+      "pos": [
+        2698,
+        2819
+      ],
+      "content": "The procedure explains that the <bpt id=\"p1\">**</bpt>Project Number<ept id=\"p1\">**</ept> is used as the <bpt id=\"p2\">**</bpt>GCM sender ID<ept id=\"p2\">**</ept>, you need it later in this procedure."
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.IMPORTANT]</ph> <bpt id=\"p1\">**</bpt>Project Number<ept id=\"p1\">**</ept> is not to be confused with <bpt id=\"p2\">**</bpt>Project ID<ept id=\"p2\">**</ept>.",
+      "pos": [
+        2823,
+        2902
+      ]
+    },
+    {
+      "content": "Project ID can now be different (it's a name on new projects).",
+      "pos": [
+        2903,
+        2965
+      ]
+    },
+    {
+      "content": "What you need to integrate in the Engagement SDK is the <bpt id=\"p1\">**</bpt>Project Number<ept id=\"p1\">**</ept> and is displayed in the <bpt id=\"p2\">**</bpt>Overview<ept id=\"p2\">**</ept> menu in the <bpt id=\"p3\">[</bpt><ept id=\"p3\">Google Developers Console]</ept>.",
+      "pos": [
+        2966,
+        3118
+      ]
+    },
+    {
+      "content": "SDK integration",
+      "pos": [
+        3122,
+        3137
+      ]
+    },
+    {
+      "content": "Managing device registrations",
+      "pos": [
+        3143,
+        3172
+      ]
+    },
+    {
+      "content": "Each device must send a registration command to the Google servers, otherwise they can't be reached.",
+      "pos": [
+        3174,
+        3274
+      ]
+    },
+    {
+      "content": "A device can also unregister from GCM notifications (the device is automatically unregistered if the application is uninstalled).",
+      "pos": [
+        3276,
+        3405
+      ]
+    },
+    {
+      "pos": [
+        3407,
+        3490
+      ],
+      "content": "If you use the <bpt id=\"p1\">[</bpt><ept id=\"p1\">GCM client library]</ept>, you can directly read android-sdk-gcm-receive."
+    },
+    {
+      "content": "If you don't already send the registration intent yourself, you can make Engagement register the device automatically for you.",
+      "pos": [
+        3492,
+        3618
+      ]
+    },
+    {
+      "pos": [
+        3620,
+        3722
+      ],
+      "content": "To enable this, add the following to your <ph id=\"ph1\">`AndroidManifest.xml`</ph> file, inside the <ph id=\"ph2\">`&lt;application/&gt;`</ph> tag:"
+    },
+    {
+      "content": "Communicate registration id to the Engagement Push service and receive notifications",
+      "pos": [
+        3951,
+        4035
+      ]
+    },
+    {
+      "pos": [
+        4037,
+        4294
+      ],
+      "content": "In order to communicate the registration id of the device to the Engagement Push service and receive its notifications, add the following to your <ph id=\"ph1\">`AndroidManifest.xml`</ph> file, inside the <ph id=\"ph2\">`&lt;application/&gt;`</ph> tag (even if you manage device registrations yourself):"
+    },
+    {
+      "pos": [
+        5097,
+        5202
+      ],
+      "content": "Ensure you have the following permissions in your <ph id=\"ph1\">`AndroidManifest.xml`</ph> (after the <ph id=\"ph2\">`&lt;/application&gt;`</ph> tag)."
+    },
+    {
+      "content": "Grant Engagement access to a Server API Key",
+      "pos": [
+        5508,
+        5551
+      ]
+    },
+    {
+      "pos": [
+        5553,
+        5633
+      ],
+      "content": "If not already done, create a <bpt id=\"p1\">**</bpt>Server API Key<ept id=\"p1\">**</ept> on <bpt id=\"p2\">[</bpt><ept id=\"p2\">Google Developers Console]</ept>."
+    },
+    {
+      "pos": [
+        5635,
+        5683
+      ],
+      "content": "The Server Key <bpt id=\"p1\">**</bpt>MUST NOT have IP restriction<ept id=\"p1\">**</ept>."
+    },
+    {
+      "content": "At the time of writing this document (February 5th, 2014), the procedure is the following:",
+      "pos": [
+        5685,
+        5775
+      ]
+    },
+    {
+      "pos": [
+        5781,
+        5824
+      ],
+      "content": "To do so, open <bpt id=\"p1\">[</bpt><ept id=\"p1\">Google Developers Console]</ept>."
+    },
+    {
+      "pos": [
+        5829,
+        5959
+      ],
+      "content": "Select the same project as earlier in the procedure (the one with the <bpt id=\"p1\">**</bpt>Project Number<ept id=\"p1\">**</ept> you integrated in <ph id=\"ph1\">`AndroidManifest.xml`</ph>)."
+    },
+    {
+      "content": "Go to APIs &amp; auth -\\&gt; Credentials, click on \"CREATE NEW KEY\" in the \"Public API access\" section.",
+      "pos": [
+        5964,
+        6060
+      ]
+    },
+    {
+      "content": "Select \"Server key\".",
+      "pos": [
+        6065,
+        6085
+      ]
+    },
+    {
+      "pos": [
+        6090,
+        6167
+      ],
+      "content": "On next screen, leave it blank <bpt id=\"p1\">**</bpt>(no IP restriction)<ept id=\"p1\">**</ept>, then click on Create."
+    },
+    {
+      "pos": [
+        6172,
+        6203
+      ],
+      "content": "Copy the generated <bpt id=\"p1\">**</bpt>API key<ept id=\"p1\">**</ept>."
+    },
+    {
+      "content": "Go to $/\\#application/YOUR\\_ENGAGEMENT\\_APPID/native-push.",
+      "pos": [
+        6208,
+        6266
+      ]
+    },
+    {
+      "content": "In GCM section edit the API Key with the one you just generated and copied.",
+      "pos": [
+        6271,
+        6346
+      ]
+    },
+    {
+      "content": "You are now able to select \"Any Time\" when creating Reach announcements and polls.",
+      "pos": [
+        6348,
+        6430
+      ]
+    },
+    {
+      "pos": [
+        6434,
+        6548
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.IMPORTANT]</ph> Engagement actually needs a <bpt id=\"p1\">**</bpt>Server Key<ept id=\"p1\">**</ept>, an Android Key cannot be used by Engagement servers."
+    },
+    {
+      "content": "Test",
+      "pos": [
+        6552,
+        6556
+      ]
+    },
+    {
+      "content": "Now please verify your integration by reading How to Test Engagement Integration on Android.",
+      "pos": [
+        6558,
+        6650
+      ]
+    },
+    {
+      "content": "test",
+      "pos": [
+        7046,
+        7050
+      ]
+    }
+  ],
+  "content": "<properties \n    pageTitle=\"Azure Mobile Engagement Android SDK Integration\" \n    description=\"Latest updates and procedures for Android SDK for Azure Mobile Engagement\"\n    services=\"mobile-engagement\" \n    documentationCenter=\"mobile\" \n    authors=\"piyushjo\" \n    manager=\"dwrede\" \n    editor=\"\" />\n\n<tags \n    ms.service=\"mobile-engagement\" \n    ms.workload=\"mobile\" \n    ms.tgt_pltfrm=\"mobile-android\" \n    ms.devlang=\"Java\" \n    ms.topic=\"article\" \n    ms.date=\"08/10/2015\" \n    ms.author=\"piyushjo\" />\n\n#How to Integrate GCM with Mobile Engagement\n\n> [AZURE.IMPORTANT] You must follow the integration procedure described in the How to Integrate Engagement on Android document before following this guide.\n>\n> This document is useful only if you integrated either the Reach module for any time campaign support. To integrate Reach campaigns in your application, please read first How to Integrate Engagement Reach on Android.\n\n##Introduction\n\nIntegrating GCM allows your application to be pushed even when it's not running.\n\nNo campaign data is actually sent via GCM, it's just a background signal telling the application to fetch the Engagement push. If the application is not running while receiving a GCM push, it triggers a connection to the Engagement servers to fetch the push, the Engagement connection remains active for about a minute in case the user launches the application in the response to the push.\n\nFor your information, Engagement uses only [Send-to-Sync] messages with the `engagement.tickle` collapse key.\n\n> [AZURE.IMPORTANT] Only devices running Android 2.2 or above, having Google Play installed and having Google background connection enabled can be woken up by GCM; however, you can integrate this code safely on older versions of the Android SDK and on devices that can't support GCM (it just uses intents). If the application cannot be woken up by GCM, the Engagement notification will be received the next time the application is launched.\n\n\n> [AZURE.WARNING] If your own client code manages C2DM registration identifiers while the Engagement SDK is configured to use GCM, a conflict on the registration identifiers occurs, use GCM in Engagement only if your own code does not use C2DM.\n\n##Sign up to GCM and enable GCM Service\n\nIf not already done, you must enable the GCM Service on your Google account.\n\nAt the time of writing this document (February 5th, 2014), you can follow the procedure at: [<http://developer.android.com/guide/google/gcm/gs.html>].\n\nFollow that procedure just to enable GCM on your account. When you reach the **Obtaining an API Key** section, don't read it and go back to this page instead of following the Google procedure any further.\n\nThe procedure explains that the **Project Number** is used as the **GCM sender ID**, you need it later in this procedure.\n\n> [AZURE.IMPORTANT] **Project Number** is not to be confused with **Project ID**. Project ID can now be different (it's a name on new projects). What you need to integrate in the Engagement SDK is the **Project Number** and is displayed in the **Overview** menu in the [Google Developers Console].\n\n##SDK integration\n\n### Managing device registrations\n\nEach device must send a registration command to the Google servers, otherwise they can't be reached.\n\nA device can also unregister from GCM notifications (the device is automatically unregistered if the application is uninstalled).\n\nIf you use the [GCM client library], you can directly read android-sdk-gcm-receive.\n\nIf you don't already send the registration intent yourself, you can make Engagement register the device automatically for you.\n\nTo enable this, add the following to your `AndroidManifest.xml` file, inside the `<application/>` tag:\n\n            <!-- If only 1 sender, don't forget the \\n, otherwise it will be parsed as a negative number... -->\n            <meta-data android:name=\"engagement:gcm:sender\" android:value=\"<Your Google Project Number>\\n\" />\n\n### Communicate registration id to the Engagement Push service and receive notifications\n\nIn order to communicate the registration id of the device to the Engagement Push service and receive its notifications, add the following to your `AndroidManifest.xml` file, inside the `<application/>` tag (even if you manage device registrations yourself):\n\n            <receiver android:name=\"com.microsoft.azure.engagement.gcm.EngagementGCMEnabler\"\n              android:exported=\"false\">\n              <intent-filter>\n                <action android:name=\"com.microsoft.azure.engagement.intent.action.APPID_GOT\" />\n              </intent-filter>\n            </receiver>\n            \n            <receiver android:name=\"com.microsoft.azure.engagement.gcm.EngagementGCMReceiver\" android:permission=\"com.google.android.c2dm.permission.SEND\">\n              <intent-filter>\n                <action android:name=\"com.google.android.c2dm.intent.REGISTRATION\" />\n                <action android:name=\"com.google.android.c2dm.intent.RECEIVE\" />\n                <category android:name=\"<your_package_name>\" />\n              </intent-filter>\n            </receiver>\n\nEnsure you have the following permissions in your `AndroidManifest.xml` (after the `</application>` tag).\n\n            <uses-permission android:name=\"com.google.android.c2dm.permission.RECEIVE\" />\n            <uses-permission android:name=\"<your_package_name>.permission.C2D_MESSAGE\" />\n            <permission android:name=\"<your_package_name>.permission.C2D_MESSAGE\" android:protectionLevel=\"signature\" />\n\n##Grant Engagement access to a Server API Key\n\nIf not already done, create a **Server API Key** on [Google Developers Console].\n\nThe Server Key **MUST NOT have IP restriction**.\n\nAt the time of writing this document (February 5th, 2014), the procedure is the following:\n\n-   To do so, open [Google Developers Console].\n-   Select the same project as earlier in the procedure (the one with the **Project Number** you integrated in `AndroidManifest.xml`).\n-   Go to APIs & auth -\\> Credentials, click on \"CREATE NEW KEY\" in the \"Public API access\" section.\n-   Select \"Server key\".\n-   On next screen, leave it blank **(no IP restriction)**, then click on Create.\n-   Copy the generated **API key**.\n-   Go to $/\\#application/YOUR\\_ENGAGEMENT\\_APPID/native-push.\n-   In GCM section edit the API Key with the one you just generated and copied.\n\nYou are now able to select \"Any Time\" when creating Reach announcements and polls.\n\n> [AZURE.IMPORTANT] Engagement actually needs a **Server Key**, an Android Key cannot be used by Engagement servers.\n\n##Test\n\nNow please verify your integration by reading How to Test Engagement Integration on Android.\n\n\n[Send-to-Sync]:http://developer.android.com/google/gcm/adv.html#collapsible\n[<http://developer.android.com/guide/google/gcm/gs.html>]:http://developer.android.com/guide/google/gcm/gs.html\n[Google Developers Console]:https://cloud.google.com/console\n[GCM client library]:http://developer.android.com/guide/google/gcm/gs.html#libs\n[Google Developers Console]:https://cloud.google.com/console\n\n \ntest\n"
+}

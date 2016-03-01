@@ -1,0 +1,607 @@
+{
+  "nodes": [
+    {
+      "content": "Table partitions in SQL Data Warehouse | Microsoft Azure",
+      "pos": [
+        26,
+        82
+      ]
+    },
+    {
+      "content": "Tips for using table partitions in Azure SQL Data Warehouse for developing solutions.",
+      "pos": [
+        100,
+        185
+      ]
+    },
+    {
+      "content": "Table partitions in SQL Data Warehouse",
+      "pos": [
+        523,
+        561
+      ]
+    },
+    {
+      "content": "To migrate SQL Server partition definitions to SQL Data Warehouse:",
+      "pos": [
+        563,
+        629
+      ]
+    },
+    {
+      "content": "Remove SQL Server partition functions and schemes since this is managed for you when you create the table.",
+      "pos": [
+        633,
+        739
+      ]
+    },
+    {
+      "content": "Define the partitions when you create the table.",
+      "pos": [
+        742,
+        790
+      ]
+    },
+    {
+      "content": "Simply specify partition boundary points and whether you want the boundary point to be effective <ph id=\"ph1\">`RANGE RIGHT`</ph> or <ph id=\"ph2\">`RANGE LEFT`</ph>.",
+      "pos": [
+        791,
+        918
+      ]
+    },
+    {
+      "content": "Partition sizing",
+      "pos": [
+        924,
+        940
+      ]
+    },
+    {
+      "content": "SQL DW offers a DBA several choices for table types: heap, clustered index (CI), and clustered column-store index (CCI).",
+      "pos": [
+        941,
+        1061
+      ]
+    },
+    {
+      "content": "For each of these table types, the DBA can also partition the table, which means dividing it into multiple sections to improve performance.",
+      "pos": [
+        1064,
+        1203
+      ]
+    },
+    {
+      "content": "However, creating a table with too many partitions can actually cause performance degradations or query failures under some circumstances.",
+      "pos": [
+        1205,
+        1343
+      ]
+    },
+    {
+      "content": "These concerns are especially true for CCI tables.",
+      "pos": [
+        1345,
+        1395
+      ]
+    },
+    {
+      "content": "For partitioning to be helpful, it is important for a DBA to understand when to use partitioning and the number of partitions to create.",
+      "pos": [
+        1397,
+        1533
+      ]
+    },
+    {
+      "content": "These guidelines are intended to help DBAs make the best choices for their scenarios.",
+      "pos": [
+        1535,
+        1620
+      ]
+    },
+    {
+      "content": "Normally table partitions are useful in two primary ways:",
+      "pos": [
+        1623,
+        1680
+      ]
+    },
+    {
+      "content": "Using partition switching to quickly truncate a section of a table.",
+      "pos": [
+        1686,
+        1753
+      ]
+    },
+    {
+      "content": "A commonly used design is for a fact table to contain rows only for some predetermined finite period.",
+      "pos": [
+        1755,
+        1856
+      ]
+    },
+    {
+      "content": "For example, a sales fact table might contain data only for the past 36 months.",
+      "pos": [
+        1858,
+        1937
+      ]
+    },
+    {
+      "content": "At the end of every month, the oldest month of sales data is deleted from the table.",
+      "pos": [
+        1939,
+        2023
+      ]
+    },
+    {
+      "content": "This could be accomplished by simply deleting all of the rows for the oldest month, but deleting a large amount of data row-by-row can take a very long time.",
+      "pos": [
+        2025,
+        2182
+      ]
+    },
+    {
+      "content": "To optimize for this scenario, SQL DW supports partition swapping, which enables the entire set of rows in a partition to be dropped in a single fast operation.",
+      "pos": [
+        2184,
+        2344
+      ]
+    },
+    {
+      "content": "Partitioning enables queries to easily exclude processing a large set of rows (i.e. a partition) if queries place a predicate on the partitioning column.",
+      "pos": [
+        2352,
+        2505
+      ]
+    },
+    {
+      "content": "For example, if the sales fact table is partitioned into 36 months using the sales date field, then queries that filter on the sale date can skip processing partitions that don’t match the filter.",
+      "pos": [
+        2507,
+        2703
+      ]
+    },
+    {
+      "content": "In effect, partitioning used in this way is a coarse grained index.",
+      "pos": [
+        2706,
+        2773
+      ]
+    },
+    {
+      "content": "When creating clustered column-store indexes in SQL DW, a DBA needs to consider an additional factor: number of row.",
+      "pos": [
+        2776,
+        2892
+      ]
+    },
+    {
+      "content": "CCI tables can achieve a high degree of compression and helps SQL DW accelerate query performance.",
+      "pos": [
+        2895,
+        2993
+      ]
+    },
+    {
+      "content": "Due to how compression works internally in SQL DW, each partition in a CCI table needs to have a fairly large number of rows before data is compressed.",
+      "pos": [
+        2995,
+        3146
+      ]
+    },
+    {
+      "content": "In addition, SQL DW spreads data across a large number of distributions, and each distribution is further divided by partitions.",
+      "pos": [
+        3147,
+        3275
+      ]
+    },
+    {
+      "content": "For optimal compression and performance, a minimum of 100,000 rows per distribution &amp; partition is needed.",
+      "pos": [
+        3277,
+        3383
+      ]
+    },
+    {
+      "content": "Using the example above, if the sales fact table contained 36 monthly partitions, and given that SQL DW has 60 distributions, then the sales fact table should contain 6 million rows per month, or 216 million rows when all months are populated.",
+      "pos": [
+        3385,
+        3628
+      ]
+    },
+    {
+      "content": "If a table contains significantly less rows than the recommended minimum, then the DBA should consider creating the table with fewer partitions in order to make the number of rows per distribution larger.",
+      "pos": [
+        3630,
+        3834
+      ]
+    },
+    {
+      "content": "To size your current database at the partition level use a query like the one below:",
+      "pos": [
+        3839,
+        3923
+      ]
+    },
+    {
+      "content": "The total number of distributions equals the number of storage locations used when we create a table.",
+      "pos": [
+        5812,
+        5913
+      ]
+    },
+    {
+      "content": "That's a complex way of saying that each table is created once per distribution.",
+      "pos": [
+        5914,
+        5994
+      ]
+    },
+    {
+      "content": "You can also anticipate roughly how many rows, and therefore how big, each partition will be.",
+      "pos": [
+        5996,
+        6089
+      ]
+    },
+    {
+      "content": "The partition in the source data warehouse will be subdivided into each distribution.",
+      "pos": [
+        6090,
+        6175
+      ]
+    },
+    {
+      "content": "Use the following calculation to guide you when determining your partition size:",
+      "pos": [
+        6177,
+        6257
+      ]
+    },
+    {
+      "content": "MPP Partition Size = SMP Partition Size / Number of Distributions",
+      "pos": [
+        6259,
+        6324
+      ]
+    },
+    {
+      "content": "You can find out how many distributions your SQL Data Warehouse database has using the following query:",
+      "pos": [
+        6326,
+        6429
+      ]
+    },
+    {
+      "content": "Now you know how big each partition is in the source system and what size you are anticipating for SQLDW you can decide on your partition boundary.",
+      "pos": [
+        6489,
+        6636
+      ]
+    },
+    {
+      "content": "Workload manangement",
+      "pos": [
+        6642,
+        6662
+      ]
+    },
+    {
+      "content": "One final piece of information you need to factor in to the table partition decision is workload management.",
+      "pos": [
+        6663,
+        6771
+      ]
+    },
+    {
+      "content": "In SQL Data Warehouse the maximum memory allocated to each distribution during query execution is governed by this feature.",
+      "pos": [
+        6772,
+        6895
+      ]
+    },
+    {
+      "content": "Please refer to the following article for more details on <bpt id=\"p1\">[</bpt><ept id=\"p1\">workload management]</ept>.",
+      "pos": [
+        6896,
+        6976
+      ]
+    },
+    {
+      "content": "Ideally your partition will be sized with inmemory operations such as columnstore index rebuilds in mind.",
+      "pos": [
+        6977,
+        7082
+      ]
+    },
+    {
+      "content": "An index rebuild is a memory intensive operation.",
+      "pos": [
+        7083,
+        7132
+      ]
+    },
+    {
+      "content": "Therefore you will want to ensure that the partition index rebuild is not starved of memory.",
+      "pos": [
+        7133,
+        7225
+      ]
+    },
+    {
+      "content": "Increasing the amount of memory available to your query can be achieved by switching from the default role to one of the other roles available.",
+      "pos": [
+        7226,
+        7369
+      ]
+    },
+    {
+      "content": "Information on the allocation of memory per distribution is available by querying the resource governor dynamic management views.",
+      "pos": [
+        7371,
+        7500
+      ]
+    },
+    {
+      "content": "In reality your memory grant will be less than the figures below.",
+      "pos": [
+        7501,
+        7566
+      ]
+    },
+    {
+      "content": "However, this provides a level of guidance that you can use when sizing your partitions for data management operations.",
+      "pos": [
+        7567,
+        7686
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> Try to avoid sizing your partitions beyond the memory grant provided by the extra large resource class.",
+      "pos": [
+        8484,
+        8600
+      ]
+    },
+    {
+      "content": "If your partitions grow beyond this figure you run the risk of memory pressure which in turn leads to less optimal compression.",
+      "pos": [
+        8601,
+        8728
+      ]
+    },
+    {
+      "content": "Partition switching",
+      "pos": [
+        8733,
+        8752
+      ]
+    },
+    {
+      "content": "To switch partitions between two tables you must ensure that the partitions align on their respective boundaries and that the table definitions match.",
+      "pos": [
+        8753,
+        8903
+      ]
+    },
+    {
+      "content": "As check constraints are not available to enforce the range of values in a table the source table must contain the same partition boundaries as the target table.",
+      "pos": [
+        8904,
+        9065
+      ]
+    },
+    {
+      "content": "If this is not the case then the parition switch will fail as the partition metadata will not be synchronised.",
+      "pos": [
+        9066,
+        9176
+      ]
+    },
+    {
+      "content": "How to split a partition that contains data",
+      "pos": [
+        9182,
+        9225
+      ]
+    },
+    {
+      "content": "The most efficient method to split a partition that already contains data is to use a <ph id=\"ph1\">`CTAS`</ph> statement.",
+      "pos": [
+        9226,
+        9329
+      ]
+    },
+    {
+      "content": "If the partitioned table is a clustered columnstore then the table partition must be empty before it can be split.",
+      "pos": [
+        9330,
+        9444
+      ]
+    },
+    {
+      "content": "Below is a sample partitioned columnstore table containing one row in the final partition:",
+      "pos": [
+        9446,
+        9536
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> By Creating the statistic object we ensure that table metadata is more accurate.",
+      "pos": [
+        10396,
+        10489
+      ]
+    },
+    {
+      "content": "If we omit creating statistics then SQL Data Warehouse will use default values.",
+      "pos": [
+        10490,
+        10569
+      ]
+    },
+    {
+      "content": "For details on statistics please review <bpt id=\"p1\">[</bpt>statistics<ept id=\"p1\">][]</ept>.",
+      "pos": [
+        10570,
+        10625
+      ]
+    },
+    {
+      "pos": [
+        10627,
+        10708
+      ],
+      "content": "We can then query for the row count leveraging the <ph id=\"ph1\">`sys.partitions`</ph> catalog view:"
+    },
+    {
+      "content": "If we try to split this table we will get an error:",
+      "pos": [
+        11275,
+        11326
+      ]
+    },
+    {
+      "content": "Msg 35346, Level 15, State 1, Line 44",
+      "pos": [
+        11390,
+        11427
+      ]
+    },
+    {
+      "content": "SPLIT clause of ALTER PARTITION statement failed because the partition is not empty.",
+      "pos": [
+        11428,
+        11512
+      ]
+    },
+    {
+      "content": "Only empty partitions can be split in when a columnstore index exists on the table.",
+      "pos": [
+        11514,
+        11597
+      ]
+    },
+    {
+      "content": "Consider disabling the columnstore index before issuing the ALTER PARTITION statement, then rebuilding the columnstore index after ALTER PARTITION is complete.",
+      "pos": [
+        11598,
+        11757
+      ]
+    },
+    {
+      "pos": [
+        11759,
+        11824
+      ],
+      "content": "However we can use <ph id=\"ph1\">`CTAS`</ph> to create a new table to hold our data."
+    },
+    {
+      "content": "As the partition boundaries are aligned a switch is permitted.",
+      "pos": [
+        12211,
+        12273
+      ]
+    },
+    {
+      "content": "This will leave the source table with an empty partition that we can subsequently split.",
+      "pos": [
+        12274,
+        12362
+      ]
+    },
+    {
+      "pos": [
+        12519,
+        12653
+      ],
+      "content": "All that is left to do is to align our data to the new partition boundaries using <ph id=\"ph1\">`CTAS`</ph> and switch our data back in to the main table"
+    },
+    {
+      "content": "Once you have completed the movement of the data it is a good idea to refresh the statistics on the target table to ensure they accurately reflect the new distribution of the data in their respective partitions:",
+      "pos": [
+        13242,
+        13453
+      ]
+    },
+    {
+      "content": "Table partitioning source control",
+      "pos": [
+        13512,
+        13545
+      ]
+    },
+    {
+      "pos": [
+        13546,
+        13672
+      ],
+      "content": "To avoid your table definition from <bpt id=\"p1\">**</bpt>rusting<ept id=\"p1\">**</ept> in your source control system you may want to consider the following approach:"
+    },
+    {
+      "content": "Create the table as a partitioned table but with no partition values",
+      "pos": [
+        13677,
+        13745
+      ]
+    },
+    {
+      "pos": [
+        14380,
+        14432
+      ],
+      "content": "<ph id=\"ph1\">`SPLIT`</ph> the table as part of the deployment process:"
+    },
+    {
+      "content": "With this approach the code in source control remains static and the partitioning boundary values are allowed to be dynamic; evolving with the warehouse over time.",
+      "pos": [
+        15606,
+        15769
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> Partition switching has a few differences in comparison to SQL Server.",
+      "pos": [
+        15772,
+        15855
+      ]
+    },
+    {
+      "content": "Be sure to read <bpt id=\"p1\">[</bpt>Migrate your code<ept id=\"p1\">][]</ept> to learn more about this subject.",
+      "pos": [
+        15856,
+        15927
+      ]
+    },
+    {
+      "content": "Next steps",
+      "pos": [
+        15933,
+        15943
+      ]
+    },
+    {
+      "content": "Once you have successfully migrated your database schema to SQL Data Warehouse you can proceed to one of the following articles:",
+      "pos": [
+        15944,
+        16072
+      ]
+    },
+    {
+      "content": "Migrate your data",
+      "pos": [
+        16077,
+        16094
+      ]
+    },
+    {
+      "content": "Migrate your code",
+      "pos": [
+        16101,
+        16118
+      ]
+    }
+  ],
+  "content": "<properties\n   pageTitle=\"Table partitions in SQL Data Warehouse | Microsoft Azure\"\n   description=\"Tips for using table partitions in Azure SQL Data Warehouse for developing solutions.\"\n   services=\"sql-data-warehouse\"\n   documentationCenter=\"NA\"\n   authors=\"jrowlandjones\"\n   manager=\"barbkess\"\n   editor=\"\"/>\n\n<tags\n   ms.service=\"sql-data-warehouse\"\n   ms.devlang=\"NA\"\n   ms.topic=\"article\"\n   ms.tgt_pltfrm=\"NA\"\n   ms.workload=\"data-services\"\n   ms.date=\"06/22/2015\"\n   ms.author=\"JRJ@BigBangData.co.uk;barbkess\"/>\n\n# Table partitions in SQL Data Warehouse\n\nTo migrate SQL Server partition definitions to SQL Data Warehouse:\n\n- Remove SQL Server partition functions and schemes since this is managed for you when you create the table.\n- Define the partitions when you create the table. Simply specify partition boundary points and whether you want the boundary point to be effective `RANGE RIGHT` or `RANGE LEFT`.\n\n### Partition sizing\nSQL DW offers a DBA several choices for table types: heap, clustered index (CI), and clustered column-store index (CCI).   For each of these table types, the DBA can also partition the table, which means dividing it into multiple sections to improve performance.  However, creating a table with too many partitions can actually cause performance degradations or query failures under some circumstances.  These concerns are especially true for CCI tables.  For partitioning to be helpful, it is important for a DBA to understand when to use partitioning and the number of partitions to create.  These guidelines are intended to help DBAs make the best choices for their scenarios. \n\nNormally table partitions are useful in two primary ways: \n\n1. Using partition switching to quickly truncate a section of a table.  A commonly used design is for a fact table to contain rows only for some predetermined finite period.  For example, a sales fact table might contain data only for the past 36 months.  At the end of every month, the oldest month of sales data is deleted from the table.  This could be accomplished by simply deleting all of the rows for the oldest month, but deleting a large amount of data row-by-row can take a very long time.  To optimize for this scenario, SQL DW supports partition swapping, which enables the entire set of rows in a partition to be dropped in a single fast operation.   \n\n2. Partitioning enables queries to easily exclude processing a large set of rows (i.e. a partition) if queries place a predicate on the partitioning column.  For example, if the sales fact table is partitioned into 36 months using the sales date field, then queries that filter on the sale date can skip processing partitions that don’t match the filter.   In effect, partitioning used in this way is a coarse grained index. \n\nWhen creating clustered column-store indexes in SQL DW, a DBA needs to consider an additional factor: number of row.   CCI tables can achieve a high degree of compression and helps SQL DW accelerate query performance.  Due to how compression works internally in SQL DW, each partition in a CCI table needs to have a fairly large number of rows before data is compressed. In addition, SQL DW spreads data across a large number of distributions, and each distribution is further divided by partitions.  For optimal compression and performance, a minimum of 100,000 rows per distribution & partition is needed.  Using the example above, if the sales fact table contained 36 monthly partitions, and given that SQL DW has 60 distributions, then the sales fact table should contain 6 million rows per month, or 216 million rows when all months are populated.  If a table contains significantly less rows than the recommended minimum, then the DBA should consider creating the table with fewer partitions in order to make the number of rows per distribution larger.  \n\n\nTo size your current database at the partition level use a query like the one below:\n\n```\nSELECT      s.[name]                        AS      [schema_name]\n,           t.[name]                        AS      [table_name]\n,           i.[name]                        AS      [index_name]\n,           p.[partition_number]            AS      [partition_number]\n,           SUM(a.[used_pages]*8.0)         AS      [partition_size_kb]\n,           SUM(a.[used_pages]*8.0)/1024    AS      [partition_size_mb]\n,           SUM(a.[used_pages]*8.0)/1048576 AS      [partition_size_gb]\n,           p.[rows]                        AS      [partition_row_count]\n,           rv.[value]                      AS      [partition_boundary_value]\n,           p.[data_compression_desc]       AS      [partition_compression_desc]\nFROM        sys.schemas s\nJOIN        sys.tables t                    ON      t.[schema_id]         = s.[schema_id]\nJOIN        sys.partitions p                ON      p.[object_id]         = t.[object_id]\nJOIN        sys.allocation_units a          ON      a.[container_id]        = p.[partition_id]\nJOIN        sys.indexes i                   ON      i.[object_id]         = p.[object_id]\n                                            AND     i.[index_id]          = p.[index_id]\nJOIN        sys.data_spaces ds              ON      ds.[data_space_id]    = i.[data_space_id]\nLEFT JOIN   sys.partition_schemes ps        ON      ps.[data_space_id]    = ds.[data_space_id]\nLEFT JOIN   sys.partition_functions pf      ON      pf.[function_id]      = ps.[function_id]\nLEFT JOIN   sys.partition_range_values rv   ON      rv.[function_id]      = pf.[function_id]\n                                            AND     rv.[boundary_id]      = p.[partition_number]\nWHERE       p.[index_id] <=1\nGROUP BY    s.[name]\n,           t.[name]\n,           i.[name]\n,           p.[partition_number]\n,           p.[rows]\n,           rv.[value]\n,           p.[data_compression_desc]\n;\n```\n\nThe total number of distributions equals the number of storage locations used when we create a table. That's a complex way of saying that each table is created once per distribution.\n\nYou can also anticipate roughly how many rows, and therefore how big, each partition will be. The partition in the source data warehouse will be subdivided into each distribution.\n\nUse the following calculation to guide you when determining your partition size:\n\nMPP Partition Size = SMP Partition Size / Number of Distributions\n\nYou can find out how many distributions your SQL Data Warehouse database has using the following query:\n\n```\nSELECT  COUNT(*)\nFROM    sys.pdw_distributions\n;\n```\n\nNow you know how big each partition is in the source system and what size you are anticipating for SQLDW you can decide on your partition boundary.\n\n### Workload manangement\nOne final piece of information you need to factor in to the table partition decision is workload management. In SQL Data Warehouse the maximum memory allocated to each distribution during query execution is governed by this feature. Please refer to the following article for more details on [workload management]. Ideally your partition will be sized with inmemory operations such as columnstore index rebuilds in mind. An index rebuild is a memory intensive operation. Therefore you will want to ensure that the partition index rebuild is not starved of memory. Increasing the amount of memory available to your query can be achieved by switching from the default role to one of the other roles available.\n\nInformation on the allocation of memory per distribution is available by querying the resource governor dynamic management views. In reality your memory grant will be less than the figures below. However, this provides a level of guidance that you can use when sizing your partitions for data management operations.\n\n```\nSELECT  rp.[name]                               AS [pool_name]\n,       rp.[max_memory_kb]                      AS [max_memory_kb]\n,       rp.[max_memory_kb]/1024                 AS [max_memory_mb]\n,       rp.[max_memory_kb]/1048576              AS [mex_memory_gb]\n,       rp.[max_memory_percent]                 AS [max_memory_percent]\n,       wg.[name]                               AS [group_name]\n,       wg.[importance]                         AS [group_importance]\n,       wg.[request_max_memory_grant_percent]   AS [request_max_memory_grant_percent]\nFROM    sys.dm_pdw_nodes_resource_governor_workload_groups  wg\nJOIN    sys.dm_pdw_nodes_resource_governor_resource_pools   rp ON wg.[pool_id] = rp.[pool_id]\nWHERE   wg.[name] like 'SloDWGroup%'\nAND     rp.[name]    = 'SloDWPool'\n```\n\n> [AZURE.NOTE] Try to avoid sizing your partitions beyond the memory grant provided by the extra large resource class. If your partitions grow beyond this figure you run the risk of memory pressure which in turn leads to less optimal compression.\n\n## Partition switching\nTo switch partitions between two tables you must ensure that the partitions align on their respective boundaries and that the table definitions match. As check constraints are not available to enforce the range of values in a table the source table must contain the same partition boundaries as the target table. If this is not the case then the parition switch will fail as the partition metadata will not be synchronised.\n\n### How to split a partition that contains data\nThe most efficient method to split a partition that already contains data is to use a `CTAS` statement. If the partitioned table is a clustered columnstore then the table partition must be empty before it can be split.\n\nBelow is a sample partitioned columnstore table containing one row in the final partition:\n\n```\nCREATE TABLE [dbo].[FactInternetSales]\n(\n        [ProductKey]            int          NOT NULL\n    ,   [OrderDateKey]          int          NOT NULL\n    ,   [CustomerKey]           int          NOT NULL\n    ,   [PromotionKey]          int          NOT NULL\n    ,   [SalesOrderNumber]      nvarchar(20) NOT NULL\n    ,   [OrderQuantity]         smallint     NOT NULL\n    ,   [UnitPrice]             money        NOT NULL\n    ,   [SalesAmount]           money        NOT NULL\n)\nWITH\n(   CLUSTERED COLUMNSTORE INDEX\n,   DISTRIBUTION = HASH([ProductKey])\n,   PARTITION   (   [OrderDateKey] RANGE RIGHT FOR VALUES\n                    (20000101\n                    )\n                )\n)\n;\n\nINSERT INTO dbo.FactInternetSales\nVALUES (1,20010101,1,1,1,1,1,1)\n\nCREATE STATISTICS Stat_dbo_FactInternetSales_OrderDateKey ON dbo.FactInternetSales(OrderDateKey)\n```\n\n> [AZURE.NOTE] By Creating the statistic object we ensure that table metadata is more accurate. If we omit creating statistics then SQL Data Warehouse will use default values. For details on statistics please review [statistics][].\n\nWe can then query for the row count leveraging the `sys.partitions` catalog view:\n\n```\nSELECT  QUOTENAME(s.[name])+'.'+QUOTENAME(t.[name]) as Table_name\n,       i.[name] as Index_name\n,       p.partition_number as Partition_nmbr\n,       p.[rows] as Row_count\n,       p.[data_compression_desc] as Data_Compression_desc\nFROM    sys.partitions p\nJOIN    sys.tables     t    ON    p.[object_id]   = t.[object_id]\nJOIN    sys.schemas    s    ON    t.[schema_id]   = s.[schema_id]\nJOIN    sys.indexes    i    ON    p.[object_id]   = i.[object_Id]\n                            AND   p.[index_Id]    = i.[index_Id]\nWHERE t.[name] = 'FactInternetSales'\n```\n\nIf we try to split this table we will get an error:\n\n```\nALTER TABLE FactInternetSales SPLIT RANGE (20020101)\n```\n\nMsg 35346, Level 15, State 1, Line 44\nSPLIT clause of ALTER PARTITION statement failed because the partition is not empty.  Only empty partitions can be split in when a columnstore index exists on the table. Consider disabling the columnstore index before issuing the ALTER PARTITION statement, then rebuilding the columnstore index after ALTER PARTITION is complete.\n\nHowever we can use `CTAS` to create a new table to hold our data.\n\n```\nCREATE TABLE dbo.FactInternetSales_20010101\n    WITH    (   DISTRIBUTION = HASH(ProductKey)\n            ,   CLUSTERED COLUMNSTORE INDEX\n            ,   PARTITION   (   [OrderDateKey] RANGE RIGHT FOR VALUES\n                                (20010101\n                                )\n                            )\n            )\nAS\nSELECT *\nFROM    FactInternetSales\nWHERE   1=2\n```\n\nAs the partition boundaries are aligned a switch is permitted. This will leave the source table with an empty partition that we can subsequently split.\n\n```\nALTER TABLE FactInternetSales SWITCH PARTITION 2 TO  FactInternetSales_20010101 PARTITION 2\n\nALTER TABLE FactInternetSales SPLIT RANGE (20020101)\n```\n\nAll that is left to do is to align our data to the new partition boundaries using `CTAS` and switch our data back in to the main table\n\n```\nCREATE TABLE [dbo].[FactInternetSales_20010101_20020101]\n    WITH    (   DISTRIBUTION = HASH([ProductKey])\n            ,   CLUSTERED COLUMNSTORE INDEX\n            ,   PARTITION   (   [OrderDateKey] RANGE RIGHT FOR VALUES\n                                (20010101,20020101\n                                )\n                            )\n            )\nAS\nSELECT  *\nFROM    [dbo].[FactInternetSales_20010101]\nWHERE   [OrderDateKey] >= 20010101\nAND     [OrderDateKey] <  20020101\n\nALTER TABLE FactInternetSales_20010101_20020101 SWITCH PARTITION 3 TO  FactInternetSales PARTITION 3\n```\n\nOnce you have completed the movement of the data it is a good idea to refresh the statistics on the target table to ensure they accurately reflect the new distribution of the data in their respective partitions:\n\n```\nUPDATE STATISTICS [dbo].[FactInternetSales]\n```\n\n### Table partitioning source control\nTo avoid your table definition from **rusting** in your source control system you may want to consider the following approach:\n\n1. Create the table as a partitioned table but with no partition values\n\n```\nCREATE TABLE [dbo].[FactInternetSales]\n(\n    [ProductKey]            int          NOT NULL\n,   [OrderDateKey]          int          NOT NULL\n,   [CustomerKey]           int          NOT NULL\n,   [PromotionKey]          int          NOT NULL\n,   [SalesOrderNumber]      nvarchar(20) NOT NULL\n,   [OrderQuantity]         smallint     NOT NULL\n,   [UnitPrice]             money        NOT NULL\n,   [SalesAmount]           money        NOT NULL\n)\nWITH\n(   CLUSTERED COLUMNSTORE INDEX\n,   DISTRIBUTION = HASH([ProductKey])\n,   PARTITION   (   [OrderDateKey] RANGE RIGHT FOR VALUES\n                    ()\n                )\n)\n;\n```\n\n2. `SPLIT` the table as part of the deployment process:\n\n```\n-- Create a table containing the partition boundaries\n\nCREATE TABLE #partitions\nWITH\n(\n    LOCATION = USER_DB\n,   DISTRIBUTION = HASH(ptn_no)\n)\nAS\nSELECT  ptn_no\n,       ROW_NUMBER() OVER (ORDER BY (ptn_no)) as seq_no\nFROM    (\n        SELECT CAST(20000101 AS INT) ptn_no\n        UNION ALL\n        SELECT CAST(20010101 AS INT)\n        UNION ALL\n        SELECT CAST(20020101 AS INT)\n        UNION ALL\n        SELECT CAST(20030101 AS INT)\n        UNION ALL\n        SELECT CAST(20040101 AS INT)\n        ) a\n;\n\n-- Iterate over the partition boundaries and split the table\n\nDECLARE @c INT = (SELECT COUNT(*) FROM #partitions)\n,       @i INT = 1                     --iterator for while loop\n,       @q NVARCHAR(4000)              --query\n,       @p NVARCHAR(20)     = N''      --partition_number\n,       @s NVARCHAR(128)    = N'dbo'   --schema\n,       @t NVARCHAR(128)    = N'table' --table\n;\n\nWHILE @i <= @c\nBEGIN\n    SET @p = (SELECT ptn_no FROM #partitions WHERE seq_no = @i);\n    SET @q = (SELECT N'ALTER TABLE '+@s+N'.'+@t+N' SPLIT RANGE ('+@p+N');');\n\n    -- PRINT @q;\n    EXECUTE sp_executesql @q;\n\n    SET @i+=1;\nEND\n\n-- Code clean-up\n\nDROP TABLE #partitions;\n```\n\nWith this approach the code in source control remains static and the partitioning boundary values are allowed to be dynamic; evolving with the warehouse over time.\n\n>[AZURE.NOTE] Partition switching has a few differences in comparison to SQL Server. Be sure to read [Migrate your code][] to learn more about this subject.\n\n\n## Next steps\nOnce you have successfully migrated your database schema to SQL Data Warehouse you can proceed to one of the following articles:\n\n- [Migrate your data][]\n- [Migrate your code][]\n\n<!--Image references-->\n\n<!-- Article references -->\n[Migrate your code]: sql-data-warehouse-migrate-code.md\n[Migrate your data]: sql-data-warehouse-migrate-data.md\n[statistics]: sql-data-warehouse-develop-statistics.md\n[workload management]: sql-data-warehouse-develop-concurrency.md\n\n<!-- MSDN Articles -->\n\n<!-- Other web references -->\n\n"
+}

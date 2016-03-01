@@ -1,0 +1,152 @@
+{
+  "nodes": [
+    {
+      "content": "Pivot and unpivot data in SQL Data Warehouse | Microsoft Azure",
+      "pos": [
+        26,
+        88
+      ]
+    },
+    {
+      "content": "Tips for pivoting and unpivoting data in Azure SQL Data Warehouse for developing solutions.",
+      "pos": [
+        106,
+        197
+      ]
+    },
+    {
+      "content": "Pivot and unpivot data in SQL Data Warehouse",
+      "pos": [
+        535,
+        579
+      ]
+    },
+    {
+      "content": "You can pivot data in SQL Data Warehouse by using a CASE statement.",
+      "pos": [
+        581,
+        648
+      ]
+    },
+    {
+      "content": "This article contains two simple examples on how to both pivot and unpivot a table without using the pivot and unpivot syntax found in SQL Server.",
+      "pos": [
+        651,
+        797
+      ]
+    },
+    {
+      "content": "Pivot",
+      "pos": [
+        802,
+        807
+      ]
+    },
+    {
+      "content": "Unpivot",
+      "pos": [
+        2080,
+        2087
+      ]
+    },
+    {
+      "content": "Unpivoting is a little bit more complex.",
+      "pos": [
+        2089,
+        2129
+      ]
+    },
+    {
+      "content": "However, it is still very achievable using <ph id=\"ph1\">`CASE`</ph>.",
+      "pos": [
+        2130,
+        2180
+      ]
+    },
+    {
+      "content": "For this you will also need to first determine how many columns you are going to unpivot.",
+      "pos": [
+        2181,
+        2270
+      ]
+    },
+    {
+      "content": "In the previous example we pivoted four columns.",
+      "pos": [
+        2271,
+        2319
+      ]
+    },
+    {
+      "content": "Let's stick with that.",
+      "pos": [
+        2320,
+        2342
+      ]
+    },
+    {
+      "content": "To perform the Unpivot we will need to amplify the dataset temporarily by a factor of 4.",
+      "pos": [
+        2343,
+        2431
+      ]
+    },
+    {
+      "content": "This results in a two step process:",
+      "pos": [
+        2432,
+        2467
+      ]
+    },
+    {
+      "content": "Firstly, create a temporary table containing four rows.",
+      "pos": [
+        2469,
+        2524
+      ]
+    },
+    {
+      "content": "We will use this to amplify the data:",
+      "pos": [
+        2525,
+        2562
+      ]
+    },
+    {
+      "content": "The second step is to use CASE to conditionally unpivot the data back converting the set back into rows.",
+      "pos": [
+        2782,
+        2886
+      ]
+    },
+    {
+      "content": "To achieve this we will need to create a cartesian product of by joining to the temporary taable #Nmbr created in the first step:",
+      "pos": [
+        2887,
+        3016
+      ]
+    },
+    {
+      "content": "Finally don't forget to clean up by dropping the temporary table.",
+      "pos": [
+        3542,
+        3607
+      ]
+    },
+    {
+      "content": "Next steps",
+      "pos": [
+        3640,
+        3650
+      ]
+    },
+    {
+      "pos": [
+        3651,
+        3707
+      ],
+      "content": "For more development tips, see <bpt id=\"p1\">[</bpt>development overview<ept id=\"p1\">][]</ept>."
+    }
+  ],
+  "content": "<properties\n   pageTitle=\"Pivot and unpivot data in SQL Data Warehouse | Microsoft Azure\"\n   description=\"Tips for pivoting and unpivoting data in Azure SQL Data Warehouse for developing solutions.\"\n   services=\"sql-data-warehouse\"\n   documentationCenter=\"NA\"\n   authors=\"jrowlandjones\"\n   manager=\"barbkess\"\n   editor=\"\"/>\n\n<tags\n   ms.service=\"sql-data-warehouse\"\n   ms.devlang=\"NA\"\n   ms.topic=\"article\"\n   ms.tgt_pltfrm=\"NA\"\n   ms.workload=\"data-services\"\n   ms.date=\"06/26/2015\"\n   ms.author=\"JRJ@BigBangData.co.uk;barbkess\"/>\n\n# Pivot and unpivot data in SQL Data Warehouse\n\nYou can pivot data in SQL Data Warehouse by using a CASE statement. \n\nThis article contains two simple examples on how to both pivot and unpivot a table without using the pivot and unpivot syntax found in SQL Server.\n\n## Pivot\n\n```\nCREATE TABLE AnnualSales_pvt\nWITH    (   DISTRIBUTION = ROUND_ROBIN\n        )\nAS\nWITH SalesPVT \nAS\n(   SELECT  [EnglishProductCategoryName]\n    ,       CASE WHEN [CalendarYear] = 2001 THEN SUM([SalesAmount]) ELSE 0 END AS 'CY_2001'\n    ,       CASE WHEN [CalendarYear] = 2002 THEN SUM([SalesAmount]) ELSE 0 END AS 'CY_2002'\n    ,       CASE WHEN [CalendarYear] = 2003 THEN SUM([SalesAmount]) ELSE 0 END AS 'CY_2003'\n    ,       CASE WHEN [CalendarYear] = 2004 THEN SUM([SalesAmount]) ELSE 0 END AS 'CY_2004'\n    FROM    [dbo].[FactInternetSales] s\n    JOIN    [dbo].[DimDate] d               ON s.[OrderDateKey]          = d.[DateKey]\n    JOIN    [dbo].[DimProduct] p            ON s.[ProductKey]            = p.[ProductKey]\n    JOIN    [dbo].[DimProductSubCategory] u ON p.[ProductSubcategoryKey] = u.[ProductSubcategoryKey]\n    JOIN    [dbo].[DimProductCategory] c    ON u.[ProductCategoryKey]    = c.[ProductCategoryKey]\n    GROUP BY \n            [EnglishProductCategoryName]\n    ,       [CalendarYear]\n)\nSELECT  [EnglishProductCategoryName]\n,       SUM([CY_2001])  AS 'CY_2001'\n,       SUM([CY_2002])  AS 'CY_2002'\n,       SUM([CY_2003])  AS 'CY_2003'\n,       SUM([CY_2004])  AS 'CY_2004'\nFROM    SalesPVT\nGROUP BY \n        [EnglishProductCategoryName]\n;\n```\n\n## Unpivot\n\nUnpivoting is a little bit more complex. However, it is still very achievable using `CASE`. For this you will also need to first determine how many columns you are going to unpivot. In the previous example we pivoted four columns. Let's stick with that. To perform the Unpivot we will need to amplify the dataset temporarily by a factor of 4. This results in a two step process:\n\nFirstly, create a temporary table containing four rows. We will use this to amplify the data:\n\n```\nCREATE TABLE #Nmbr\nWITH \n(   DISTRIBUTION = ROUND_ROBIN\n,   LOCATION     = USER_DB\n)\nAS\nSELECT 1 AS 'Number'\nUNION ALL\nSELECT 2\nUNION ALL\nSELECT 3\nUNION ALL\nSELECT 4\nOPTION (LABEL = 'CTAS : #Nmbr : CREATE')\n;\n```\n\nThe second step is to use CASE to conditionally unpivot the data back converting the set back into rows. To achieve this we will need to create a cartesian product of by joining to the temporary taable #Nmbr created in the first step: \n\n```\nSELECT  [EnglishProductCategoryName]\n,       CASE    c.[Number]\n                WHEN 1 THEN [CY_2001]\n                WHEN 2 THEN [CY_2002]\n                WHEN 3 THEN [CY_2003]\n                WHEN 4 THEN [CY_2004]\n        END as Sales\nFROM AnnualSales_pvt\nJOIN #Nmbr c ON 1=1\nWHERE   CASE    c.[Number]\n                WHEN 1 THEN CY_2001\n                WHEN 2 THEN CY_2002\n                WHEN 3 THEN CY_2003\n                WHEN 4 THEN CY_2004\n        END IS NOT NULL\nOPTION (LABEL = 'Unpivot :  : SELECT')\n;\n```\n\nFinally don't forget to clean up by dropping the temporary table.\n\n```\nDROP TABLE #Nmbr\n;\n```\n\n## Next steps\nFor more development tips, see [development overview][].\n\n<!--Image references-->\n\n<!--Article references-->\n[development overview]: sql-data-warehouse-overview-develop.md\n\n<!--MSDN references-->\n\n<!--Other Web references-->\n"
+}

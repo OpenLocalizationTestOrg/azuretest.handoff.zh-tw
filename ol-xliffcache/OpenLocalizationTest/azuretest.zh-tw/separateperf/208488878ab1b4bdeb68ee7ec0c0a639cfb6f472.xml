@@ -1,0 +1,642 @@
+{
+  "nodes": [
+    {
+      "content": "How to implement disaster recovery using service backup and restore in Azure API Management",
+      "pos": [
+        28,
+        119
+      ]
+    },
+    {
+      "content": "Learn how to use backup and restore to perform disaster recovery in Azure API Management.",
+      "pos": [
+        139,
+        228
+      ]
+    },
+    {
+      "content": "How to implement disaster recovery using service backup and restore in Azure API Management",
+      "pos": [
+        542,
+        633
+      ]
+    },
+    {
+      "content": "By choosing to publish and manage your APIs via Azure API Management you are taking advantage of many fault tolerance and infrastructure capabilities that you would otherwise have to design, implement, and manage.",
+      "pos": [
+        635,
+        848
+      ]
+    },
+    {
+      "content": "The Azure platform mitigates a large fraction of potential failures at a fraction of the cost.",
+      "pos": [
+        849,
+        943
+      ]
+    },
+    {
+      "content": "To recover from availability problems affecting the region where your API Management service is hosted you should be ready to reconstitute your service in a different region at any time.",
+      "pos": [
+        945,
+        1131
+      ]
+    },
+    {
+      "content": "Depending on your availability goals and recovery time objective  you might want to reserve a backup service in one or more regions and try to maintain their configuration and content in sync with the active service.",
+      "pos": [
+        1132,
+        1348
+      ]
+    },
+    {
+      "content": "The service backup and restore feature provides the necessary building block for implementing your disaster recovery strategy.",
+      "pos": [
+        1349,
+        1475
+      ]
+    },
+    {
+      "content": "This guide shows how to authenticate Azure Resource Manager requests, and how to backup and restore your API Management service instances.",
+      "pos": [
+        1477,
+        1615
+      ]
+    },
+    {
+      "pos": [
+        1618,
+        1825
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> The process for backing up and restoring an API Management service instance for disaster recovery can also be used for replicating API Management service instances for scenarios such as staging."
+    },
+    {
+      "content": "Authenticating Azure Resource Manager requests",
+      "pos": [
+        1830,
+        1876
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.IMPORTANT]</ph> The REST API for backup and restore uses Azure Resource Manager and has a different authentication mechanism than the REST APIs for managing your API Management entities.",
+      "pos": [
+        1879,
+        2067
+      ]
+    },
+    {
+      "content": "The steps in this section describe how to authenticate Azure Resource Manager requests.",
+      "pos": [
+        2068,
+        2155
+      ]
+    },
+    {
+      "content": "For more information, see <bpt id=\"p1\">[</bpt>Authenticating Azure Resource Manager requests<ept id=\"p1\">](http://msdn.microsoft.com/library/dn790557.aspx)</ept>.",
+      "pos": [
+        2156,
+        2280
+      ]
+    },
+    {
+      "content": "All of the tasks that you do on resources using the Azure Resource Manager must be authenticated with Azure Active Directory using the following steps.",
+      "pos": [
+        2282,
+        2433
+      ]
+    },
+    {
+      "content": "Add an application to the Azure Active Directory tenant.",
+      "pos": [
+        2439,
+        2495
+      ]
+    },
+    {
+      "content": "Set permissions for the application that you added.",
+      "pos": [
+        2500,
+        2551
+      ]
+    },
+    {
+      "content": "Get the token for authenticating requests to Azure Resource Manager.",
+      "pos": [
+        2556,
+        2624
+      ]
+    },
+    {
+      "content": "The first step is to create an Azure Active Directory application.",
+      "pos": [
+        2626,
+        2692
+      ]
+    },
+    {
+      "content": "Log into the <bpt id=\"p1\">[</bpt>Management portal<ept id=\"p1\">](http://manage.windowsazure.com/)</ept> using the subscription that contains your API Management service instance and navigate to the <bpt id=\"p2\">**</bpt>Applications<ept id=\"p2\">**</ept> tab for your default Azure Active Directory.",
+      "pos": [
+        2693,
+        2914
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> If the Azure Active Directory default directory is not visible to your account, contact the administrator of the Azure subscription to grant the required permissions to your account.",
+      "pos": [
+        2917,
+        3112
+      ]
+    },
+    {
+      "content": "For information on locating your default directory, see <bpt id=\"p1\">[</bpt>Locate your default directory in the Azure Portal<ept id=\"p1\">](../virtual-machines/resource-group-create-work-id-from-persona.md/#locate-your-default-directory-in-the-azure-portal)</ept>.",
+      "pos": [
+        3113,
+        3339
+      ]
+    },
+    {
+      "content": "Create Azure Active Directory application",
+      "pos": [
+        3343,
+        3384
+      ]
+    },
+    {
+      "content": "Click <bpt id=\"p1\">**</bpt>Add<ept id=\"p1\">**</ept>, <bpt id=\"p2\">**</bpt>Add an application my organization is developing<ept id=\"p2\">**</ept>, and choose <bpt id=\"p3\">**</bpt>Native client application<ept id=\"p3\">**</ept>.",
+      "pos": [
+        3423,
+        3533
+      ]
+    },
+    {
+      "content": "Enter a descriptive name, and click the next arrow.",
+      "pos": [
+        3534,
+        3585
+      ]
+    },
+    {
+      "content": "Enter a placeholder URL such as <ph id=\"ph1\">`http://resources`</ph> for the <bpt id=\"p1\">**</bpt>Redirect URI<ept id=\"p1\">**</ept>, as it is a required field, but the value is not used later.",
+      "pos": [
+        3586,
+        3722
+      ]
+    },
+    {
+      "content": "Click the check box to save the application.",
+      "pos": [
+        3723,
+        3767
+      ]
+    },
+    {
+      "pos": [
+        3769,
+        3917
+      ],
+      "content": "Once the application is saved, click <bpt id=\"p1\">**</bpt>Configure<ept id=\"p1\">**</ept>, scroll down to the <bpt id=\"p2\">**</bpt>permissions to other applications<ept id=\"p2\">**</ept> section, and click <bpt id=\"p3\">**</bpt>Add application<ept id=\"p3\">**</ept>."
+    },
+    {
+      "content": "Add permissions",
+      "pos": [
+        3921,
+        3936
+      ]
+    },
+    {
+      "pos": [
+        3975,
+        4073
+      ],
+      "content": "Select <bpt id=\"p1\">**</bpt>Windows<ept id=\"p1\">**</ept> <bpt id=\"p2\">**</bpt>Azure Service Management API<ept id=\"p2\">**</ept> and click the checkbox to add the application."
+    },
+    {
+      "content": "Add permissions",
+      "pos": [
+        4077,
+        4092
+      ]
+    },
+    {
+      "pos": [
+        4127,
+        4324
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>Delegated Permissions<ept id=\"p1\">**</ept> beside the newly added <bpt id=\"p2\">**</bpt>Windows<ept id=\"p2\">**</ept> <bpt id=\"p3\">**</bpt>Azure Service Management API<ept id=\"p3\">**</ept> application, check the box for <bpt id=\"p4\">**</bpt>Access Azure Service Management (preview)<ept id=\"p4\">**</ept>, and click <bpt id=\"p5\">**</bpt>Save<ept id=\"p5\">**</ept>."
+    },
+    {
+      "content": "Add permissions",
+      "pos": [
+        4328,
+        4343
+      ]
+    },
+    {
+      "content": "Prior to invoking the APIs that generate the backup and restore it, it is necessary to get a token.",
+      "pos": [
+        4388,
+        4487
+      ]
+    },
+    {
+      "content": "The following example uses the <bpt id=\"p1\">[</bpt>Microsoft.IdentityModel.Clients.ActiveDirectory<ept id=\"p1\">](https://www.nuget.org/packages/Microsoft.IdentityModel.Clients.ActiveDirectory)</ept> nuget package to retrieve the token.",
+      "pos": [
+        4488,
+        4685
+      ]
+    },
+    {
+      "pos": [
+        5431,
+        5529
+      ],
+      "content": "Replace <ph id=\"ph1\">`{tentand id}`</ph>, <ph id=\"ph2\">`{application id}`</ph>, and <ph id=\"ph3\">`{redirect uri}`</ph> using the following instructions."
+    },
+    {
+      "content": "Replace <ph id=\"ph1\">`{tenant id}`</ph> with the tenant id of the Azure Active Directory application you just created.",
+      "pos": [
+        5531,
+        5631
+      ]
+    },
+    {
+      "content": "You can access the id by clicking <bpt id=\"p1\">**</bpt>View endpoints<ept id=\"p1\">**</ept>.",
+      "pos": [
+        5632,
+        5685
+      ]
+    },
+    {
+      "content": "Endpoints",
+      "pos": [
+        5689,
+        5698
+      ]
+    },
+    {
+      "content": "Endpoints",
+      "pos": [
+        5741,
+        5750
+      ]
+    },
+    {
+      "pos": [
+        5778,
+        5963
+      ],
+      "content": "Replace <ph id=\"ph1\">`{application id}`</ph> and <ph id=\"ph2\">`{redirect uri}`</ph> using the <bpt id=\"p1\">**</bpt>Client Id<ept id=\"p1\">**</ept> and  the URL from the <bpt id=\"p2\">**</bpt>Redirect Uris<ept id=\"p2\">**</ept> section from your Azure Active Directory application's <bpt id=\"p3\">**</bpt>Configure<ept id=\"p3\">**</ept> tab."
+    },
+    {
+      "content": "Resources",
+      "pos": [
+        5968,
+        5977
+      ]
+    },
+    {
+      "content": "Once the values are specified, the code example should return a token similar to the following example.",
+      "pos": [
+        6010,
+        6113
+      ]
+    },
+    {
+      "content": "Token",
+      "pos": [
+        6117,
+        6122
+      ]
+    },
+    {
+      "content": "Before calling the backup and restore operations described in the following sections, set the authorization request header for your REST call.",
+      "pos": [
+        6151,
+        6293
+      ]
+    },
+    {
+      "pos": [
+        6376,
+        6429
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"step1\"&gt;</ph> <ph id=\"ph2\">&lt;/a&gt;</ph>Backup an API Management service"
+    },
+    {
+      "content": "To backup an API Management service issue the following HTTP request:",
+      "pos": [
+        6430,
+        6499
+      ]
+    },
+    {
+      "content": "where:",
+      "pos": [
+        6693,
+        6699
+      ]
+    },
+    {
+      "pos": [
+        6703,
+        6811
+      ],
+      "content": "<ph id=\"ph1\">`subscriptionId`</ph> - id of the subscription containing the API Management service you are attempting to backup"
+    },
+    {
+      "pos": [
+        6814,
+        7034
+      ],
+      "content": "<ph id=\"ph1\">`resourceGroupName`</ph> - a string in the form of 'Api-Default-{service-region}' where <ph id=\"ph2\">`service-region`</ph> identifies the Azure region where the API Management service you are trying to backup is hosted, e.g. <ph id=\"ph3\">`North-Central-US`</ph>"
+    },
+    {
+      "pos": [
+        7037,
+        7156
+      ],
+      "content": "<ph id=\"ph1\">`serviceName`</ph> - the name of the API Management service you are making a backup of specified at the time of its creation"
+    },
+    {
+      "pos": [
+        7159,
+        7201
+      ],
+      "content": "<ph id=\"ph1\">`api-version`</ph> - replace  with <ph id=\"ph2\">`2014-02-14`</ph>"
+    },
+    {
+      "content": "In the body of the request, specify the target Azure storage account name, access key, blob container name, and backup name:",
+      "pos": [
+        7203,
+        7327
+      ]
+    },
+    {
+      "pos": [
+        7557,
+        7630
+      ],
+      "content": "Set the value of the <ph id=\"ph1\">`Content-Type`</ph> request header to <ph id=\"ph2\">`application/json`</ph>."
+    },
+    {
+      "content": "Backup is a long running operation that may take multiple minutes to complete.",
+      "pos": [
+        7632,
+        7710
+      ]
+    },
+    {
+      "content": "If the request was successful and the backup process was initiated you’ll receive a <ph id=\"ph1\">`202 Accepted`</ph> response status code with a <ph id=\"ph2\">`Location`</ph> header.",
+      "pos": [
+        7712,
+        7857
+      ]
+    },
+    {
+      "content": "Make 'GET' requests to the URL in the <ph id=\"ph1\">`Location`</ph> header to find out the status of the operation.",
+      "pos": [
+        7859,
+        7955
+      ]
+    },
+    {
+      "content": "While the backup is in progress you will continue to receive a '202 Accepted' status code.",
+      "pos": [
+        7956,
+        8046
+      ]
+    },
+    {
+      "content": "A Response code of <ph id=\"ph1\">`200 OK`</ph> will indicate successful completion of the backup operation.",
+      "pos": [
+        8047,
+        8135
+      ]
+    },
+    {
+      "pos": [
+        8137,
+        8146
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Note<ept id=\"p1\">**</ept>:"
+    },
+    {
+      "pos": [
+        8150,
+        8209
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Container<ept id=\"p1\">**</ept> specified in the request body <bpt id=\"p2\">**</bpt>must exist<ept id=\"p2\">**</ept>."
+    },
+    {
+      "pos": [
+        8212,
+        8359
+      ],
+      "content": "While backup is in progress you <bpt id=\"p1\">**</bpt>should not attempt any service management operations<ept id=\"p1\">**</ept> such as SKU upgrade or downgrade, domain name change, etc."
+    },
+    {
+      "pos": [
+        8363,
+        8450
+      ],
+      "content": "Restore of a <bpt id=\"p1\">**</bpt>backup is guaranteed only for 7 days<ept id=\"p1\">**</ept> since the moment of its creation."
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Usage data<ept id=\"p1\">**</ept> used for creating analytics reports <bpt id=\"p2\">**</bpt>is not included<ept id=\"p2\">**</ept> in the backup.",
+      "pos": [
+        8454,
+        8539
+      ]
+    },
+    {
+      "content": "Use <bpt id=\"p1\">[</bpt>Azure API Management REST API<ept id=\"p1\">][]</ept> to periodically retrieve analytics reports for safekeeping.",
+      "pos": [
+        8540,
+        8637
+      ]
+    },
+    {
+      "content": "The frequency with which you perform service backups will affect your recovery point objective.",
+      "pos": [
+        8640,
+        8735
+      ]
+    },
+    {
+      "content": "To minimize it we advise implementing regular backups as well as performing on-demand backups after making important changes to your API Management service.",
+      "pos": [
+        8736,
+        8892
+      ]
+    },
+    {
+      "pos": [
+        8895,
+        9096
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Changes<ept id=\"p1\">**</ept> made to the service configuration (e.g. APIs, policies, developer portal appearance) while backup operation is in process <bpt id=\"p2\">**</bpt>might not be included in the backup and therefore will be lost<ept id=\"p2\">**</ept>."
+    },
+    {
+      "pos": [
+        9101,
+        9155
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"step2\"&gt;</ph> <ph id=\"ph2\">&lt;/a&gt;</ph>Restore an API Management service"
+    },
+    {
+      "content": "To restore an API Management service from a previously created backup make the following HTTP request:",
+      "pos": [
+        9156,
+        9258
+      ]
+    },
+    {
+      "content": "where:",
+      "pos": [
+        9453,
+        9459
+      ]
+    },
+    {
+      "pos": [
+        9463,
+        9574
+      ],
+      "content": "<ph id=\"ph1\">`subscriptionId`</ph> - id of the subscription containing the API Management service you are restoring a backup into"
+    },
+    {
+      "pos": [
+        9577,
+        9804
+      ],
+      "content": "<ph id=\"ph1\">`resourceGroupName`</ph> - a string in the form of 'Api-Default-{service-region}' where <ph id=\"ph2\">`service-region`</ph> identifies the Azure region where the API Management service you are restoring a backup into is hosted, e.g. <ph id=\"ph3\">`North-Central-US`</ph>"
+    },
+    {
+      "pos": [
+        9807,
+        9919
+      ],
+      "content": "<ph id=\"ph1\">`serviceName`</ph> - the name of the API Management service being restored into specified at the time of its creation"
+    },
+    {
+      "pos": [
+        9922,
+        9964
+      ],
+      "content": "<ph id=\"ph1\">`api-version`</ph> - replace  with <ph id=\"ph2\">`2014-02-14`</ph>"
+    },
+    {
+      "content": "In the body of the request, specify the backup file location, i.e. Azure storage account name, access key, blob container name, and backup name:",
+      "pos": [
+        9966,
+        10110
+      ]
+    },
+    {
+      "pos": [
+        10340,
+        10413
+      ],
+      "content": "Set the value of the <ph id=\"ph1\">`Content-Type`</ph> request header to <ph id=\"ph2\">`application/json`</ph>."
+    },
+    {
+      "content": "Restore is a long running operation that may take up to 30 or more minutes to complete.",
+      "pos": [
+        10415,
+        10502
+      ]
+    },
+    {
+      "content": "If the request was successful and the restore process was initiated you’ll receive a <ph id=\"ph1\">`202 Accepted`</ph> response status code with a <ph id=\"ph2\">`Location`</ph> header.",
+      "pos": [
+        10504,
+        10650
+      ]
+    },
+    {
+      "content": "Make 'GET' requests to the URL in the <ph id=\"ph1\">`Location`</ph> header to find out the status of the operation.",
+      "pos": [
+        10652,
+        10748
+      ]
+    },
+    {
+      "content": "While the restore is in progress you will continue to receive '202 Accepted' status code.",
+      "pos": [
+        10749,
+        10838
+      ]
+    },
+    {
+      "content": "A response code of <ph id=\"ph1\">`200 OK`</ph> will indicate successful completion of the restore operation.",
+      "pos": [
+        10839,
+        10928
+      ]
+    },
+    {
+      "pos": [
+        10931,
+        11059
+      ],
+      "content": "<ph id=\"ph1\">[AZURE.IMPORTANT]</ph> <bpt id=\"p1\">**</bpt>The SKU<ept id=\"p1\">**</ept> of the service being restored into <bpt id=\"p2\">**</bpt>must match<ept id=\"p2\">**</ept> the SKU of the backed up service being restored."
+    },
+    {
+      "pos": [
+        11063,
+        11224
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Changes<ept id=\"p1\">**</ept> made to the service configuration (e.g. APIs, policies, developer portal appearance) while restore operation is in progress <bpt id=\"p2\">**</bpt>could be overwritten<ept id=\"p2\">**</ept>."
+    },
+    {
+      "content": "Next steps",
+      "pos": [
+        11229,
+        11239
+      ]
+    },
+    {
+      "content": "Check out the following Microsoft blogs for two different walkthroughs of the backup/restore process.",
+      "pos": [
+        11240,
+        11341
+      ]
+    },
+    {
+      "content": "Replicate Azure API Management Accounts",
+      "pos": [
+        11348,
+        11387
+      ]
+    },
+    {
+      "content": "Thank you to Gisela for her contribution to this article.",
+      "pos": [
+        11477,
+        11534
+      ]
+    },
+    {
+      "content": "Azure API Management: Backing Up and Restoring Configuration",
+      "pos": [
+        11540,
+        11600
+      ]
+    },
+    {
+      "content": "The approach detailed by Stuart does not match the official guidance but it is very interesting.",
+      "pos": [
+        11731,
+        11827
+      ]
+    },
+    {
+      "content": "test",
+      "pos": [
+        13075,
+        13079
+      ]
+    }
+  ],
+  "content": "<properties \n    pageTitle=\"How to implement disaster recovery using service backup and restore in Azure API Management\" \n    description=\"Learn how to use backup and restore to perform disaster recovery in Azure API Management.\" \n    services=\"api-management\" \n    documentationCenter=\"\" \n    authors=\"steved0x\" \n    manager=\"dwrede\" \n    editor=\"\"/>\n\n<tags \n    ms.service=\"api-management\" \n    ms.workload=\"mobile\" \n    ms.tgt_pltfrm=\"na\" \n    ms.devlang=\"na\" \n    ms.topic=\"article\" \n    ms.date=\"06/24/2015\" \n    ms.author=\"sdanie\"/>\n\n# How to implement disaster recovery using service backup and restore in Azure API Management\n\nBy choosing to publish and manage your APIs via Azure API Management you are taking advantage of many fault tolerance and infrastructure capabilities that you would otherwise have to design, implement, and manage. The Azure platform mitigates a large fraction of potential failures at a fraction of the cost.\n\nTo recover from availability problems affecting the region where your API Management service is hosted you should be ready to reconstitute your service in a different region at any time. Depending on your availability goals and recovery time objective  you might want to reserve a backup service in one or more regions and try to maintain their configuration and content in sync with the active service. The service backup and restore feature provides the necessary building block for implementing your disaster recovery strategy.\n\nThis guide shows how to authenticate Azure Resource Manager requests, and how to backup and restore your API Management service instances.\n\n>[AZURE.NOTE] The process for backing up and restoring an API Management service instance for disaster recovery can also be used for replicating API Management service instances for scenarios such as staging.\n\n## Authenticating Azure Resource Manager requests\n\n>[AZURE.IMPORTANT] The REST API for backup and restore uses Azure Resource Manager and has a different authentication mechanism than the REST APIs for managing your API Management entities. The steps in this section describe how to authenticate Azure Resource Manager requests. For more information, see [Authenticating Azure Resource Manager requests](http://msdn.microsoft.com/library/dn790557.aspx).\n\nAll of the tasks that you do on resources using the Azure Resource Manager must be authenticated with Azure Active Directory using the following steps.\n\n-   Add an application to the Azure Active Directory tenant.\n-   Set permissions for the application that you added.\n-   Get the token for authenticating requests to Azure Resource Manager.\n\nThe first step is to create an Azure Active Directory application. Log into the [Management portal](http://manage.windowsazure.com/) using the subscription that contains your API Management service instance and navigate to the **Applications** tab for your default Azure Active Directory.\n\n>[AZURE.NOTE] If the Azure Active Directory default directory is not visible to your account, contact the administrator of the Azure subscription to grant the required permissions to your account. For information on locating your default directory, see [Locate your default directory in the Azure Portal](../virtual-machines/resource-group-create-work-id-from-persona.md/#locate-your-default-directory-in-the-azure-portal).\n\n![Create Azure Active Directory application][api-management-add-aad-application]\n\nClick **Add**, **Add an application my organization is developing**, and choose **Native client application**. Enter a descriptive name, and click the next arrow. Enter a placeholder URL such as `http://resources` for the **Redirect URI**, as it is a required field, but the value is not used later. Click the check box to save the application.\n\nOnce the application is saved, click **Configure**, scroll down to the **permissions to other applications** section, and click **Add application**.\n\n![Add permissions][api-management-aad-permissions-add]\n\nSelect **Windows** **Azure Service Management API** and click the checkbox to add the application.\n\n![Add permissions][api-management-aad-permissions]\n\nClick **Delegated Permissions** beside the newly added **Windows** **Azure Service Management API** application, check the box for **Access Azure Service Management (preview)**, and click **Save**.\n\n![Add permissions][api-management-aad-delegated-permissions]\n\nPrior to invoking the APIs that generate the backup and restore it, it is necessary to get a token. The following example uses the [Microsoft.IdentityModel.Clients.ActiveDirectory](https://www.nuget.org/packages/Microsoft.IdentityModel.Clients.ActiveDirectory) nuget package to retrieve the token.\n\n    using Microsoft.IdentityModel.Clients.ActiveDirectory;\n    using System;\n\n    namespace GetTokenResourceManagerRequests\n    {\n        class Program\n        {\n            static void Main(string[] args)\n            {\n                var authenticationContext = new AuthenticationContext(\"https://login.windows.net/{tenant id}\");\n                var result = authenticationContext.AcquireToken(\"https://management.azure.com/\", {application id}, new Uri({redirect uri});\n\n                if (result == null) {\n                    throw new InvalidOperationException(\"Failed to obtain the JWT token\");\n                }\n\n                Console.WriteLine(result.AccessToken);\n\n                Console.ReadLine();\n            }\n        }\n    }\n\nReplace `{tentand id}`, `{application id}`, and `{redirect uri}` using the following instructions.\n\nReplace `{tenant id}` with the tenant id of the Azure Active Directory application you just created. You can access the id by clicking **View endpoints**.\n\n![Endpoints][api-management-aad-default-directory]\n\n![Endpoints][api-management-endpoint]\n\nReplace `{application id}` and `{redirect uri}` using the **Client Id** and  the URL from the **Redirect Uris** section from your Azure Active Directory application's **Configure** tab. \n\n![Resources][api-management-aad-resources]\n\nOnce the values are specified, the code example should return a token similar to the following example.\n\n![Token][api-management-arm-token]\n\nBefore calling the backup and restore operations described in the following sections, set the authorization request header for your REST call.\n\n    request.Headers.Add(HttpRequestHeader.Authorization, \"Bearer \" + token);\n\n## <a name=\"step1\"> </a>Backup an API Management service\nTo backup an API Management service issue the following HTTP request:\n\n`POST https://management.azure.com/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ApiManagement/service/{serviceName}/backup?api-version={api-version}`\n\nwhere:\n\n* `subscriptionId` - id of the subscription containing the API Management service you are attempting to backup\n* `resourceGroupName` - a string in the form of 'Api-Default-{service-region}' where `service-region` identifies the Azure region where the API Management service you are trying to backup is hosted, e.g. `North-Central-US`\n* `serviceName` - the name of the API Management service you are making a backup of specified at the time of its creation\n* `api-version` - replace  with `2014-02-14`\n\nIn the body of the request, specify the target Azure storage account name, access key, blob container name, and backup name:\n\n    '{  \n        storageAccount : {storage account name for the backup},  \n        accessKey : {access key for the account},  \n        containerName : {backup container name},  \n        backupName : {backup blob name}  \n    }'\n\nSet the value of the `Content-Type` request header to `application/json`.\n\nBackup is a long running operation that may take multiple minutes to complete.  If the request was successful and the backup process was initiated you’ll receive a `202 Accepted` response status code with a `Location` header.  Make 'GET' requests to the URL in the `Location` header to find out the status of the operation. While the backup is in progress you will continue to receive a '202 Accepted' status code. A Response code of `200 OK` will indicate successful completion of the backup operation.\n\n**Note**:\n\n- **Container** specified in the request body **must exist**.\n* While backup is in progress you **should not attempt any service management operations** such as SKU upgrade or downgrade, domain name change, etc. \n* Restore of a **backup is guaranteed only for 7 days** since the moment of its creation. \n* **Usage data** used for creating analytics reports **is not included** in the backup. Use [Azure API Management REST API][] to periodically retrieve analytics reports for safekeeping.\n* The frequency with which you perform service backups will affect your recovery point objective. To minimize it we advise implementing regular backups as well as performing on-demand backups after making important changes to your API Management service.\n* **Changes** made to the service configuration (e.g. APIs, policies, developer portal appearance) while backup operation is in process **might not be included in the backup and therefore will be lost**.\n\n## <a name=\"step2\"> </a>Restore an API Management service\nTo restore an API Management service from a previously created backup make the following HTTP request:\n\n`POST https://management.azure.com/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ApiManagement/service/{serviceName}/restore?api-version={api-version}`\n\nwhere:\n\n* `subscriptionId` - id of the subscription containing the API Management service you are restoring a backup into\n* `resourceGroupName` - a string in the form of 'Api-Default-{service-region}' where `service-region` identifies the Azure region where the API Management service you are restoring a backup into is hosted, e.g. `North-Central-US`\n* `serviceName` - the name of the API Management service being restored into specified at the time of its creation\n* `api-version` - replace  with `2014-02-14`\n\nIn the body of the request, specify the backup file location, i.e. Azure storage account name, access key, blob container name, and backup name:\n\n    '{  \n        storageAccount : {storage account name for the backup},  \n        accessKey : {access key for the account},  \n        containerName : {backup container name},  \n        backupName : {backup blob name}  \n    }'\n\nSet the value of the `Content-Type` request header to `application/json`.\n\nRestore is a long running operation that may take up to 30 or more minutes to complete.  If the request was successful and the restore process was initiated you’ll receive a `202 Accepted` response status code with a `Location` header.  Make 'GET' requests to the URL in the `Location` header to find out the status of the operation. While the restore is in progress you will continue to receive '202 Accepted' status code. A response code of `200 OK` will indicate successful completion of the restore operation.\n\n>[AZURE.IMPORTANT] **The SKU** of the service being restored into **must match** the SKU of the backed up service being restored.\n>\n>**Changes** made to the service configuration (e.g. APIs, policies, developer portal appearance) while restore operation is in progress **could be overwritten**.\n\n## Next steps\nCheck out the following Microsoft blogs for two different walkthroughs of the backup/restore process.\n\n-   [Replicate Azure API Management Accounts](https://www.returngis.net/en/2015/06/replicate-azure-api-management-accounts/) \n    -   Thank you to Gisela for her contribution to this article.\n-   [Azure API Management: Backing Up and Restoring Configuration](http://blogs.msdn.com/b/stuartleeks/archive/2015/04/29/azure-api-management-backing-up-and-restoring-configuration.aspx)\n    -   The approach detailed by Stuart does not match the official guidance but it is very interesting.\n\n[Backup an API Management service]: #step1\n[Restore an API Management service]: #step2\n\n\n[Azure API Management REST API]: http://msdn.microsoft.com/library/azure/dn781421.aspx\n\n[api-management-add-aad-application]: ./media/api-management-howto-disaster-recovery-backup-restore/api-management-add-aad-application.png\n\n[api-management-aad-permissions]: ./media/api-management-howto-disaster-recovery-backup-restore/api-management-aad-permissions.png\n[api-management-aad-permissions-add]: ./media/api-management-howto-disaster-recovery-backup-restore/api-management-aad-permissions-add.png\n[api-management-aad-delegated-permissions]: ./media/api-management-howto-disaster-recovery-backup-restore/api-management-aad-delegated-permissions.png\n[api-management-aad-default-directory]: ./media/api-management-howto-disaster-recovery-backup-restore/api-management-aad-default-directory.png\n[api-management-aad-resources]: ./media/api-management-howto-disaster-recovery-backup-restore/api-management-aad-resources.png\n[api-management-arm-token]: ./media/api-management-howto-disaster-recovery-backup-restore/api-management-arm-token.png\n[api-management-endpoint]: ./media/api-management-howto-disaster-recovery-backup-restore/api-management-endpoint.png\n \ntest\n"
+}

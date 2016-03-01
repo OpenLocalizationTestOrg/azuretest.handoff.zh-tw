@@ -1,0 +1,1895 @@
+{
+  "nodes": [
+    {
+      "content": "Move and process log files using Azure Data Factory (Azure PowerShell)",
+      "pos": [
+        28,
+        98
+      ]
+    },
+    {
+      "content": "This advanced tutorial describes a near real-world scenario and implements the scenario using Azure Data Factory service and Azure PowerShell.",
+      "pos": [
+        118,
+        260
+      ]
+    },
+    {
+      "content": "Tutorial: Move and process log files using Data Factory [PowerShell]",
+      "pos": [
+        588,
+        656
+      ]
+    },
+    {
+      "content": "This article provides an end-to-end walkthrough of a canonical scenario of log processing using Azure Data Factory to transform data from log files into insights.",
+      "pos": [
+        657,
+        819
+      ]
+    },
+    {
+      "content": "Scenario",
+      "pos": [
+        825,
+        833
+      ]
+    },
+    {
+      "content": "Contoso is a gaming company that creates games for multiple platforms: game consoles, hand held devices, and personal computers (PCs).",
+      "pos": [
+        834,
+        968
+      ]
+    },
+    {
+      "content": "Each of these games produces tons of logs.",
+      "pos": [
+        969,
+        1011
+      ]
+    },
+    {
+      "content": "Contoso’s goal is to collect and analyze the logs produced by these games to get usage information, identify up-sell and cross-sell opportunities, develop new compelling features etc. to improve business and provide better experience to customers.",
+      "pos": [
+        1012,
+        1259
+      ]
+    },
+    {
+      "content": "In this walkthrough, we will collect sample logs, process and enrich them with reference data, and transform the data to evaluate the effectiveness of a marketing campaign that Contoso has recently launched.",
+      "pos": [
+        1262,
+        1469
+      ]
+    },
+    {
+      "content": "Getting ready for the tutorial",
+      "pos": [
+        1474,
+        1504
+      ]
+    },
+    {
+      "pos": [
+        1509,
+        1653
+      ],
+      "content": "Read <bpt id=\"p1\">[</bpt>Introduction to Azure Data Factory<ept id=\"p1\">][adfintroduction]</ept> to get an overview of Azure Data Factory and understanding of the top level concepts."
+    },
+    {
+      "content": "You must have an Azure subscription to perform this tutorial.",
+      "pos": [
+        1658,
+        1719
+      ]
+    },
+    {
+      "content": "For information about obtaining a subscription, see <bpt id=\"p1\">[</bpt>Purchase Options<ept id=\"p1\">] [azure-purchase-options]</ept>, <bpt id=\"p2\">[</bpt>Member Offers<ept id=\"p2\">][azure-member-offers]</ept>, or <bpt id=\"p3\">[</bpt>Free Trial<ept id=\"p3\">][azure-free-trial]</ept>.",
+      "pos": [
+        1720,
+        1889
+      ]
+    },
+    {
+      "pos": [
+        1894,
+        1987
+      ],
+      "content": "You must download and install <bpt id=\"p1\">[</bpt>Azure PowerShell<ept id=\"p1\">][download-azure-powershell]</ept> on your computer."
+    },
+    {
+      "pos": [
+        1993,
+        2178
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>(recommended)<ept id=\"p1\">**</ept> Review and practice the tutorial in the <bpt id=\"p2\">[</bpt>Get started with Azure Data Factory<ept id=\"p2\">][adfgetstarted]</ept> article for a simple tutorial to get familiar with the portal and cmdlets."
+    },
+    {
+      "pos": [
+        2183,
+        2416
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>(recommended)<ept id=\"p1\">**</ept> Review and practice the walkthrough in the <bpt id=\"p2\">[</bpt>Use Pig and Hive with Azure Data Factory<ept id=\"p2\">][usepigandhive]</ept> article for a walkthrough on creating a pipeline to move data from on-premises data source to an Azure blob store."
+    },
+    {
+      "pos": [
+        2421,
+        2546
+      ],
+      "content": "Download <bpt id=\"p1\">[</bpt>ADFWalkthrough<ept id=\"p1\">][adfwalkthrough-download]</ept> files to <bpt id=\"p2\">**</bpt>C:\\ADFWalkthrough<ept id=\"p2\">**</ept> folder <bpt id=\"p3\">**</bpt>preserving the folder structure<ept id=\"p3\">**</ept>:"
+    },
+    {
+      "pos": [
+        2553,
+        2635
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Pipelines:<ept id=\"p1\">**</ept> It includes  JSON files containing the definition of the pipelines."
+    },
+    {
+      "pos": [
+        2642,
+        2718
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Tables:<ept id=\"p1\">**</ept> It includes  JSON files containing the definition of the Tables."
+    },
+    {
+      "pos": [
+        2725,
+        2841
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>LinkedServices:<ept id=\"p1\">**</ept> It includes JSON files containing the definition of your storage and compute (HDInsight) cluster"
+    },
+    {
+      "pos": [
+        2849,
+        2963
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Scripts:<ept id=\"p1\">**</ept> It includes Hive and Pig scripts that are used for processing the data and invoked from the pipelines"
+    },
+    {
+      "pos": [
+        2970,
+        3030
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>SampleData:<ept id=\"p1\">**</ept> It includes sample data for this walkthrough"
+    },
+    {
+      "pos": [
+        3037,
+        3150
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>OnPremises:<ept id=\"p1\">**</ept> It includes JSON files and script that are used for demonstrating accessing your on-premises data"
+    },
+    {
+      "pos": [
+        3157,
+        3248
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>uploadSampleDataAndScripts.ps1:<ept id=\"p1\">**</ept> This script uploads the sample data &amp; scripts to Azure."
+    },
+    {
+      "content": "Make sure you have created the following Azure Resources:",
+      "pos": [
+        3252,
+        3309
+      ]
+    },
+    {
+      "content": "Azure Storage Account.",
+      "pos": [
+        3328,
+        3350
+      ]
+    },
+    {
+      "content": "Azure SQL Database",
+      "pos": [
+        3357,
+        3375
+      ]
+    },
+    {
+      "content": "Azure HDInsight Cluster of version 3.1 or above (or use an on-demand HDInsight cluster that the Data Factory service will create automatically)",
+      "pos": [
+        3382,
+        3525
+      ]
+    },
+    {
+      "content": "Once the Azure Resources are created, make sure you have the information needed to connect to each of these resources.",
+      "pos": [
+        3532,
+        3650
+      ]
+    },
+    {
+      "pos": [
+        3657,
+        3714
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Azure Storage Account<ept id=\"p1\">**</ept> - Account name and account key."
+    },
+    {
+      "pos": [
+        3723,
+        3790
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Azure SQL Database<ept id=\"p1\">**</ept> - Server, database, user name, and password."
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Azure HDInsight Cluster<ept id=\"p1\">**</ept>.",
+      "pos": [
+        3797,
+        3825
+      ]
+    },
+    {
+      "content": "- Name of the HDInsight cluster, user name, password, and account name and account key for the Azure storage associated with this cluster.",
+      "pos": [
+        3826,
+        3964
+      ]
+    },
+    {
+      "content": "If you want to use an on-demand HDInsight cluster instead of your own HDInsight cluster you can skip this step.",
+      "pos": [
+        3965,
+        4076
+      ]
+    },
+    {
+      "content": "Launch <bpt id=\"p1\">**</bpt>Azure PowerShell<ept id=\"p1\">**</ept> and execute the following commands.",
+      "pos": [
+        4082,
+        4145
+      ]
+    },
+    {
+      "content": "Keep the Azure PowerShell open.",
+      "pos": [
+        4146,
+        4177
+      ]
+    },
+    {
+      "content": "If you close and reopen, you need to run these commands again.",
+      "pos": [
+        4178,
+        4240
+      ]
+    },
+    {
+      "pos": [
+        4247,
+        4362
+      ],
+      "content": "Run <bpt id=\"p1\">**</bpt>Add-AzureAccount<ept id=\"p1\">**</ept> and enter the  user name and password that you use to sign-in to the Azure Preview Portal."
+    },
+    {
+      "pos": [
+        4371,
+        4448
+      ],
+      "content": "Run <bpt id=\"p1\">**</bpt>Get-AzureSubscription<ept id=\"p1\">**</ept> to view all the subscriptions for this account."
+    },
+    {
+      "content": "Run <bpt id=\"p1\">**</bpt>Select-AzureSubscription<ept id=\"p1\">**</ept> to select the subscription that you want to work with.",
+      "pos": [
+        4455,
+        4542
+      ]
+    },
+    {
+      "content": "This subscription should be the same as the one you used in the Azure Preview Portal.",
+      "pos": [
+        4543,
+        4628
+      ]
+    },
+    {
+      "content": "Overview",
+      "pos": [
+        4638,
+        4646
+      ]
+    },
+    {
+      "content": "The end-to-end workflow is depicted below:",
+      "pos": [
+        4647,
+        4689
+      ]
+    },
+    {
+      "content": "Tutorial End to End Flow",
+      "pos": [
+        4696,
+        4720
+      ]
+    },
+    {
+      "pos": [
+        4771,
+        4954
+      ],
+      "content": "The <bpt id=\"p1\">**</bpt>PartitionGameLogsPipeline<ept id=\"p1\">**</ept> reads the raw game events from a blob storage (RawGameEventsTable) and creates partitions based on year, month, and day (PartitionedGameEventsTable)."
+    },
+    {
+      "pos": [
+        4958,
+        5252
+      ],
+      "content": "The <bpt id=\"p1\">**</bpt>EnrichGameLogsPipeline<ept id=\"p1\">**</ept> joins partitioned game events (PartitionedGameEvents table, which is an output of the PartitionGameLogsPipeline) with geo code (RefGetoCodeDictionaryTable) and enriches the data by mapping an IP address to the corresponding geo-location (EnrichedGameEventsTable)."
+    },
+    {
+      "pos": [
+        5256,
+        5699
+      ],
+      "content": "The <bpt id=\"p1\">**</bpt>AnalyzeMarketingCampaignPipeline<ept id=\"p1\">**</ept> pipeline leverages the enriched data (EnrichedGameEventTable produced by the EnrichGameLogsPipeline) and processes it with the advertising data (RefMarketingCampaignnTable) to create the final output of marketing campaign effectiveness, which is copied to the Azure SQL database (MarketingCampainEffectivensessSQLTable) and an Azure blob storage (MarketingCampaignEffectivenessBlobTable) for analytics."
+    },
+    {
+      "content": "Walkthrough: Creating, deploying, and monitoring workflows",
+      "pos": [
+        5708,
+        5766
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt>Step 1: Upload sample data and scripts<ept id=\"p1\">](#MainStep1)</ept>.",
+      "pos": [
+        5770,
+        5823
+      ]
+    },
+    {
+      "content": "In this step, you will upload all the sample data (including all the logs and reference data) and Hive/Pig scripts that will be executed by the workflows.",
+      "pos": [
+        5824,
+        5978
+      ]
+    },
+    {
+      "content": "The scripts you execute also create an Azure SQL database (named MarketingCampaigns), tables, user-defined types, and stored procedures.",
+      "pos": [
+        5979,
+        6115
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt>Step 2: Create an Azure data factory<ept id=\"p1\">](#MainStep2)</ept>.",
+      "pos": [
+        6119,
+        6170
+      ]
+    },
+    {
+      "content": "In this step, you will create an Azure data factory named LogProcessingFactory.",
+      "pos": [
+        6171,
+        6250
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt>Step 3: Create linked services<ept id=\"p1\">](#MainStep3)</ept>.",
+      "pos": [
+        6254,
+        6299
+      ]
+    },
+    {
+      "content": "In this step, you will create the following linked services:",
+      "pos": [
+        6300,
+        6360
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>StorageLinkedService<ept id=\"p1\">**</ept>.",
+      "pos": [
+        6375,
+        6400
+      ]
+    },
+    {
+      "content": "Links the Azure storage location that contains raw game events, partitioned game events, enriched game events, marketing campaign effective information, reference geo-code data, and reference marketing campaign data to the LogProcessingFactory",
+      "pos": [
+        6401,
+        6644
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>AzureSqlLinkedService<ept id=\"p1\">**</ept>.",
+      "pos": [
+        6656,
+        6682
+      ]
+    },
+    {
+      "content": "Links an Azure SQL database that contains marketing campaign effectiveness information.",
+      "pos": [
+        6683,
+        6770
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>HDInsightStorageLinkedService<ept id=\"p1\">**</ept>.",
+      "pos": [
+        6780,
+        6814
+      ]
+    },
+    {
+      "content": "Links an Azure blob storage that is associated with the HDInsight cluster that the HDInsightLinkedService refers to.",
+      "pos": [
+        6815,
+        6931
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>HDInsightLinkedService<ept id=\"p1\">**</ept>.",
+      "pos": [
+        6941,
+        6968
+      ]
+    },
+    {
+      "content": "Links an Azure HDInsight cluster to the LogProcessingFactory.",
+      "pos": [
+        6969,
+        7030
+      ]
+    },
+    {
+      "content": "This cluster is used to perform pig/hive processing on the data.",
+      "pos": [
+        7031,
+        7095
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt>Step 4: Create tables<ept id=\"p1\">](#MainStep4)</ept>.",
+      "pos": [
+        7109,
+        7145
+      ]
+    },
+    {
+      "content": "In this step, you will create the following tables:",
+      "pos": [
+        7146,
+        7197
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>RawGameEventsTable<ept id=\"p1\">**</ept>.",
+      "pos": [
+        7214,
+        7237
+      ]
+    },
+    {
+      "content": "This table specifies the location of the raw game event data within the Azure blob storage defined by StorageLinkedService (adfwalkthrough/logs/rawgameevents/) .",
+      "pos": [
+        7238,
+        7399
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>PartitionedGameEventsTable<ept id=\"p1\">**</ept>.",
+      "pos": [
+        7407,
+        7438
+      ]
+    },
+    {
+      "content": "This table specifies the location of the partitioned game event data within the Azure blob storage defined by StorageLinkedService (adfwalkthrough/logs/partitionedgameevents/) .",
+      "pos": [
+        7439,
+        7616
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>RefGeoCodeDictionaryTable<ept id=\"p1\">**</ept>.",
+      "pos": [
+        7624,
+        7654
+      ]
+    },
+    {
+      "content": "This table specifies the location of the refernce geo-code data within the Azure blob storage defined by StorageLinkedService (adfwalkthrough/refdata/refgeocodedictionary/).",
+      "pos": [
+        7655,
+        7828
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>RefMarketingCampaignTable<ept id=\"p1\">**</ept>.",
+      "pos": [
+        7835,
+        7865
+      ]
+    },
+    {
+      "content": "This table specifies the location of the refernce marketing campaign data within the Azure blob storage defined by StorageLinkedService (adfwalkthrough/refdata/refmarketingcampaign/).",
+      "pos": [
+        7866,
+        8049
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>EnrichedGameEventsTable<ept id=\"p1\">**</ept>.",
+      "pos": [
+        8056,
+        8084
+      ]
+    },
+    {
+      "content": "This table specifies the location of the enriched game event data within the Azure blob storage defined by StorageLinkedService (adfwalkthrough/logs/enrichedgameevents/).",
+      "pos": [
+        8085,
+        8255
+      ]
+    },
+    {
+      "pos": [
+        8262,
+        8488
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>MarketingCampaignEffectivenessSQLTable<ept id=\"p1\">**</ept>.This table specifies the SQL table (MarketingCampaignEffectiveness) in the Azure SQL Database defined by AzureSqlLinkedService that contains the marketing campaign effectiveness data."
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>MarketingCampaignEffectivenessBlobTable<ept id=\"p1\">**</ept>.",
+      "pos": [
+        8496,
+        8540
+      ]
+    },
+    {
+      "content": "This table specifies the location of the marketing campaign effectiveness data within the Azure blob storage defined by StorageLinkedService (adfwalkthrough/marketingcampaigneffectiveness/).",
+      "pos": [
+        8541,
+        8731
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt>Step 5: Create and schedule pipelines<ept id=\"p1\">](#MainStep5)</ept>.",
+      "pos": [
+        8742,
+        8794
+      ]
+    },
+    {
+      "content": "In this step, you will create the following pipelines:",
+      "pos": [
+        8795,
+        8849
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>PartitionGameLogsPipeline<ept id=\"p1\">**</ept>.",
+      "pos": [
+        8856,
+        8886
+      ]
+    },
+    {
+      "content": "This pipeline reads the raw game events from a blob storage (RawGameEventsTable) and creates partitions based on year, month, and day (PartitionedGameEventsTable).",
+      "pos": [
+        8887,
+        9050
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">[</bpt>Step 6: Monitor pipelines and data slices<ept id=\"p1\">](#MainStep6)</ept>.",
+      "pos": [
+        10129,
+        10185
+      ]
+    },
+    {
+      "content": "In this step, you will monitor the pipelines, tables, and data slices by using the Azure Portal.",
+      "pos": [
+        10186,
+        10282
+      ]
+    },
+    {
+      "pos": [
+        10287,
+        10350
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"MainStep1\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph> Step 1: Upload sample data and scripts"
+    },
+    {
+      "content": "In this step, you upload all the sample data (including all the logs and reference data) and Hive/Pig scripts that are invoked by the workflows.",
+      "pos": [
+        10351,
+        10495
+      ]
+    },
+    {
+      "content": "The scripts you execute also create an Azure SQL database called <bpt id=\"p1\">**</bpt>MarketingCampaigns<ept id=\"p1\">**</ept>, tables, user-defined types, and stored procedures.",
+      "pos": [
+        10496,
+        10635
+      ]
+    },
+    {
+      "content": "The tables, user-defined types and stored procedures are used when moving the Marketing Campaign Effectiveness results from Azure blob storage to the Azure SQL database.",
+      "pos": [
+        10638,
+        10807
+      ]
+    },
+    {
+      "pos": [
+        10812,
+        11034
+      ],
+      "content": "Open <bpt id=\"p1\">**</bpt>uploadSampleDataAndScripts.ps1<ept id=\"p1\">**</ept> from <bpt id=\"p2\">**</bpt>C:\\ADFWalkthrough<ept id=\"p2\">**</ept> folder (or the folder that contains the extracted files) in your favorite editor, replace the highlighted with your cluster information, and save the file."
+    },
+    {
+      "content": "Confirm that your local machine is allowed to access the Azure SQL Database.",
+      "pos": [
+        11789,
+        11865
+      ]
+    },
+    {
+      "content": "To enable access, use the <bpt id=\"p1\">**</bpt>Azure Management Portal<ept id=\"p1\">**</ept> or <bpt id=\"p2\">**</bpt>sp_set_firewall_rule<ept id=\"p2\">**</ept> on the master database to create a firewall rule for the IP address of your machine.",
+      "pos": [
+        11866,
+        12032
+      ]
+    },
+    {
+      "content": "It may take up to five minutes for this change to take effect.",
+      "pos": [
+        12033,
+        12095
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt>Setting firewall rules for Azure SQL<ept id=\"p1\">][azure-sql-firewall]</ept>.",
+      "pos": [
+        12096,
+        12159
+      ]
+    },
+    {
+      "pos": [
+        12163,
+        12282
+      ],
+      "content": "In Azure PowerShell, navigate to the location where you have extracted the samples (for example: <bpt id=\"p1\">**</bpt>C:\\ADFWalkthrough<ept id=\"p1\">**</ept>)"
+    },
+    {
+      "pos": [
+        12286,
+        12324
+      ],
+      "content": "Run <bpt id=\"p1\">**</bpt>uploadSampleDataAndScripts.ps1<ept id=\"p1\">**</ept>"
+    },
+    {
+      "content": "Once the script executes successfully, you will see the following:",
+      "pos": [
+        12329,
+        12395
+      ]
+    },
+    {
+      "pos": [
+        14416,
+        14477
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"MainStep2\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph> Step 2: Create an Azure data factory"
+    },
+    {
+      "pos": [
+        14478,
+        14556
+      ],
+      "content": "In this step, you create an Azure data factory named <bpt id=\"p1\">**</bpt>LogProcessingFactory<ept id=\"p1\">**</ept>."
+    },
+    {
+      "pos": [
+        14562,
+        14722
+      ],
+      "content": "After logging into the <bpt id=\"p1\">[</bpt>Azure Preview Portal<ept id=\"p1\">][azure-preview-portal]</ept>, click <bpt id=\"p2\">**</bpt>NEW<ept id=\"p2\">**</ept> from the bottom-left corner, and click <bpt id=\"p3\">**</bpt>Data Factory<ept id=\"p3\">**</ept> on the <bpt id=\"p4\">**</bpt>New<ept id=\"p4\">**</ept> blade."
+    },
+    {
+      "content": "New-&gt;DataFactory",
+      "pos": [
+        14731,
+        14747
+      ]
+    },
+    {
+      "pos": [
+        14800,
+        14869
+      ],
+      "content": "If you do not see <bpt id=\"p1\">**</bpt>Data Factory<ept id=\"p1\">**</ept> on the <bpt id=\"p2\">**</bpt>New<ept id=\"p2\">**</ept> blade, scroll down."
+    },
+    {
+      "pos": [
+        14879,
+        14962
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>New data factory<ept id=\"p1\">**</ept> blade, enter <bpt id=\"p2\">**</bpt>LogProcessingFactory<ept id=\"p2\">**</ept> for the <bpt id=\"p3\">**</bpt>Name<ept id=\"p3\">**</ept>."
+    },
+    {
+      "content": "Data Factory Blade",
+      "pos": [
+        14970,
+        14988
+      ]
+    },
+    {
+      "pos": [
+        15045,
+        15132
+      ],
+      "content": "If you haven’t created an Azure resource group named <bpt id=\"p1\">**</bpt>ADF<ept id=\"p1\">**</ept> already, do the following:"
+    },
+    {
+      "pos": [
+        15140,
+        15213
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>RESOURCE GROUP NAME<ept id=\"p1\">**</ept>, and click <bpt id=\"p2\">**</bpt>Create a new resource group<ept id=\"p2\">**</ept>."
+    },
+    {
+      "content": "Resource Group Blade",
+      "pos": [
+        15229,
+        15249
+      ]
+    },
+    {
+      "pos": [
+        15307,
+        15414
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Create resource group<ept id=\"p1\">**</ept> blade, enter <bpt id=\"p2\">**</bpt>ADF<ept id=\"p2\">**</ept> for the name of the resource group, and click <bpt id=\"p3\">**</bpt>OK<ept id=\"p3\">**</ept>."
+    },
+    {
+      "content": "Create Resource Group",
+      "pos": [
+        15430,
+        15451
+      ]
+    },
+    {
+      "pos": [
+        15506,
+        15553
+      ],
+      "content": "Select <bpt id=\"p1\">**</bpt>ADF<ept id=\"p1\">**</ept> for the <bpt id=\"p2\">**</bpt>RESOURCE GROUP NAME<ept id=\"p2\">**</ept>."
+    },
+    {
+      "content": "In the <bpt id=\"p1\">**</bpt>New data factory<ept id=\"p1\">**</ept> blade, notice that <bpt id=\"p2\">**</bpt>Add to Startboard<ept id=\"p2\">**</ept> is selected by default.",
+      "pos": [
+        15560,
+        15652
+      ]
+    },
+    {
+      "content": "This add a link to data factory on the startboard (what you see when you login to Azure Preview Portal).",
+      "pos": [
+        15653,
+        15757
+      ]
+    },
+    {
+      "content": "Create Data Factory Blade",
+      "pos": [
+        15765,
+        15790
+      ]
+    },
+    {
+      "pos": [
+        15845,
+        15924
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>New data factory<ept id=\"p1\">**</ept> blade, click <bpt id=\"p2\">**</bpt>Create<ept id=\"p2\">**</ept> to create the data factory."
+    },
+    {
+      "pos": [
+        15929,
+        16038
+      ],
+      "content": "After the data factory is created, you should see the <bpt id=\"p1\">**</bpt>DATA FACTORY<ept id=\"p1\">**</ept> blade titled <bpt id=\"p2\">**</bpt>LogProcessingFactory<ept id=\"p2\">**</ept>."
+    },
+    {
+      "content": "Data Factory Homepage",
+      "pos": [
+        16046,
+        16067
+      ]
+    },
+    {
+      "pos": [
+        16669,
+        16724
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"MainStep3\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph> Step 3: Create linked services"
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> This articles uses the Azure PowerShell to create linked services, tables, and pipelines.",
+      "pos": [
+        16728,
+        16830
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt>Tutorial using Data Factory Editor<ept id=\"p1\">][adftutorial-using-editor]</ept> if you want to perform this tutorial using Azure Portal, specifically Data Factory Editor.",
+      "pos": [
+        16831,
+        16988
+      ]
+    },
+    {
+      "content": "In this step, you will create the following linked services: StorageLinkedService, AzureSqlLinkedService, HDInsightStorageLinkedService, and HDInsightLinkedService.",
+      "pos": [
+        16991,
+        17155
+      ]
+    },
+    {
+      "pos": [
+        17162,
+        17232
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>LogProcessingFactory<ept id=\"p1\">**</ept> blade, click <bpt id=\"p2\">**</bpt>Linked Services<ept id=\"p2\">**</ept> tile."
+    },
+    {
+      "content": "Linked Services Tile",
+      "pos": [
+        17240,
+        17260
+      ]
+    },
+    {
+      "pos": [
+        17314,
+        17392
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Linked Services<ept id=\"p1\">**</ept> blade, click <bpt id=\"p2\">**</bpt>+ Data Store<ept id=\"p2\">**</ept> from the command bar."
+    },
+    {
+      "content": "Linked Services - Add Store",
+      "pos": [
+        17403,
+        17430
+      ]
+    },
+    {
+      "pos": [
+        17493,
+        17648
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>New data store<ept id=\"p1\">**</ept> blade, enter <bpt id=\"p2\">**</bpt>StorageLinkedService<ept id=\"p2\">**</ept> for the <bpt id=\"p3\">**</bpt>Name<ept id=\"p3\">**</ept>, click <bpt id=\"p4\">**</bpt>TYPE (settings required)<ept id=\"p4\">**</ept>, and select <bpt id=\"p5\">**</bpt>Azure storage account<ept id=\"p5\">**</ept>."
+    },
+    {
+      "content": "Data Store Type - Azure Storage",
+      "pos": [
+        17656,
+        17687
+      ]
+    },
+    {
+      "content": "In the <bpt id=\"p1\">**</bpt>New data store<ept id=\"p1\">**</ept> blade, you will see two new fields: <bpt id=\"p2\">**</bpt>Account Name<ept id=\"p2\">**</ept> and <bpt id=\"p3\">**</bpt>Account Key<ept id=\"p3\">**</ept>.",
+      "pos": [
+        17749,
+        17848
+      ]
+    },
+    {
+      "content": "Enter account name and account key for your <bpt id=\"p1\">**</bpt>Azure Storage Account<ept id=\"p1\">**</ept>.",
+      "pos": [
+        17849,
+        17919
+      ]
+    },
+    {
+      "content": "Azure Storage Settings",
+      "pos": [
+        17927,
+        17949
+      ]
+    },
+    {
+      "content": "You can get account name and account key your Azure storage account from the portal as shown below:",
+      "pos": [
+        18007,
+        18106
+      ]
+    },
+    {
+      "content": "Storage Key",
+      "pos": [
+        18114,
+        18125
+      ]
+    },
+    {
+      "content": "After you click <bpt id=\"p1\">**</bpt>OK<ept id=\"p1\">**</ept> on the New data store blade, you should see <bpt id=\"p2\">**</bpt>StorageLinkedService<ept id=\"p2\">**</ept> in the list of <bpt id=\"p3\">**</bpt>DATA STORES<ept id=\"p3\">**</ept> on the <bpt id=\"p4\">**</bpt>Linked Services<ept id=\"p4\">**</ept> blade.",
+      "pos": [
+        18174,
+        18330
+      ]
+    },
+    {
+      "content": "Check <bpt id=\"p1\">**</bpt>NOTIFICATIONS<ept id=\"p1\">**</ept> Hub (on the left) to see any messages.",
+      "pos": [
+        18331,
+        18393
+      ]
+    },
+    {
+      "content": "Linked Services Blade with Storage",
+      "pos": [
+        18401,
+        18435
+      ]
+    },
+    {
+      "content": "Repeat <bpt id=\"p1\">**</bpt>steps 2-5<ept id=\"p1\">**</ept> to create another linked service named: <bpt id=\"p2\">**</bpt>HDInsightStorageLinkedService<ept id=\"p2\">**</ept>.",
+      "pos": [
+        18502,
+        18597
+      ]
+    },
+    {
+      "content": "This is the storage used by your HDInsight cluster.",
+      "pos": [
+        18598,
+        18649
+      ]
+    },
+    {
+      "pos": [
+        18653,
+        18783
+      ],
+      "content": "Confirm that you see both <bpt id=\"p1\">**</bpt>StorageLinkedService<ept id=\"p1\">**</ept> and <bpt id=\"p2\">**</bpt>HDInsightStorageLinkedService<ept id=\"p2\">**</ept> in the list in the Linked Services blade."
+    },
+    {
+      "pos": [
+        18787,
+        18871
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Linked Services<ept id=\"p1\">**</ept> blade, click <bpt id=\"p2\">**</bpt>Add (+) Data Store<ept id=\"p2\">**</ept> from the command bar."
+    },
+    {
+      "pos": [
+        18875,
+        18920
+      ],
+      "content": "Enter <bpt id=\"p1\">**</bpt>AzureSqlLinkedService<ept id=\"p1\">**</ept> for the name."
+    },
+    {
+      "pos": [
+        18925,
+        18991
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>TYPE (settings required)<ept id=\"p1\">**</ept>, select <bpt id=\"p2\">**</bpt>Azure SQL Database<ept id=\"p2\">**</ept>."
+    },
+    {
+      "content": "Now, you should the following additional fields on the <bpt id=\"p1\">**</bpt>New data store<ept id=\"p1\">**</ept> blade.",
+      "pos": [
+        18996,
+        19076
+      ]
+    },
+    {
+      "content": "Enter name of the Azure SQL Database <bpt id=\"p1\">**</bpt>server<ept id=\"p1\">**</ept>, <bpt id=\"p2\">**</bpt>database<ept id=\"p2\">**</ept> name, <bpt id=\"p3\">**</bpt>user name<ept id=\"p3\">**</ept>, and <bpt id=\"p4\">**</bpt>password<ept id=\"p4\">**</ept>, and click <bpt id=\"p5\">**</bpt>OK<ept id=\"p5\">**</ept>.",
+      "pos": [
+        19077,
+        19195
+      ]
+    },
+    {
+      "content": "Enter <bpt id=\"p1\">**</bpt>MarketingCampaigns<ept id=\"p1\">**</ept> for the <bpt id=\"p2\">**</bpt>database<ept id=\"p2\">**</ept>.",
+      "pos": [
+        19203,
+        19253
+      ]
+    },
+    {
+      "content": "This is the Azure SQL database created by the scripts you ran in Step 1.",
+      "pos": [
+        19254,
+        19326
+      ]
+    },
+    {
+      "content": "You should confirm that this database was indeed created by the scripts (in case there were errors).",
+      "pos": [
+        19327,
+        19427
+      ]
+    },
+    {
+      "content": "Azure SQL Settings",
+      "pos": [
+        19447,
+        19465
+      ]
+    },
+    {
+      "content": "To get these values from the Azure Management Portal: click View SQL Database connection strings for MarketingCampaigns database",
+      "pos": [
+        19523,
+        19651
+      ]
+    },
+    {
+      "content": "Azure SQL Database Connection String",
+      "pos": [
+        19663,
+        19699
+      ]
+    },
+    {
+      "pos": [
+        19771,
+        19927
+      ],
+      "content": "Confirm that you see all the three data stores you have created: <bpt id=\"p1\">**</bpt>StorageLinkedService<ept id=\"p1\">**</ept>, <bpt id=\"p2\">**</bpt>HDInsightStorageLinkedService<ept id=\"p2\">**</ept>, and <bpt id=\"p3\">**</bpt>AzureSqlLinkedService<ept id=\"p3\">**</ept>."
+    },
+    {
+      "content": "You need to create another linked service, but this one is to a Compute service, specifically <bpt id=\"p1\">**</bpt>Azure HDInsight cluster<ept id=\"p1\">**</ept>.",
+      "pos": [
+        19932,
+        20054
+      ]
+    },
+    {
+      "content": "The portal does not support creating a compute linked service yet.",
+      "pos": [
+        20055,
+        20121
+      ]
+    },
+    {
+      "content": "Therefore, you need to use Azure PowerShell to create this linked service.",
+      "pos": [
+        20122,
+        20196
+      ]
+    },
+    {
+      "content": "Switch to <bpt id=\"p1\">**</bpt>Azure PowerShell<ept id=\"p1\">**</ept> if you have it already open (or) launch <bpt id=\"p2\">**</bpt>Azure PowerShell<ept id=\"p2\">**</ept>.",
+      "pos": [
+        20202,
+        20294
+      ]
+    },
+    {
+      "content": "If you had closed and reopened Azure PowerShell, you need to run the following commands:",
+      "pos": [
+        20295,
+        20383
+      ]
+    },
+    {
+      "pos": [
+        20391,
+        20506
+      ],
+      "content": "Run <bpt id=\"p1\">**</bpt>Add-AzureAccount<ept id=\"p1\">**</ept> and enter the  user name and password that you use to sign-in to the Azure Preview Portal."
+    },
+    {
+      "pos": [
+        20515,
+        20592
+      ],
+      "content": "Run <bpt id=\"p1\">**</bpt>Get-AzureSubscription<ept id=\"p1\">**</ept> to view all the subscriptions for this account."
+    },
+    {
+      "content": "Run <bpt id=\"p1\">**</bpt>Select-AzureSubscription<ept id=\"p1\">**</ept> to select the subscription that you want to work with.",
+      "pos": [
+        20599,
+        20686
+      ]
+    },
+    {
+      "content": "This subscription should be the same as the one you used in the Azure Preview Portal.",
+      "pos": [
+        20687,
+        20772
+      ]
+    },
+    {
+      "pos": [
+        20778,
+        20879
+      ],
+      "content": "Switch to <bpt id=\"p1\">**</bpt>AzureResourceManager<ept id=\"p1\">**</ept> mode as the Azure Data Factory cmdlets are available in this mode."
+    },
+    {
+      "pos": [
+        20932,
+        21076
+      ],
+      "content": "Navigate to the <bpt id=\"p1\">**</bpt>LinkedServices<ept id=\"p1\">**</ept> subfolder in <bpt id=\"p2\">**</bpt>C:\\ADFWalkthrough<ept id=\"p2\">**</ept> (or) from the folder from the location where you have extracted the files."
+    },
+    {
+      "pos": [
+        21081,
+        21212
+      ],
+      "content": "Open <bpt id=\"p1\">**</bpt>HDInsightLinkedService.json<ept id=\"p1\">**</ept> in your favorite editor and notice that the type is set to <bpt id=\"p2\">**</bpt>HDInsightOnDemandLinkedService<ept id=\"p2\">**</ept>."
+    },
+    {
+      "content": "Use the following command to set $df variable to the name of the data factory.",
+      "pos": [
+        22379,
+        22457
+      ]
+    },
+    {
+      "content": "Use the cmdlet <bpt id=\"p1\">**</bpt>New-AzureDataFactoryLinkedService<ept id=\"p1\">**</ept> to create a Linked Service as follows.",
+      "pos": [
+        22500,
+        22591
+      ]
+    },
+    {
+      "content": "Start with the storage account:",
+      "pos": [
+        22592,
+        22623
+      ]
+    },
+    {
+      "content": "If you are using a different name for ResourceGroupName, DataFactoryName or LinkedService name, refer them in the above cmdlet.",
+      "pos": [
+        22753,
+        22880
+      ]
+    },
+    {
+      "content": "Also, provide the full file path of the Linked Service JSON file if the file cannot be found.",
+      "pos": [
+        22881,
+        22974
+      ]
+    },
+    {
+      "content": "You should see all the four linked services in the <bpt id=\"p1\">**</bpt>Linked Services<ept id=\"p1\">**</ept> blade as shown below.",
+      "pos": [
+        22979,
+        23071
+      ]
+    },
+    {
+      "content": "If the Linked services blade is not open, click Linked Services in the <bpt id=\"p1\">**</bpt>DATA FACTORY<ept id=\"p1\">**</ept> page for <bpt id=\"p2\">**</bpt>LogProcessingFactory<ept id=\"p2\">**</ept>.",
+      "pos": [
+        23072,
+        23194
+      ]
+    },
+    {
+      "content": "It may take a few seconds for the Linked services blade to refresh.",
+      "pos": [
+        23195,
+        23262
+      ]
+    },
+    {
+      "content": "Linked Services All",
+      "pos": [
+        23270,
+        23289
+      ]
+    },
+    {
+      "pos": [
+        23345,
+        23391
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"MainStep4\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph> Step 4: Create tables"
+    },
+    {
+      "content": "In this step, you will create the following tables:",
+      "pos": [
+        23393,
+        23444
+      ]
+    },
+    {
+      "content": "RawGameEventsTable",
+      "pos": [
+        23449,
+        23467
+      ]
+    },
+    {
+      "content": "PartitionedGameEventsTable",
+      "pos": [
+        23470,
+        23496
+      ]
+    },
+    {
+      "content": "RefGeoCodeDictionaryTable",
+      "pos": [
+        23499,
+        23524
+      ]
+    },
+    {
+      "content": "RefMarketingCampaignTable",
+      "pos": [
+        23527,
+        23552
+      ]
+    },
+    {
+      "content": "EnrichedGameEventsTable",
+      "pos": [
+        23555,
+        23578
+      ]
+    },
+    {
+      "content": "MarketingCampaignEffectivenessSQLTable",
+      "pos": [
+        23581,
+        23619
+      ]
+    },
+    {
+      "content": "MarketingCampaignEffectivenessBlobTable",
+      "pos": [
+        23622,
+        23661
+      ]
+    },
+    {
+      "content": "Tutorial End-to-End Flow",
+      "pos": [
+        23669,
+        23693
+      ]
+    },
+    {
+      "content": "The picture above displays pipelines in the middle row and tables in the top and bottom rows.",
+      "pos": [
+        23742,
+        23835
+      ]
+    },
+    {
+      "content": "The Azure Portal does not support creating data sets/tables yet, so you will need to use Azure PowerShell to create tables in this release.",
+      "pos": [
+        23838,
+        23977
+      ]
+    },
+    {
+      "content": "To create the tables",
+      "pos": [
+        23983,
+        24003
+      ]
+    },
+    {
+      "pos": [
+        24009,
+        24155
+      ],
+      "content": "In the Azure PowerShell, navigate to the <bpt id=\"p1\">**</bpt>Tables<ept id=\"p1\">**</ept> folder (*<bpt id=\"p2\">*</bpt>C:\\ADFWalkthrough\\Tables\\*<ept id=\"p2\">*</ept>) from the location where you have extracted the samples."
+    },
+    {
+      "pos": [
+        24161,
+        24269
+      ],
+      "content": "Use the cmdlet <bpt id=\"p1\">**</bpt>New-AzureDataFactoryTable<ept id=\"p1\">**</ept> to create the Tables as follows for <bpt id=\"p2\">**</bpt>RawGameEventsTable<ept id=\"p2\">**</ept>.json"
+    },
+    {
+      "content": "Repeat the previous step to create the following tables:",
+      "pos": [
+        24603,
+        24659
+      ]
+    },
+    {
+      "pos": [
+        25465,
+        25652
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Azure Preview Portal<ept id=\"p1\">**</ept>, click <bpt id=\"p2\">**</bpt>Datasets<ept id=\"p2\">**</ept> in the <bpt id=\"p3\">**</bpt>DATA FACTORY<ept id=\"p3\">**</ept> blade for <bpt id=\"p4\">**</bpt>LogProcessingFactory<ept id=\"p4\">**</ept> and confirm that you see all the datasets (tables are rectangular datasets)."
+    },
+    {
+      "content": "Data Sets All",
+      "pos": [
+        25661,
+        25674
+      ]
+    },
+    {
+      "content": "You can also use the following command from Azure PowerShell:",
+      "pos": [
+        25723,
+        25784
+      ]
+    },
+    {
+      "pos": [
+        25887,
+        25949
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"MainStep5\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph> Step 5: Create and schedule pipelines"
+    },
+    {
+      "content": "In this step, you will create the following pipelines: PartitionGameLogsPipeline, EnrichGameLogsPipeline, and AnalyzeMarketingCampaignPipeline.",
+      "pos": [
+        25950,
+        26093
+      ]
+    },
+    {
+      "pos": [
+        26098,
+        26256
+      ],
+      "content": "In <bpt id=\"p1\">**</bpt>Windows Explorer<ept id=\"p1\">**</ept>, navigate to the <bpt id=\"p2\">**</bpt>Pipelines<ept id=\"p2\">**</ept> sub folder in <bpt id=\"p3\">**</bpt>C:\\ADFWalkthrough<ept id=\"p3\">**</ept> folder (or from the location where you have extracted the samples)."
+    },
+    {
+      "pos": [
+        26261,
+        26435
+      ],
+      "content": "Open <bpt id=\"p1\">**</bpt>PartitionGameLogsPipeline.json<ept id=\"p1\">**</ept> in your favorite editor, replace the highlighted with your storage account for the data storage account information and save the file."
+    },
+    {
+      "content": "Repeat the step to create the following pipelines:",
+      "pos": [
+        26686,
+        26736
+      ]
+    },
+    {
+      "pos": [
+        26744,
+        26791
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>EnrichGameLogsPipeline<ept id=\"p1\">**</ept>.json (3 occurrences)"
+    },
+    {
+      "pos": [
+        26799,
+        26856
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>AnalyzeMarketingCampaignPipeline<ept id=\"p1\">**</ept>.json (3 occurrences)"
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>IMPORTANT:<ept id=\"p1\">**</ept> Confirm that you have replaced all",
+      "pos": [
+        26862,
+        26911
+      ]
+    },
+    {
+      "content": "with your storage account name.",
+      "pos": [
+        26933,
+        26964
+      ]
+    },
+    {
+      "pos": [
+        26972,
+        27130
+      ],
+      "content": "In <bpt id=\"p1\">**</bpt>Azure PowerShell<ept id=\"p1\">**</ept>, navigate to the <bpt id=\"p2\">**</bpt>Pipelines<ept id=\"p2\">**</ept> sub folder in <bpt id=\"p3\">**</bpt>C:\\ADFWalkthrough<ept id=\"p3\">**</ept> folder (or from the location where you have extracted the samples)."
+    },
+    {
+      "pos": [
+        27135,
+        27254
+      ],
+      "content": "Use the cmdlet <bpt id=\"p1\">**</bpt>New-AzureDataFactoryPipeline<ept id=\"p1\">**</ept> to create the Pipelines as follows for <bpt id=\"p2\">**</bpt>PartitionGameLogspeline<ept id=\"p2\">**</ept>.json"
+    },
+    {
+      "content": "If you are using a different name for ResourceGroupName, DataFactoryName or Pipeline name, refer them in the above cmdlet.",
+      "pos": [
+        27395,
+        27517
+      ]
+    },
+    {
+      "content": "Also, provide the full file path of the Pipeline JSON file.",
+      "pos": [
+        27518,
+        27577
+      ]
+    },
+    {
+      "content": "Repeat the previous step to create the following pipelines:",
+      "pos": [
+        27581,
+        27640
+      ]
+    },
+    {
+      "content": "EnrichGameLogsPipeline",
+      "pos": [
+        27650,
+        27672
+      ]
+    },
+    {
+      "content": "AnalyzeMarketingCampaignPipeline",
+      "pos": [
+        27819,
+        27851
+      ]
+    },
+    {
+      "pos": [
+        28006,
+        28090
+      ],
+      "content": "Use the cmdlet <bpt id=\"p1\">**</bpt>Get-AzureDataFactoryPipeline<ept id=\"p1\">**</ept> to get the listing of the Pipelines."
+    },
+    {
+      "content": "Once the pipelines are created, you can specify the duration in which data processing will occur.",
+      "pos": [
+        28189,
+        28286
+      ]
+    },
+    {
+      "content": "By specifying the active period for a pipeline, you are defining the time duration in which the data slices will be processed based on the Availability properties that were defined for each ADF table.",
+      "pos": [
+        28287,
+        28487
+      ]
+    },
+    {
+      "content": "To specify the active period for the pipeline, you can use the cmdlet Set-AzureDataFactoryPipelineActivePeriod.",
+      "pos": [
+        28489,
+        28600
+      ]
+    },
+    {
+      "content": "In this walkthrough, the sample data is from 05/01 to 05/05.",
+      "pos": [
+        28601,
+        28661
+      ]
+    },
+    {
+      "content": "Use 2014-05-01 as the StartDateTime.",
+      "pos": [
+        28662,
+        28698
+      ]
+    },
+    {
+      "content": "EndDateTime is optional.",
+      "pos": [
+        28699,
+        28723
+      ]
+    },
+    {
+      "content": "Confirm to set the active period for the pipeline.",
+      "pos": [
+        28920,
+        28970
+      ]
+    },
+    {
+      "content": "Repeat the previous two steps to set active period for the following pipelines.",
+      "pos": [
+        29225,
+        29304
+      ]
+    },
+    {
+      "content": "EnrichGameLogsPipeline",
+      "pos": [
+        29314,
+        29336
+      ]
+    },
+    {
+      "content": "AnalyzeMarketingCampaignPipeline",
+      "pos": [
+        29540,
+        29572
+      ]
+    },
+    {
+      "pos": [
+        29782,
+        29981
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Azure Preview Portal<ept id=\"p1\">**</ept>, click <bpt id=\"p2\">**</bpt>Pipelines<ept id=\"p2\">**</ept> tile (not on the names of the pipelines) in the <bpt id=\"p3\">**</bpt>DATA FACTORY<ept id=\"p3\">**</ept> blade for the <bpt id=\"p4\">**</bpt>LogProcessingFactory<ept id=\"p4\">**</ept>, you should see the pipelines you created."
+    },
+    {
+      "content": "All Pipelines",
+      "pos": [
+        29989,
+        30002
+      ]
+    },
+    {
+      "pos": [
+        30052,
+        30134
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>DATA FACTORY<ept id=\"p1\">**</ept> blade for the <bpt id=\"p2\">**</bpt>LogProcessingFactory<ept id=\"p2\">**</ept>, click <bpt id=\"p3\">**</bpt>Diagram<ept id=\"p3\">**</ept>."
+    },
+    {
+      "content": "Diagram Link",
+      "pos": [
+        30142,
+        30154
+      ]
+    },
+    {
+      "content": "You can rearrange the diagram you see and here is a rearranged diagram that shows direct inputs at the top and outputs at the bottom.",
+      "pos": [
+        30203,
+        30336
+      ]
+    },
+    {
+      "content": "You can see that the output of the <bpt id=\"p1\">**</bpt>PartitionGameLogsPipeline<ept id=\"p1\">**</ept> is passed in as an input to the EnrichGameLogsPipeline and output of the <bpt id=\"p2\">**</bpt>EnrichGameLogsPipeline<ept id=\"p2\">**</ept> is passed to the <bpt id=\"p3\">**</bpt>AnalyzeMarketingCampaignPipeline<ept id=\"p3\">**</ept>.",
+      "pos": [
+        30337,
+        30556
+      ]
+    },
+    {
+      "content": "Double-click on a title to see details about the artifact that the blade represents.",
+      "pos": [
+        30557,
+        30641
+      ]
+    },
+    {
+      "content": "Diagram View",
+      "pos": [
+        30649,
+        30661
+      ]
+    },
+    {
+      "pos": [
+        30710,
+        30845
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Congratulations!<ept id=\"p1\">**</ept> You have successfully created the Azure Data Factory, Linked Services, Pipelines, Tables and started the workflow."
+    },
+    {
+      "pos": [
+        30852,
+        30918
+      ],
+      "content": "<ph id=\"ph1\">&lt;a name=\"MainStep6\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph> Step 6: Monitor pipelines and data slices"
+    },
+    {
+      "content": "If you do not have the DATA FACTORY blade for the LogProcessingFactory open, you can do one of the following:",
+      "pos": [
+        30925,
+        31034
+      ]
+    },
+    {
+      "content": "Click <bpt id=\"p1\">**</bpt>LogProcessingFactory<ept id=\"p1\">**</ept> on the <bpt id=\"p2\">**</bpt>Startboard<ept id=\"p2\">**</ept>.",
+      "pos": [
+        31043,
+        31096
+      ]
+    },
+    {
+      "content": "While creating the data factory, the <bpt id=\"p1\">**</bpt>Add to Startboard<ept id=\"p1\">**</ept> option was automatically checked.",
+      "pos": [
+        31097,
+        31189
+      ]
+    },
+    {
+      "content": "Monitoring Startboard",
+      "pos": [
+        31201,
+        31222
+      ]
+    },
+    {
+      "pos": [
+        31274,
+        31321
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>BROWSE<ept id=\"p1\">**</ept> hub, and click <bpt id=\"p2\">**</bpt>Everything<ept id=\"p2\">**</ept>."
+    },
+    {
+      "content": "Monitoring Hub Everything",
+      "pos": [
+        31341,
+        31366
+      ]
+    },
+    {
+      "pos": [
+        31423,
+        31542
+      ],
+      "content": "In the <bpt id=\"p1\">**</bpt>Browse<ept id=\"p1\">**</ept> blade, select <bpt id=\"p2\">**</bpt>Data factories<ept id=\"p2\">**</ept> and select <bpt id=\"p3\">**</bpt>LogProcessingFactory<ept id=\"p3\">**</ept> in the <bpt id=\"p4\">**</bpt>Data factories<ept id=\"p4\">**</ept> blade."
+    },
+    {
+      "content": "Monitoring Browse Datafactories",
+      "pos": [
+        31554,
+        31585
+      ]
+    },
+    {
+      "content": "You can monitor your data factory in several ways.",
+      "pos": [
+        31642,
+        31692
+      ]
+    },
+    {
+      "content": "You can start with pipelines or data sets.",
+      "pos": [
+        31693,
+        31735
+      ]
+    },
+    {
+      "content": "Let’s start with Pipelines and drill further.",
+      "pos": [
+        31736,
+        31781
+      ]
+    },
+    {
+      "pos": [
+        31787,
+        31837
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>Pipelines<ept id=\"p1\">**</ept> on the <bpt id=\"p2\">**</bpt>DATA FACTORY<ept id=\"p2\">**</ept> blade."
+    },
+    {
+      "pos": [
+        31843,
+        31902
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>PartitionGameLogsPipeline<ept id=\"p1\">**</ept> in the Pipelines blade."
+    },
+    {
+      "content": "In the <bpt id=\"p1\">**</bpt>PIPELINE<ept id=\"p1\">**</ept> blade for <bpt id=\"p2\">**</bpt>PartitionGameLogsPipeline<ept id=\"p2\">**</ept>, you see that the pipeline consumes <bpt id=\"p3\">**</bpt>RawGameEventsTable<ept id=\"p3\">**</ept> dataset.",
+      "pos": [
+        31908,
+        32035
+      ]
+    },
+    {
+      "content": "Click <bpt id=\"p1\">**</bpt>RawGameEventsTable<ept id=\"p1\">**</ept>.",
+      "pos": [
+        32037,
+        32066
+      ]
+    },
+    {
+      "content": "Pipeline Consumed and Produced",
+      "pos": [
+        32074,
+        32104
+      ]
+    },
+    {
+      "content": "In the TABLE blade for <bpt id=\"p1\">**</bpt>RawGameEventsTable<ept id=\"p1\">**</ept>, you see all the slices.",
+      "pos": [
+        32168,
+        32238
+      ]
+    },
+    {
+      "content": "In the following screen shot, all the slices are in <bpt id=\"p1\">**</bpt>Ready<ept id=\"p1\">**</ept> state and there are no problem slices.",
+      "pos": [
+        32239,
+        32339
+      ]
+    },
+    {
+      "content": "It means that the data is ready to be processed.",
+      "pos": [
+        32340,
+        32388
+      ]
+    },
+    {
+      "content": "RawGameEventsTable TABLE blade",
+      "pos": [
+        32397,
+        32427
+      ]
+    },
+    {
+      "pos": [
+        32487,
+        32571
+      ],
+      "content": "Now, on the <bpt id=\"p1\">**</bpt>PIPELINE<ept id=\"p1\">**</ept> blade for <bpt id=\"p2\">**</bpt>PartiionGameLogsPipeline<ept id=\"p2\">**</ept>, click <bpt id=\"p3\">**</bpt>Produced<ept id=\"p3\">**</ept>."
+    },
+    {
+      "content": "You should see the list of data sets that this pipeline produces:",
+      "pos": [
+        32576,
+        32641
+      ]
+    },
+    {
+      "pos": [
+        32646,
+        32719
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>PartitionedGameEvents<ept id=\"p1\">**</ept> table in the <bpt id=\"p2\">**</bpt>Produced datasets<ept id=\"p2\">**</ept> blade."
+    },
+    {
+      "pos": [
+        32725,
+        32787
+      ],
+      "content": "Confirm that the <bpt id=\"p1\">**</bpt>status<ept id=\"p1\">**</ept> of all slices is set to <bpt id=\"p2\">**</bpt>Ready<ept id=\"p2\">**</ept>."
+    },
+    {
+      "pos": [
+        32793,
+        32885
+      ],
+      "content": "Click on one of the slices that is <bpt id=\"p1\">**</bpt>Ready<ept id=\"p1\">**</ept> to see the <bpt id=\"p2\">**</bpt>DATA SLICE<ept id=\"p2\">**</ept> blade for that slice."
+    },
+    {
+      "content": "RawGameEventsTable DATA SLICE blade",
+      "pos": [
+        32893,
+        32928
+      ]
+    },
+    {
+      "content": "If there was an error, you would see a **Failed **status here.",
+      "pos": [
+        33004,
+        33066
+      ]
+    },
+    {
+      "content": "You might also see either both slices with status <bpt id=\"p1\">**</bpt>Ready<ept id=\"p1\">**</ept>, or both with status <bpt id=\"p2\">**</bpt>PendingValidation<ept id=\"p2\">**</ept>, depending on how quickly the slices are processed.",
+      "pos": [
+        33068,
+        33222
+      ]
+    },
+    {
+      "pos": [
+        33229,
+        33359
+      ],
+      "content": "Refer to the <bpt id=\"p1\">[</bpt>Azure Data Factory Developer Reference<ept id=\"p1\">][developer-reference]</ept> to get an understanding of all possible slice statuses."
+    },
+    {
+      "content": "In the <bpt id=\"p1\">**</bpt>DATA SLICE<ept id=\"p1\">**</ept> blade, click the run from the <bpt id=\"p2\">**</bpt>Activity Runs<ept id=\"p2\">**</ept> list.",
+      "pos": [
+        33365,
+        33440
+      ]
+    },
+    {
+      "content": "You should see the Activity Run blade for that slice.",
+      "pos": [
+        33441,
+        33494
+      ]
+    },
+    {
+      "content": "You should see the following <bpt id=\"p1\">**</bpt>ACTIVITY RUN DETAILS<ept id=\"p1\">**</ept> blade.",
+      "pos": [
+        33495,
+        33555
+      ]
+    },
+    {
+      "content": "Activity Run Details blade",
+      "pos": [
+        33563,
+        33589
+      ]
+    },
+    {
+      "content": "Click <bpt id=\"p1\">**</bpt>Download<ept id=\"p1\">**</ept> to download the files.",
+      "pos": [
+        33648,
+        33689
+      ]
+    },
+    {
+      "content": "This screen is especially useful when you are troubleshooting errors from HDInsight processing.",
+      "pos": [
+        33690,
+        33785
+      ]
+    },
+    {
+      "pos": [
+        33798,
+        33977
+      ],
+      "content": "When all the pipeline have completed execution, you can look into the <bpt id=\"p1\">**</bpt>MarketingCampaignEffectivenessTable<ept id=\"p1\">**</ept> in the <bpt id=\"p2\">**</bpt>MarketingCampaigns<ept id=\"p2\">**</ept> Azure SQL database to view the results."
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Congratulations!<ept id=\"p1\">**</ept> You can now monitor and troubleshoot the workflows.",
+      "pos": [
+        33980,
+        34052
+      ]
+    },
+    {
+      "content": "You have learned how to use Azure Data Factory to process data and get analytics.",
+      "pos": [
+        34053,
+        34134
+      ]
+    },
+    {
+      "content": "Extend the tutorial to use on-premises data",
+      "pos": [
+        34139,
+        34182
+      ]
+    },
+    {
+      "content": "In the last step of log processing scenario from the walkthrough in this article, the marketing campaign effectiveness output was copied to an Azure SQL database.",
+      "pos": [
+        34183,
+        34345
+      ]
+    },
+    {
+      "content": "You could also move this data to on-premises SQL Server for analytics within your organization.",
+      "pos": [
+        34346,
+        34441
+      ]
+    },
+    {
+      "content": "In order to copy the marketing campaign effectiveness data from Azure Blob to on-premises SQL Server, you need to create additional on-premises Linked Service, Table and Pipeline introduced in the walkthrough in this article.",
+      "pos": [
+        34444,
+        34669
+      ]
+    },
+    {
+      "pos": [
+        34671,
+        34885
+      ],
+      "content": "Practice the <bpt id=\"p1\">[</bpt>Walkthrough: Using on-premises data source<ept id=\"p1\">][tutorial-onpremises-using-powershell]</ept> to learn how to create a pipeline to copy marketing campaign effectiveness data to an on-premises SQL Server database."
+    },
+    {
+      "content": "test",
+      "pos": [
+        40773,
+        40777
+      ]
+    }
+  ],
+  "content": "<properties \n    pageTitle=\"Move and process log files using Azure Data Factory (Azure PowerShell)\" \n    description=\"This advanced tutorial describes a near real-world scenario and implements the scenario using Azure Data Factory service and Azure PowerShell.\" \n    services=\"data-factory\" \n    documentationCenter=\"\" \n    authors=\"spelluru\" \n    manager=\"jhubbard\" \n    editor=\"monicar\"/>\n\n<tags \n    ms.service=\"data-factory\" \n    ms.workload=\"data-services\" \n    ms.tgt_pltfrm=\"na\" \n    ms.devlang=\"na\" \n    ms.topic=\"article\" \n    ms.date=\"08/25/2015\" \n    ms.author=\"spelluru\"/>\n\n# Tutorial: Move and process log files using Data Factory [PowerShell]\nThis article provides an end-to-end walkthrough of a canonical scenario of log processing using Azure Data Factory to transform data from log files into insights. \n\n## Scenario\nContoso is a gaming company that creates games for multiple platforms: game consoles, hand held devices, and personal computers (PCs). Each of these games produces tons of logs. Contoso’s goal is to collect and analyze the logs produced by these games to get usage information, identify up-sell and cross-sell opportunities, develop new compelling features etc. to improve business and provide better experience to customers.\n \nIn this walkthrough, we will collect sample logs, process and enrich them with reference data, and transform the data to evaluate the effectiveness of a marketing campaign that Contoso has recently launched.\n\n## Getting ready for the tutorial\n1.  Read [Introduction to Azure Data Factory][adfintroduction] to get an overview of Azure Data Factory and understanding of the top level concepts.\n2.  You must have an Azure subscription to perform this tutorial. For information about obtaining a subscription, see [Purchase Options] [azure-purchase-options], [Member Offers][azure-member-offers], or [Free Trial][azure-free-trial].\n3.  You must download and install [Azure PowerShell][download-azure-powershell] on your computer. \n2.  **(recommended)** Review and practice the tutorial in the [Get started with Azure Data Factory][adfgetstarted] article for a simple tutorial to get familiar with the portal and cmdlets.\n3.  **(recommended)** Review and practice the walkthrough in the [Use Pig and Hive with Azure Data Factory][usepigandhive] article for a walkthrough on creating a pipeline to move data from on-premises data source to an Azure blob store.\n4.  Download [ADFWalkthrough][adfwalkthrough-download] files to **C:\\ADFWalkthrough** folder **preserving the folder structure**:\n    - **Pipelines:** It includes  JSON files containing the definition of the pipelines.\n    - **Tables:** It includes  JSON files containing the definition of the Tables.\n    - **LinkedServices:** It includes JSON files containing the definition of your storage and compute (HDInsight) cluster \n    - **Scripts:** It includes Hive and Pig scripts that are used for processing the data and invoked from the pipelines\n    - **SampleData:** It includes sample data for this walkthrough\n    - **OnPremises:** It includes JSON files and script that are used for demonstrating accessing your on-premises data\n    - **uploadSampleDataAndScripts.ps1:** This script uploads the sample data & scripts to Azure.\n5. Make sure you have created the following Azure Resources:            \n    - Azure Storage Account.\n    - Azure SQL Database\n    - Azure HDInsight Cluster of version 3.1 or above (or use an on-demand HDInsight cluster that the Data Factory service will create automatically)   \n7. Once the Azure Resources are created, make sure you have the information needed to connect to each of these resources.\n    - **Azure Storage Account** - Account name and account key.  \n    - **Azure SQL Database** - Server, database, user name, and password.\n    - **Azure HDInsight Cluster**. - Name of the HDInsight cluster, user name, password, and account name and account key for the Azure storage associated with this cluster. If you want to use an on-demand HDInsight cluster instead of your own HDInsight cluster you can skip this step.  \n8. Launch **Azure PowerShell** and execute the following commands. Keep the Azure PowerShell open. If you close and reopen, you need to run these commands again.\n    - Run **Add-AzureAccount** and enter the  user name and password that you use to sign-in to the Azure Preview Portal.  \n    - Run **Get-AzureSubscription** to view all the subscriptions for this account.\n    - Run **Select-AzureSubscription** to select the subscription that you want to work with. This subscription should be the same as the one you used in the Azure Preview Portal.\n    \n\n## Overview\nThe end-to-end workflow is depicted below:\n    ![Tutorial End to End Flow][image-data-factory-tutorial-end-to-end-flow]\n\n1. The **PartitionGameLogsPipeline** reads the raw game events from a blob storage (RawGameEventsTable) and creates partitions based on year, month, and day (PartitionedGameEventsTable).\n2. The **EnrichGameLogsPipeline** joins partitioned game events (PartitionedGameEvents table, which is an output of the PartitionGameLogsPipeline) with geo code (RefGetoCodeDictionaryTable) and enriches the data by mapping an IP address to the corresponding geo-location (EnrichedGameEventsTable).\n3. The **AnalyzeMarketingCampaignPipeline** pipeline leverages the enriched data (EnrichedGameEventTable produced by the EnrichGameLogsPipeline) and processes it with the advertising data (RefMarketingCampaignnTable) to create the final output of marketing campaign effectiveness, which is copied to the Azure SQL database (MarketingCampainEffectivensessSQLTable) and an Azure blob storage (MarketingCampaignEffectivenessBlobTable) for analytics.\n    \n## Walkthrough: Creating, deploying, and monitoring workflows\n1. [Step 1: Upload sample data and scripts](#MainStep1). In this step, you will upload all the sample data (including all the logs and reference data) and Hive/Pig scripts that will be executed by the workflows. The scripts you execute also create an Azure SQL database (named MarketingCampaigns), tables, user-defined types, and stored procedures.\n2. [Step 2: Create an Azure data factory](#MainStep2). In this step, you will create an Azure data factory named LogProcessingFactory.\n3. [Step 3: Create linked services](#MainStep3). In this step, you will create the following linked services: \n    \n    -   **StorageLinkedService**. Links the Azure storage location that contains raw game events, partitioned game events, enriched game events, marketing campaign effective information, reference geo-code data, and reference marketing campaign data to the LogProcessingFactory   \n    -   **AzureSqlLinkedService**. Links an Azure SQL database that contains marketing campaign effectiveness information. \n    -   **HDInsightStorageLinkedService**. Links an Azure blob storage that is associated with the HDInsight cluster that the HDInsightLinkedService refers to. \n    -   **HDInsightLinkedService**. Links an Azure HDInsight cluster to the LogProcessingFactory. This cluster is used to perform pig/hive processing on the data. \n        \n4. [Step 4: Create tables](#MainStep4). In this step, you will create the following tables:     \n    \n    - **RawGameEventsTable**. This table specifies the location of the raw game event data within the Azure blob storage defined by StorageLinkedService (adfwalkthrough/logs/rawgameevents/) . \n    - **PartitionedGameEventsTable**. This table specifies the location of the partitioned game event data within the Azure blob storage defined by StorageLinkedService (adfwalkthrough/logs/partitionedgameevents/) . \n    - **RefGeoCodeDictionaryTable**. This table specifies the location of the refernce geo-code data within the Azure blob storage defined by StorageLinkedService (adfwalkthrough/refdata/refgeocodedictionary/).\n    - **RefMarketingCampaignTable**. This table specifies the location of the refernce marketing campaign data within the Azure blob storage defined by StorageLinkedService (adfwalkthrough/refdata/refmarketingcampaign/).\n    - **EnrichedGameEventsTable**. This table specifies the location of the enriched game event data within the Azure blob storage defined by StorageLinkedService (adfwalkthrough/logs/enrichedgameevents/).\n    - **MarketingCampaignEffectivenessSQLTable**.This table specifies the SQL table (MarketingCampaignEffectiveness) in the Azure SQL Database defined by AzureSqlLinkedService that contains the marketing campaign effectiveness data. \n    - **MarketingCampaignEffectivenessBlobTable**. This table specifies the location of the marketing campaign effectiveness data within the Azure blob storage defined by StorageLinkedService (adfwalkthrough/marketingcampaigneffectiveness/). \n\n    \n5. [Step 5: Create and schedule pipelines](#MainStep5). In this step, you will create the following pipelines:\n    - **PartitionGameLogsPipeline**. This pipeline reads the raw game events from a blob storage (RawGameEventsTable) and creates partitions based on year, month, and day (PartitionedGameEventsTable). \n\n\n        ![PartitionGamesLogs pipeline][image-data-factory-tutorial-partition-game-logs-pipeline]\n\n\n    - **EnrichGameLogsPipeline**. This pipeline joins partitioned game events (PartitionedGameEvents table, which is an output of the PartitionGameLogsPipeline) with geo-code (RefGetoCodeDictionaryTable) and enriches the data by mapping an IP address to the corresponding geo-location (EnrichedGameEventsTable) \n\n        ![EnrichedGameLogsPipeline][image-data-factory-tutorial-enrich-game-logs-pipeline]\n\n    - **AnalyzeMarketingCampaignPipeline**. This pipeline leverages the enriched game event data (EnrichedGameEventTable produced by the EnrichGameLogsPipeline) and processes it with the advertising data (RefMarketingCampaignnTable) to create the final output of marketing campaign effectiveness, which is copied to the Azure SQL database (MarketingCampainEffectivensessSQLTable) and an Azure blob storage (MarketingCampaignEffectivenessBlobTable) for analytics\n\n\n        ![MarketingCampaignPipeline][image-data-factory-tutorial-analyze-marketing-campaign-pipeline]\n\n\n6. [Step 6: Monitor pipelines and data slices](#MainStep6). In this step, you will monitor the pipelines, tables, and data slices by using the Azure Portal.\n\n## <a name=\"MainStep1\"></a> Step 1: Upload sample data and scripts\nIn this step, you upload all the sample data (including all the logs and reference data) and Hive/Pig scripts that are invoked by the workflows. The scripts you execute also create an Azure SQL database called **MarketingCampaigns**, tables, user-defined types, and stored procedures. \n\nThe tables, user-defined types and stored procedures are used when moving the Marketing Campaign Effectiveness results from Azure blob storage to the Azure SQL database.\n\n1. Open **uploadSampleDataAndScripts.ps1** from **C:\\ADFWalkthrough** folder (or the folder that contains the extracted files) in your favorite editor, replace the highlighted with your cluster information, and save the file.\n\n\n        $storageAccount = <storage account name>\n        $storageKey = <storage account key>\n        $azuresqlServer = <sql azure server>.database.windows.net\n        $azuresqlUser = <sql azure user>@<sql azure server>\n        $azuresqlPassword = <sql azure password>\n\n \n    This script requires you have sqlcmd utility installed on your machine. If you have SQL Server isntalled, you already have it. Otherwise, [download][sqlcmd-install] and install the utility. \n    \n    Alternatively, you can use the files in the folder: C:\\ADFWalkthrough\\Scripts to upload pig/hive scripts and sample files to the adfwalkthrough container in the blob storage, and create MarketingCampaignEffectiveness table in the MarketingCamapaigns Azure SQL database.\n   \n2. Confirm that your local machine is allowed to access the Azure SQL Database. To enable access, use the **Azure Management Portal** or **sp_set_firewall_rule** on the master database to create a firewall rule for the IP address of your machine. It may take up to five minutes for this change to take effect. See [Setting firewall rules for Azure SQL][azure-sql-firewall].\n4. In Azure PowerShell, navigate to the location where you have extracted the samples (for example: **C:\\ADFWalkthrough**)\n5. Run **uploadSampleDataAndScripts.ps1** \n6. Once the script executes successfully, you will see the following:\n\n        $storageAccount = <storage account name>\n        PS C:\\ ADFWalkthrough> & '.\\uploadSampleDataAndScripts.ps1'\n\n        Name            PublicAccess        LastModified\n        -----           --------        ------\n        ADFWalkthrough      off         6/6/2014 6:53:34 PM +00:00\n    \n        Uploading sample data and script files to the storage container [adfwalkthrough]\n\n        Container Uri: https://<yourblobstorage>.blob.core.windows.net/adfwalkthrough\n\n        Name                        BlobType   Length   ContentType               LastModified                        \n        ----                        --------   ------   -----------               ------------                        \n        logs/rawgameevents/raw1.csv  BlockBlob  12308   application/octet-stream  6/6/2014 6:54:35 PM \n        logs/rawgameevents/raw2.csv  BlockBlob  16119   application/octet-stream  6/6/2014 6:54:35 PM \n        logs/rawgameevents/raw3.csv  BlockBlob  16062   application/octet-stream  6/6/2014 6:54:35 PM \n        logs/rawgameevents/raw4.csv  BlockBlob  16245   application/octet-stream  6/6/2014 6:54:35 PM \n        refdata/refgeocodedictiona.. BlockBlob  18647   application/octet-stream  6/6/2014 6:54:36 PM \n        refdata/refmarketingcampai.. BlockBlob  8808    application/octet-stream  6/6/2014 6:54:36 PM\n        scripts/partitionlogs.hql    BlockBlob  2449    application/octet-stream  6/6/2014 6:54:36 PM \n        scripts/enrichlogs.pig       BlockBlob  1631    application/octet-stream  6/6/2014 6:54:36 PM\n        scripts/transformdata.hql    BlockBlob  1753    application/octet-stream  6/6/2014 6:54:36 PM\n\n        6/6/2014 11:54:36 AM Summary\n        6/6/2014 11:54:36 AM 1. Uploaded Sample Data Files to blob container.\n        6/6/2014 11:54:36 AM 2. Uploaded Sample Script Files to blob container.\n        6/6/2014 11:54:36 AM 3. Created ‘MarketingCampaigns’ Azure SQL database and tables.\n        6/6/2014 11:54:36 AM You are ready to deploy Linked Services, Tables and Pipelines. \n\n\n## <a name=\"MainStep2\"></a> Step 2: Create an Azure data factory\nIn this step, you create an Azure data factory named **LogProcessingFactory**.\n\n1.  After logging into the [Azure Preview Portal][azure-preview-portal], click **NEW** from the bottom-left corner, and click **Data Factory** on the **New** blade. \n\n    ![New->DataFactory][image-data-factory-new-datafactory-menu] \n    \n    If you do not see **Data Factory** on the **New** blade, scroll down. \n    \n5. In the **New data factory** blade, enter **LogProcessingFactory** for the **Name**.\n\n    ![Data Factory Blade][image-data-factory-tutorial-new-datafactory-blade]\n\n6. If you haven’t created an Azure resource group named **ADF** already, do the following:\n    1. Click **RESOURCE GROUP NAME**, and click **Create a new resource group**.\n    \n        ![Resource Group Blade][image-data-factory-tutorial-resourcegroup-blade]\n    2. In the **Create resource group** blade, enter **ADF** for the name of the resource group, and click **OK**.\n    \n        ![Create Resource Group][image-data-factory-tutorial-create-resourcegroup]\n7. Select **ADF** for the **RESOURCE GROUP NAME**.  \n8.  In the **New data factory** blade, notice that **Add to Startboard** is selected by default. This add a link to data factory on the startboard (what you see when you login to Azure Preview Portal).\n\n    ![Create Data Factory Blade][image-data-factory-tutorial-create-datafactory]\n\n9.  In the **New data factory** blade, click **Create** to create the data factory.\n10. After the data factory is created, you should see the **DATA FACTORY** blade titled **LogProcessingFactory**.\n\n    ![Data Factory Homepage][image-data-factory-tutorial-datafactory-homepage]\n\n    \n    If you do not see it, do one of the following:\n\n    - Click **LogProcessingFactory** on the **Startboard** (home page)\n    - Click **BROWSE** on the left, click **Everything**, click **Data factories**, and click the data factory.\n \n    The name of the Azure data factory must be globally unique. If you receive the error: **Data factory name “LogProcessingFactory” is not available**, change the name (for example, yournameLogProcessingFactory). Use this name in place of LogProcessingFactory while performing steps in this tutorial.\n \n## <a name=\"MainStep3\"></a> Step 3: Create linked services\n\n> [AZURE.NOTE] This articles uses the Azure PowerShell to create linked services, tables, and pipelines. See [Tutorial using Data Factory Editor][adftutorial-using-editor] if you want to perform this tutorial using Azure Portal, specifically Data Factory Editor. \n\nIn this step, you will create the following linked services: StorageLinkedService, AzureSqlLinkedService, HDInsightStorageLinkedService, and HDInsightLinkedService.\n\n\n1.  In the **LogProcessingFactory** blade, click **Linked Services** tile.\n\n    ![Linked Services Tile][image-data-factory-tutorial-linkedservice-tile]\n\n2. In the **Linked Services** blade, click **+ Data Store** from the command bar.   \n\n    ![Linked Services - Add Store][image-data-factory-tutorial-linkedservices-add-datstore]\n\n3. In the **New data store** blade, enter **StorageLinkedService** for the **Name**, click **TYPE (settings required)**, and select **Azure storage account**.\n\n    ![Data Store Type - Azure Storage][image-data-factory-tutorial-datastoretype-azurestorage]\n\n4. In the **New data store** blade, you will see two new fields: **Account Name** and **Account Key**. Enter account name and account key for your **Azure Storage Account**.\n\n    ![Azure Storage Settings][image-data-factory-tutorial-azurestorage-settings]\n\n    You can get account name and account key your Azure storage account from the portal as shown below:\n\n    ![Storage Key][image-data-factory-tutorial-storage-key]\n  \n5. After you click **OK** on the New data store blade, you should see **StorageLinkedService** in the list of **DATA STORES** on the **Linked Services** blade. Check **NOTIFICATIONS** Hub (on the left) to see any messages.\n\n    ![Linked Services Blade with Storage][image-data-factory-tutorial-linkedservices-blade-storage]\n   \n6. Repeat **steps 2-5** to create another linked service named: **HDInsightStorageLinkedService**. This is the storage used by your HDInsight cluster.\n7. Confirm that you see both **StorageLinkedService** and **HDInsightStorageLinkedService** in the list in the Linked Services blade.\n8. In the **Linked Services** blade, click **Add (+) Data Store** from the command bar.\n9. Enter **AzureSqlLinkedService** for the name.\n10. Click **TYPE (settings required)**, select **Azure SQL Database**.\n11. Now, you should the following additional fields on the **New data store** blade. Enter name of the Azure SQL Database **server**, **database** name, **user name**, and **password**, and click **OK**.\n    1. Enter **MarketingCampaigns** for the **database**. This is the Azure SQL database created by the scripts you ran in Step 1. You should confirm that this database was indeed created by the scripts (in case there were errors).\n        \n        ![Azure SQL Settings][image-data-factory-tutorial-azuresql-settings]\n\n        To get these values from the Azure Management Portal: click View SQL Database connection strings for MarketingCampaigns database\n\n        ![Azure SQL Database Connection String][image-data-factory-tutorial-azuresql-database-connection-string]\n\n12. Confirm that you see all the three data stores you have created: **StorageLinkedService**, **HDInsightStorageLinkedService**, and **AzureSqlLinkedService**.\n13. You need to create another linked service, but this one is to a Compute service, specifically **Azure HDInsight cluster**. The portal does not support creating a compute linked service yet. Therefore, you need to use Azure PowerShell to create this linked service. \n14. Switch to **Azure PowerShell** if you have it already open (or) launch **Azure PowerShell**. If you had closed and reopened Azure PowerShell, you need to run the following commands: \n    - Run **Add-AzureAccount** and enter the  user name and password that you use to sign-in to the Azure Preview Portal.  \n    - Run **Get-AzureSubscription** to view all the subscriptions for this account.\n    - Run **Select-AzureSubscription** to select the subscription that you want to work with. This subscription should be the same as the one you used in the Azure Preview Portal. \n15. Switch to **AzureResourceManager** mode as the Azure Data Factory cmdlets are available in this mode.\n\n        Switch-AzureMode AzureResourceManager\n\n16. Navigate to the **LinkedServices** subfolder in **C:\\ADFWalkthrough** (or) from the folder from the location where you have extracted the files.\n17. Open **HDInsightLinkedService.json** in your favorite editor and notice that the type is set to **HDInsightOnDemandLinkedService**.\n\n\n    The Azure Data Factory service supports creation of an on-demand cluster and use it to process input to produce output data. You can also use your own cluster to perform the same. When you use on-demand HDInsight cluster, a cluster gets created for each slice. Whereas, when you use your own HDInsight cluster, the cluster is ready to process the slice immediately. Therefore, when you use on-demand cluster, you may not see the output data as quickly as when you use your own cluster. For the purpose of the sample, let's use an on-demand cluster. \n    \n    The HDInsightLinkedService links an on-demand HDInsight cluster to the data factory. To use your own HDInsight cluster, update the Properties section of the HDInsightLinkedService.json file as shown below (replace clustername, username, and password with appropriate values): \n    \n        \"Properties\": \n        {\n            \"Type\": \"HDInsightBYOCLinkedService\",\n            \"ClusterUri\": \"https://<clustername>.azurehdinsight.net/\",\n            \"UserName\": \"<username>\",\n            \"Password\": \"<password>\",\n            \"LinkedServiceName\": \"HDInsightStorageLinkedService\"\n        }\n        \n\n18. Use the following command to set $df variable to the name of the data factory.\n\n        $df = “LogProcessingFactory”\n19. Use the cmdlet **New-AzureDataFactoryLinkedService** to create a Linked Service as follows. Start with the storage account:\n\n        New-AzureDataFactoryLinkedService -ResourceGroupName ADF -DataFactoryName $df -File .\\HDInsightLinkedService.json\n \n    If you are using a different name for ResourceGroupName, DataFactoryName or LinkedService name, refer them in the above cmdlet. Also, provide the full file path of the Linked Service JSON file if the file cannot be found.\n20. You should see all the four linked services in the **Linked Services** blade as shown below. If the Linked services blade is not open, click Linked Services in the **DATA FACTORY** page for **LogProcessingFactory**. It may take a few seconds for the Linked services blade to refresh.\n\n    ![Linked Services All][image-data-factory-tutorial-linkedservices-all]\n \n\n## <a name=\"MainStep4\"></a> Step 4: Create tables \nIn this step, you will create the following tables: \n\n- RawGameEventsTable\n- PartitionedGameEventsTable\n- RefGeoCodeDictionaryTable\n- RefMarketingCampaignTable\n- EnrichedGameEventsTable\n- MarketingCampaignEffectivenessSQLTable\n- MarketingCampaignEffectivenessBlobTable\n\n    ![Tutorial End-to-End Flow][image-data-factory-tutorial-end-to-end-flow]\n \nThe picture above displays pipelines in the middle row and tables in the top and bottom rows. \n\nThe Azure Portal does not support creating data sets/tables yet, so you will need to use Azure PowerShell to create tables in this release.\n\n### To create the tables\n\n1.  In the Azure PowerShell, navigate to the **Tables** folder (**C:\\ADFWalkthrough\\Tables\\**) from the location where you have extracted the samples. \n2.  Use the cmdlet **New-AzureDataFactoryTable** to create the Tables as follows for **RawGameEventsTable**.json    \n\n\n        New-AzureDataFactoryTable -ResourceGroupName ADF -DataFactoryName $df –File .\\RawGameEventsTable.json\n\n    If you are using a different name for ResourceGroupName and DataFactoryName, refer them in the above cmdlet. Also, provide the full file path of the Table JSON file if the file cannot be found by the cmdlet.\n\n3. Repeat the previous step to create the following tables: \n        \n        New-AzureDataFactoryTable -ResourceGroupName ADF -DataFactoryName $df –File .\\PartitionedGameEventsTable.json\n        \n        New-AzureDataFactoryTable -ResourceGroupName ADF -DataFactoryName $df –File .\\RefGeoCodeDictionaryTable.json\n            \n        New-AzureDataFactoryTable -ResourceGroupName ADF -DataFactoryName $df –File .\\RefMarketingCampaignTable.json\n            \n        New-AzureDataFactoryTable -ResourceGroupName ADF -DataFactoryName $df –File .\\EnrichedGameEventsTable.json\n            \n        New-AzureDataFactoryTable -ResourceGroupName ADF -DataFactoryName $df –File .\\MarketingCampaignEffectivenessSQLTable.json\n            \n        New-AzureDataFactoryTable -ResourceGroupName ADF -DataFactoryName $df –File .\\MarketingCampaignEffectivenessBlobTable.json\n\n\n\n4. In the **Azure Preview Portal**, click **Datasets** in the **DATA FACTORY** blade for **LogProcessingFactory** and confirm that you see all the datasets (tables are rectangular datasets). \n\n    ![Data Sets All][image-data-factory-tutorial-datasets-all]\n\n    You can also use the following command from Azure PowerShell:\n            \n        Get-AzureDataFactoryTable –ResourceGroupName ADF –DataFactoryName $df\n\n    \n\n\n## <a name=\"MainStep5\"></a> Step 5: Create and schedule pipelines\nIn this step, you will create the following pipelines: PartitionGameLogsPipeline, EnrichGameLogsPipeline, and AnalyzeMarketingCampaignPipeline.\n\n1. In **Windows Explorer**, navigate to the **Pipelines** sub folder in **C:\\ADFWalkthrough** folder (or from the location where you have extracted the samples).\n2.  Open **PartitionGameLogsPipeline.json** in your favorite editor, replace the highlighted with your storage account for the data storage account information and save the file.\n            \n        \"RAWINPUT\": \"wasb://adfwalkthrough@<storageaccountname>.blob.core.windows.net/logs/rawgameevents/\",\n        \"PARTITIONEDOUTPUT\": \"wasb://adfwalkthrough@<storageaccountname>.blob.core.windows.net/logs/partitionedgameevents/\",\n\n3. Repeat the step to create the following pipelines:\n    1. **EnrichGameLogsPipeline**.json (3 occurrences)\n    2. **AnalyzeMarketingCampaignPipeline**.json (3 occurrences)\n\n    **IMPORTANT:** Confirm that you have replaced all <storageaccountname> with your storage account name. \n \n4.  In **Azure PowerShell**, navigate to the **Pipelines** sub folder in **C:\\ADFWalkthrough** folder (or from the location where you have extracted the samples).\n5.  Use the cmdlet **New-AzureDataFactoryPipeline** to create the Pipelines as follows for **PartitionGameLogspeline**.json  \n            \n        New-AzureDataFactoryPipeline -ResourceGroupName ADF -DataFactoryName $df –File .\\PartitionGameLogsPipeline.json\n\n    If you are using a different name for ResourceGroupName, DataFactoryName or Pipeline name, refer them in the above cmdlet. Also, provide the full file path of the Pipeline JSON file.\n6. Repeat the previous step to create the following pipelines:\n    1. **EnrichGameLogsPipeline**\n            \n            New-AzureDataFactoryPipeline -ResourceGroupName ADF -DataFactoryName $df –File .\\EnrichGameLogsPipeline.json\n\n    2. **AnalyzeMarketingCampaignPipeline**\n                \n            New-AzureDataFactoryPipeline -ResourceGroupName ADF -DataFactoryName $df –File .\\AnalyzeMarketingCampaignPipeline.json\n\n7. Use the cmdlet **Get-AzureDataFactoryPipeline** to get the listing of the Pipelines.\n            \n        Get-AzureDataFactoryPipeline –ResourceGroupName ADF –DataFactoryName $df\n\n8. Once the pipelines are created, you can specify the duration in which data processing will occur. By specifying the active period for a pipeline, you are defining the time duration in which the data slices will be processed based on the Availability properties that were defined for each ADF table.\n\nTo specify the active period for the pipeline, you can use the cmdlet Set-AzureDataFactoryPipelineActivePeriod. In this walkthrough, the sample data is from 05/01 to 05/05. Use 2014-05-01 as the StartDateTime. EndDateTime is optional.\n            \n        Set-AzureDataFactoryPipelineActivePeriod -ResourceGroupName ADF -DataFactoryName $df -StartDateTime 2014-05-01Z -EndDateTime 2014-05-05Z –Name PartitionGameLogsPipeline\n  \n9. Confirm to set the active period for the pipeline.\n            \n            Confirm\n            Are you sure you want to set pipeline 'PartitionGameLogsPipeline' active period from '05/01/2014 00:00:00' to '05/05/2014 00:00:00'?\n            [Y] Yes  [N] No  [S] Suspend  [?] Help (default is \"Y\"): n\n\n10. Repeat the previous two steps to set active period for the following pipelines.\n    1. **EnrichGameLogsPipeline**\n            \n            Set-AzureDataFactoryPipelineActivePeriod -ResourceGroupName ADF -DataFactoryName $df -StartDateTime 2014-05-01Z –EndDateTime 2014-05-05Z –Name EnrichGameLogsPipeline\n\n    2. **AnalyzeMarketingCampaignPipeline** \n            \n            Set-AzureDataFactoryPipelineActivePeriod -ResourceGroupName ADF -DataFactoryName $df -StartDateTime 2014-05-01Z -EndDateTime 2014-05-05Z –Name AnalyzeMarketingCampaignPipeline\n\n11. In the **Azure Preview Portal**, click **Pipelines** tile (not on the names of the pipelines) in the **DATA FACTORY** blade for the **LogProcessingFactory**, you should see the pipelines you created.\n\n    ![All Pipelines][image-data-factory-tutorial-pipelines-all]\n\n12. In the **DATA FACTORY** blade for the **LogProcessingFactory**, click **Diagram**.\n\n    ![Diagram Link][image-data-factory-tutorial-diagram-link]\n\n13. You can rearrange the diagram you see and here is a rearranged diagram that shows direct inputs at the top and outputs at the bottom. You can see that the output of the **PartitionGameLogsPipeline** is passed in as an input to the EnrichGameLogsPipeline and output of the **EnrichGameLogsPipeline** is passed to the **AnalyzeMarketingCampaignPipeline**. Double-click on a title to see details about the artifact that the blade represents.\n\n    ![Diagram View][image-data-factory-tutorial-diagram-view]\n\n    **Congratulations!** You have successfully created the Azure Data Factory, Linked Services, Pipelines, Tables and started the workflow. \n\n\n## <a name=\"MainStep6\"></a> Step 6: Monitor pipelines and data slices \n\n1.  If you do not have the DATA FACTORY blade for the LogProcessingFactory open, you can do one of the following:\n    1.  Click **LogProcessingFactory** on the **Startboard**. While creating the data factory, the **Add to Startboard** option was automatically checked.\n\n        ![Monitoring Startboard][image-data-factory-monitoring-startboard]\n\n    2. Click **BROWSE** hub, and click **Everything**.\n        \n        ![Monitoring Hub Everything][image-data-factory-monitoring-hub-everything]\n\n        In the **Browse** blade, select **Data factories** and select **LogProcessingFactory** in the **Data factories** blade.\n\n        ![Monitoring Browse Datafactories][image-data-factory-monitoring-browse-datafactories]\n2. You can monitor your data factory in several ways. You can start with pipelines or data sets. Let’s start with Pipelines and drill further. \n3.  Click **Pipelines** on the **DATA FACTORY** blade. \n4.  Click **PartitionGameLogsPipeline** in the Pipelines blade. \n5.  In the **PIPELINE** blade for **PartitionGameLogsPipeline**, you see that the pipeline consumes **RawGameEventsTable** dataset.  Click **RawGameEventsTable**.\n\n    ![Pipeline Consumed and Produced][image-data-factory-monitoring-pipeline-consumed-produced]\n\n6. In the TABLE blade for **RawGameEventsTable**, you see all the slices. In the following screen shot, all the slices are in **Ready** state and there are no problem slices. It means that the data is ready to be processed. \n\n    ![RawGameEventsTable TABLE blade][image-data-factory-monitoring-raw-game-events-table]\n \n7. Now, on the **PIPELINE** blade for **PartiionGameLogsPipeline**, click **Produced**. \n8. You should see the list of data sets that this pipeline produces: \n9. Click **PartitionedGameEvents** table in the **Produced datasets** blade. \n10. Confirm that the **status** of all slices is set to **Ready**. \n11. Click on one of the slices that is **Ready** to see the **DATA SLICE** blade for that slice.\n\n    ![RawGameEventsTable DATA SLICE blade][image-data-factory-monitoring-raw-game-events-table-dataslice-blade]\n\n    If there was an error, you would see a **Failed **status here.  You might also see either both slices with status **Ready**, or both with status **PendingValidation**, depending on how quickly the slices are processed.\n \n    Refer to the [Azure Data Factory Developer Reference][developer-reference] to get an understanding of all possible slice statuses.\n\n12. In the **DATA SLICE** blade, click the run from the **Activity Runs** list. You should see the Activity Run blade for that slice. You should see the following **ACTIVITY RUN DETAILS** blade.\n\n    ![Activity Run Details blade][image-data-factory-monitoring-activity-run-details]\n\n13. Click **Download** to download the files. This screen is especially useful when you are troubleshooting errors from HDInsight processing. \n     \n    \nWhen all the pipeline have completed execution, you can look into the **MarketingCampaignEffectivenessTable** in the **MarketingCampaigns** Azure SQL database to view the results. \n\n**Congratulations!** You can now monitor and troubleshoot the workflows. You have learned how to use Azure Data Factory to process data and get analytics.\n\n## Extend the tutorial to use on-premises data\nIn the last step of log processing scenario from the walkthrough in this article, the marketing campaign effectiveness output was copied to an Azure SQL database. You could also move this data to on-premises SQL Server for analytics within your organization.\n \nIn order to copy the marketing campaign effectiveness data from Azure Blob to on-premises SQL Server, you need to create additional on-premises Linked Service, Table and Pipeline introduced in the walkthrough in this article.\n\nPractice the [Walkthrough: Using on-premises data source][tutorial-onpremises-using-powershell] to learn how to create a pipeline to copy marketing campaign effectiveness data to an on-premises SQL Server database.\n \n\n[monitor-manage-using-powershell]: data-factory-monitor-manage-using-powershell.md\n[use-custom-activities]: data-factory-use-custom-activities.md\n[troubleshoot]: data-factory-troubleshoot.md\n[cmdlet-reference]: http://go.microsoft.com/fwlink/?LinkId=517456\n\n[adftutorial-using-editor]: data-factory-tutorial.md\n\n[adfgetstarted]: data-factory-get-started.md\n[adfintroduction]: data-factory-introduction.md\n[usepigandhive]: data-factory-data-transformation-activities.md\n[tutorial-onpremises-using-powershell]: data-factory-tutorial-extend-onpremises-using-powershell.md\n[download-azure-powershell]: ../powershell-install-configure.md\n\n[azure-preview-portal]: http://portal.azure.com\n[azure-purchase-options]: http://azure.microsoft.com/pricing/purchase-options/\n[azure-member-offers]: http://azure.microsoft.com/pricing/member-offers/\n[azure-free-trial]: http://azure.microsoft.com/pricing/free-trial/\n\n[sqlcmd-install]: http://www.microsoft.com/download/details.aspx?id=35580\n[azure-sql-firewall]: http://msdn.microsoft.com/library/azure/jj553530.aspx\n\n\n[adfwalkthrough-download]: http://go.microsoft.com/fwlink/?LinkId=517495\n[developer-reference]: http://go.microsoft.com/fwlink/?LinkId=516908\n\n\n[image-data-factory-tutorial-end-to-end-flow]: ./media/data-factory-tutorial-using-powershell/EndToEndWorkflow.png\n\n[image-data-factory-tutorial-partition-game-logs-pipeline]: ./media/data-factory-tutorial-using-powershell/PartitionGameLogsPipeline.png\n\n[image-data-factory-tutorial-enrich-game-logs-pipeline]: ./media/data-factory-tutorial-using-powershell/EnrichGameLogsPipeline.png\n\n[image-data-factory-tutorial-analyze-marketing-campaign-pipeline]: ./media/data-factory-tutorial-using-powershell/AnalyzeMarketingCampaignPipeline.png\n\n\n[image-data-factory-tutorial-egress-to-onprem-pipeline]: ./media/data-factory-tutorial-using-powershell/EgreeDataToOnPremPipeline.png\n\n[image-data-factory-tutorial-set-firewall-rules-azure-db]: ./media/data-factory-tutorial-using-powershell/SetFirewallRuleForAzureDatabase.png\n\n[image-data-factory-tutorial-portal-new-everything]: ./media/data-factory-tutorial-using-powershell/PortalNewEverything.png\n\n[image-data-factory-tutorial-datastorage-cache-backup]: ./media/data-factory-tutorial-using-powershell/DataStorageCacheBackup.png\n\n[image-data-factory-tutorial-dataservices-blade]: ./media/data-factory-tutorial-using-powershell/DataServicesBlade.png\n\n[image-data-factory-tutorial-new-datafactory-blade]: ./media/data-factory-tutorial-using-powershell/NewDataFactoryBlade.png\n\n[image-data-factory-tutorial-resourcegroup-blade]: ./media/data-factory-tutorial-using-powershell/ResourceGroupBlade.png\n\n[image-data-factory-tutorial-create-resourcegroup]: ./media/data-factory-tutorial-using-powershell/CreateResourceGroup.png\n\n[image-data-factory-tutorial-datafactory-homepage]: ./media/data-factory-tutorial-using-powershell/DataFactoryHomePage.png\n\n[image-data-factory-tutorial-create-datafactory]: ./media/data-factory-tutorial-using-powershell/CreateDataFactory.png\n\n[image-data-factory-tutorial-linkedservice-tile]: ./media/data-factory-tutorial-using-powershell/LinkedServiceTile.png\n\n[image-data-factory-tutorial-linkedservices-add-datstore]: ./media/data-factory-tutorial-using-powershell/LinkedServicesAddDataStore.png\n\n[image-data-factory-tutorial-datastoretype-azurestorage]: ./media/data-factory-tutorial-using-powershell/DataStoreTypeAzureStorageAccount.png\n\n[image-data-factory-tutorial-azurestorage-settings]: ./media/data-factory-tutorial-using-powershell/AzureStorageSettings.png\n\n[image-data-factory-tutorial-storage-key]: ./media/data-factory-tutorial-using-powershell/StorageKeyFromAzurePortal.png\n\n[image-data-factory-tutorial-linkedservices-blade-storage]: ./media/data-factory-tutorial-using-powershell/LinkedServicesBladeWithAzureStorage.png\n\n[image-data-factory-tutorial-azuresql-settings]: ./media/data-factory-tutorial-using-powershell/AzureSQLDatabaseSettings.png\n\n[image-data-factory-tutorial-azuresql-database-connection-string]: ./media/data-factory-tutorial-using-powershell/DatabaseConnectionString.png\n\n[image-data-factory-tutorial-linkedservices-all]: ./media/data-factory-tutorial-using-powershell/LinkedServicesAll.png\n\n[image-data-factory-tutorial-datasets-all]: ./media/data-factory-tutorial-using-powershell/DataSetsAllTables.png\n\n[image-data-factory-tutorial-pipelines-all]: ./media/data-factory-tutorial-using-powershell/AllPipelines.png\n\n[image-data-factory-tutorial-diagram-link]: ./media/data-factory-tutorial-using-powershell/DataFactoryDiagramLink.png\n\n[image-data-factory-tutorial-diagram-view]: ./media/data-factory-tutorial-using-powershell/DiagramView.png\n\n[image-data-factory-monitoring-startboard]: ./media/data-factory-tutorial-using-powershell/MonitoringStartBoard.png\n\n[image-data-factory-monitoring-hub-everything]: ./media/data-factory-tutorial-using-powershell/MonitoringHubEverything.png\n\n[image-data-factory-monitoring-browse-datafactories]: ./media/data-factory-tutorial-using-powershell/MonitoringBrowseDataFactories.png\n\n[image-data-factory-monitoring-pipeline-consumed-produced]: ./media/data-factory-tutorial-using-powershell/MonitoringPipelineConsumedProduced.png\n\n[image-data-factory-monitoring-raw-game-events-table]: ./media/data-factory-tutorial-using-powershell/MonitoringRawGameEventsTable.png\n\n[image-data-factory-monitoring-raw-game-events-table-dataslice-blade]: ./media/data-factory-tutorial-using-powershell/MonitoringPartitionGameEventsTableDataSliceBlade.png\n\n[image-data-factory-monitoring-activity-run-details]: ./media/data-factory-tutorial-using-powershell/MonitoringActivityRunDetails.png\n\n[image-data-factory-datamanagementgateway-configuration-manager]: ./media/data-factory-tutorial-using-powershell/DataManagementGatewayConfigurationManager.png\n\n[image-data-factory-new-datafactory-menu]: ./media/data-factory-tutorial-using-powershell/NewDataFactoryMenu.png\n\n[image-data-factory-new-datafactory-create-button]: ./media/data-factory-tutorial-using-powershell/DataFactoryCreateButton.png \ntest\n"
+}

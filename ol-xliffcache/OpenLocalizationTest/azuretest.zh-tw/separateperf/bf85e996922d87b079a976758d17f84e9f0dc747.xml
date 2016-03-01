@@ -1,0 +1,110 @@
+{
+  "nodes": [
+    {
+      "content": "Download Media Assets",
+      "pos": [
+        28,
+        49
+      ]
+    },
+    {
+      "content": "Learn about to download assets to your computer.",
+      "pos": [
+        69,
+        117
+      ]
+    },
+    {
+      "content": "Code samples are written in C# and use the Media Services SDK for .NET.",
+      "pos": [
+        118,
+        189
+      ]
+    },
+    {
+      "content": "How to: Deliver an Asset by Download",
+      "pos": [
+        501,
+        537
+      ]
+    },
+    {
+      "content": "This topic discusses options for delivering media assets uploaded to Media Services.",
+      "pos": [
+        539,
+        623
+      ]
+    },
+    {
+      "content": "You can deliver Media Services content in numerous application scenarios.",
+      "pos": [
+        624,
+        697
+      ]
+    },
+    {
+      "content": "You can download media assets, or access them by using a locator.",
+      "pos": [
+        698,
+        763
+      ]
+    },
+    {
+      "content": "You can send media content to another application or to another content provider.",
+      "pos": [
+        764,
+        845
+      ]
+    },
+    {
+      "content": "For improved performance and scalability, you can also deliver content by using a Content Delivery Network (CDN).",
+      "pos": [
+        846,
+        959
+      ]
+    },
+    {
+      "content": "This example shows how to download media assets from Media Services to your local computer.",
+      "pos": [
+        961,
+        1052
+      ]
+    },
+    {
+      "content": "The code queries the jobs associated with the Media Services account by job ID and accesses its <bpt id=\"p1\">**</bpt>OutputMediaAssets<ept id=\"p1\">**</ept> collection (which is the set of one or more output media assets that results from running a job).",
+      "pos": [
+        1053,
+        1268
+      ]
+    },
+    {
+      "content": "This  example shows how to download output media assets from a job, but you can apply the same approach to download other assets.",
+      "pos": [
+        1269,
+        1398
+      ]
+    },
+    {
+      "content": "See Also",
+      "pos": [
+        3483,
+        3491
+      ]
+    },
+    {
+      "content": "Deliver streaming content",
+      "pos": [
+        3495,
+        3520
+      ]
+    },
+    {
+      "content": "test",
+      "pos": [
+        3569,
+        3573
+      ]
+    }
+  ],
+  "content": "<properties \n    pageTitle=\"Download Media Assets\" \n    description=\"Learn about to download assets to your computer. Code samples are written in C# and use the Media Services SDK for .NET.\" \n    services=\"media-services\" \n    documentationCenter=\"\" \n    authors=\"juliako\" \n    manager=\"dwrede\" \n    editor=\"\"/>\n\n<tags \n    ms.service=\"media-services\" \n    ms.workload=\"media\" \n    ms.tgt_pltfrm=\"na\" \n    ms.devlang=\"na\" \n    ms.topic=\"article\" \n    ms.date=\"08/11/2015\" \n    ms.author=\"juliako\"/>\n\n#How to: Deliver an Asset by Download\n\nThis topic discusses options for delivering media assets uploaded to Media Services. You can deliver Media Services content in numerous application scenarios. You can download media assets, or access them by using a locator. You can send media content to another application or to another content provider. For improved performance and scalability, you can also deliver content by using a Content Delivery Network (CDN).\n\nThis example shows how to download media assets from Media Services to your local computer. The code queries the jobs associated with the Media Services account by job ID and accesses its **OutputMediaAssets** collection (which is the set of one or more output media assets that results from running a job). This  example shows how to download output media assets from a job, but you can apply the same approach to download other assets.\n\n    \n    // Download the output asset of the specified job to a local folder.\n    static IAsset DownloadAssetToLocal( string jobId, string outputFolder)\n    {\n        // This method illustrates how to download a single asset. \n        // However, you can iterate through the OutputAssets\n        // collection, and download all assets if there are many. \n    \n        // Get a reference to the job. \n        IJob job = GetJob(jobId);\n    \n        // Get a reference to the first output asset. If there were multiple \n        // output media assets you could iterate and handle each one.\n        IAsset outputAsset = job.OutputMediaAssets[0];\n    \n        // Create a SAS locator to download the asset\n        IAccessPolicy accessPolicy = _context.AccessPolicies.Create(\"File Download Policy\", TimeSpan.FromDays(30), AccessPermissions.Read);\n        ILocator locator = _context.Locators.CreateLocator(LocatorType.Sas, outputAsset, accessPolicy);\n    \n        BlobTransferClient blobTransfer = new BlobTransferClient\n        {\n            NumberOfConcurrentTransfers = 20,\n            ParallelTransferThreadCount = 20\n        };\n    \n        var downloadTasks = new List&lt;Task&gt;();\n        foreach (IAssetFile outputFile in outputAsset.AssetFiles)\n        {\n            // Use the following event handler to check download progress.\n            outputFile.DownloadProgressChanged += DownloadProgress;\n    \n            string localDownloadPath = Path.Combine(outputFolder, outputFile.Name);\n    \n            Console.WriteLine(\"File download path:  \" + localDownloadPath);\n    \n            downloadTasks.Add(outputFile.DownloadAsync(Path.GetFullPath(localDownloadPath), blobTransfer, locator, CancellationToken.None));\n    \n            outputFile.DownloadProgressChanged -= DownloadProgress;\n        }\n    \n        Task.WaitAll(downloadTasks.ToArray());\n    \n        return outputAsset;\n    }\n    \n    static void DownloadProgress(object sender, DownloadProgressChangedEventArgs e)\n    {\n        Console.WriteLine(string.Format(\"{0} % download progress. \", e.Progress));\n    }\n   \n##See Also \n\n[Deliver streaming content](media-services-deliver-streaming-content.md)\n\n\ntest\n"
+}

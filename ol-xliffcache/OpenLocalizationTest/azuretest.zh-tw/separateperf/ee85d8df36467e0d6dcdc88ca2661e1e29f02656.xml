@@ -1,0 +1,466 @@
+{
+  "nodes": [
+    {
+      "content": "C# streaming wordcount Hadoop sample | Microsoft Azure",
+      "pos": [
+        27,
+        81
+      ]
+    },
+    {
+      "content": "How to write MapReduce programs in C# that use the Hadoop Streaming interface, and how to run them on HDInsight using PowerShell cmdlets.",
+      "pos": [
+        100,
+        237
+      ]
+    },
+    {
+      "content": "The C# streaming word count MapReduce sample in Hadoop on HDInsight",
+      "pos": [
+        565,
+        632
+      ]
+    },
+    {
+      "content": "Hadoop provides a streaming API to MapReduce, which enables you to write map and reduce functions in languages other than Java.",
+      "pos": [
+        634,
+        761
+      ]
+    },
+    {
+      "content": "This tutorial shows how to write MapReduce programs in C# by using the Hadoop Streaming interface and how to run the programs in Azure HDInsight by using Azure PowerShell cmdlets.",
+      "pos": [
+        762,
+        941
+      ]
+    },
+    {
+      "content": "<ph id=\"ph1\">[AZURE.NOTE]</ph> The steps in this tutorial apply only to Windows-based HDInsight clusters.",
+      "pos": [
+        945,
+        1032
+      ]
+    },
+    {
+      "content": "For an example of streaming for Linux-based HDInsight clusters, see <bpt id=\"p1\">[</bpt>Develop Python streaming programs for HDInsight<ept id=\"p1\">](hdinsight-hadoop-streaming-python.md)</ept>.",
+      "pos": [
+        1033,
+        1189
+      ]
+    },
+    {
+      "content": "In the example, the mapper and the reducer are executables that read the input from <bpt id=\"p1\">[</bpt>stdin<ept id=\"p1\">][stdin-stdout-stderr]</ept> (line-by-line) and emit the output to <bpt id=\"p2\">[</bpt>stdout<ept id=\"p2\">][stdin-stdout-stderr]</ept>.",
+      "pos": [
+        1191,
+        1372
+      ]
+    },
+    {
+      "content": "The program counts all of the words in the text.",
+      "pos": [
+        1373,
+        1421
+      ]
+    },
+    {
+      "content": "When an executable is specified for <bpt id=\"p1\">**</bpt>mappers<ept id=\"p1\">**</ept>, each mapper task launches the executable as a separate process when the mapper is initialized.",
+      "pos": [
+        1423,
+        1566
+      ]
+    },
+    {
+      "content": "As the mapper task runs, it converts its input into lines, and feeds the lines to the <bpt id=\"p1\">[</bpt>stdin<ept id=\"p1\">][stdin-stdout-stderr]</ept> of the process.",
+      "pos": [
+        1567,
+        1697
+      ]
+    },
+    {
+      "content": "In the meantime, the mapper collects the line-oriented output from the stdout of the process.",
+      "pos": [
+        1699,
+        1792
+      ]
+    },
+    {
+      "content": "It converts each line into a key/value pair, which is collected as the output of the mapper.",
+      "pos": [
+        1793,
+        1885
+      ]
+    },
+    {
+      "content": "By default, the prefix of a line up to the first Tab character is the key, and the remainder of the line (excluding the Tab character) is the value.",
+      "pos": [
+        1886,
+        2034
+      ]
+    },
+    {
+      "content": "If there is no Tab character in the line, entire line is considered as the key, and the value is null.",
+      "pos": [
+        2035,
+        2137
+      ]
+    },
+    {
+      "content": "When an executable is specified for <bpt id=\"p1\">**</bpt>reducers<ept id=\"p1\">**</ept>, each reducer task launches the executable as a separate process when the reducer is initialized.",
+      "pos": [
+        2139,
+        2285
+      ]
+    },
+    {
+      "content": "As the reducer task runs, it converts its input key/values pairs into lines, and it feeds the lines to the <bpt id=\"p1\">[</bpt>stdin<ept id=\"p1\">][stdin-stdout-stderr]</ept> of the process.",
+      "pos": [
+        2286,
+        2437
+      ]
+    },
+    {
+      "content": "In the meantime, the reducer collects the line-oriented output from the <bpt id=\"p1\">[</bpt>stdout<ept id=\"p1\">][stdin-stdout-stderr]</ept> of the process.",
+      "pos": [
+        2439,
+        2556
+      ]
+    },
+    {
+      "content": "It converts each line to a key/value pair, which is collected as the output of the reducer.",
+      "pos": [
+        2557,
+        2648
+      ]
+    },
+    {
+      "content": "By default, the prefix of a line up to the first Tab character is the key, and the remainder of the line (excluding the Tab character) is the value.",
+      "pos": [
+        2649,
+        2797
+      ]
+    },
+    {
+      "pos": [
+        2799,
+        2899
+      ],
+      "content": "For more information about the Hadoop Streaming interface, see <bpt id=\"p1\">[</bpt>Hadoop Streaming<ept id=\"p1\">][hadoop-streaming]</ept>."
+    },
+    {
+      "content": "In this tutorial, you will learn how to:",
+      "pos": [
+        2903,
+        2943
+      ]
+    },
+    {
+      "content": "Use Azure PowerShell to run a C# streaming program to analyze data contained in a file in HDInsight.",
+      "pos": [
+        2949,
+        3049
+      ]
+    },
+    {
+      "content": "Write C# code that uses the Hadoop Streaming interface.",
+      "pos": [
+        3052,
+        3107
+      ]
+    },
+    {
+      "pos": [
+        3110,
+        3128
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Prerequisites<ept id=\"p1\">**</ept>:"
+    },
+    {
+      "content": "Before you begin, you must have the following:",
+      "pos": [
+        3130,
+        3176
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>An Azure subscription<ept id=\"p1\">**</ept>.",
+      "pos": [
+        3180,
+        3206
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt>Get Azure free trial<ept id=\"p1\">](http://azure.microsoft.com/documentation/videos/get-azure-free-trial-for-testing-hadoop-in-hdinsight/)</ept>.",
+      "pos": [
+        3207,
+        3337
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>an HDInsight cluster<ept id=\"p1\">**</ept>.",
+      "pos": [
+        3340,
+        3365
+      ]
+    },
+    {
+      "content": "For instructions on the various ways in which such clusters can be created, see <bpt id=\"p1\">[</bpt>Provision HDInsight Clusters<ept id=\"p1\">](hdinsight-provision-clusters.md)</ept>.",
+      "pos": [
+        3366,
+        3510
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>A workstation with Azure PowerShell<ept id=\"p1\">**</ept>.",
+      "pos": [
+        3513,
+        3553
+      ]
+    },
+    {
+      "content": "See <bpt id=\"p1\">[</bpt>Install and use Azure PowerShell<ept id=\"p1\">](http://azure.microsoft.com/documentation/videos/install-and-use-azure-powershell/)</ept>.",
+      "pos": [
+        3554,
+        3676
+      ]
+    },
+    {
+      "pos": [
+        3683,
+        3742
+      ],
+      "content": "<ph id=\"ph1\">&lt;a id=\"run-sample\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Run the sample with Azure PowerShell"
+    },
+    {
+      "content": "To run the MapReduce job",
+      "pos": [
+        3746,
+        3770
+      ]
+    },
+    {
+      "content": "Open <bpt id=\"p1\">**</bpt>Azure PowerShell<ept id=\"p1\">**</ept>.",
+      "pos": [
+        3778,
+        3804
+      ]
+    },
+    {
+      "content": "For instructions to open the Azure PowerShell console window, see <bpt id=\"p1\">[</bpt>Install and configure Azure PowerShell<ept id=\"p1\">][powershell-install-configure]</ept>.",
+      "pos": [
+        3805,
+        3942
+      ]
+    },
+    {
+      "content": "Set the two variables in the following commands, and then run them:",
+      "pos": [
+        3947,
+        4014
+      ]
+    },
+    {
+      "content": "Run the following command to define the MapReduce job:",
+      "pos": [
+        4174,
+        4228
+      ]
+    },
+    {
+      "content": "The parameters, specify the mapper and reducer functions and the input file and output files.",
+      "pos": [
+        4566,
+        4659
+      ]
+    },
+    {
+      "content": "Run the following commands to run the MapReduce job, wait for the job to complete, and then print the standard error message:",
+      "pos": [
+        4664,
+        4789
+      ]
+    },
+    {
+      "content": "Run the following commands to display the results of the word count:",
+      "pos": [
+        5188,
+        5256
+      ]
+    },
+    {
+      "pos": [
+        5554,
+        5778
+      ],
+      "content": "$storageAccountKey = Get-AzureStorageKey -StorageAccountName $storageAccountName | %{ $_.Primary }\n   $storageContext = New-AzureStorageContext -StorageAccountName $storageAccountName -StorageAccountKey $storageAccountKey",
+      "leadings": [
+        "",
+        "   "
+      ],
+      "nodes": [
+        {
+          "content": "$storageAccountKey = Get-AzureStorageKey -StorageAccountName $storageAccountName | %{ $_.Primary }",
+          "pos": [
+            0,
+            98
+          ]
+        },
+        {
+          "content": "$storageContext = New-AzureStorageContext -StorageAccountName $storageAccountName -StorageAccountKey $storageAccountKey",
+          "pos": [
+            102,
+            221
+          ]
+        }
+      ]
+    },
+    {
+      "content": "Note that the output files of a MapReduce job are immutable.",
+      "pos": [
+        6072,
+        6132
+      ]
+    },
+    {
+      "content": "So if you rerun this sample, you need to change the name of the output file.",
+      "pos": [
+        6133,
+        6209
+      ]
+    },
+    {
+      "pos": [
+        6215,
+        6269
+      ],
+      "content": "<ph id=\"ph1\">&lt;a id=\"java-code\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>The C# code for Hadoop Streaming"
+    },
+    {
+      "content": "The MapReduce program uses the cat.exe application as a mapping interface to stream the text into the console and the wc.exe application as the reduce interface to count the number of words that are streamed from a document.",
+      "pos": [
+        6272,
+        6496
+      ]
+    },
+    {
+      "content": "Both the mapper and reducer read characters, line-by-line, from the standard input stream (stdin) and write to the standard output stream (stdout).",
+      "pos": [
+        6497,
+        6644
+      ]
+    },
+    {
+      "pos": [
+        7187,
+        7448
+      ],
+      "content": "The mapper code in the cat.cs file uses a <bpt id=\"p1\">[</bpt>StreamReader<ept id=\"p1\">][streamreader]</ept> object to read the characters of the incoming stream to the console, which then writes the stream to the standard output stream with the static <bpt id=\"p2\">[</bpt>Console.Writeline<ept id=\"p2\">][console-writeline]</ept> method."
+    },
+    {
+      "content": "The reducer code in the wc.cs file uses a <bpt id=\"p1\">[</bpt>StreamReader<ept id=\"p1\">][streamreader]</ept>   object to read characters from the standard input stream that have been output by the cat.exe mapper.",
+      "pos": [
+        8079,
+        8253
+      ]
+    },
+    {
+      "content": "As it reads the characters with the <bpt id=\"p1\">[</bpt>Console.Writeline<ept id=\"p1\">][console-writeline]</ept> method, it counts the words by counting spaces and end-of-line characters at the end of each word.",
+      "pos": [
+        8254,
+        8427
+      ]
+    },
+    {
+      "content": "It then writes the total to the standard output stream with the <bpt id=\"p1\">[</bpt>Console.Writeline<ept id=\"p1\">][console-writeline]</ept> method.",
+      "pos": [
+        8428,
+        8538
+      ]
+    },
+    {
+      "pos": [
+        8544,
+        8571
+      ],
+      "content": "<ph id=\"ph1\">&lt;a id=\"summary\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Summary"
+    },
+    {
+      "content": "In this tutorial, you saw how to deploy a MapReduce job in HDInsight by using Hadoop Streaming.",
+      "pos": [
+        8573,
+        8668
+      ]
+    },
+    {
+      "pos": [
+        8673,
+        8706
+      ],
+      "content": "<ph id=\"ph1\">&lt;a id=\"next-steps\"&gt;</ph><ph id=\"ph2\">&lt;/a&gt;</ph>Next steps"
+    },
+    {
+      "content": "For tutorials that run other samples and provide instructions for running Pig, Hive, and MapReduce jobs in Azure HDInsight with Azure PowerShell, see the following articles:",
+      "pos": [
+        8709,
+        8882
+      ]
+    },
+    {
+      "content": "Get started with Azure HDInsight",
+      "pos": [
+        8887,
+        8919
+      ]
+    },
+    {
+      "content": "Sample: Pi Estimator",
+      "pos": [
+        8947,
+        8967
+      ]
+    },
+    {
+      "content": "Sample: Word count",
+      "pos": [
+        9003,
+        9021
+      ]
+    },
+    {
+      "content": "Sample: 10GB GraySort",
+      "pos": [
+        9054,
+        9075
+      ]
+    },
+    {
+      "content": "Use Pig with HDInsight",
+      "pos": [
+        9112,
+        9134
+      ]
+    },
+    {
+      "content": "Use Hive with HDInsight",
+      "pos": [
+        9158,
+        9181
+      ]
+    },
+    {
+      "content": "Azure HDInsight SDK documentation",
+      "pos": [
+        9206,
+        9239
+      ]
+    },
+    {
+      "content": "test",
+      "pos": [
+        10199,
+        10203
+      ]
+    }
+  ],
+  "content": "<properties\n    pageTitle=\"C# streaming wordcount Hadoop sample | Microsoft Azure\"\n    description=\"How to write MapReduce programs in C# that use the Hadoop Streaming interface, and how to run them on HDInsight using PowerShell cmdlets.\"\n    editor=\"cgronlun\"\n    manager=\"paulettm\"\n    services=\"hdinsight\"\n    documentationCenter=\"\"\n    tags=\"azure-portal\"\n    authors=\"mumian\"/>\n\n<tags\n    ms.service=\"hdinsight\"\n    ms.workload=\"big-data\"\n    ms.tgt_pltfrm=\"na\"\n    ms.devlang=\"dotnet\"\n    ms.topic=\"article\"\n    ms.date=\"07/09/2015\"\n    ms.author=\"jgao\"/>\n\n# The C# streaming word count MapReduce sample in Hadoop on HDInsight\n\nHadoop provides a streaming API to MapReduce, which enables you to write map and reduce functions in languages other than Java. This tutorial shows how to write MapReduce programs in C# by using the Hadoop Streaming interface and how to run the programs in Azure HDInsight by using Azure PowerShell cmdlets.\n\n> [AZURE.NOTE] The steps in this tutorial apply only to Windows-based HDInsight clusters. For an example of streaming for Linux-based HDInsight clusters, see [Develop Python streaming programs for HDInsight](hdinsight-hadoop-streaming-python.md).\n\nIn the example, the mapper and the reducer are executables that read the input from [stdin][stdin-stdout-stderr] (line-by-line) and emit the output to [stdout][stdin-stdout-stderr]. The program counts all of the words in the text.\n\nWhen an executable is specified for **mappers**, each mapper task launches the executable as a separate process when the mapper is initialized. As the mapper task runs, it converts its input into lines, and feeds the lines to the [stdin][stdin-stdout-stderr] of the process.\n\nIn the meantime, the mapper collects the line-oriented output from the stdout of the process. It converts each line into a key/value pair, which is collected as the output of the mapper. By default, the prefix of a line up to the first Tab character is the key, and the remainder of the line (excluding the Tab character) is the value. If there is no Tab character in the line, entire line is considered as the key, and the value is null.\n\nWhen an executable is specified for **reducers**, each reducer task launches the executable as a separate process when the reducer is initialized. As the reducer task runs, it converts its input key/values pairs into lines, and it feeds the lines to the [stdin][stdin-stdout-stderr] of the process.\n\nIn the meantime, the reducer collects the line-oriented output from the [stdout][stdin-stdout-stderr] of the process. It converts each line to a key/value pair, which is collected as the output of the reducer. By default, the prefix of a line up to the first Tab character is the key, and the remainder of the line (excluding the Tab character) is the value.\n\nFor more information about the Hadoop Streaming interface, see [Hadoop Streaming][hadoop-streaming].\n\n**In this tutorial, you will learn how to:**\n\n* Use Azure PowerShell to run a C# streaming program to analyze data contained in a file in HDInsight.\n* Write C# code that uses the Hadoop Streaming interface.\n\n\n**Prerequisites**:\n\nBefore you begin, you must have the following:\n\n- **An Azure subscription**. See [Get Azure free trial](http://azure.microsoft.com/documentation/videos/get-azure-free-trial-for-testing-hadoop-in-hdinsight/).\n- **an HDInsight cluster**. For instructions on the various ways in which such clusters can be created, see [Provision HDInsight Clusters](hdinsight-provision-clusters.md).\n- **A workstation with Azure PowerShell**. See [Install and use Azure PowerShell](http://azure.microsoft.com/documentation/videos/install-and-use-azure-powershell/).\n\n\n\n## <a id=\"run-sample\"></a>Run the sample with Azure PowerShell\n\n**To run the MapReduce job**\n\n1.  Open **Azure PowerShell**. For instructions to open the Azure PowerShell console window, see [Install and configure Azure PowerShell][powershell-install-configure].\n\n3. Set the two variables in the following commands, and then run them:\n\n        $subscriptionName = \"<SubscriptionName>\"   # Azure subscription name\n        $clusterName = \"<ClusterName>\"             # HDInsight cluster name\n\n\n2. Run the following command to define the MapReduce job:\n\n        # Create a MapReduce job definition for the streaming job.\n        $streamingWC = New-AzureHDInsightStreamingMapReduceJobDefinition -Files \"/example/apps/wc.exe\", \"/example/apps/cat.exe\" -InputPath \"/example/data/gutenberg/davinci.txt\" -OutputPath \"/example/data/StreamingOutput/wc.txt\" -Mapper \"cat.exe\" -Reducer \"wc.exe\"\n\n    The parameters, specify the mapper and reducer functions and the input file and output files.\n\n5. Run the following commands to run the MapReduce job, wait for the job to complete, and then print the standard error message:\n\n        # Run the C# Streaming MapReduce job.\n        # Wait for the job to complete.\n        # Print output and standard error file of the MapReduce job\n        Select-AzureSubscription $subscriptionName\n        $streamingWC | Start-AzureHDInsightJob -Cluster $clustername | Wait-AzureHDInsightJob -WaitTimeoutInSeconds 3600 | Get-AzureHDInsightJobOutput -Cluster $clustername -StandardError\n\n6. Run the following commands to display the results of the word count:\n\n        $subscriptionName = \"<SubscriptionName>\"\n        $storageAccountName = \"<StorageAccountName>\"\n        $containerName = \"<ContainerName>\"\n\n        # Select the current subscription\n        Select-AzureSubscription $subscriptionName\n\n        # Blob storage container and account name\n      $storageAccountKey = Get-AzureStorageKey -StorageAccountName $storageAccountName | %{ $_.Primary }\n      $storageContext = New-AzureStorageContext -StorageAccountName $storageAccountName -StorageAccountKey $storageAccountKey\n\n        # Retrieve the output\n        Get-AzureStorageBlobContent -Container $containerName -Blob \"example/data/StreamingOutput/wc.txt/part-00000\" -Context $storageContext -Force\n\n        # The number of words in the text is:\n        cat ./example/data/StreamingOutput/wc.txt/part-00000\n\n    Note that the output files of a MapReduce job are immutable. So if you rerun this sample, you need to change the name of the output file.\n\n\n## <a id=\"java-code\"></a>The C# code for Hadoop Streaming\n\n\nThe MapReduce program uses the cat.exe application as a mapping interface to stream the text into the console and the wc.exe application as the reduce interface to count the number of words that are streamed from a document. Both the mapper and reducer read characters, line-by-line, from the standard input stream (stdin) and write to the standard output stream (stdout).\n\n\n\n    // The source code for the cat.exe (Mapper).\n\n    using System;\n    using System.IO;\n\n    namespace cat\n    {\n        class cat\n        {\n            static void Main(string[] args)\n            {\n                if (args.Length > 0)\n                {\n                    Console.SetIn(new StreamReader(args[0]));\n                }\n\n                string line;\n                while ((line = Console.ReadLine()) != null)\n                {\n                    Console.WriteLine(line);\n                }\n            }\n        }\n    }\n\n\n\nThe mapper code in the cat.cs file uses a [StreamReader][streamreader] object to read the characters of the incoming stream to the console, which then writes the stream to the standard output stream with the static [Console.Writeline][console-writeline] method.\n\n\n    // The source code for wc.exe (Reducer) is:\n\n    using System;\n    using System.IO;\n    using System.Linq;\n\n    namespace wc\n    {\n        class wc\n        {\n            static void Main(string[] args)\n            {\n                string line;\n                var count = 0;\n\n                if (args.Length > 0){\n                    Console.SetIn(new StreamReader(args[0]));\n                }\n\n                while ((line = Console.ReadLine()) != null) {\n                    count += line.Count(cr => (cr == ' ' || cr == '\\n'));\n                }\n                Console.WriteLine(count);\n            }\n        }\n    }\n\n\nThe reducer code in the wc.cs file uses a [StreamReader][streamreader]   object to read characters from the standard input stream that have been output by the cat.exe mapper. As it reads the characters with the [Console.Writeline][console-writeline] method, it counts the words by counting spaces and end-of-line characters at the end of each word. It then writes the total to the standard output stream with the [Console.Writeline][console-writeline] method.\n\n\n## <a id=\"summary\"></a>Summary\n\nIn this tutorial, you saw how to deploy a MapReduce job in HDInsight by using Hadoop Streaming.\n\n## <a id=\"next-steps\"></a>Next steps\n\n\nFor tutorials that run other samples and provide instructions for running Pig, Hive, and MapReduce jobs in Azure HDInsight with Azure PowerShell, see the following articles:\n\n* [Get started with Azure HDInsight][hdinsight-get-started]\n* [Sample: Pi Estimator][hdinsight-sample-pi-estimator]\n* [Sample: Word count][hdinsight-sample-wordcount]\n* [Sample: 10GB GraySort][hdinsight-sample-10gb-graysort]\n* [Use Pig with HDInsight][hdinsight-use-pig]\n* [Use Hive with HDInsight][hdinsight-use-hive]\n* [Azure HDInsight SDK documentation][hdinsight-sdk-documentation]\n\n[hdinsight-sdk-documentation]: http://msdnstage.redmond.corp.microsoft.com/library/dn479185.aspx\n\n[hadoop-streaming]: http://wiki.apache.org/hadoop/HadoopStreaming\n[streamreader]: http://msdn.microsoft.com/library/system.io.streamreader.aspx\n[console-writeline]: http://msdn.microsoft.com/library/system.console.writeline\n[stdin-stdout-stderr]: http://msdn.microsoft.com/library/3x292kth(v=vs.110).aspx\n\n[powershell-install-configure]: ../install-configure-powershell.md\n\n[hdinsight-get-started]: ../hdinsight-get-started.md\n\n[hdinsight-samples]: hdinsight-run-samples.md\n[hdinsight-sample-10gb-graysort]: hdinsight-sample-10gb-graysort.md\n[hdinsight-sample-csharp-streaming]: hdinsight-sample-csharp-streaming.md\n[hdinsight-sample-pi-estimator]: hdinsight-sample-pi-estimator.md\n[hdinsight-sample-wordcount]: hdinsight-sample-wordcount.md\n\n[hdinsight-use-hive]: hdinsight-use-hive.md\n[hdinsight-use-pig]: hdinsight-use-pig.md\n\ntest\n"
+}

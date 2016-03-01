@@ -1,0 +1,789 @@
+{
+  "nodes": [
+    {
+      "content": "Create and upload a CentOS-based Linux VHD in Azure",
+      "pos": [
+        28,
+        79
+      ]
+    },
+    {
+      "content": "Learn to create and upload an Azure virtual hard disk (VHD) that contains a CentOS-based Linux operating system.",
+      "pos": [
+        99,
+        211
+      ]
+    },
+    {
+      "content": "Prepare a CentOS-Based Virtual Machine for Azure",
+      "pos": [
+        557,
+        605
+      ]
+    },
+    {
+      "content": "Prepare a CentOS 6.x Virtual Machine for Azure",
+      "pos": [
+        610,
+        656
+      ]
+    },
+    {
+      "content": "Prepare a CentOS 7.0+ Virtual Machine for Azure",
+      "pos": [
+        671,
+        718
+      ]
+    },
+    {
+      "content": "Prerequisites",
+      "pos": [
+        733,
+        746
+      ]
+    },
+    {
+      "content": "This article assumes that you have already installed a CentOS (or similar derivative) Linux operating system to a virtual hard disk.",
+      "pos": [
+        750,
+        882
+      ]
+    },
+    {
+      "content": "Multiple tools exist to create .vhd files, for example a virtualization solution such as Hyper-V.",
+      "pos": [
+        883,
+        980
+      ]
+    },
+    {
+      "content": "For instructions, see <bpt id=\"p1\">[</bpt>Install the Hyper-V Role and Configure a Virtual Machine<ept id=\"p1\">](http://technet.microsoft.com/library/hh846766.aspx)</ept>.",
+      "pos": [
+        981,
+        1114
+      ]
+    },
+    {
+      "content": "CentOS Installation Notes",
+      "pos": [
+        1120,
+        1145
+      ]
+    },
+    {
+      "content": "The newer VHDX format is not supported in Azure.",
+      "pos": [
+        1151,
+        1199
+      ]
+    },
+    {
+      "content": "You can convert the disk to VHD format using Hyper-V Manager or the convert-vhd cmdlet.",
+      "pos": [
+        1200,
+        1287
+      ]
+    },
+    {
+      "content": "When installing the Linux system it is recommended that you use standard partitions rather than LVM (often the default for many installations).",
+      "pos": [
+        1291,
+        1434
+      ]
+    },
+    {
+      "content": "This will avoid LVM name conflicts with cloned VMs, particularly if an OS disk ever needs to be attached to another VM for troubleshooting.",
+      "pos": [
+        1435,
+        1574
+      ]
+    },
+    {
+      "content": "LVM or <bpt id=\"p1\">[</bpt>RAID<ept id=\"p1\">](virtual-machines-linux-configure-raid.md)</ept> may be used on data disks if preferred.",
+      "pos": [
+        1576,
+        1671
+      ]
+    },
+    {
+      "content": "NUMA is not supported for larger VM sizes due to a bug in Linux kernel versions below 2.6.37.",
+      "pos": [
+        1675,
+        1768
+      ]
+    },
+    {
+      "content": "This issue primarily impacts distributions using the upstream Red Hat 2.6.32 kernel.",
+      "pos": [
+        1769,
+        1853
+      ]
+    },
+    {
+      "content": "Manual installation of the Azure Linux agent (waagent) will automatically disable NUMA in the GRUB configuration for the Linux kernel.",
+      "pos": [
+        1854,
+        1988
+      ]
+    },
+    {
+      "content": "More information about this can be found in the steps below.",
+      "pos": [
+        1989,
+        2049
+      ]
+    },
+    {
+      "content": "Do not configure a swap partition on the OS disk.",
+      "pos": [
+        2053,
+        2102
+      ]
+    },
+    {
+      "content": "The Linux agent can be configured to create a swap file on the temporary resource disk.",
+      "pos": [
+        2103,
+        2190
+      ]
+    },
+    {
+      "content": "More information about this can be found in the steps below.",
+      "pos": [
+        2192,
+        2252
+      ]
+    },
+    {
+      "content": "All of the VHDs must have sizes that are multiples of 1 MB.",
+      "pos": [
+        2256,
+        2315
+      ]
+    },
+    {
+      "pos": [
+        2321,
+        2352
+      ],
+      "content": "<ph id=\"ph1\">&lt;a id=\"centos6\"&gt;</ph> <ph id=\"ph2\">&lt;/a&gt;</ph>CentOS 6.x"
+    },
+    {
+      "content": "In Hyper-V Manager, select the virtual machine.",
+      "pos": [
+        2360,
+        2407
+      ]
+    },
+    {
+      "pos": [
+        2412,
+        2479
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>Connect<ept id=\"p1\">**</ept> to open a console window for the virtual machine."
+    },
+    {
+      "content": "Uninstall NetworkManager by running the following command:",
+      "pos": [
+        2484,
+        2542
+      ]
+    },
+    {
+      "content": "<bpt id=\"p1\">**</bpt>Note:<ept id=\"p1\">**</ept> If the package is not already installed, this command will fail with an error message.",
+      "pos": [
+        2595,
+        2691
+      ]
+    },
+    {
+      "content": "This is expected.",
+      "pos": [
+        2692,
+        2709
+      ]
+    },
+    {
+      "pos": [
+        2715,
+        2815
+      ],
+      "content": "Create a file named <bpt id=\"p1\">**</bpt>network<ept id=\"p1\">**</ept> in the <ph id=\"ph1\">`/etc/sysconfig/`</ph> directory that contains the following text:"
+    },
+    {
+      "pos": [
+        2884,
+        3003
+      ],
+      "content": "Create a file named <bpt id=\"p1\">**</bpt>ifcfg-eth0<ept id=\"p1\">**</ept> in the <ph id=\"ph1\">`/etc/sysconfig/network-scripts/`</ph> directory that contains the following text:"
+    },
+    {
+      "content": "Move (or remove) udev rules to avoid generating static rules for the Ethernet interface.",
+      "pos": [
+        3153,
+        3241
+      ]
+    },
+    {
+      "content": "These rules cause problems when cloning a virtual machine in Microsoft Azure or Hyper-V:",
+      "pos": [
+        3242,
+        3330
+      ]
+    },
+    {
+      "content": "Ensure the network service will start at boot time by running the following command:",
+      "pos": [
+        3549,
+        3633
+      ]
+    },
+    {
+      "pos": [
+        3676,
+        3751
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>CentOS 6.3 Only<ept id=\"p1\">**</ept>: Install the drivers for the Linux Integration Services"
+    },
+    {
+      "content": "Important: The step is only valid for CentOS 6.3 and earlier.",
+      "pos": [
+        3759,
+        3820
+      ]
+    },
+    {
+      "content": "In CentOS 6.4+ the Linux Integration Services are <bpt id=\"p1\">*</bpt>already available in the kernel<ept id=\"p1\">*</ept>.",
+      "pos": [
+        3824,
+        3908
+      ]
+    },
+    {
+      "pos": [
+        3914,
+        4093
+      ],
+      "content": "a) Obtain the .iso file that contains the drivers for the Linux Integration Services from the <bpt id=\"p1\">[</bpt>Microsoft Download Center<ept id=\"p1\">](http://www.microsoft.com/download/details.aspx?id=41554)</ept>."
+    },
+    {
+      "pos": [
+        4099,
+        4166
+      ],
+      "content": "b) In Hyper-V Manager, in the <bpt id=\"p1\">**</bpt>Actions<ept id=\"p1\">**</ept> pane, click <bpt id=\"p2\">**</bpt>Settings<ept id=\"p2\">**</ept>."
+    },
+    {
+      "content": "Open Hyper-V settings",
+      "pos": [
+        4174,
+        4195
+      ]
+    },
+    {
+      "pos": [
+        4272,
+        4328
+      ],
+      "content": "c) In the <bpt id=\"p1\">**</bpt>Hardware<ept id=\"p1\">**</ept> pane, click <bpt id=\"p2\">**</bpt>IDE Controller 1<ept id=\"p2\">**</ept>."
+    },
+    {
+      "content": "Add DVD drive with install media",
+      "pos": [
+        4336,
+        4368
+      ]
+    },
+    {
+      "pos": [
+        4447,
+        4525
+      ],
+      "content": "d) In the <bpt id=\"p1\">**</bpt>IDE Controller<ept id=\"p1\">**</ept> box, click <bpt id=\"p2\">**</bpt>DVD Drive<ept id=\"p2\">**</ept>, and then click <bpt id=\"p3\">**</bpt>Add<ept id=\"p3\">**</ept>."
+    },
+    {
+      "pos": [
+        4531,
+        4614
+      ],
+      "content": "e) Select <bpt id=\"p1\">**</bpt>Image file<ept id=\"p1\">**</ept>, browse to <bpt id=\"p2\">**</bpt>Linux IC v3.2.iso<ept id=\"p2\">**</ept>, and then click <bpt id=\"p3\">**</bpt>Open<ept id=\"p3\">**</ept>."
+    },
+    {
+      "pos": [
+        4620,
+        4662
+      ],
+      "content": "f) In the <bpt id=\"p1\">**</bpt>Settings<ept id=\"p1\">**</ept> page, click <bpt id=\"p2\">**</bpt>OK<ept id=\"p2\">**</ept>."
+    },
+    {
+      "pos": [
+        4668,
+        4732
+      ],
+      "content": "g) Click <bpt id=\"p1\">**</bpt>Connect<ept id=\"p1\">**</ept> to open the window for the virtual machine."
+    },
+    {
+      "content": "h) In the Command Prompt window, type the following commands:",
+      "pos": [
+        4738,
+        4799
+      ]
+    },
+    {
+      "content": "Install the python-pyasn1 package by running the following command:",
+      "pos": [
+        4899,
+        4966
+      ]
+    },
+    {
+      "content": "If you would like to use the OpenLogic mirrors that are hosted within the Azure datacenters, then replace the /etc/yum.repos.d/CentOS-Base.repo file with the following repositories.",
+      "pos": [
+        5014,
+        5195
+      ]
+    },
+    {
+      "content": "This will also add the <bpt id=\"p1\">**</bpt>[openlogic]<ept id=\"p1\">**</ept> repository that includes packages for the Azure Linux agent:",
+      "pos": [
+        5197,
+        5296
+      ]
+    },
+    {
+      "pos": [
+        6931,
+        7079
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Note:<ept id=\"p1\">**</ept> The rest of this guide will assume you are using at least the [openlogic] repo, which will be used to install the Azure Linux agent below."
+    },
+    {
+      "content": "Add the following line to /etc/yum.conf:",
+      "pos": [
+        7086,
+        7126
+      ]
+    },
+    {
+      "pos": [
+        7163,
+        7213
+      ],
+      "content": "And <bpt id=\"p1\">**</bpt>on CentOS 6.3 only<ept id=\"p1\">**</ept> add the following line:"
+    },
+    {
+      "pos": [
+        7244,
+        7384
+      ],
+      "content": "Disable the yum module \"fastestmirror\" by editing the file \"/etc/yum/pluginconf.d/fastestmirror.conf\", and under <ph id=\"ph1\">`[main]`</ph> type the following"
+    },
+    {
+      "content": "Run the following command to clear the current yum metadata:",
+      "pos": [
+        7413,
+        7473
+      ]
+    },
+    {
+      "pos": [
+        7504,
+        7571
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>CentOS 6.3 only<ept id=\"p1\">**</ept>, update the kernel using the following command:"
+    },
+    {
+      "content": "Modify the kernel boot line in your grub configuration to include additional kernel parameters for Azure.",
+      "pos": [
+        7634,
+        7739
+      ]
+    },
+    {
+      "content": "To do this open \"/boot/grub/menu.lst\" in a text editor and ensure that the default kernel includes the following parameters:",
+      "pos": [
+        7740,
+        7864
+      ]
+    },
+    {
+      "content": "This will also ensure all console messages are sent to the first serial port, which can assist Azure support with debugging issues.",
+      "pos": [
+        7934,
+        8065
+      ]
+    },
+    {
+      "content": "This will disable NUMA due to a bug in the kernel version used by CentOS 6.",
+      "pos": [
+        8066,
+        8141
+      ]
+    },
+    {
+      "pos": [
+        8147,
+        8228
+      ],
+      "content": "In addition to the above, it is recommended to <bpt id=\"p1\">*</bpt>remove<ept id=\"p1\">*</ept> the following parameters:"
+    },
+    {
+      "content": "Graphical and quiet boot are not useful in a cloud environment where we want all the logs to be sent to the serial port.",
+      "pos": [
+        8271,
+        8391
+      ]
+    },
+    {
+      "pos": [
+        8397,
+        8606
+      ],
+      "content": "The <ph id=\"ph1\">`crashkernel`</ph> option may be left configured if desired, but note that this parameter will reduce the amount of available memory in the VM by 128MB or more, which may be problematic on the smaller VM sizes."
+    },
+    {
+      "content": "Ensure that the SSH server is installed and configured to start at boot time.",
+      "pos": [
+        8613,
+        8690
+      ]
+    },
+    {
+      "content": "This is usually the default.",
+      "pos": [
+        8692,
+        8720
+      ]
+    },
+    {
+      "content": "Install the Azure Linux Agent by running the following command:",
+      "pos": [
+        8726,
+        8789
+      ]
+    },
+    {
+      "content": "Note that installing the WALinuxAgent package will remove the NetworkManager and NetworkManager-gnome packages if they were not already removed as described in step 2.",
+      "pos": [
+        8836,
+        9003
+      ]
+    },
+    {
+      "content": "Do not create swap space on the OS disk",
+      "pos": [
+        9009,
+        9048
+      ]
+    },
+    {
+      "content": "The Azure Linux Agent can automatically configure swap space using the local resource disk that is attached to the VM after provisioning on Azure.",
+      "pos": [
+        9054,
+        9200
+      ]
+    },
+    {
+      "content": "Note that the local resource disk is a <bpt id=\"p1\">*</bpt>temporary<ept id=\"p1\">*</ept> disk, and might be emptied when the VM is deprovisioned.",
+      "pos": [
+        9201,
+        9308
+      ]
+    },
+    {
+      "content": "After installing the Azure Linux Agent (see previous step), modify the following parameters in /etc/waagent.conf appropriately:",
+      "pos": [
+        9309,
+        9436
+      ]
+    },
+    {
+      "content": "Run the following commands to deprovision the virtual machine and prepare it for provisioning on Azure:",
+      "pos": [
+        9679,
+        9782
+      ]
+    },
+    {
+      "content": "Click <bpt id=\"p1\">**</bpt>Action -&gt; Shut Down<ept id=\"p1\">**</ept> in Hyper-V Manager.",
+      "pos": [
+        9877,
+        9926
+      ]
+    },
+    {
+      "content": "Your Linux VHD is now ready to be uploaded to Azure.",
+      "pos": [
+        9927,
+        9979
+      ]
+    },
+    {
+      "pos": [
+        9998,
+        10030
+      ],
+      "content": "<ph id=\"ph1\">&lt;a id=\"centos7\"&gt;</ph> <ph id=\"ph2\">&lt;/a&gt;</ph>CentOS 7.0+"
+    },
+    {
+      "content": "Changes in CentOS 7 (and similar derivatives)",
+      "pos": [
+        10037,
+        10082
+      ]
+    },
+    {
+      "content": "Preparing a CentOS 7 virtual machine for Azure is very similar to CentOS 6, however there are several important differences worth noting:",
+      "pos": [
+        10086,
+        10223
+      ]
+    },
+    {
+      "content": "The NetworkManager package no longer conflicts with the Azure Linux agent.",
+      "pos": [
+        10228,
+        10302
+      ]
+    },
+    {
+      "content": "This package is installed by default and we recommend that it is not removed.",
+      "pos": [
+        10303,
+        10380
+      ]
+    },
+    {
+      "content": "GRUB2 is now used as the default bootloader, so the procedure for editing kernel parameters has changed (see below).",
+      "pos": [
+        10384,
+        10500
+      ]
+    },
+    {
+      "content": "XFS is now the default file system.",
+      "pos": [
+        10504,
+        10539
+      ]
+    },
+    {
+      "content": "The ext4 file system can still be used if desired.",
+      "pos": [
+        10540,
+        10590
+      ]
+    },
+    {
+      "content": "Configuration Steps",
+      "pos": [
+        10595,
+        10614
+      ]
+    },
+    {
+      "content": "In Hyper-V Manager, select the virtual machine.",
+      "pos": [
+        10621,
+        10668
+      ]
+    },
+    {
+      "pos": [
+        10673,
+        10740
+      ],
+      "content": "Click <bpt id=\"p1\">**</bpt>Connect<ept id=\"p1\">**</ept> to open a console window for the virtual machine."
+    },
+    {
+      "pos": [
+        10746,
+        10846
+      ],
+      "content": "Create a file named <bpt id=\"p1\">**</bpt>network<ept id=\"p1\">**</ept> in the <ph id=\"ph1\">`/etc/sysconfig/`</ph> directory that contains the following text:"
+    },
+    {
+      "pos": [
+        10915,
+        11034
+      ],
+      "content": "Create a file named <bpt id=\"p1\">**</bpt>ifcfg-eth0<ept id=\"p1\">**</ept> in the <ph id=\"ph1\">`/etc/sysconfig/network-scripts/`</ph> directory that contains the following text:"
+    },
+    {
+      "content": "Move (or remove) udev rules to avoid generating static rules for the Ethernet interface.",
+      "pos": [
+        11184,
+        11272
+      ]
+    },
+    {
+      "content": "These rules cause problems when cloning a virtual machine in Microsoft Azure or Hyper-V:",
+      "pos": [
+        11273,
+        11361
+      ]
+    },
+    {
+      "content": "Ensure the network service will start at boot time by running the following command:",
+      "pos": [
+        11603,
+        11687
+      ]
+    },
+    {
+      "content": "Install the python-pyasn1 package by running the following command:",
+      "pos": [
+        11729,
+        11796
+      ]
+    },
+    {
+      "content": "If you would like to use the OpenLogic mirrors that are hosted within the Azure datacenters, then replace the /etc/yum.repos.d/CentOS-Base.repo file with the following repositories.",
+      "pos": [
+        11843,
+        12024
+      ]
+    },
+    {
+      "content": "This will also add the <bpt id=\"p1\">**</bpt>[openlogic]<ept id=\"p1\">**</ept> repository that includes packages for the Azure Linux agent:",
+      "pos": [
+        12026,
+        12125
+      ]
+    },
+    {
+      "pos": [
+        13770,
+        13918
+      ],
+      "content": "<bpt id=\"p1\">**</bpt>Note:<ept id=\"p1\">**</ept> The rest of this guide will assume you are using at least the [openlogic] repo, which will be used to install the Azure Linux agent below."
+    },
+    {
+      "content": "Run the following command to clear the current yum metadata and install any updates:",
+      "pos": [
+        13924,
+        14008
+      ]
+    },
+    {
+      "content": "Modify the kernel boot line in your grub configuration to include additional kernel parameters for Azure.",
+      "pos": [
+        14073,
+        14178
+      ]
+    },
+    {
+      "content": "To do this open \"/etc/default/grub\" in a text editor and edit the <ph id=\"ph1\">`GRUB_CMDLINE_LINUX`</ph> parameter, for example:",
+      "pos": [
+        14179,
+        14289
+      ]
+    },
+    {
+      "content": "This will also ensure all console messages are sent to the first serial port, which can assist Azure support with debugging issues.",
+      "pos": [
+        14371,
+        14502
+      ]
+    },
+    {
+      "content": "In addition to the above, it is recommended to <bpt id=\"p1\">*</bpt>remove<ept id=\"p1\">*</ept> the following parameters:",
+      "pos": [
+        14503,
+        14584
+      ]
+    },
+    {
+      "content": "Graphical and quiet boot are not useful in a cloud environment where we want all the logs to be sent to the serial port.",
+      "pos": [
+        14627,
+        14747
+      ]
+    },
+    {
+      "pos": [
+        14753,
+        14962
+      ],
+      "content": "The <ph id=\"ph1\">`crashkernel`</ph> option may be left configured if desired, but note that this parameter will reduce the amount of available memory in the VM by 128MB or more, which may be problematic on the smaller VM sizes."
+    },
+    {
+      "content": "Once you are done editing \"/etc/default/grub\" per above, run the following command to rebuild the grub configuration:",
+      "pos": [
+        14968,
+        15085
+      ]
+    },
+    {
+      "content": "Ensure that the SSH server is installed and configured to start at boot time.",
+      "pos": [
+        15146,
+        15223
+      ]
+    },
+    {
+      "content": "This is usually the default.",
+      "pos": [
+        15225,
+        15253
+      ]
+    },
+    {
+      "content": "Install the Azure Linux Agent by running the following command:",
+      "pos": [
+        15259,
+        15322
+      ]
+    },
+    {
+      "content": "Do not create swap space on the OS disk",
+      "pos": [
+        15369,
+        15408
+      ]
+    },
+    {
+      "content": "The Azure Linux Agent can automatically configure swap space using the local resource disk that is attached to the VM after provisioning on Azure.",
+      "pos": [
+        15414,
+        15560
+      ]
+    },
+    {
+      "content": "Note that the local resource disk is a <bpt id=\"p1\">*</bpt>temporary<ept id=\"p1\">*</ept> disk, and might be emptied when the VM is deprovisioned.",
+      "pos": [
+        15561,
+        15668
+      ]
+    },
+    {
+      "content": "After installing the Azure Linux Agent (see previous step), modify the following parameters in /etc/waagent.conf appropriately:",
+      "pos": [
+        15669,
+        15796
+      ]
+    },
+    {
+      "content": "Run the following commands to deprovision the virtual machine and prepare it for provisioning on Azure:",
+      "pos": [
+        16039,
+        16142
+      ]
+    },
+    {
+      "content": "Click <bpt id=\"p1\">**</bpt>Action -&gt; Shut Down<ept id=\"p1\">**</ept> in Hyper-V Manager.",
+      "pos": [
+        16237,
+        16286
+      ]
+    },
+    {
+      "content": "Your Linux VHD is now ready to be uploaded to Azure.",
+      "pos": [
+        16287,
+        16339
+      ]
+    }
+  ],
+  "content": "<properties \n    pageTitle=\"Create and upload a CentOS-based Linux VHD in Azure\" \n    description=\"Learn to create and upload an Azure virtual hard disk (VHD) that contains a CentOS-based Linux operating system.\" \n    services=\"virtual-machines\" \n    documentationCenter=\"\" \n    authors=\"szarkos\" \n    manager=\"timlt\" \n    editor=\"tysonn\"/>\n\n<tags \n    ms.service=\"virtual-machines\" \n    ms.workload=\"infrastructure-services\" \n    ms.tgt_pltfrm=\"vm-linux\" \n    ms.devlang=\"na\" \n    ms.topic=\"article\" \n    ms.date=\"05/15/2015\" \n    ms.author=\"szarkos\"/>\n\n# Prepare a CentOS-Based Virtual Machine for Azure\n\n- [Prepare a CentOS 6.x Virtual Machine for Azure](#centos6)\n- [Prepare a CentOS 7.0+ Virtual Machine for Azure](#centos7)\n\n##Prerequisites##\n\nThis article assumes that you have already installed a CentOS (or similar derivative) Linux operating system to a virtual hard disk. Multiple tools exist to create .vhd files, for example a virtualization solution such as Hyper-V. For instructions, see [Install the Hyper-V Role and Configure a Virtual Machine](http://technet.microsoft.com/library/hh846766.aspx). \n\n\n**CentOS Installation Notes**\n\n- The newer VHDX format is not supported in Azure. You can convert the disk to VHD format using Hyper-V Manager or the convert-vhd cmdlet.\n\n- When installing the Linux system it is recommended that you use standard partitions rather than LVM (often the default for many installations). This will avoid LVM name conflicts with cloned VMs, particularly if an OS disk ever needs to be attached to another VM for troubleshooting.  LVM or [RAID](virtual-machines-linux-configure-raid.md) may be used on data disks if preferred.\n\n- NUMA is not supported for larger VM sizes due to a bug in Linux kernel versions below 2.6.37. This issue primarily impacts distributions using the upstream Red Hat 2.6.32 kernel. Manual installation of the Azure Linux agent (waagent) will automatically disable NUMA in the GRUB configuration for the Linux kernel. More information about this can be found in the steps below.\n\n- Do not configure a swap partition on the OS disk. The Linux agent can be configured to create a swap file on the temporary resource disk.  More information about this can be found in the steps below.\n\n- All of the VHDs must have sizes that are multiples of 1 MB.\n\n\n## <a id=\"centos6\"> </a>CentOS 6.x ##\n\n1. In Hyper-V Manager, select the virtual machine.\n\n2. Click **Connect** to open a console window for the virtual machine.\n\n3. Uninstall NetworkManager by running the following command:\n\n        # sudo rpm -e --nodeps NetworkManager\n\n    **Note:** If the package is not already installed, this command will fail with an error message. This is expected.\n\n4.  Create a file named **network** in the `/etc/sysconfig/` directory that contains the following text:\n\n        NETWORKING=yes\n        HOSTNAME=localhost.localdomain\n\n5.  Create a file named **ifcfg-eth0** in the `/etc/sysconfig/network-scripts/` directory that contains the following text:\n\n        DEVICE=eth0\n        ONBOOT=yes\n        BOOTPROTO=dhcp\n        TYPE=Ethernet\n        USERCTL=no\n        PEERDNS=yes\n        IPV6INIT=no\n\n6.  Move (or remove) udev rules to avoid generating static rules for the Ethernet interface. These rules cause problems when cloning a virtual machine in Microsoft Azure or Hyper-V:\n\n        # sudo mkdir -m 0700 /var/lib/waagent\n        # sudo mv /lib/udev/rules.d/75-persistent-net-generator.rules /var/lib/waagent/\n        # sudo mv /etc/udev/rules.d/70-persistent-net.rules /var/lib/waagent/\n\n\n7. Ensure the network service will start at boot time by running the following command:\n\n        # sudo chkconfig network on\n\n\n8. **CentOS 6.3 Only**: Install the drivers for the Linux Integration Services\n\n    **Important: The step is only valid for CentOS 6.3 and earlier.**  In CentOS 6.4+ the Linux Integration Services are *already available in the kernel*.\n\n    a) Obtain the .iso file that contains the drivers for the Linux Integration Services from the [Microsoft Download Center](http://www.microsoft.com/download/details.aspx?id=41554).\n\n    b) In Hyper-V Manager, in the **Actions** pane, click **Settings**.\n\n    ![Open Hyper-V settings](./media/virtual-machines-linux-create-upload-vhd-centos/settings.png)\n\n    c) In the **Hardware** pane, click **IDE Controller 1**.\n\n    ![Add DVD drive with install media](./media/virtual-machines-linux-create-upload-vhd-centos/installiso.png)\n\n    d) In the **IDE Controller** box, click **DVD Drive**, and then click **Add**.\n\n    e) Select **Image file**, browse to **Linux IC v3.2.iso**, and then click **Open**.\n\n    f) In the **Settings** page, click **OK**.\n\n    g) Click **Connect** to open the window for the virtual machine.\n\n    h) In the Command Prompt window, type the following commands:\n\n        # sudo mount /dev/cdrom /media\n        # sudo /media/install.sh\n        # sudo reboot\n\n9. Install the python-pyasn1 package by running the following command:\n\n        # sudo yum install python-pyasn1\n\n10. If you would like to use the OpenLogic mirrors that are hosted within the Azure datacenters, then replace the /etc/yum.repos.d/CentOS-Base.repo file with the following repositories.  This will also add the **[openlogic]** repository that includes packages for the Azure Linux agent:\n\n        [openlogic]\n        name=CentOS-$releasever - openlogic packages for $basearch\n        baseurl=http://olcentgbl.trafficmanager.net/openlogic/$releasever/openlogic/$basearch/\n        enabled=1\n        gpgcheck=0\n        \n        [base]\n        name=CentOS-$releasever - Base\n        baseurl=http://olcentgbl.trafficmanager.net/centos/$releasever/os/$basearch/\n        gpgcheck=1\n        gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-6\n        \n        #released updates\n        [updates]\n        name=CentOS-$releasever - Updates\n        baseurl=http://olcentgbl.trafficmanager.net/centos/$releasever/updates/$basearch/\n        gpgcheck=1\n        gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-6\n        \n        #additional packages that may be useful\n        [extras]\n        name=CentOS-$releasever - Extras\n        baseurl=http://olcentgbl.trafficmanager.net/centos/$releasever/extras/$basearch/\n        gpgcheck=1\n        gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-6\n        \n        #additional packages that extend functionality of existing packages\n        [centosplus]\n        name=CentOS-$releasever - Plus\n        baseurl=http://olcentgbl.trafficmanager.net/centos/$releasever/centosplus/$basearch/\n        gpgcheck=1\n        enabled=0\n        gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-6\n        \n        #contrib - packages by Centos Users\n        [contrib]\n        name=CentOS-$releasever - Contrib\n        baseurl=http://olcentgbl.trafficmanager.net/centos/$releasever/contrib/$basearch/\n        gpgcheck=1\n        enabled=0\n        gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-6\n\n    **Note:** The rest of this guide will assume you are using at least the [openlogic] repo, which will be used to install the Azure Linux agent below.\n\n\n11. Add the following line to /etc/yum.conf:\n\n        http_caching=packages\n\n    And **on CentOS 6.3 only** add the following line:\n\n        exclude=kernel*\n\n12. Disable the yum module \"fastestmirror\" by editing the file \"/etc/yum/pluginconf.d/fastestmirror.conf\", and under `[main]` type the following\n\n        set enabled=0\n\n13. Run the following command to clear the current yum metadata:\n\n        # yum clean all\n\n14. **CentOS 6.3 only**, update the kernel using the following command:\n\n        # sudo yum --disableexcludes=all install kernel\n\n15. Modify the kernel boot line in your grub configuration to include additional kernel parameters for Azure. To do this open \"/boot/grub/menu.lst\" in a text editor and ensure that the default kernel includes the following parameters:\n\n        console=ttyS0 earlyprintk=ttyS0 rootdelay=300 numa=off\n\n    This will also ensure all console messages are sent to the first serial port, which can assist Azure support with debugging issues. This will disable NUMA due to a bug in the kernel version used by CentOS 6.\n\n    In addition to the above, it is recommended to *remove* the following parameters:\n\n        rhgb quiet crashkernel=auto\n\n    Graphical and quiet boot are not useful in a cloud environment where we want all the logs to be sent to the serial port.\n\n    The `crashkernel` option may be left configured if desired, but note that this parameter will reduce the amount of available memory in the VM by 128MB or more, which may be problematic on the smaller VM sizes.\n\n\n16. Ensure that the SSH server is installed and configured to start at boot time.  This is usually the default.\n\n17. Install the Azure Linux Agent by running the following command:\n\n        # sudo yum install WALinuxAgent\n\n    Note that installing the WALinuxAgent package will remove the NetworkManager and NetworkManager-gnome packages if they were not already removed as described in step 2.\n\n18. Do not create swap space on the OS disk\n\n    The Azure Linux Agent can automatically configure swap space using the local resource disk that is attached to the VM after provisioning on Azure. Note that the local resource disk is a *temporary* disk, and might be emptied when the VM is deprovisioned. After installing the Azure Linux Agent (see previous step), modify the following parameters in /etc/waagent.conf appropriately:\n\n        ResourceDisk.Format=y\n        ResourceDisk.Filesystem=ext4\n        ResourceDisk.MountPoint=/mnt/resource\n        ResourceDisk.EnableSwap=y\n        ResourceDisk.SwapSizeMB=2048    ## NOTE: set this to whatever you need it to be.\n\n19. Run the following commands to deprovision the virtual machine and prepare it for provisioning on Azure:\n\n        # sudo waagent -force -deprovision\n        # export HISTSIZE=0\n        # logout\n\n20. Click **Action -> Shut Down** in Hyper-V Manager. Your Linux VHD is now ready to be uploaded to Azure.\n\n\n----------\n\n\n## <a id=\"centos7\"> </a>CentOS 7.0+ ##\n\n**Changes in CentOS 7 (and similar derivatives)**\n\nPreparing a CentOS 7 virtual machine for Azure is very similar to CentOS 6, however there are several important differences worth noting:\n\n - The NetworkManager package no longer conflicts with the Azure Linux agent. This package is installed by default and we recommend that it is not removed.\n - GRUB2 is now used as the default bootloader, so the procedure for editing kernel parameters has changed (see below).\n - XFS is now the default file system. The ext4 file system can still be used if desired.\n\n\n**Configuration Steps**\n\n1. In Hyper-V Manager, select the virtual machine.\n\n2. Click **Connect** to open a console window for the virtual machine.\n\n3.  Create a file named **network** in the `/etc/sysconfig/` directory that contains the following text:\n\n        NETWORKING=yes\n        HOSTNAME=localhost.localdomain\n\n4.  Create a file named **ifcfg-eth0** in the `/etc/sysconfig/network-scripts/` directory that contains the following text:\n\n        DEVICE=eth0\n        ONBOOT=yes\n        BOOTPROTO=dhcp\n        TYPE=Ethernet\n        USERCTL=no\n        PEERDNS=yes\n        IPV6INIT=no\n\n5.  Move (or remove) udev rules to avoid generating static rules for the Ethernet interface. These rules cause problems when cloning a virtual machine in Microsoft Azure or Hyper-V:\n\n        # sudo mkdir -m 0700 /var/lib/waagent\n        # sudo mv /lib/udev/rules.d/75-persistent-net-generator.rules /var/lib/waagent/ 2>/dev/null\n        # sudo mv /etc/udev/rules.d/70-persistent-net.rules /var/lib/waagent/ 2>/dev/null\n\n6. Ensure the network service will start at boot time by running the following command:\n\n        # sudo chkconfig network on\n\n7. Install the python-pyasn1 package by running the following command:\n\n        # sudo yum install python-pyasn1\n\n8. If you would like to use the OpenLogic mirrors that are hosted within the Azure datacenters, then replace the /etc/yum.repos.d/CentOS-Base.repo file with the following repositories.  This will also add the **[openlogic]** repository that includes packages for the Azure Linux agent:\n\n        [openlogic]\n        name=CentOS-$releasever - openlogic packages for $basearch\n        baseurl=http://olcentgbl.trafficmanager.net/openlogic/$releasever/openlogic/$basearch/\n        enabled=1\n        gpgcheck=0\n        \n        [base]\n        name=CentOS-$releasever - Base\n        baseurl=http://olcentgbl.trafficmanager.net/centos/$releasever/os/$basearch/\n        gpgcheck=1\n        gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7\n        \n        #released updates\n        [updates]\n        name=CentOS-$releasever - Updates\n        baseurl=http://olcentgbl.trafficmanager.net/centos/$releasever/updates/$basearch/\n        gpgcheck=1\n        gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7\n        \n        #additional packages that may be useful\n        [extras]\n        name=CentOS-$releasever - Extras\n        baseurl=http://olcentgbl.trafficmanager.net/centos/$releasever/extras/$basearch/\n        gpgcheck=1\n        gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7\n        \n        #additional packages that extend functionality of existing packages\n        [centosplus]\n        name=CentOS-$releasever - Plus\n        baseurl=http://olcentgbl.trafficmanager.net/centos/$releasever/centosplus/$basearch/\n        gpgcheck=1\n        enabled=0\n        gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7\n        \n        #contrib - packages by Centos Users\n        [contrib]\n        name=CentOS-$releasever - Contrib\n        baseurl=http://olcentgbl.trafficmanager.net/centos/$releasever/contrib/$basearch/\n        gpgcheck=1\n        enabled=0\n        gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7\n        \n\n\n    **Note:** The rest of this guide will assume you are using at least the [openlogic] repo, which will be used to install the Azure Linux agent below.\n\n9.  Run the following command to clear the current yum metadata and install any updates:\n\n        # sudo yum clean all\n        # sudo yum -y update\n\n10. Modify the kernel boot line in your grub configuration to include additional kernel parameters for Azure. To do this open \"/etc/default/grub\" in a text editor and edit the `GRUB_CMDLINE_LINUX` parameter, for example:\n\n        GRUB_CMDLINE_LINUX=\"rootdelay=300 console=ttyS0 earlyprintk=ttyS0\"\n\n    This will also ensure all console messages are sent to the first serial port, which can assist Azure support with debugging issues. In addition to the above, it is recommended to *remove* the following parameters:\n\n        rhgb quiet crashkernel=auto\n\n    Graphical and quiet boot are not useful in a cloud environment where we want all the logs to be sent to the serial port.\n\n    The `crashkernel` option may be left configured if desired, but note that this parameter will reduce the amount of available memory in the VM by 128MB or more, which may be problematic on the smaller VM sizes.\n\n11. Once you are done editing \"/etc/default/grub\" per above, run the following command to rebuild the grub configuration:\n\n        # sudo grub2-mkconfig -o /boot/grub2/grub.cfg\n\n12. Ensure that the SSH server is installed and configured to start at boot time.  This is usually the default.\n\n13. Install the Azure Linux Agent by running the following command:\n\n        # sudo yum install WALinuxAgent\n\n14. Do not create swap space on the OS disk\n\n    The Azure Linux Agent can automatically configure swap space using the local resource disk that is attached to the VM after provisioning on Azure. Note that the local resource disk is a *temporary* disk, and might be emptied when the VM is deprovisioned. After installing the Azure Linux Agent (see previous step), modify the following parameters in /etc/waagent.conf appropriately:\n\n        ResourceDisk.Format=y\n        ResourceDisk.Filesystem=ext4\n        ResourceDisk.MountPoint=/mnt/resource\n        ResourceDisk.EnableSwap=y\n        ResourceDisk.SwapSizeMB=2048    ## NOTE: set this to whatever you need it to be.\n\n15. Run the following commands to deprovision the virtual machine and prepare it for provisioning on Azure:\n\n        # sudo waagent -force -deprovision\n        # export HISTSIZE=0\n        # logout\n\n16. Click **Action -> Shut Down** in Hyper-V Manager. Your Linux VHD is now ready to be uploaded to Azure.\n\n\n "
+}
